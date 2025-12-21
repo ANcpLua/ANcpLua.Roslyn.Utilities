@@ -8,7 +8,7 @@
         <IsPackable>true</IsPackable>
         <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Alexander Nachtmann</Authors>
         <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>

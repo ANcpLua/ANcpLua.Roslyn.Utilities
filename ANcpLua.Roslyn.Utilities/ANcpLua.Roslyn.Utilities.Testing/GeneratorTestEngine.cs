@@ -11,7 +11,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// Engine for executing generator tests.
 /// </summary>
 /// <typeparam name="TGenerator">The generator type to test.</typeparam>
-internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrementalGenerator, new()
+public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
     private readonly CSharpCompilationOptions _compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
         nullableContextOptions: NullableContextOptions.Enable, allowUnsafe: true);

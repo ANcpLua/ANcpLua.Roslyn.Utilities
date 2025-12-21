@@ -93,7 +93,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// }
 /// </code>
 /// </example>
-internal static class GeneratorTest
+public static class GeneratorTest
 {
     /// <param name="source">C# source code to compile and feed into the generator.</param>
     extension(string source)

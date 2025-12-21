@@ -29,7 +29,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// var result = driver.GetRunResult();
 /// </code>
 /// </example>
-internal static class GeneratorDriverFactory
+public static class GeneratorDriverFactory
 {
     /// <summary>
     /// Creates a <see cref="GeneratorDriver"/> configured for the specified generator.
