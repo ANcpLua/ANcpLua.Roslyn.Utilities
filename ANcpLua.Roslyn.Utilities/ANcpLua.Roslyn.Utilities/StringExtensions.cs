@@ -139,91 +139,92 @@ public static class StringExtensions
         };
     }
 
+    /// <summary>
+    ///     Removes lines that contain only whitespace characters.
+    ///     Useful for cleaning generated code where conditional sections may leave empty lines.
+    /// </summary>
     /// <param name="text"></param>
-    extension(string text)
+    /// <returns>The text with whitespace-only lines removed.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="text" /> is null.</exception>
+    /// <example>
+    ///     <code>
+    /// var cleaned = """
+    ///     public class Foo
+    ///     {
+    /// 
+    ///         public int Value { get; }
+    ///     }
+    ///     """.TrimBlankLines();
+    /// // Result: lines with only spaces are removed
+    /// </code>
+    /// </example>
+    public static string TrimBlankLines(this string text)
     {
-        /// <summary>
-        ///     Removes lines that contain only whitespace characters.
-        ///     Useful for cleaning generated code where conditional sections may leave empty lines.
-        /// </summary>
-        /// <returns>The text with whitespace-only lines removed.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="text" /> is null.</exception>
-        /// <example>
-        ///     <code>
-        /// var cleaned = """
-        ///     public class Foo
-        ///     {
-        ///
-        ///         public int Value { get; }
-        ///     }
-        ///     """.TrimBlankLines();
-        /// // Result: lines with only spaces are removed
-        /// </code>
-        /// </example>
-        public string TrimBlankLines()
-        {
-            text = text ?? throw new ArgumentNullException(nameof(text));
+        text = text ?? throw new ArgumentNullException(nameof(text));
 
-            return string.Join(
-                "\n",
-                text
-                    .NormalizeLineEndings()
-                    .Split(Separator, StringSplitOptions.None)
-                    .Where(static line => line.Length is 0 || !line.All(char.IsWhiteSpace)));
-        }
+        return string.Join(
+            "\n",
+            text
+                .NormalizeLineEndings()
+                .Split(Separator, StringSplitOptions.None)
+                .Where(static line => line.Length is 0 || !line.All(char.IsWhiteSpace)));
+    }
 
-        /// <summary>
-        ///     Normalizes line endings to '\n' or your endings.
-        /// </summary>
-        /// <param name="newLine">'\n' by default</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string NormalizeLineEndings(string? newLine = null)
-        {
-            text = text ?? throw new ArgumentNullException(nameof(text));
+    /// <summary>
+    ///     Normalizes line endings to '\n' or your endings.
+    /// </summary>
+    /// <param name="newLine">'\n' by default</param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static string NormalizeLineEndings(this string text, string? newLine = null)
+    {
+        text = text ?? throw new ArgumentNullException(nameof(text));
 
-            var newText = text
-                .Replace("\r\n", "\n")
-                .Replace("\r", "\n");
-            if (newLine != null) newText = newText.Replace("\n", newLine);
+        var newText = text
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
+        if (newLine != null) newText = newText.Replace("\n", newLine);
 
-            return newText;
-        }
+        return newText;
+    }
 
-        /// <summary>
-        ///     Returns the namespace for the selected type's fully qualified name.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string ExtractNamespace()
-        {
-            text = text ?? throw new ArgumentNullException(nameof(text));
+    /// <summary>
+    ///     Returns the namespace for the selected type's fully qualified name.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static string ExtractNamespace(this string text)
+    {
+        text = text ?? throw new ArgumentNullException(nameof(text));
 
-            return text[..text.LastIndexOf('.')];
-        }
+        return text[..text.LastIndexOf('.')];
+    }
 
-        /// <summary>
-        ///     Returns the simple name(without namespace) for the selected type's fully qualified name.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string ExtractSimpleName()
-        {
-            text = text ?? throw new ArgumentNullException(nameof(text));
+    /// <summary>
+    ///     Returns the simple name(without namespace) for the selected type's fully qualified name.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static string ExtractSimpleName(this string text)
+    {
+        text = text ?? throw new ArgumentNullException(nameof(text));
 
-            return text[(text.LastIndexOf('.') + 1)..];
-        }
+        return text[(text.LastIndexOf('.') + 1)..];
+    }
 
-        /// <summary>
-        ///     Returns selected type's fully qualified name with 'global::' prefix.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string WithGlobalPrefix()
-        {
-            text = text ?? throw new ArgumentNullException(nameof(text));
+    /// <summary>
+    ///     Returns selected type's fully qualified name with 'global::' prefix.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static string WithGlobalPrefix(this string text)
+    {
+        text = text ?? throw new ArgumentNullException(nameof(text));
 
-            return $"global::{text}";
-        }
+        return $"global::{text}";
     }
 }

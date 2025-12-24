@@ -28,27 +28,26 @@ public readonly record struct ResultWithDiagnostics<T>(
 /// </summary>
 public static class ResultWithDiagnosticsExtensions
 {
+    /// <summary>
+    ///     Converts a value to a <see cref="ResultWithDiagnostics{T}" /> with no diagnostics.
+    /// </summary>
     /// <param name="result"></param>
     /// <typeparam name="T"></typeparam>
-    extension<T>(T result)
+    /// <returns></returns>
+    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result)
     {
-        /// <summary>
-        ///     Converts a value to a <see cref="ResultWithDiagnostics{T}" /> with no diagnostics.
-        /// </summary>
-        /// <returns></returns>
-        public ResultWithDiagnostics<T> ToResultWithDiagnostics()
-        {
-            return new ResultWithDiagnostics<T>(result);
-        }
+        return new ResultWithDiagnostics<T>(result);
+    }
 
-        /// <summary>
-        ///     Converts a value to a <see cref="ResultWithDiagnostics{T}" /> with the specified diagnostics.
-        /// </summary>
-        /// <param name="diagnostics">The diagnostics to include.</param>
-        /// <returns></returns>
-        public ResultWithDiagnostics<T> ToResultWithDiagnostics(ImmutableArray<Diagnostic> diagnostics)
-        {
-            return new ResultWithDiagnostics<T>(result, diagnostics.AsEquatableArray());
-        }
+    /// <summary>
+    ///     Converts a value to a <see cref="ResultWithDiagnostics{T}" /> with the specified diagnostics.
+    /// </summary>
+    /// <param name="diagnostics">The diagnostics to include.</param>
+    /// <param name="result"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result, ImmutableArray<Diagnostic> diagnostics)
+    {
+        return new ResultWithDiagnostics<T>(result, diagnostics.AsEquatableArray());
     }
 }

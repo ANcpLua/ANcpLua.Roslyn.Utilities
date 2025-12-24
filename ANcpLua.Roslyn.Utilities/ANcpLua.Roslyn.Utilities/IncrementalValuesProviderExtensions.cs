@@ -222,61 +222,59 @@ public static class IncrementalValuesProviderExtensions
             .Select(static (x, _) => x!.Value);
     }
 
+    /// <summary>
+    ///     Selects values and reports exceptions as diagnostics.
+    /// </summary>
+    /// <param name="selector"></param>
+    /// <param name="initializationContext"></param>
+    /// <param name="id"></param>
     /// <param name="source"></param>
+    /// <typeparam name="TResult"></typeparam>
     /// <typeparam name="TSource"></typeparam>
-    extension<TSource>(IncrementalValuesProvider<TSource> source)
+    /// <returns></returns>
+    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
+        IncrementalGeneratorInitializationContext initializationContext,
+        string id = "SRE001")
     {
-        /// <summary>
-        ///     Selects values and reports exceptions as diagnostics.
-        /// </summary>
-        /// <param name="selector"></param>
-        /// <param name="initializationContext"></param>
-        /// <param name="id"></param>
-        /// <typeparam name="TResult"></typeparam>
-        /// <returns></returns>
-        public IncrementalValuesProvider<TResult> SelectAndReportExceptions<TResult>(
-            Func<TSource, CancellationToken, TResult> selector,
-            IncrementalGeneratorInitializationContext initializationContext,
-            string id = "SRE001")
-        {
-            var outputWithErrors = source
-                .Select<TSource, (TResult? Value, Exception? Exception)>((value, cancellationToken) =>
+        var outputWithErrors = source
+            .Select<TSource, (TResult? Value, Exception? Exception)>((value, cancellationToken) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
+                    return (Value: selector(value, cancellationToken), Exception: null);
+                }
+                catch (Exception exception)
+                {
+                    return (Value: default, Exception: exception);
+                }
+            });
 
-                    try
-                    {
-                        return (Value: selector(value, cancellationToken), Exception: null);
-                    }
-                    catch (Exception exception)
-                    {
-                        return (Value: default, Exception: exception);
-                    }
-                });
+        initializationContext.RegisterSourceOutput(outputWithErrors
+                .Where(static x => x.Exception is not null),
+            (context, tuple) => { context.ReportException(id, tuple.Exception!); });
 
-            initializationContext.RegisterSourceOutput(outputWithErrors
-                    .Where(static x => x.Exception is not null),
-                (context, tuple) => { context.ReportException(id, tuple.Exception!); });
+        return outputWithErrors
+            .Where(static x => x.Exception is null)
+            .Select(static (x, _) => x.Value!);
+    }
 
-            return outputWithErrors
-                .Where(static x => x.Exception is null)
-                .Select(static (x, _) => x.Value!);
-        }
-
-        /// <summary>
-        ///     Selects values and reports exceptions as diagnostics.
-        /// </summary>
-        /// <param name="selector"></param>
-        /// <param name="initializationContext"></param>
-        /// <param name="id"></param>
-        /// <typeparam name="TResult"></typeparam>
-        /// <returns></returns>
-        public IncrementalValuesProvider<TResult> SelectAndReportExceptions<TResult>(Func<TSource, TResult> selector,
-            IncrementalGeneratorInitializationContext initializationContext,
-            string id = "SRE001")
-        {
-            return source
-                .SelectAndReportExceptions((x, _) => selector(x), initializationContext, id);
-        }
+    /// <summary>
+    ///     Selects values and reports exceptions as diagnostics.
+    /// </summary>
+    /// <param name="selector"></param>
+    /// <param name="initializationContext"></param>
+    /// <param name="id"></param>
+    /// <param name="source"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TSource"></typeparam>
+    /// <returns></returns>
+    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(this IncrementalValuesProvider<TSource> source, Func<TSource, TResult> selector,
+        IncrementalGeneratorInitializationContext initializationContext,
+        string id = "SRE001")
+    {
+        return source
+            .SelectAndReportExceptions((x, _) => selector(x), initializationContext, id);
     }
 }

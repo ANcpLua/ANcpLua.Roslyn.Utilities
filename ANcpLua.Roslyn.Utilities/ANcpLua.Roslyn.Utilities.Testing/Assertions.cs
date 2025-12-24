@@ -119,117 +119,115 @@ public static class GeneratorTestAssertions
         return new GeneratedSourceAssertions(subject, AssertionChain.GetOrCreate());
     }
 
+    /// <summary>
+    ///     Asserts that the object (expected to be a <see cref="Location" />) is at the specified location.
+    /// </summary>
+    /// <param name="expected">The expected location to compare against.</param>
+    /// <param name="because">
+    ///     A formatted phrase explaining why the assertion should be satisfied.
+    ///     If the phrase does not start with "because", it is prepended automatically.
+    /// </param>
+    /// <param name="becauseArgs">Zero or more objects to format using the placeholders in <paramref name="because" />.</param>
     /// <param name="assertions">The object assertions instance.</param>
-    extension(ObjectAssertions assertions)
+    /// <returns>An <see cref="AndConstraint{T}" /> for chaining further assertions.</returns>
+    /// <remarks>
+    ///     This assertion compares source locations including file path, line, and column.
+    ///     It handles both in-source and metadata locations appropriately.
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// diagnostic.Location.Should().BeAt(expectedLocation);
+    /// </code>
+    /// </example>
+    public static AndConstraint<ObjectAssertions> BeAt(this ObjectAssertions assertions, Location expected,
+        string because = "", params object[] becauseArgs)
     {
-        /// <summary>
-        ///     Asserts that the object (expected to be a <see cref="Location" />) is at the specified location.
-        /// </summary>
-        /// <param name="expected">The expected location to compare against.</param>
-        /// <param name="because">
-        ///     A formatted phrase explaining why the assertion should be satisfied.
-        ///     If the phrase does not start with "because", it is prepended automatically.
-        /// </param>
-        /// <param name="becauseArgs">Zero or more objects to format using the placeholders in <paramref name="because" />.</param>
-        /// <returns>An <see cref="AndConstraint{T}" /> for chaining further assertions.</returns>
-        /// <remarks>
-        ///     This assertion compares source locations including file path, line, and column.
-        ///     It handles both in-source and metadata locations appropriately.
-        /// </remarks>
-        /// <example>
-        ///     <code>
-        /// diagnostic.Location.Should().BeAt(expectedLocation);
-        /// </code>
-        /// </example>
-        public AndConstraint<ObjectAssertions> BeAt(Location expected,
-            string because = "", params object[] becauseArgs)
+        var actual = assertions.Subject as Location;
+        if (actual == null)
         {
-            var actual = assertions.Subject as Location;
-            if (actual == null)
-            {
-                assertions.Subject.Should().NotBeNull(because, becauseArgs);
-                return new AndConstraint<ObjectAssertions>(assertions);
-            }
-
-            var actualSpan = actual.GetMappedLineSpan();
-            var expectedSpan = expected.GetMappedLineSpan();
-
-            using AssertionScope scope = new("location comparison");
-
-            actual.Kind.Should().Be(expected.Kind, "location kind should match", because, becauseArgs);
-
-            if (actual.IsInSource && expected.IsInSource)
-                actualSpan.Should().BeEquivalentTo(expectedSpan,
-                    options => options.ComparingByMembers<FileLinePositionSpan>().Using<LinePosition>(ctx =>
-                    {
-                        ctx.Subject.Should().Be(ctx.Expectation, "at line {0}, column {1}", ctx.Expectation.Line + 1,
-                            ctx.Expectation.Character + 1);
-                    }).WhenTypeIs<LinePosition>(), because, becauseArgs);
-            else if (actual.IsInSource != expected.IsInSource)
-                throw new AssertionFailedException(
-                    $"Expected location to have IsInSource={expected.IsInSource}, but found {actual.IsInSource}");
-
+            assertions.Subject.Should().NotBeNull(because, becauseArgs);
             return new AndConstraint<ObjectAssertions>(assertions);
         }
 
-        /// <summary>
-        ///     Asserts that a diagnostic is at the specified source location.
-        /// </summary>
-        /// <param name="line">The expected 1-based line number.</param>
-        /// <param name="column">The expected 1-based column number.</param>
-        /// <param name="filePath">The expected file path (optional, defaults to empty which means any file).</param>
-        /// <param name="because">
-        ///     A formatted phrase explaining why the assertion should be satisfied.
-        /// </param>
-        /// <param name="becauseArgs">Zero or more objects to format using the placeholders in <paramref name="because" />.</param>
-        /// <returns>An <see cref="AndConstraint{T}" /> for chaining further assertions.</returns>
-        /// <remarks>
-        ///     Line and column numbers are 1-based to match editor conventions.
-        ///     If <paramref name="filePath" /> is empty or null, the file path is not validated.
-        /// </remarks>
-        /// <example>
-        ///     <code>
-        /// diagnostic.Should().BeAtLocation(10, 5, "MyFile.cs");
-        /// </code>
-        /// </example>
-        public AndConstraint<ObjectAssertions> BeAtLocation(int line, int column,
-            string filePath = "", string because = "", params object[] becauseArgs)
+        var actualSpan = actual.GetMappedLineSpan();
+        var expectedSpan = expected.GetMappedLineSpan();
+
+        using AssertionScope scope = new("location comparison");
+
+        actual.Kind.Should().Be(expected.Kind, "location kind should match");
+
+        if (actual.IsInSource && expected.IsInSource)
+            actualSpan.Should().BeEquivalentTo(expectedSpan,
+                options => options.ComparingByMembers<FileLinePositionSpan>().Using<LinePosition>(ctx =>
+                {
+                    ctx.Subject.Should().Be(ctx.Expectation, "at line {0}, column {1}", ctx.Expectation.Line + 1,
+                        ctx.Expectation.Character + 1);
+                }).WhenTypeIs<LinePosition>(), because, becauseArgs);
+        else if (actual.IsInSource != expected.IsInSource)
+            throw new AssertionFailedException(
+                $"Expected location to have IsInSource={expected.IsInSource}, but found {actual.IsInSource}");
+
+        return new AndConstraint<ObjectAssertions>(assertions);
+    }
+
+    /// <summary>
+    ///     Asserts that a diagnostic is at the specified source location.
+    /// </summary>
+    /// <param name="line">The expected 1-based line number.</param>
+    /// <param name="column">The expected 1-based column number.</param>
+    /// <param name="filePath">The expected file path (optional, defaults to empty which means any file).</param>
+    /// <param name="because">
+    ///     A formatted phrase explaining why the assertion should be satisfied.
+    /// </param>
+    /// <param name="becauseArgs">Zero or more objects to format using the placeholders in <paramref name="because" />.</param>
+    /// <param name="assertions">The object assertions instance.</param>
+    /// <returns>An <see cref="AndConstraint{T}" /> for chaining further assertions.</returns>
+    /// <remarks>
+    ///     Line and column numbers are 1-based to match editor conventions.
+    ///     If <paramref name="filePath" /> is empty or null, the file path is not validated.
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// diagnostic.Should().BeAtLocation(10, 5, "MyFile.cs");
+    /// </code>
+    /// </example>
+    public static AndConstraint<ObjectAssertions> BeAtLocation(this ObjectAssertions assertions, int line, int column,
+        string filePath = "", string because = "", params object[] becauseArgs)
+    {
+        if (assertions.Subject is not Diagnostic diagnostic)
         {
-            if (assertions.Subject is not Diagnostic diagnostic)
-            {
-                assertions.Subject.Should()
-                    .NotBeNull($"diagnostic should not be null{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
-                        becauseArgs);
-                return new AndConstraint<ObjectAssertions>(assertions);
-            }
-
-            using AssertionScope scope = new("diagnostic location");
-            var location = diagnostic.Location;
-            var mappedSpan = location.GetMappedLineSpan();
-
-            if (!location.IsInSource)
-                throw new AssertionFailedException(
-                    "Expected diagnostic to have a source location, but it was not in source");
-
-            var actualLine = mappedSpan.StartLinePosition.Line + 1;
-            var actualColumn = mappedSpan.StartLinePosition.Character + 1;
-
-            actualLine.Should().Be(line,
-                $"diagnostic should be at line {line}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
-                becauseArgs);
-            actualColumn.Should().Be(column,
-                $"diagnostic should be at column {column}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
-                becauseArgs);
-
-            if (string.IsNullOrEmpty(filePath)) return new AndConstraint<ObjectAssertions>(assertions);
-            var normalizedActual = TextUtilities.NormalizePath(mappedSpan.Path);
-            var normalizedExpected = TextUtilities.NormalizePath(filePath);
-            normalizedActual.Should().Be(normalizedExpected,
-                $"diagnostic should be in file {filePath}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
-                becauseArgs);
-
+            assertions.Subject.Should()
+                .NotBeNull($"diagnostic should not be null{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
+                    becauseArgs);
             return new AndConstraint<ObjectAssertions>(assertions);
         }
+
+        using AssertionScope scope = new("diagnostic location");
+        var location = diagnostic.Location;
+        var mappedSpan = location.GetMappedLineSpan();
+
+        if (!location.IsInSource)
+            throw new AssertionFailedException(
+                "Expected diagnostic to have a source location, but it was not in source");
+
+        var actualLine = mappedSpan.StartLinePosition.Line + 1;
+        var actualColumn = mappedSpan.StartLinePosition.Character + 1;
+
+        actualLine.Should().Be(line,
+            $"diagnostic should be at line {line}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
+            becauseArgs);
+        actualColumn.Should().Be(column,
+            $"diagnostic should be at column {column}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
+            becauseArgs);
+
+        if (string.IsNullOrEmpty(filePath)) return new AndConstraint<ObjectAssertions>(assertions);
+        var normalizedActual = TextUtilities.NormalizePath(mappedSpan.Path);
+        var normalizedExpected = TextUtilities.NormalizePath(filePath);
+        normalizedActual.Should().Be(normalizedExpected,
+            $"diagnostic should be in file {filePath}{(string.IsNullOrEmpty(because) ? "" : $" {because}")}",
+            becauseArgs);
+
+        return new AndConstraint<ObjectAssertions>(assertions);
     }
 }
 
@@ -836,7 +834,7 @@ public sealed class
             return new AndConstraint<DiagnosticCollectionAssertions>(this);
         }
 
-        List<(int Index, string Property, string Expected, string Actual)> differences = new();
+        List<(int Index, string Property, string Expected, string Actual)> differences = [];
         for (var i = 0; i < expectedDiagnostics.Count; i++)
         {
             var difference =

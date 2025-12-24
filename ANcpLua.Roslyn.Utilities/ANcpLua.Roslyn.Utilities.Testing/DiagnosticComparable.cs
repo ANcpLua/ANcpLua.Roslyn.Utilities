@@ -141,11 +141,15 @@ public sealed record DiagnosticComparable(
 
         // Skip message comparison if expected message is empty (allows testing just ID and severity)
         var expectedMessage = TextUtilities.NormalizeWhitespace(expected.Message);
-        if (!string.IsNullOrEmpty(expectedMessage))
+        switch (string.IsNullOrEmpty(expectedMessage))
         {
-            var actualMessage = TextUtilities.NormalizeWhitespace(actual.Message);
-            if (!string.Equals(expectedMessage, actualMessage, StringComparison.Ordinal))
-                return ("Message", expectedMessage, actualMessage);
+            case false:
+            {
+                var actualMessage = TextUtilities.NormalizeWhitespace(actual.Message);
+                if (!string.Equals(expectedMessage, actualMessage, StringComparison.Ordinal))
+                    return ("Message", expectedMessage, actualMessage);
+                break;
+            }
         }
 
         return null;

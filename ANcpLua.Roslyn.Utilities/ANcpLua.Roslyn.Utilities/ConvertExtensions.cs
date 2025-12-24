@@ -8,53 +8,53 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 public static class ConvertExtensions
 {
+    /// <summary>
+    ///     Converts the typed constant to a boolean.
+    /// </summary>
+    /// <param name="defaultValue"></param>
     /// <param name="typedConstant"></param>
-    extension(TypedConstant typedConstant)
+    /// <returns></returns>
+    public static bool ToBoolean(this TypedConstant typedConstant, bool defaultValue = false)
     {
-        /// <summary>
-        ///     Converts the typed constant to a boolean.
-        /// </summary>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public bool ToBoolean(bool defaultValue = false)
-        {
-            if (typedConstant.Value == null) return defaultValue;
+        if (typedConstant.Value == null) return defaultValue;
 
-            return (bool)typedConstant.Value!;
-        }
+        return (bool)typedConstant.Value!;
+    }
 
-        /// <summary>
-        ///     Converts the typed constant to a nullable boolean.
-        /// </summary>
-        /// <returns></returns>
-        public bool? ToNullableBoolean()
-        {
-            if (typedConstant.Value == null) return null;
+    /// <summary>
+    ///     Converts the typed constant to a nullable boolean.
+    /// </summary>
+    /// <param name="typedConstant"></param>
+    /// <returns></returns>
+    public static bool? ToNullableBoolean(this TypedConstant typedConstant)
+    {
+        if (typedConstant.Value == null) return null;
 
-            return (bool)typedConstant.Value!;
-        }
+        return (bool)typedConstant.Value!;
+    }
 
-        /// <summary>
-        ///     Converts the typed constant to an enum value.
-        /// </summary>
-        /// <param name="defaultValue"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public T ToEnum<T>(T defaultValue) where T : Enum
-        {
-            return (T)(typedConstant.Value ?? defaultValue);
-        }
+    /// <summary>
+    ///     Converts the typed constant to an enum value.
+    /// </summary>
+    /// <param name="defaultValue"></param>
+    /// <param name="typedConstant"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum
+    {
+        return (T)(typedConstant.Value ?? defaultValue);
+    }
 
-        /// <summary>
-        ///     Converts the typed constant to a nullable enum value.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public T? ToEnum<T>() where T : struct, Enum
-        {
-            if (typedConstant.Value == null) return null;
+    /// <summary>
+    ///     Converts the typed constant to a nullable enum value.
+    /// </summary>
+    /// <param name="typedConstant"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T? ToEnum<T>(this TypedConstant typedConstant) where T : struct, Enum
+    {
+        if (typedConstant.Value == null) return null;
 
-            return (T)typedConstant.Value;
-        }
+        return (T)typedConstant.Value;
     }
 }
