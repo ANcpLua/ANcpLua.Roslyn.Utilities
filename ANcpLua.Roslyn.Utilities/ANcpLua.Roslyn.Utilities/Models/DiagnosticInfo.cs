@@ -17,25 +17,33 @@ public readonly record struct DiagnosticInfo(
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0)
-        => new(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument from a node.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0)
-        => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args)
-        => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([.. args]));
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([.. args]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with no arguments.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location)
-        => new(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
+    }
 
     /// <summary>
     ///     Creates the <see cref="Diagnostic" /> from this info.

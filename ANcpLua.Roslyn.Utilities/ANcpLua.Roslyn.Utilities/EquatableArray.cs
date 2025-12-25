@@ -18,7 +18,7 @@ namespace ANcpLua.Roslyn.Utilities;
 public static class EquatableArray
 {
     /// <summary>
-    ///     Creates an <see cref="EquatableArray{T}" /> instance from a given <see cref="ImmutableArray{T}" />.
+    ///     Creates an <see cref="EquatableArray{T}" /> instance from a given <see cref="ImmutableArray" />.
     /// </summary>
     /// <typeparam name="T">The type of items in the input array.</typeparam>
     /// <param name="array">The input <see cref="ImmutableArray{T}" /> instance.</param>
@@ -165,9 +165,9 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
     }
 
     /// <summary>
-    ///     Gets an <see cref="ImmutableArray{T}.Enumerator" /> value to traverse items in the current array.
+    ///     Gets an <see cref="Dictionary{TKey,TValue}.Enumerator" /> value to traverse items in the current array.
     /// </summary>
-    /// <returns>An <see cref="ImmutableArray{T}.Enumerator" /> value to traverse items in the current array.</returns>
+    /// <returns>An <see cref="Dictionary{TKey,TValue}.Enumerator" /> value to traverse items in the current array.</returns>
     public ImmutableArray<T>.Enumerator GetEnumerator()
     {
         return AsImmutableArray().GetEnumerator();

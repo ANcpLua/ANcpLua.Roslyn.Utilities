@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 
@@ -21,7 +22,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     </para>
 /// </remarks>
 /// <param name="Id">The diagnostic ID (e.g., "CS0001", "GEN001").</param>
-/// <param name="Severity">The diagnostic severity: <see cref="DiagnosticSeverity.Error" />, Warning, Info, or Hidden.</param>
+/// <param name="Severity">The diagnostic severity: <see cref="JSType.Error" />, Warning, Info, or Hidden.</param>
 /// <param name="Path">The normalized file path, or empty string if no source location.</param>
 /// <param name="Line">The 1-based line number, or 0 if no source location.</param>
 /// <param name="Column">The 1-based column number, or 0 if no source location.</param>
@@ -30,11 +31,11 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     <code>
 /// // Convert actual diagnostic
 /// var actual = DiagnosticComparable.FromDiagnostic(diagnostic);
-///
+/// 
 /// // Convert expected result
 /// var expected = DiagnosticComparable.FromResult(
 ///     new DiagnosticResult("GEN001", DiagnosticSeverity.Error));
-///
+/// 
 /// // Find differences
 /// var diff = DiagnosticComparable.FindFirstPropertyDifference(expected, actual);
 /// </code>

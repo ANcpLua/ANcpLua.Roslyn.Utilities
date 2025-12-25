@@ -8,6 +8,11 @@ using AwesomeAssertions.Primitives;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
+using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
+using FileLinePositionSpan = Microsoft.CodeAnalysis.FileLinePositionSpan;
+using GeneratedSourceResult = Microsoft.CodeAnalysis.GeneratedSourceResult;
+using GeneratorDriverRunResult = Microsoft.CodeAnalysis.GeneratorDriverRunResult;
+using Location = Microsoft.CodeAnalysis.Location;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
@@ -17,7 +22,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <remarks>
 ///     <para>
 ///         This class extends AwesomeAssertions to provide specialized assertion capabilities for
-///         Roslyn <see cref="IIncrementalGenerator" /> implementations. These assertions are designed
+///         Roslyn <see cref="Microsoft.CodeAnalysis.IIncrementalGenerator" /> implementations. These assertions are designed
 ///         to produce clear, actionable failure messages that help diagnose generator issues quickly.
 ///     </para>
 ///     <para>
@@ -38,7 +43,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///             <item>
 ///                 <description>
 ///                     Diagnostic validation via <see cref="DiagnosticCollectionAssertions" /> - asserting that
-///                     generators report correct <see cref="Diagnostic" /> instances
+///                     generators report correct <see cref="Microsoft.CodeAnalysis.Diagnostic" /> instances
 ///                 </description>
 ///             </item>
 ///         </list>
@@ -81,7 +86,7 @@ public static class GeneratorTestAssertions
 
     /// <summary>
     ///     Returns a <see cref="GeneratorRunResultAssertions" /> object that can be used to assert
-    ///     the current <see cref="GeneratorDriverRunResult" />.
+    ///     the current <see cref="Microsoft.CodeAnalysis.GeneratorDriverRunResult" />.
     /// </summary>
     /// <param name="subject">The generator run result to assert on.</param>
     /// <returns>An assertion object for fluent chaining.</returns>
@@ -104,7 +109,7 @@ public static class GeneratorTestAssertions
 
     /// <summary>
     ///     Returns a <see cref="GeneratedSourceAssertions" /> object that can be used to assert
-    ///     the current <see cref="GeneratedSourceResult" />.
+    ///     the current <see cref="Microsoft.CodeAnalysis.GeneratedSourceResult" />.
     /// </summary>
     /// <param name="subject">The generated source result to assert on.</param>
     /// <returns>An assertion object for fluent chaining.</returns>
@@ -120,7 +125,7 @@ public static class GeneratorTestAssertions
     }
 
     /// <summary>
-    ///     Asserts that the object (expected to be a <see cref="Location" />) is at the specified location.
+    ///     Asserts that the object (expected to be a <see cref="Microsoft.CodeAnalysis.Location" />) is at the specified location.
     /// </summary>
     /// <param name="expected">The expected location to compare against.</param>
     /// <param name="because">
@@ -129,7 +134,7 @@ public static class GeneratorTestAssertions
     /// </param>
     /// <param name="becauseArgs">Zero or more objects to format using the placeholders in <paramref name="because" />.</param>
     /// <param name="assertions">The object assertions instance.</param>
-    /// <returns>An <see cref="AndConstraint{T}" /> for chaining further assertions.</returns>
+    /// <returns>An <see cref="AndConstraint{TParent}" /> for chaining further assertions.</returns>
     /// <remarks>
     ///     This assertion compares source locations including file path, line, and column.
     ///     It handles both in-source and metadata locations appropriately.

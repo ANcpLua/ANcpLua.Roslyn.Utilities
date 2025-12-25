@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-/// Engine for executing generator tests.
+///     Engine for executing generator tests.
 /// </summary>
 /// <typeparam name="TGenerator">The generator type to test.</typeparam>
 public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrementalGenerator, new()
@@ -20,7 +20,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
         new(TestConfiguration.LanguageVersion, DocumentationMode.Diagnose);
 
     /// <summary>
-    /// Executes the generator twice with the same source to test caching.
+    ///     Executes the generator twice with the same source to test caching.
     /// </summary>
     /// <param name="source">The source code to compile.</param>
     /// <param name="trackSteps">Whether to track pipeline steps.</param>
@@ -48,7 +48,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     }
 
     /// <summary>
-    /// Creates a compilation from source code.
+    ///     Creates a compilation from source code.
     /// </summary>
     /// <param name="source">The source code to compile.</param>
     /// <returns>The compiled Compilation.</returns>

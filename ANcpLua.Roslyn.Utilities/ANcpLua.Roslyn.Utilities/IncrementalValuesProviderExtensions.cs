@@ -232,7 +232,8 @@ public static class IncrementalValuesProviderExtensions
     /// <typeparam name="TResult"></typeparam>
     /// <typeparam name="TSource"></typeparam>
     /// <returns></returns>
-    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
+    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
+        this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
         string id = "SRE001")
     {
@@ -270,7 +271,8 @@ public static class IncrementalValuesProviderExtensions
     /// <typeparam name="TResult"></typeparam>
     /// <typeparam name="TSource"></typeparam>
     /// <returns></returns>
-    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(this IncrementalValuesProvider<TSource> source, Func<TSource, TResult> selector,
+    public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
+        this IncrementalValuesProvider<TSource> source, Func<TSource, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
         string id = "SRE001")
     {

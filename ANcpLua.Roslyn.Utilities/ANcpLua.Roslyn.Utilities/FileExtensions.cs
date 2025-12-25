@@ -23,17 +23,11 @@ public static class FileExtensions
         if (File.Exists(filePath))
         {
             var existingContent = File.ReadAllText(filePath);
-            if (string.Equals(existingContent, newContent, StringComparison.Ordinal))
-            {
-                return false; // No change needed
-            }
+            if (string.Equals(existingContent, newContent, StringComparison.Ordinal)) return false; // No change needed
         }
 
         var directory = Path.GetDirectoryName(filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
         File.WriteAllText(filePath, newContent);
         return true;

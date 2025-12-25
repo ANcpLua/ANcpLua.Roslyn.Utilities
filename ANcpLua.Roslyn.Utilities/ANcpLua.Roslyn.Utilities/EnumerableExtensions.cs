@@ -44,12 +44,8 @@ public static class EnumerableExtensions
             yield break;
 
         foreach (var item in source)
-        {
-            foreach (var result in selector(item))
-            {
-                yield return result;
-            }
-        }
+        foreach (var result in selector(item))
+            yield return result;
     }
 
     /// <summary>
@@ -84,10 +80,8 @@ public static class EnumerableExtensions
     {
         var seen = new HashSet<T>();
         foreach (var item in source)
-        {
             if (!seen.Add(item))
                 return true;
-        }
 
         return false;
     }
@@ -104,10 +98,8 @@ public static class EnumerableExtensions
     {
         var seen = new HashSet<TKey>();
         foreach (var item in source)
-        {
             if (!seen.Add(keySelector(item)))
                 return true;
-        }
 
         return false;
     }
@@ -126,9 +118,7 @@ public static class EnumerableExtensions
     {
         var seen = new HashSet<TKey>();
         foreach (var item in source)
-        {
             if (seen.Add(keySelector(item)))
                 yield return item;
-        }
     }
 }

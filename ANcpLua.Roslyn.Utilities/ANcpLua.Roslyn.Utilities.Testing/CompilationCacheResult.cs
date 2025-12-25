@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 

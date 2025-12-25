@@ -16,28 +16,15 @@ public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
     /// <inheritdoc />
     public bool Equals(EquatableMessageArgs other)
     {
-        if (Args.IsDefault && other.Args.IsDefault)
-        {
-            return true;
-        }
+        if (Args.IsDefault && other.Args.IsDefault) return true;
 
-        if (Args.IsDefault || other.Args.IsDefault)
-        {
-            return false;
-        }
+        if (Args.IsDefault || other.Args.IsDefault) return false;
 
-        if (Args.Length != other.Args.Length)
-        {
-            return false;
-        }
+        if (Args.Length != other.Args.Length) return false;
 
         for (int i = 0; i < Args.Length; i++)
-        {
             if (!Equals(Args[i], other.Args[i]))
-            {
                 return false;
-            }
-        }
 
         return true;
     }
@@ -45,18 +32,12 @@ public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        if (Args.IsDefault)
-        {
-            return 0;
-        }
+        if (Args.IsDefault) return 0;
 
         unchecked
         {
             var hash = 17;
-            foreach (var arg in Args)
-            {
-                hash = (hash * 31) + (arg?.GetHashCode() ?? 0);
-            }
+            foreach (var arg in Args) hash = hash * 31 + (arg?.GetHashCode() ?? 0);
 
             return hash;
         }

@@ -24,25 +24,21 @@ public static class CompilationExtensions
     }
 
     /// <summary>
-    ///     Checks whether or not a type with a specified metadata name is accessible from a given <see cref="Compilation" /> instance.
+    ///     Checks whether or not a type with a specified metadata name is accessible from a given <see cref="Compilation" />
+    ///     instance.
     /// </summary>
     /// <param name="compilation">The <see cref="Compilation" /> to consider for analysis.</param>
     /// <param name="fullyQualifiedMetadataName">The fully-qualified metadata type name to find.</param>
     /// <returns>Whether a type with the specified metadata name can be accessed from the given compilation.</returns>
-    public static bool HasAccessibleTypeWithMetadataName(this Compilation compilation, string fullyQualifiedMetadataName)
+    public static bool HasAccessibleTypeWithMetadataName(this Compilation compilation,
+        string fullyQualifiedMetadataName)
     {
         if (compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is INamedTypeSymbol typeSymbol)
-        {
             return compilation.IsSymbolAccessibleWithin(typeSymbol, compilation.Assembly);
-        }
 
         foreach (INamedTypeSymbol currentTypeSymbol in compilation.GetTypesByMetadataName(fullyQualifiedMetadataName))
-        {
             if (compilation.IsSymbolAccessibleWithin(currentTypeSymbol, compilation.Assembly))
-            {
                 return true;
-            }
-        }
 
         return false;
     }

@@ -2,6 +2,7 @@ using System.Threading;
 using AwesomeAssertions.Execution;
 using AwesomeAssertions.Formatting;
 using Microsoft.CodeAnalysis;
+using Formatter = AwesomeAssertions.Formatting.Formatter;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
@@ -42,7 +43,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     <code>
 /// // Formatters are initialized automatically, but can be called explicitly:
 /// TestFormatters.Initialize();
-/// 
+///
 /// // Apply formatter settings to an assertion scope:
 /// using var scope = new AssertionScope("My Generator");
 /// TestFormatters.ApplyToScope(scope);
@@ -132,7 +133,7 @@ public static class TestFormatters
     ///     <code>
     /// using var scope = new AssertionScope("Generator Caching Validation");
     /// TestFormatters.ApplyToScope(scope);
-    /// 
+    ///
     /// // Assertions within this scope will have the formatting options applied
     /// report.Should().BeValidAndCached();
     /// </code>

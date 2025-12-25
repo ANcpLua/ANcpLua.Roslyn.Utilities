@@ -33,7 +33,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     {
 ///         // Only if you need EmbeddedAttribute in the target compilation
 ///         EmbeddedAttributeRegistrar.Register(context);
-///
+/// 
 ///         // ... rest of generator setup
 ///     }
 /// }

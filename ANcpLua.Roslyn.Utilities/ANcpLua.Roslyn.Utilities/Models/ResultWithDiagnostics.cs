@@ -46,7 +46,8 @@ public static class ResultWithDiagnosticsExtensions
     /// <param name="result"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result, ImmutableArray<Diagnostic> diagnostics)
+    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result,
+        ImmutableArray<Diagnostic> diagnostics)
     {
         return new ResultWithDiagnostics<T>(result, diagnostics.AsEquatableArray());
     }

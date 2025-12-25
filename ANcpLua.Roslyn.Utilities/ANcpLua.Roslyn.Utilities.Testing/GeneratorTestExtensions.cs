@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using System.Threading.Tasks;
 using AwesomeAssertions;
@@ -68,7 +69,7 @@ public static class GeneratorTestExtensions
     ///     Creates a <see cref="DiagnosticResult" /> with the specified ID and severity.
     /// </summary>
     /// <param name="id">The diagnostic ID (e.g., "GEN001").</param>
-    /// <param name="severity">The expected severity. Defaults to <see cref="DiagnosticSeverity.Error" />.</param>
+    /// <param name="severity">The expected severity. Defaults to <see cref="JSType.Error" />.</param>
     /// <returns>A new <see cref="DiagnosticResult" /> for use in diagnostic assertions.</returns>
     /// <remarks>
     ///     This is a convenience factory method that makes test code more readable.

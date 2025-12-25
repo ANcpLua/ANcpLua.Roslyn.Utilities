@@ -4,10 +4,10 @@ Reusable utilities and fluent testing framework for Roslyn incremental source ge
 
 ## Packages
 
-| Package | Description | Target |
-|---------|-------------|--------|
-| [`ANcpLua.Roslyn.Utilities`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities) | Core utilities for incremental generators | netstandard2.0 |
-| [`ANcpLua.Roslyn.Utilities.Testing`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Testing) | Fluent testing framework | net10.0 |
+| Package                                                                                               | Description                               | Target         |
+|-------------------------------------------------------------------------------------------------------|-------------------------------------------|----------------|
+| [`ANcpLua.Roslyn.Utilities`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities)                 | Core utilities for incremental generators | netstandard2.0 |
+| [`ANcpLua.Roslyn.Utilities.Testing`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Testing) | Fluent testing framework                  | net10.0        |
 
 ## Installation
 

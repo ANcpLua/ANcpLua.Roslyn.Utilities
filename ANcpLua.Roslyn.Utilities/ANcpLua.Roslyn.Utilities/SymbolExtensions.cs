@@ -32,12 +32,8 @@ public static class SymbolExtensions
     public static bool HasAttribute(this ISymbol symbol, string fullyQualifiedAttributeName)
     {
         foreach (var attribute in symbol.GetAttributes())
-        {
             if (attribute.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName)
-            {
                 return true;
-            }
-        }
 
         return false;
     }
@@ -48,12 +44,8 @@ public static class SymbolExtensions
     public static AttributeData? GetAttribute(this ISymbol symbol, string fullyQualifiedAttributeName)
     {
         foreach (var attribute in symbol.GetAttributes())
-        {
             if (attribute.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName)
-            {
                 return attribute;
-            }
-        }
 
         return null;
     }
@@ -65,10 +57,7 @@ public static class SymbolExtensions
     {
         while (symbol is not null)
         {
-            if (symbol.ToDisplayString() == fullyQualifiedTypeName)
-            {
-                return true;
-            }
+            if (symbol.ToDisplayString() == fullyQualifiedTypeName) return true;
 
             symbol = symbol.BaseType;
         }
@@ -82,12 +71,8 @@ public static class SymbolExtensions
     public static bool ImplementsInterface(this ITypeSymbol symbol, string fullyQualifiedInterfaceName)
     {
         foreach (var iface in symbol.AllInterfaces)
-        {
             if (iface.ToDisplayString() == fullyQualifiedInterfaceName)
-            {
                 return true;
-            }
-        }
 
         return false;
     }
@@ -108,14 +93,12 @@ public static class SymbolExtensions
     {
         IMethodSymbol? result = null;
         foreach (var member in type.GetMembers(name))
-        {
             if (member is IMethodSymbol method)
             {
                 if (result is not null)
                     return null; // Multiple methods with same name
                 result = method;
             }
-        }
 
         return result;
     }
@@ -126,10 +109,8 @@ public static class SymbolExtensions
     public static IPropertySymbol? GetProperty(this INamedTypeSymbol type, string name)
     {
         foreach (var member in type.GetMembers(name))
-        {
             if (member is IPropertySymbol property)
                 return property;
-        }
 
         return null;
     }
@@ -140,10 +121,8 @@ public static class SymbolExtensions
     public static bool ExplicitlyImplements(this IMethodSymbol method, IMethodSymbol interfaceMethod)
     {
         foreach (var impl in method.ExplicitInterfaceImplementations)
-        {
             if (SymbolEqualityComparer.Default.Equals(impl, interfaceMethod))
                 return true;
-        }
 
         return false;
     }
