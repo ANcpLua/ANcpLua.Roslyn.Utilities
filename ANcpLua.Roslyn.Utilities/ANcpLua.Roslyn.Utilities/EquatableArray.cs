@@ -92,7 +92,7 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
     public bool IsDefaultOrEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _array is null || _array.Length == 0;
+        get => _array is null || _array.Length is 0;
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
     public bool IsEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _array is null || _array.Length == 0;
+        get => _array is null || _array.Length is 0;
     }
 
     /// <summary>

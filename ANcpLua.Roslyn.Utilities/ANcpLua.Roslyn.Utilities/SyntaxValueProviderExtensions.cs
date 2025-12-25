@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Immutable;
 using System.Reflection;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
@@ -69,12 +69,24 @@ public static class SyntaxValueProviderExtensions
         this ClassDeclarationSyntax classSyntax,
         AttributeData attribute)
     {
-        var name = attribute.ConstructorArguments.ElementAtOrDefault(0).Value?.ToString();
+        var constructorArgs = attribute.ConstructorArguments;
+        var name = constructorArgs.Length > 0 ? constructorArgs[0].Value?.ToString() : null;
 
-        return classSyntax.AttributeLists
-            .SelectMany(static x => x.Attributes)
-            .FirstOrDefault(x =>
-                x.ArgumentList?.Arguments.FirstOrDefault()?.ToString().Trim('"').RemoveNameof() == name);
+        foreach (var attributeList in classSyntax.AttributeLists)
+        {
+            foreach (var attr in attributeList.Attributes)
+            {
+                var arguments = attr.ArgumentList?.Arguments;
+                if (arguments is not { Count: > 0 })
+                    continue;
+
+                var firstArg = arguments.Value[0].ToString().Trim('"').RemoveNameof();
+                if (firstArg == name)
+                    return attr;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -87,19 +99,30 @@ public static class SyntaxValueProviderExtensions
             this IncrementalValuesProvider<GeneratorAttributeSyntaxContext> source)
     {
         return source
-            .SelectMany(static (context, _) => context.Attributes
-                .Where(x =>
-                {
-                    var classSyntax = (ClassDeclarationSyntax)context.TargetNode;
-                    var attributeSyntax = classSyntax.TryFindAttributeSyntax(x);
+            .SelectMany(static (context, _) => FilterAttributesOfCurrentClass(context));
+    }
 
-                    return attributeSyntax != null;
-                })
-                .Select(x => new ClassWithAttributesContext(
+    private static ImmutableArray<ClassWithAttributesContext> FilterAttributesOfCurrentClass(
+        GeneratorAttributeSyntaxContext context)
+    {
+        var classSyntax = (ClassDeclarationSyntax)context.TargetNode;
+        var targetSymbol = (INamedTypeSymbol)context.TargetSymbol;
+        var builder = ImmutableArray.CreateBuilder<ClassWithAttributesContext>();
+
+        foreach (var attribute in context.Attributes)
+        {
+            var attributeSyntax = classSyntax.TryFindAttributeSyntax(attribute);
+            if (attributeSyntax is not null)
+            {
+                builder.Add(new ClassWithAttributesContext(
                     context.SemanticModel,
-                    [x],
-                    (ClassDeclarationSyntax)context.TargetNode,
-                    (INamedTypeSymbol)context.TargetSymbol)));
+                    [attribute],
+                    classSyntax,
+                    targetSymbol));
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
     /// <summary>
@@ -115,6 +138,6 @@ public static class SyntaxValueProviderExtensions
 
         return context.AnalyzerConfigOptionsProvider
             .Select<AnalyzerConfigOptionsProvider, string>((options, _) =>
-                options.GetGlobalOption("Version", "RecognizeFramework") ?? defaultVersion);
+                options.GetGlobalProperty("Version", "RecognizeFramework") ?? defaultVersion);
     }
 }

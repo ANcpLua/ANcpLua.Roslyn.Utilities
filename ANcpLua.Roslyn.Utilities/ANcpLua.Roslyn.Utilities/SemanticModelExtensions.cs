@@ -51,6 +51,6 @@ public static class SemanticModelExtensions
         CancellationToken cancellationToken = default)
     {
         var optional = model.GetConstantValue(node, cancellationToken);
-        return optional.HasValue && optional.Value is null;
+        return optional is { HasValue: true, Value: null };
     }
 }

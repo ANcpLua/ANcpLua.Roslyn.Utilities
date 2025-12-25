@@ -16,7 +16,7 @@ public static class ConvertExtensions
     /// <returns></returns>
     public static bool ToBoolean(this TypedConstant typedConstant, bool defaultValue = false)
     {
-        if (typedConstant.Value == null) return defaultValue;
+        if (typedConstant.Value is null) return defaultValue;
 
         return (bool)typedConstant.Value!;
     }
@@ -28,7 +28,7 @@ public static class ConvertExtensions
     /// <returns></returns>
     public static bool? ToNullableBoolean(this TypedConstant typedConstant)
     {
-        if (typedConstant.Value == null) return null;
+        if (typedConstant.Value is null) return null;
 
         return (bool)typedConstant.Value!;
     }
@@ -53,7 +53,7 @@ public static class ConvertExtensions
     /// <returns></returns>
     public static T? ToEnum<T>(this TypedConstant typedConstant) where T : struct, Enum
     {
-        if (typedConstant.Value == null) return null;
+        if (typedConstant.Value is null) return null;
 
         return (T)typedConstant.Value;
     }

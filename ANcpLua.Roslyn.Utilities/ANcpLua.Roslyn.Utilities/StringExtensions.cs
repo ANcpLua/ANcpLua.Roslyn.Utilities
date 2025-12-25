@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -162,12 +162,36 @@ public static class StringExtensions
     {
         text = text ?? throw new ArgumentNullException(nameof(text));
 
-        return string.Join(
-            "\n",
-            text
-                .NormalizeLineEndings()
-                .Split(Separator, StringSplitOptions.None)
-                .Where(static line => line.Length is 0 || !line.All(char.IsWhiteSpace)));
+        var lines = text.NormalizeLineEndings().Split(Separator, StringSplitOptions.None);
+        var result = new StringBuilder();
+        var first = true;
+
+        foreach (var line in lines)
+        {
+            if (!IsBlankLine(line))
+            {
+                if (!first)
+                    result.Append('\n');
+                result.Append(line);
+                first = false;
+            }
+        }
+
+        return result.ToString();
+
+        static bool IsBlankLine(string line)
+        {
+            if (line.Length == 0)
+                return false;
+
+            foreach (var c in line)
+            {
+                if (!char.IsWhiteSpace(c))
+                    return false;
+            }
+
+            return true;
+        }
     }
 
     /// <summary>
@@ -184,7 +208,7 @@ public static class StringExtensions
         var newText = text
             .Replace("\r\n", "\n")
             .Replace("\r", "\n");
-        if (newLine != null) newText = newText.Replace("\n", newLine);
+        if (newLine is not null) newText = newText.Replace("\n", newLine);
 
         return newText;
     }

@@ -37,7 +37,7 @@ public static class SourceProductionContextExtensions
         StringBuilder sourceBuilder,
         string? generatorName = null)
     {
-        AddSourceWithHeader(context, hintName, sourceBuilder.ToString(), generatorName);
+        context.AddSourceWithHeader(hintName, sourceBuilder.ToString(), generatorName);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class SourceProductionContextExtensions
         exception = exception ?? throw new ArgumentNullException(nameof(exception));
         id = id ?? throw new ArgumentNullException(nameof(id));
 
-        if (prefix != null) id = $"{prefix}{id}";
+        if (prefix is not null) id = $"{prefix}{id}";
 
         return Diagnostic.Create(
             new DiagnosticDescriptor(

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -20,7 +19,11 @@ public static class AttributeDataExtensions
     {
         attributeData = attributeData ?? throw new ArgumentNullException(nameof(attributeData));
 
-        return attributeData.AttributeClass?.TypeArguments.ElementAtOrDefault(position);
+        var typeArguments = attributeData.AttributeClass?.TypeArguments;
+        if (typeArguments is null || position < 0 || position >= typeArguments.Value.Length)
+            return null;
+
+        return typeArguments.Value[position];
     }
 
     /// <summary>
@@ -34,8 +37,12 @@ public static class AttributeDataExtensions
     {
         attributeData = attributeData ?? throw new ArgumentNullException(nameof(attributeData));
 
-        return attributeData.NamedArguments
-            .FirstOrDefault(pair => pair.Key == name)
-            .Value;
+        foreach (var pair in attributeData.NamedArguments)
+        {
+            if (pair.Key == name)
+                return pair.Value;
+        }
+
+        return default;
     }
 }

@@ -33,10 +33,10 @@ public static class CompilationExtensions
     public static bool HasAccessibleTypeWithMetadataName(this Compilation compilation,
         string fullyQualifiedMetadataName)
     {
-        if (compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is INamedTypeSymbol typeSymbol)
+        if (compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is { } typeSymbol)
             return compilation.IsSymbolAccessibleWithin(typeSymbol, compilation.Assembly);
 
-        foreach (INamedTypeSymbol currentTypeSymbol in compilation.GetTypesByMetadataName(fullyQualifiedMetadataName))
+        foreach (var currentTypeSymbol in compilation.GetTypesByMetadataName(fullyQualifiedMetadataName))
             if (compilation.IsSymbolAccessibleWithin(currentTypeSymbol, compilation.Assembly))
                 return true;
 
