@@ -8,11 +8,6 @@ using AwesomeAssertions.Primitives;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
-using Diagnostic = Microsoft.CodeAnalysis.Diagnostic;
-using FileLinePositionSpan = Microsoft.CodeAnalysis.FileLinePositionSpan;
-using GeneratedSourceResult = Microsoft.CodeAnalysis.GeneratedSourceResult;
-using GeneratorDriverRunResult = Microsoft.CodeAnalysis.GeneratorDriverRunResult;
-using Location = Microsoft.CodeAnalysis.Location;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 

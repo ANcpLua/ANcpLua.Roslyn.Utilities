@@ -2,7 +2,6 @@ using System.Threading;
 using AwesomeAssertions.Execution;
 using AwesomeAssertions.Formatting;
 using Microsoft.CodeAnalysis;
-using Formatter = AwesomeAssertions.Formatting.Formatter;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 

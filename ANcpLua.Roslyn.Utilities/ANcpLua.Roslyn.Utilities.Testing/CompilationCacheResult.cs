@@ -195,16 +195,40 @@ public class CompilationCacheResult
 
     private List<(SyntaxTree First, SyntaxTree Second)> GetUnchangedTrees()
     {
-        return _firstGeneratedTrees
-            .Join(_secondGeneratedTrees, GetHintName, GetHintName, (first, second) => (first, second))
-            .Where(pair => ReferenceEquals(pair.first, pair.second)).ToList();
+        var secondByHint = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
+        foreach (var tree in _secondGeneratedTrees)
+            secondByHint[GetHintName(tree)] = tree;
+
+        List<(SyntaxTree First, SyntaxTree Second)> result = [];
+        foreach (var first in _firstGeneratedTrees)
+        {
+            if (secondByHint.TryGetValue(GetHintName(first), out var second) &&
+                ReferenceEquals(first, second))
+            {
+                result.Add((first, second));
+            }
+        }
+
+        return result;
     }
 
     private List<(SyntaxTree First, SyntaxTree Second)> GetChangedTrees()
     {
-        return _firstGeneratedTrees
-            .Join(_secondGeneratedTrees, GetHintName, GetHintName, (first, second) => (first, second))
-            .Where(pair => !ReferenceEquals(pair.first, pair.second)).ToList();
+        var secondByHint = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
+        foreach (var tree in _secondGeneratedTrees)
+            secondByHint[GetHintName(tree)] = tree;
+
+        List<(SyntaxTree First, SyntaxTree Second)> result = [];
+        foreach (var first in _firstGeneratedTrees)
+        {
+            if (secondByHint.TryGetValue(GetHintName(first), out var second) &&
+                !ReferenceEquals(first, second))
+            {
+                result.Add((first, second));
+            }
+        }
+
+        return result;
     }
 
     private static List<SyntaxTree> ExtractGeneratedTrees(Compilation compilation, GeneratorDriverRunResult runResult)

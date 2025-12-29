@@ -170,6 +170,8 @@ internal static class ForbiddenTypeAnalyzer
 /// </summary>
 public sealed class GeneratorCachingReport
 {
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
     private GeneratorCachingReport(string generatorName, IReadOnlyList<GeneratorStepAnalysis> observableSteps,
         IReadOnlyList<GeneratorStepAnalysis> sinkSteps, IReadOnlyList<ForbiddenTypeViolation> violations,
         bool producedOutput)
@@ -340,7 +342,7 @@ public sealed class GeneratorCachingReport
                 }),
                 machineIssues
             };
-            sb.AppendLine(JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+            sb.AppendLine(JsonSerializer.Serialize(payload, JsonOptions));
         }
 
         return sb.ToString();
