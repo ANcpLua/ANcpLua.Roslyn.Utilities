@@ -6,7 +6,6 @@
         <Description>Fluent testing framework for Roslyn incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>roslyn;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
-        <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json</RestoreAdditionalProjectSources>
         <!-- Testing-specific warnings (common warnings inherited from Directory.Build.props) -->
         <NoWarn>$(NoWarn);NU1903;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859</NoWarn>
     </PropertyGroup>
