@@ -8,7 +8,7 @@
         <IsPackable>true</IsPackable>
         <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
-        <Version>1.1.0</Version>
+        <Version>1.2.1</Version>
         <Authors>Alexander Nachtmann</Authors>
         <Description>Fluent testing framework for Roslyn incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -20,12 +20,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AwesomeAssertions" Version="9.3.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.3-beta1.24423.1"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.3-beta1.24423.1"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0"/>
-        <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="1.8.4"/>
+        <PackageReference Include="AwesomeAssertions"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
+        <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
     </ItemGroup>
 
     <ItemGroup>

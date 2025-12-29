@@ -8,7 +8,7 @@
         <IsPackable>true</IsPackable>
         <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
-        <Version>1.1.0</Version>
+        <Version>1.2.1</Version>
         <Authors>Alexander Nachtmann</Authors>
         <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -19,9 +19,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
-        <PackageReference Include="PolySharp" Version="1.15.0">
+        <PackageReference Include="Microsoft.Bcl.HashCode"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <PackageReference Include="PolySharp">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
