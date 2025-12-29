@@ -1,21 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <Nullable>enable</Nullable>
-        <NoWarn>$(NoWarn);NU1701;CA1034;CA1307;CA2208;CA1031;CA1062</NoWarn>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <IsPackable>true</IsPackable>
         <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
-        <Version>1.2.1</Version>
-        <Authors>Alexander Nachtmann</Authors>
         <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
-        <RepositoryUrl>https://github.com/ANcpLua/ANcpLua.Roslyn.Utilities</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/ANcpLua/ANcpLua.Roslyn.Utilities</PackageProjectUrl>
     </PropertyGroup>
 
     <ItemGroup>
