@@ -1,37 +1,34 @@
+[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities?label=NuGet&color=0891B2)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities/)
+[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities.Testing?label=Testing&color=059669)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Testing/)
+[![.NET Standard 2.0](https://img.shields.io/badge/.NET%20Standard-2.0-512BD4)](https://dotnet.microsoft.com/platform/dotnet-standard)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 # ANcpLua.Roslyn.Utilities
 
-Reusable utilities and fluent testing framework for Roslyn incremental source generators.
-
-## Packages
-
-| Package                                                                                               | Description                               | Target         |
-|-------------------------------------------------------------------------------------------------------|-------------------------------------------|----------------|
-| [`ANcpLua.Roslyn.Utilities`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities)                 | Core utilities for incremental generators | netstandard2.0 |
-| [`ANcpLua.Roslyn.Utilities.Testing`](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Testing) | Fluent testing framework                  | net10.0        |
+Utilities for building Roslyn incremental source generators with proper caching.
 
 ## Installation
 
-```bash
-# Core utilities for your generator project
+```shell
 dotnet add package ANcpLua.Roslyn.Utilities
-
-# Testing framework for your test project
-dotnet add package ANcpLua.Roslyn.Utilities.Testing
+dotnet add package ANcpLua.Roslyn.Utilities.Testing  # For tests
 ```
 
-## Core Utilities
+## Packages
 
-### EquatableArray<T>
+| Package | Target | Description |
+|---------|--------|-------------|
+| `ANcpLua.Roslyn.Utilities` | netstandard2.0 | Core utilities for incremental generators |
+| `ANcpLua.Roslyn.Utilities.Testing` | net10.0 | Fluent testing with caching validation |
 
-A value-equal immutable array wrapper essential for incremental generator caching:
+## Key APIs
+
+### EquatableArray&lt;T&gt;
+
+Value-equal array wrapper — essential for generator caching (ImmutableArray uses reference equality):
 
 ```csharp
-using ANcpLua.Roslyn.Utilities;
-
-// Convert ImmutableArray to EquatableArray for proper caching
-var items = myImmutableArray.AsEquatableArray();
-
-// Use in pipeline outputs - enables proper caching
+// Pipeline outputs need value equality for caching to work
 context.SyntaxProvider
     .ForAttributeWithMetadataName("MyAttribute", ...)
     .Select((ctx, _) => new MyModel { Items = GetItems(ctx).AsEquatableArray() });
@@ -40,148 +37,36 @@ context.SyntaxProvider
 ### Pipeline Extensions
 
 ```csharp
-using ANcpLua.Roslyn.Utilities;
-
-// Simplified attribute filtering for classes and records
+// Simplified attribute filtering for classes/records
 var provider = context.SyntaxProvider
     .ForAttributeWithMetadataNameOfClassesAndRecords("MyNamespace.MyAttribute");
 
-// Add generated sources with automatic file naming
+// Add sources with automatic file naming
 provider.Select(GenerateFile).AddSource(context);
-provider.Select(GenerateFiles).AddSources(context);
 
-// Collect as EquatableArray for proper caching
+// Collect with proper caching
 var collected = provider.CollectAsEquatableArray();
-
-// Exception handling with diagnostic reporting
-provider.SelectAndReportExceptions(Transform, context);
 ```
 
-### String Extensions
+### Testing
 
 ```csharp
-using ANcpLua.Roslyn.Utilities;
-
-// Convert to property/parameter names
-"userName".ToPropertyName();   // "UserName"
-"UserName".ToParameterName();  // "userName" (handles C# keywords)
-
-// Text processing for generated code
-source.TrimBlankLines();       // Remove whitespace-only lines
-source.NormalizeLineEndings();
-"MyNamespace.MyClass".ExtractNamespace();   // "MyNamespace"
-"MyNamespace.MyClass".ExtractSimpleName();  // "MyClass"
-"MyNamespace.MyClass".WithGlobalPrefix();   // "global::MyNamespace.MyClass"
-```
-
-### Models
-
-```csharp
-// Structured generator output
-record struct FileWithName(string Name, string Text);
-
-// Result with associated diagnostics
-record struct ResultWithDiagnostics<T>(T Result, EquatableArray<Diagnostic> Diagnostics);
-```
-
-## Testing Framework
-
-### Quick Start
-
-```csharp
-using ANcpLua.Roslyn.Utilities.Testing;
-
-[Fact]
-public async Task Generator_ProducesExpectedOutput()
-{
-    await """
-        [GenerateBuilder]
-        public class Person
-        {
-            public string Name { get; set; }
-        }
-        """.ShouldGenerate<MyGenerator>("Person.Builder.g.cs", """
-            public class PersonBuilder
-            {
-                public PersonBuilder WithName(string name) { ... }
-            }
-            """);
-}
-```
-
-### Testing Generated Output
-
-```csharp
-// Verify exact content
+// Verify generated output
 await source.ShouldGenerate<MyGenerator>("Output.g.cs", expectedContent);
 
-// Verify content contains substring
-await source.ShouldGenerate<MyGenerator>("Output.g.cs", "public class Foo", exactMatch: false);
-```
+// Verify diagnostics
+await source.ShouldHaveDiagnostics<MyGenerator>(
+    Diagnostic("GEN001", DiagnosticSeverity.Error));
 
-### Testing Diagnostics
-
-```csharp
-// Expect specific diagnostics
-await "public class Invalid { }".ShouldHaveDiagnostics<MyGenerator>(
-    GeneratorTestExtensions.Diagnostic("GEN001", DiagnosticSeverity.Error)
-        .WithMessage("Missing required attribute")
-);
-
-// Expect no diagnostics
-await "[Valid] public class Valid { }".ShouldHaveNoDiagnostics<MyGenerator>();
-```
-
-### Testing Caching
-
-Validate that your generator correctly caches intermediate results:
-
-```csharp
-// Validate all observable pipeline steps are cached
+// Validate caching (catches forbidden types: ISymbol, Compilation, SyntaxNode, etc.)
 await source.ShouldBeCached<MyGenerator>();
-
-// Validate specific steps
-await source.ShouldBeCached<MyGenerator>("TransformStep", "CollectStep");
 ```
 
-The caching test validates:
+## Related
 
-- **No forbidden types cached**: ISymbol, Compilation, SyntaxNode, SemanticModel, SyntaxTree
-- **Proper caching**: Pipeline steps produce Cached/Unchanged on second run
-
-### Configuration
-
-```csharp
-// Configure language version and references
-TestConfiguration.LanguageVersion = LanguageVersion.CSharp12;
-TestConfiguration.ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
-
-// Add additional references for your generator's attributes
-TestConfiguration.AdditionalReferences = [
-    MetadataReference.CreateFromFile(typeof(MyAttribute).Assembly.Location)
-];
-```
-
-### Direct Assertions
-
-For more control, use the assertion API directly on run results:
-
-```csharp
-// Assert on generator run results
-result.Should().HaveGeneratedSource("Output.g.cs")
-    .Which.Should().HaveContent(expectedContent);
-
-result.Should().HaveNoDiagnostics();
-result.Should().NotHaveForbiddenTypes();
-
-// Assert on caching report
-report.Should().BeValidAndCached(["TransformStep"]);
-```
+- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers) — Analyzers using these utilities
+- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk) — MSBuild SDK with embedded source generator helpers
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Contributing
-
-Issues and pull requests welcome at [GitHub](https://github.com/ANcpLua/ANcpLua.Roslyn.Utilities).
+[MIT](LICENSE)
