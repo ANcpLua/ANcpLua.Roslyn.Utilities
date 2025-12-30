@@ -4,6 +4,6 @@
     "rollForward": "latestMinor"
   },
   "msbuild-sdks": {
-    "ANcpLua.NET.Sdk": "*"
+    "ANcpLua.NET.Sdk": "1.3.5"
   }
 }
