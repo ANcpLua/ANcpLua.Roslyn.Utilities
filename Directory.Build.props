@@ -6,7 +6,7 @@
     <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
 
     <!-- Version - single source for all packages -->
-    <Version>1.2.5</Version>
+    <Version>1.2.6</Version>
 
     <!-- Common settings -->
     <LangVersion>latest</LangVersion>
