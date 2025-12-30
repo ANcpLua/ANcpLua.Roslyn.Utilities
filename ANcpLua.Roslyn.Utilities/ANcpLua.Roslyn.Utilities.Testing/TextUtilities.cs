@@ -1,5 +1,3 @@
-using System;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;

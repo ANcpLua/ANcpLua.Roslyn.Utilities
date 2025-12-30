@@ -63,6 +63,28 @@ public static class GeneratorTestAssertions
     }
 
     /// <summary>
+    ///     Returns a <see cref="GeneratorRunResultAssertions" /> object with attached source context.
+    /// </summary>
+    /// <param name="subject">The generator run result to assert on.</param>
+    /// <param name="originalSource">The input source code to include in failure reports.</param>
+    /// <returns>An assertion object for fluent chaining.</returns>
+    /// <remarks>
+    ///     Use this overload to include the original source code in failure reports.
+    ///     This makes debugging much easier as you can see exactly what input caused the failure.
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// var source = "public class Foo { }";
+    /// var result = driver.GetRunResult();
+    /// result.Should(source).HaveGeneratedSource("Foo.g.cs");
+    /// </code>
+    /// </example>
+    public static GeneratorRunResultAssertions Should(this GeneratorDriverRunResult subject, string originalSource)
+    {
+        return new GeneratorRunResultAssertions(subject, AssertionChain.GetOrCreate(), originalSource);
+    }
+
+    /// <summary>
     ///     Returns a <see cref="GeneratedSourceAssertions" /> object for the generated source.
     /// </summary>
     /// <param name="subject">The generated source result to assert on.</param>

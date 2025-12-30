@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Reflection;
 using ANcpLua.Roslyn.Utilities.Models;

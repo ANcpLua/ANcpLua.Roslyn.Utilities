@@ -1,5 +1,3 @@
-using System;
-using System.Text;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using AwesomeAssertions.Primitives;
@@ -11,8 +9,13 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     Contains assertions for <see cref="GeneratedSourceResult" /> instances.
 /// </summary>
 /// <remarks>
-///     This class provides assertions for validating the content of a single generated source file.
-///     It supports both exact matching and contains matching, with options for newline normalization.
+///     <para>
+///         This class provides assertions for validating the content of a single generated source file.
+///         It supports both exact matching and contains matching, with options for newline normalization.
+///     </para>
+///     <para>
+///         On failure, the full generated source content is automatically included in the error message.
+///     </para>
 /// </remarks>
 /// <example>
 ///     <code>
@@ -31,10 +34,32 @@ public sealed class
     /// <param name="chain">The assertion chain for error reporting.</param>
     public GeneratedSourceAssertions(GeneratedSourceResult subject, AssertionChain chain) : base(subject, chain)
     {
+        chain.AddReportable("Generated Source", BuildSourceContext);
     }
 
     /// <inheritdoc />
     protected override string Identifier => $"GeneratedSource[{Subject.HintName}]";
+
+    private string BuildSourceContext()
+    {
+        var content = Subject.SourceText.ToString();
+        var lines = content.Split('\n');
+        var lineCount = lines.Length;
+
+        StringBuilder sb = new();
+        sb.AppendLine();
+        sb.AppendLine($"─── {Subject.HintName} ({lineCount} lines, {content.Length} chars) ───");
+
+        // Show all lines with line numbers (up to 50 lines, then truncate)
+        const int maxLines = 50;
+        for (var i = 0; i < Math.Min(lineCount, maxLines); i++)
+            sb.AppendLine($"  {i + 1,4} │ {lines[i].TrimEnd()}");
+
+        if (lineCount > maxLines)
+            sb.AppendLine($"  ... ({lineCount - maxLines} more lines)");
+
+        return sb.ToString();
+    }
 
     /// <summary>
     ///     Asserts that the generated source has the expected content.

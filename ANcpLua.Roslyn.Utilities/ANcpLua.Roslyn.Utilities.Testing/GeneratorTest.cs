@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using Microsoft.CodeAnalysis;
@@ -135,9 +130,10 @@ public static class GeneratorTest
         using AssertionScope scope = new($"Generated file '{hintName}'");
         TestFormatters.ApplyToScope(scope);
 
-        var generated = firstRun.Should().HaveGeneratedSource(hintName).Which;
+        // Pass source to Should() for full "State of the World" context on failure
+        var generated = firstRun.Should(source).HaveGeneratedSource(hintName).Which;
         generated.Should().HaveContent(expectedContent, exactMatch, normalizeNewlines);
-        firstRun.Should().HaveNoDiagnostics();
+        firstRun.Should(source).HaveNoDiagnostics();
     }
 
     /// <summary>
@@ -182,10 +178,14 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, false);
+        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
 
         using AssertionScope scope = new("Diagnostics");
         TestFormatters.ApplyToScope(scope);
+
+        // Inject source context for failures
+        AssertionChain.GetOrCreate().AddReportable("Input Source",
+            () => GeneratorDiagnosticFormatter.Format(firstRun, source));
 
         var diagnostics = firstRun.Results.SelectMany(r => r.Diagnostics).ToList();
         diagnostics.BeEquivalentToDiagnostics(expected);
@@ -251,10 +251,14 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, false);
+        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
 
         using AssertionScope scope = new("Diagnostics");
         TestFormatters.ApplyToScope(scope);
+
+        // Inject source context for failures
+        AssertionChain.GetOrCreate().AddReportable("Generator Context",
+            () => GeneratorDiagnosticFormatter.Format(firstRun, source));
 
         var diagnostics = firstRun.Results.SelectMany(r => r.Diagnostics).ToList();
         var found = diagnostics.Any(d => d.Id == diagnosticId);
@@ -277,10 +281,14 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, false);
+        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
 
         using AssertionScope scope = new("Compilation");
         TestFormatters.ApplyToScope(scope);
+
+        // Inject source context for failures
+        AssertionChain.GetOrCreate().AddReportable("Generator Context",
+            () => GeneratorDiagnosticFormatter.Format(firstRun, source));
 
         var errors = firstRun.Results
             .SelectMany(r => r.Diagnostics)

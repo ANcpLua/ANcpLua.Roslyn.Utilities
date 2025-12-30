@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 
@@ -57,7 +54,9 @@ public sealed record ForbiddenTypeViolation(string StepName, Type ForbiddenType,
 ///                 </description>
 ///             </item>
 ///             <item>
-///                 <description>IOperation</description>
+///                 <description>
+///                     <see cref="IOperation" />
+///                 </description>
 ///             </item>
 ///         </list>
 ///     </para>
@@ -71,7 +70,7 @@ internal static class ForbiddenTypeAnalyzer
         typeof(SemanticModel),
         typeof(SyntaxNode),
         typeof(SyntaxTree),
-        Type.GetType("Microsoft.CodeAnalysis.IOperation, Microsoft.CodeAnalysis") ?? typeof(object)
+        typeof(IOperation)
     ];
 
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldCache = new();

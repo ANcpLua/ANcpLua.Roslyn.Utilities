@@ -1,5 +1,3 @@
-using System;
-using System.Text;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;

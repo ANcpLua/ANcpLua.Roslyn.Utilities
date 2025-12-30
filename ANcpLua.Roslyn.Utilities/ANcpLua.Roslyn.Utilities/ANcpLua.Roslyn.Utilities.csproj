@@ -1,24 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
-        <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
-        <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
-    </PropertyGroup>
+<Project Sdk="ANcpLua.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
+    <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
+    <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Bcl.HashCode"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
-        <PackageReference Include="PolySharp">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
+    <!-- Enable polyfills for netstandard2.0 -->
+    <InjectANcpLuaLanguageFeaturesPolyfills>true</InjectANcpLuaLanguageFeaturesPolyfills>
+    <InjectANcpLuaIndexRangePolyfills>true</InjectANcpLuaIndexRangePolyfills>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
-        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.HashCode"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>

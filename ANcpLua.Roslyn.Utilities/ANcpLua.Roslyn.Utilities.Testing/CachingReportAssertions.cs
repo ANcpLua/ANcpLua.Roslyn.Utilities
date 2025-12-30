@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using AwesomeAssertions.Primitives;
@@ -31,6 +28,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///             </item>
 ///         </list>
 ///     </para>
+///     <para>
+///         On failure, comprehensive context is automatically included showing all pipeline steps,
+///         their caching states, forbidden type violations, and timing information.
+///     </para>
 /// </remarks>
 /// <example>
 ///     <code>
@@ -48,10 +49,64 @@ public sealed class CachingReportAssertions : ReferenceTypeAssertions<GeneratorC
     /// <param name="chain">The assertion chain for error reporting.</param>
     public CachingReportAssertions(GeneratorCachingReport subject, AssertionChain chain) : base(subject, chain)
     {
+        chain.AddReportable("Caching Pipeline Overview", BuildPipelineOverview);
     }
 
     /// <inheritdoc />
     protected override string Identifier => $"CachingReport[{Subject?.GeneratorName}]";
+
+    private string BuildPipelineOverview()
+    {
+        if (Subject is null) return "(null report)";
+
+        StringBuilder sb = new();
+        sb.AppendLine();
+        sb.AppendLine($"╔══════════════════════════════════════════════════════════════╗");
+        sb.AppendLine($"║  CACHING PIPELINE: {Subject.GeneratorName,-41} ║");
+        sb.AppendLine($"╚══════════════════════════════════════════════════════════════╝");
+        sb.AppendLine();
+
+        // Summary
+        var totalSteps = Subject.ObservableSteps.Count;
+        var cachedSteps = Subject.ObservableSteps.Count(s => s.IsCachedSuccessfully);
+        var forbiddenCount = Subject.ForbiddenTypeViolations.Count;
+        sb.AppendLine($"  📊 Steps: {cachedSteps}/{totalSteps} cached | Forbidden types: {forbiddenCount} | Output: {(Subject.ProducedOutput ? "✓" : "✗")}");
+        sb.AppendLine();
+
+        // Forbidden type violations (critical - show first)
+        if (forbiddenCount > 0)
+        {
+            sb.AppendLine("─── 💥 FORBIDDEN TYPE VIOLATIONS ───");
+            foreach (var group in Subject.ForbiddenTypeViolations.GroupBy(v => v.StepName))
+            {
+                sb.AppendLine($"  Step '{group.Key}':");
+                foreach (var v in group)
+                    sb.AppendLine($"    ✗ {v.ForbiddenType.Name} at {v.Path}");
+            }
+            sb.AppendLine();
+        }
+
+        // Observable steps
+        sb.AppendLine("─── OBSERVABLE STEPS ───");
+        foreach (var step in Subject.ObservableSteps.OrderBy(s => s.StepName))
+        {
+            var icon = step.IsCachedSuccessfully ? "✓" : "✗";
+            var forbidden = step.HasForbiddenTypes ? " [FORBIDDEN]" : "";
+            sb.AppendLine($"  {icon} {step.StepName}: {step.FormatBreakdown()}{forbidden}");
+            sb.AppendLine($"      Time: {step.FormatPerformance()}");
+        }
+        sb.AppendLine();
+
+        // Sink steps (infrastructure)
+        if (Subject.SinkSteps.Count > 0)
+        {
+            sb.AppendLine("─── SINK STEPS (infrastructure) ───");
+            foreach (var step in Subject.SinkSteps.OrderBy(s => s.StepName))
+                sb.AppendLine($"  ⚙ {step.StepName}: {step.FormatBreakdown()}");
+        }
+
+        return sb.ToString();
+    }
 
     /// <summary>
     ///     Asserts that the generator caching report indicates valid caching behavior.
@@ -80,7 +135,8 @@ public sealed class CachingReportAssertions : ReferenceTypeAssertions<GeneratorC
     ///     </list>
     ///     <para>
     ///         Forbidden types include: <see cref="ISymbol" />, <see cref="Compilation" />,
-    ///         <see cref="SemanticModel" />, <see cref="SyntaxNode" />, <see cref="SyntaxTree" />, and IOperation.
+    ///         <see cref="SemanticModel" />, <see cref="SyntaxNode" />, <see cref="SyntaxTree" />, and
+    ///         <see cref="IOperation" />.
     ///     </para>
     /// </remarks>
     [CustomAssertion]

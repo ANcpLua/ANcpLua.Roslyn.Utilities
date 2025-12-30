@@ -1,4 +1,3 @@
-using System.Threading;
 using AwesomeAssertions.Execution;
 using AwesomeAssertions.Formatting;
 using Microsoft.CodeAnalysis;

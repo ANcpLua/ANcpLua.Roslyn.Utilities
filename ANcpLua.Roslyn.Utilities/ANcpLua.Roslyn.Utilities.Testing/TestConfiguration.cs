@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Immutable;
-using System.IO;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -12,7 +10,7 @@ public static class EnumerableExtensions
     /// <summary>
     ///     Concatenates strings and cleans up line breaks at the beginning and end of the resulting string.
     ///     Returns " " if collection is empty (to use with
-    ///     <see cref="StringExtensions.RemoveBlankLinesWhereOnlyWhitespaces(string)" />).
+    ///     <see cref="StringExtensions.TrimBlankLines(string)" />).
     /// </summary>
     /// <param name="values">The string values to concatenate.</param>
     /// <returns>The concatenated string.</returns>

@@ -1,30 +1,30 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
-        <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
-        <Description>Fluent testing framework for Roslyn incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageTags>roslyn;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
-        <!-- Testing-specific warnings (common warnings inherited from Directory.Build.props) -->
-        <NoWarn>$(NoWarn);NU1903;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859</NoWarn>
-    </PropertyGroup>
+<Project Sdk="ANcpLua.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
+    <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
+    <Description>Fluent testing framework for Roslyn incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>roslyn;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
+    <!-- Suppress analyzer warnings for test library -->
+    <NoWarn>$(NoWarn);NU1903;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859;RS0030;CA1307;IDE1006;CA1002;CA1000;CS1574</NoWarn>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AwesomeAssertions"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
-        <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
+    <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
-        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
-    </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>
