@@ -7,19 +7,10 @@
 
 Utilities for building Roslyn incremental source generators with proper caching.
 
-## Installation
-
 ```shell
-dotnet add package ANcpLua.Roslyn.Utilities
-dotnet add package ANcpLua.Roslyn.Utilities.Testing  # For tests
+dotnet add package ANcpLua.Roslyn.Utilities              # netstandard2.0
+dotnet add package ANcpLua.Roslyn.Utilities.Testing      # net10.0
 ```
-
-## Packages
-
-| Package | Target | Description |
-|---------|--------|-------------|
-| `ANcpLua.Roslyn.Utilities` | netstandard2.0 | Core utilities for incremental generators |
-| `ANcpLua.Roslyn.Utilities.Testing` | net10.0 | Fluent testing with caching validation |
 
 ## Key APIs
 
