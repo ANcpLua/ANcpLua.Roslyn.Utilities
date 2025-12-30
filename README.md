@@ -58,6 +58,3 @@ await source.ShouldBeCached<MyGenerator>();
 - [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers) — Analyzers using these utilities
 - [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk) — MSBuild SDK with embedded source generator helpers
 
-## License
-
-[MIT](LICENSE)
