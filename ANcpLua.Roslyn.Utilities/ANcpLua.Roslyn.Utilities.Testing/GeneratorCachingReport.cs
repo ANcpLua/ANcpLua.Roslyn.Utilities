@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
@@ -12,162 +9,14 @@ using Microsoft.CodeAnalysis;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-///     Analyzes generator pipeline steps.
+///     Report on generator caching behavior across two runs.
 /// </summary>
-internal static class GeneratorStepAnalyzer
-{
-    private static readonly string[] SinkStepPatterns =
-    [
-        "RegisterSourceOutput", "RegisterImplementationSourceOutput", "RegisterPostInitializationOutput", "SourceOutput"
-    ];
-
-    private static readonly string[] InfrastructureFiles =
-    [
-        "Attribute.g.cs", "Attributes.g.cs", "EmbeddedAttribute", "Polyfill"
-    ];
-
-    /// <summary>
-    ///     Extracts tracked steps from a generator run result.
-    /// </summary>
-    public static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> ExtractSteps(
-        GeneratorDriverRunResult result)
-    {
-        return result.Results.SelectMany(x => x.TrackedSteps).GroupBy(kv => kv.Key)
-            .ToDictionary(g => g.Key, g => g.SelectMany(kv => kv.Value).ToImmutableArray());
-    }
-
-    /// <summary>
-    ///     Determines if a step name represents a sink step.
-    /// </summary>
-    public static bool IsSink(string stepName)
-    {
-        return SinkStepPatterns.Any(p => stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    ///     Determines if a step is an infrastructure step (sink).
-    /// </summary>
-    public static bool IsInfrastructureStep(string stepName)
-    {
-        return !string.IsNullOrEmpty(stepName) && IsSink(stepName);
-    }
-
-    /// <summary>
-    ///     Determines if a file is an infrastructure file.
-    /// </summary>
-    public static bool IsInfrastructureFile(string fileName)
-    {
-        return InfrastructureFiles.Any(p => fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
-    }
-}
-
-/// <summary>
-///     Represents a forbidden type violation in the generator pipeline.
-/// </summary>
-/// <param name="StepName">The step where the violation occurred.</param>
-/// <param name="ForbiddenType">The forbidden type that was cached.</param>
-/// <param name="Path">The path to the forbidden type.</param>
-public sealed record ForbiddenTypeViolation(string StepName, Type ForbiddenType, string Path);
-
-/// <summary>
-///     Analyzes generator outputs for forbidden Roslyn types.
-/// </summary>
-internal static class ForbiddenTypeAnalyzer
-{
-    private static readonly HashSet<Type> ForbiddenTypes =
-    [
-        typeof(ISymbol),
-        typeof(Compilation),
-        typeof(SemanticModel),
-        typeof(SyntaxNode),
-        typeof(SyntaxTree),
-        Type.GetType("Microsoft.CodeAnalysis.IOperation, Microsoft.CodeAnalysis") ??
-        typeof(object) // Fallback if type not found
-    ];
-
-    private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldCache = new();
-
-    /// <summary>
-    ///     Analyzes a generator run result for forbidden type violations.
-    /// </summary>
-    public static IReadOnlyList<ForbiddenTypeViolation> AnalyzeGeneratorRun(GeneratorDriverRunResult run)
-    {
-        List<ForbiddenTypeViolation> violations = [];
-        HashSet<object> visited = new(ReferenceEqualityComparer.Instance);
-
-        foreach (var (stepName, steps) in run.Results.SelectMany(r =>
-                     r.TrackedSteps))
-        foreach (var step in steps)
-        foreach (var (output, _) in step.Outputs)
-        {
-            Visit(output, stepName, "Output");
-            if (violations.Count >= 256) return violations;
-        }
-
-        return violations;
-
-        void Visit(object? node, string step, string path)
-        {
-            if (node is null) return;
-
-            var type = node.GetType();
-
-            if (!type.IsValueType && !visited.Add(node)) return;
-
-            if (IsForbiddenType(type))
-            {
-                violations.Add(new ForbiddenTypeViolation(step, type, path));
-                return;
-            }
-
-            if (IsAllowedType(type)) return;
-
-            if (node is IEnumerable collection and not string)
-            {
-                var index = 0;
-                foreach (var element in collection)
-                {
-                    Visit(element, step, $"{path}[{index++}]");
-                    if (violations.Count >= 256) return;
-                }
-
-                return;
-            }
-
-            foreach (var field in GetRelevantFields(type))
-            {
-                Visit(field.GetValue(node), step, $"{path}.{field.Name}");
-                if (violations.Count >= 256) return;
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Gets fields that should be inspected for forbidden types.
-    /// </summary>
-    public static FieldInfo[] GetRelevantFields(Type type)
-    {
-        return FieldCache.GetOrAdd(type,
-            t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
-                             BindingFlags.DeclaredOnly).Where(f => !IsAllowedType(f.FieldType)).ToArray());
-    }
-
-    private static bool IsForbiddenType(Type type)
-    {
-        return ForbiddenTypes.Contains(type) || ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
-    }
-
-    private static bool IsAllowedType(Type type)
-    {
-        return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
-               type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
-               (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
-    }
-}
-
-/// <summary>
-///     Report on generator caching behavior.
-/// </summary>
+/// <remarks>
+///     <para>
+///         This report aggregates information from two generator runs to analyze caching effectiveness.
+///         It tracks observable user steps, sink steps, and any forbidden type violations.
+///     </para>
+/// </remarks>
 public sealed class GeneratorCachingReport
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -209,13 +58,17 @@ public sealed class GeneratorCachingReport
     public bool ProducedOutput { get; }
 
     /// <summary>
-    ///     Whether the report indicates correct behavior.
+    ///     Whether the report indicates correct behavior (no forbidden types).
     /// </summary>
     public bool IsCorrect => ForbiddenTypeViolations.Count is 0;
 
     /// <summary>
     ///     Creates a caching report from two run results.
     /// </summary>
+    /// <param name="firstRun">The first generator run result.</param>
+    /// <param name="secondRun">The second generator run result.</param>
+    /// <param name="generatorType">The generator type being tested.</param>
+    /// <returns>A comprehensive caching report.</returns>
     public static GeneratorCachingReport Create(GeneratorDriverRunResult firstRun, GeneratorDriverRunResult secondRun,
         Type generatorType)
     {
@@ -249,6 +102,9 @@ public sealed class GeneratorCachingReport
     /// <summary>
     ///     Builds a comprehensive failure report.
     /// </summary>
+    /// <param name="failedCaching">Steps that failed caching validation.</param>
+    /// <param name="requiredSteps">Steps that were explicitly required.</param>
+    /// <returns>A formatted failure report string.</returns>
     public string BuildComprehensiveFailureReport(List<GeneratorStepAnalysis> failedCaching, string[]? requiredSteps)
     {
         StringBuilder sb = new();
@@ -352,6 +208,12 @@ public sealed class GeneratorCachingReport
 /// <summary>
 ///     Analysis of a single generator pipeline step.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This struct captures caching metrics for a single step, including counts of
+///         cached, unchanged, modified, new, and removed outputs, as well as timing data.
+///     </para>
+/// </remarks>
 public readonly struct GeneratorStepAnalysis
 {
     /// <summary>
@@ -405,13 +267,17 @@ public readonly struct GeneratorStepAnalysis
     public int TotalOutputs => Cached + Unchanged + Modified + New + Removed;
 
     /// <summary>
-    ///     Whether caching was successful.
+    ///     Whether caching was successful (no modified, new, or removed outputs).
     /// </summary>
     public bool IsCachedSuccessfully => Modified is 0 && New is 0 && Removed is 0;
 
     /// <summary>
     ///     Creates a step analysis from run data.
     /// </summary>
+    /// <param name="stepName">The name of the step.</param>
+    /// <param name="firstRun">Data from the first run.</param>
+    /// <param name="secondRun">Data from the second run.</param>
+    /// <param name="hasForbiddenTypes">Whether this step contains forbidden types.</param>
     public GeneratorStepAnalysis(string stepName, ImmutableArray<IncrementalGeneratorRunStep> firstRun,
         ImmutableArray<IncrementalGeneratorRunStep> secondRun, bool hasForbiddenTypes)
     {
@@ -446,6 +312,7 @@ public readonly struct GeneratorStepAnalysis
     /// <summary>
     ///     Formats the breakdown for display.
     /// </summary>
+    /// <returns>A formatted string showing caching metrics.</returns>
     public string FormatBreakdown()
     {
         return $"C:{Cached} U:{Unchanged} | M:{Modified} N:{New} R:{Removed} (Total:{TotalOutputs})";
@@ -454,6 +321,7 @@ public readonly struct GeneratorStepAnalysis
     /// <summary>
     ///     Formats the performance for display.
     /// </summary>
+    /// <returns>A formatted string showing timing comparison.</returns>
     public string FormatPerformance()
     {
         return $"{ElapsedTimeFirstRun.TotalMilliseconds:F2}ms -> {ElapsedTimeSecondRun.TotalMilliseconds:F2}ms";

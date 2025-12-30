@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
@@ -9,18 +9,29 @@ using Microsoft.CodeAnalysis.Testing;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-///     Configuration settings for generator tests.
+///     Thread-safe configuration settings for generator tests.
 /// </summary>
+/// <remarks>
+///     <para>
+///         All mutable configuration uses <see cref="AsyncLocal{T}" /> to ensure thread safety
+///         during parallel test execution. Each test thread maintains its own configuration state.
+///     </para>
+///     <para>
+///         Use <see cref="WithLanguageVersion" />, <see cref="WithReferenceAssemblies" />, or
+///         <see cref="WithAdditionalReferences" /> to temporarily override settings within a scope.
+///     </para>
+/// </remarks>
+/// <example>
+///     <code>
+/// // Override language version for a specific test
+/// using (TestConfiguration.WithLanguageVersion(LanguageVersion.CSharp11))
+/// {
+///     await source.ShouldGenerate&lt;MyGenerator&gt;("Output.g.cs", expected);
+/// }
+/// </code>
+/// </example>
 public static class TestConfiguration
 {
-    /// <summary>
-    ///     .NET 10 reference assemblies (not yet in Microsoft.CodeAnalysis.Testing stable release).
-    /// </summary>
-    private static readonly ReferenceAssemblies Net100Assemblies = new(
-        "net10.0",
-        new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
-        Path.Combine("ref", "net10.0"));
-
     /// <summary>
     ///     Performance tolerance as a percentage (default: 5%).
     /// </summary>
@@ -31,24 +42,91 @@ public static class TestConfiguration
     /// </summary>
     public const bool EnableJsonReporting = true;
 
+    private static readonly ReferenceAssemblies Net100Assemblies = new(
+        "net10.0",
+        new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
+        Path.Combine("ref", "net10.0"));
+
+    private static readonly AsyncLocal<LanguageVersion?> LanguageVersionOverride = new();
+    private static readonly AsyncLocal<ReferenceAssemblies?> ReferenceAssembliesOverride = new();
+
+    private static readonly AsyncLocal<ImmutableArray<PortableExecutableReference>?> AdditionalReferencesOverride =
+        new();
+
     /// <summary>
     ///     Absolute performance tolerance.
     /// </summary>
     public static readonly TimeSpan PerformanceToleranceAbsolute = TimeSpan.FromMilliseconds(2);
 
     /// <summary>
-    ///     The C# language version to use for tests.
+    ///     The C# language version to use for tests. Thread-safe via AsyncLocal.
     /// </summary>
-    public static LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Preview;
+    public static LanguageVersion LanguageVersion =>
+        LanguageVersionOverride.Value ?? LanguageVersion.Preview;
 
     /// <summary>
-    ///     The reference assemblies to use for tests (.NET 10).
+    ///     The reference assemblies to use for tests (.NET 10). Thread-safe via AsyncLocal.
     /// </summary>
-    public static ReferenceAssemblies ReferenceAssemblies { get; set; } = Net100Assemblies;
+    public static ReferenceAssemblies ReferenceAssemblies =>
+        ReferenceAssembliesOverride.Value ?? Net100Assemblies;
 
     /// <summary>
-    ///     Additional references to include in compilations.
+    ///     Additional references to include in compilations. Thread-safe via AsyncLocal.
     /// </summary>
-    public static ImmutableArray<PortableExecutableReference> AdditionalReferences { get; set; } =
-        ImmutableArray<PortableExecutableReference>.Empty;
+    public static ImmutableArray<PortableExecutableReference> AdditionalReferences =>
+        AdditionalReferencesOverride.Value ?? ImmutableArray<PortableExecutableReference>.Empty;
+
+    /// <summary>
+    ///     Creates a scope that temporarily overrides the language version.
+    /// </summary>
+    /// <param name="version">The language version to use within the scope.</param>
+    /// <returns>A disposable that restores the previous value when disposed.</returns>
+    public static IDisposable WithLanguageVersion(LanguageVersion version)
+    {
+        var previous = LanguageVersionOverride.Value;
+        LanguageVersionOverride.Value = version;
+        return new ConfigurationScope(() => LanguageVersionOverride.Value = previous);
+    }
+
+    /// <summary>
+    ///     Creates a scope that temporarily overrides the reference assemblies.
+    /// </summary>
+    /// <param name="assemblies">The reference assemblies to use within the scope.</param>
+    /// <returns>A disposable that restores the previous value when disposed.</returns>
+    public static IDisposable WithReferenceAssemblies(ReferenceAssemblies assemblies)
+    {
+        var previous = ReferenceAssembliesOverride.Value;
+        ReferenceAssembliesOverride.Value = assemblies;
+        return new ConfigurationScope(() => ReferenceAssembliesOverride.Value = previous);
+    }
+
+    /// <summary>
+    ///     Creates a scope that temporarily overrides the additional references.
+    /// </summary>
+    /// <param name="references">The additional references to use within the scope.</param>
+    /// <returns>A disposable that restores the previous value when disposed.</returns>
+    public static IDisposable WithAdditionalReferences(ImmutableArray<PortableExecutableReference> references)
+    {
+        var previous = AdditionalReferencesOverride.Value;
+        AdditionalReferencesOverride.Value = references;
+        return new ConfigurationScope(() => AdditionalReferencesOverride.Value = previous);
+    }
+
+    private sealed class ConfigurationScope : IDisposable
+    {
+        private readonly Action _restore;
+        private bool _disposed;
+
+        public ConfigurationScope(Action restore)
+        {
+            _restore = restore;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _restore();
+        }
+    }
 }

@@ -201,13 +201,9 @@ public class CompilationCacheResult
 
         List<(SyntaxTree First, SyntaxTree Second)> result = [];
         foreach (var first in _firstGeneratedTrees)
-        {
             if (secondByHint.TryGetValue(GetHintName(first), out var second) &&
                 ReferenceEquals(first, second))
-            {
                 result.Add((first, second));
-            }
-        }
 
         return result;
     }
@@ -220,13 +216,9 @@ public class CompilationCacheResult
 
         List<(SyntaxTree First, SyntaxTree Second)> result = [];
         foreach (var first in _firstGeneratedTrees)
-        {
             if (secondByHint.TryGetValue(GetHintName(first), out var second) &&
                 !ReferenceEquals(first, second))
-            {
                 result.Add((first, second));
-            }
-        }
 
         return result;
     }

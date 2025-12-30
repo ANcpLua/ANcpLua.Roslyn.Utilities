@@ -42,7 +42,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     <code>
 /// // Formatters are initialized automatically, but can be called explicitly:
 /// TestFormatters.Initialize();
-///
+/// 
 /// // Apply formatter settings to an assertion scope:
 /// using var scope = new AssertionScope("My Generator");
 /// TestFormatters.ApplyToScope(scope);
@@ -132,7 +132,7 @@ public static class TestFormatters
     ///     <code>
     /// using var scope = new AssertionScope("Generator Caching Validation");
     /// TestFormatters.ApplyToScope(scope);
-    ///
+    /// 
     /// // Assertions within this scope will have the formatting options applied
     /// report.Should().BeValidAndCached();
     /// </code>
@@ -217,7 +217,7 @@ public static class TestFormatters
     ///     Formatter for <see cref="Diagnostic" /> instances.
     /// </summary>
     /// <remarks>
-    ///     Uses <see cref="DiagnosticComparable" /> to produce consistent, readable output
+    ///     Uses <see cref="DiagnosticSnapshot" /> to produce consistent, readable output
     ///     like: <c>MyFile.cs@10:5 CS0001 (Error): Missing semicolon</c>
     /// </remarks>
     private sealed class DiagnosticFormatter : IValueFormatter
@@ -231,7 +231,7 @@ public static class TestFormatters
         /// <inheritdoc />
         public void Format(object value, FormattedObjectGraph graph, FormattingContext context, FormatChild child)
         {
-            graph.AddFragment(DiagnosticComparable.FromDiagnostic((Diagnostic)value).Format());
+            graph.AddFragment(DiagnosticSnapshot.FromDiagnostic((Diagnostic)value).Format());
         }
     }
 

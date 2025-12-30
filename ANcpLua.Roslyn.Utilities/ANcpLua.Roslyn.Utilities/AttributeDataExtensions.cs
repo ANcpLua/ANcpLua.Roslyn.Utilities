@@ -38,10 +38,8 @@ public static class AttributeDataExtensions
         attributeData = attributeData ?? throw new ArgumentNullException(nameof(attributeData));
 
         foreach (var pair in attributeData.NamedArguments)
-        {
             if (pair.Key == name)
                 return pair.Value;
-        }
 
         return default;
     }

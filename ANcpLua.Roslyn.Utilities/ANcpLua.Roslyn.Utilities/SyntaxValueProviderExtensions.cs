@@ -73,17 +73,15 @@ public static class SyntaxValueProviderExtensions
         var name = constructorArgs.Length > 0 ? constructorArgs[0].Value?.ToString() : null;
 
         foreach (var attributeList in classSyntax.AttributeLists)
+        foreach (var attr in attributeList.Attributes)
         {
-            foreach (var attr in attributeList.Attributes)
-            {
-                var arguments = attr.ArgumentList?.Arguments;
-                if (arguments is not { Count: > 0 })
-                    continue;
+            var arguments = attr.ArgumentList?.Arguments;
+            if (arguments is not { Count: > 0 })
+                continue;
 
-                var firstArg = arguments.Value[0].ToString().Trim('"').RemoveNameof();
-                if (firstArg == name)
-                    return attr;
-            }
+            var firstArg = arguments.Value[0].ToString().Trim('"').RemoveNameof();
+            if (firstArg == name)
+                return attr;
         }
 
         return null;
@@ -113,13 +111,11 @@ public static class SyntaxValueProviderExtensions
         {
             var attributeSyntax = classSyntax.TryFindAttributeSyntax(attribute);
             if (attributeSyntax is not null)
-            {
                 builder.Add(new ClassWithAttributesContext(
                     context.SemanticModel,
                     [attribute],
                     classSyntax,
                     targetSymbol));
-            }
         }
 
         return builder.ToImmutable();

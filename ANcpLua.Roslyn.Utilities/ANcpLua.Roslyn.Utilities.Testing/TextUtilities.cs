@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-///     Utilities for text processing in test assertions.
+///     Internal utilities for text processing in test assertions.
 /// </summary>
-public static partial class TextUtilities
+internal static partial class TextUtilities
 {
     /// <summary>
     ///     Normalizes a file path by converting backslashes to forward slashes.
@@ -32,7 +32,7 @@ public static partial class TextUtilities
     {
         return string.IsNullOrWhiteSpace(input)
             ? string.Empty
-            : MyRegex().Replace(input, " ").Trim();
+            : WhitespaceRegex().Replace(input, " ").Trim();
     }
 
     /// <summary>
@@ -150,5 +150,5 @@ public static partial class TextUtilities
     }
 
     [GeneratedRegex(@"\s+")]
-    private static partial Regex MyRegex();
+    private static partial Regex WhitespaceRegex();
 }

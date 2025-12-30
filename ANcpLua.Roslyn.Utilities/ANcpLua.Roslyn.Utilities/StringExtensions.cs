@@ -167,7 +167,6 @@ public static class StringExtensions
         var first = true;
 
         foreach (var line in lines)
-        {
             if (!IsBlankLine(line))
             {
                 if (!first)
@@ -175,7 +174,6 @@ public static class StringExtensions
                 result.Append(line);
                 first = false;
             }
-        }
 
         return result.ToString();
 
@@ -185,10 +183,8 @@ public static class StringExtensions
                 return false;
 
             foreach (var c in line)
-            {
                 if (!char.IsWhiteSpace(c))
                     return false;
-            }
 
             return true;
         }

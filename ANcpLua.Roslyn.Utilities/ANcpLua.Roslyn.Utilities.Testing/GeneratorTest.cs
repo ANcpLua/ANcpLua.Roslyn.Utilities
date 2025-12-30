@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
@@ -18,44 +20,19 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         It is designed for table-driven tests and fast authoring of generator validation.
 ///     </para>
 ///     <para>
-///         <b>API Styles:</b>
+///         All methods automatically handle:
 ///         <list type="bullet">
 ///             <item>
-///                 <description>
-///                     <b>String extensions (recommended for simple tests):</b> Use the extension methods
-///                     like <see cref="ShouldGenerate{TGenerator}(string,string,string)" /> directly on source strings.
-///                 </description>
+///                 <description>Compilation creation with proper references</description>
 ///             </item>
 ///             <item>
-///                 <description>
-///                     <b>Instance-based (for shared configuration):</b> Use <see cref="GeneratorTester{TGenerator}" />
-///                     or derive from <see cref="GeneratorTestBase{TGenerator}" /> to avoid repeating the
-///                     generator type parameter.
-///                 </description>
-///             </item>
-///         </list>
-///     </para>
-///     <para>
-///         <b>Design Principles:</b>
-///         <list type="bullet">
-///             <item>
-///                 <description>
-///                     <b>Deterministic inputs:</b> All helpers create a fresh <see cref="Compilation" /> per run
-///                     to accurately model IDE/compiler behavior. Generated trees are never fed back into subsequent runs.
-///                 </description>
+///                 <description>Generator driver setup with step tracking</description>
 ///             </item>
 ///             <item>
-///                 <description>
-///                     <b>High-signal assertions:</b> Failures render clear, actionable messages via custom
-///                     formatters (see <see cref="TestFormatters" />) and FluentAssertions' improved patterns.
-///                 </description>
+///                 <description>Two-pass execution for caching validation</description>
 ///             </item>
 ///             <item>
-///                 <description>
-///                     <b>Caching validation:</b> <see cref="ShouldCache{TGenerator}(string,string[])" /> inspects
-///                     tracked steps; <see cref="ShouldCacheWithCompilationUpdate{TGenerator}" /> validates
-///                     identity-based caching of generated syntax trees across controlled edits.
-///                 </description>
+///                 <description>Assertion scope setup with proper formatters</description>
 ///             </item>
 ///         </list>
 ///     </para>
@@ -86,50 +63,81 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// [Fact]
 /// public async Task Caches_pipeline_correctly()
 /// {
-///     await "public class Person { }".ShouldCache&lt;MyGenerator&gt;("TransformStep");
+///     await "public class Person { }".ShouldBeCached&lt;MyGenerator&gt;("TransformStep");
 /// }
 /// </code>
 /// </example>
 public static class GeneratorTest
 {
+    static GeneratorTest()
+    {
+        TestFormatters.Initialize();
+    }
+
     /// <summary>
-    ///     Verifies that running <typeparamref name="TGenerator" /> on the source produces a file
-    ///     with the specified hint name and content.
+    ///     Creates a <see cref="DiagnosticResult" /> with the specified ID and severity.
+    /// </summary>
+    /// <param name="id">The diagnostic ID (e.g., "GEN001").</param>
+    /// <param name="severity">The expected severity. Defaults to <see cref="DiagnosticSeverity.Error" />.</param>
+    /// <returns>A new <see cref="DiagnosticResult" /> for use in diagnostic assertions.</returns>
+    /// <remarks>
+    ///     This is a convenience factory method that makes test code more readable.
+    ///     The returned result can be further configured with location and message expectations.
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// var expected = GeneratorTest.Diagnostic("GEN001", DiagnosticSeverity.Warning)
+    ///     .WithSpan(10, 1, 10, 20)
+    ///     .WithMessage("Expected message");
+    /// </code>
+    /// </example>
+    public static DiagnosticResult Diagnostic(string id, DiagnosticSeverity severity = DiagnosticSeverity.Error)
+    {
+        return new DiagnosticResult(id, severity);
+    }
+
+    /// <summary>
+    ///     Asserts that running the specified generator on this source code produces
+    ///     a generated file with the expected hint name and content.
     /// </summary>
     /// <typeparam name="TGenerator">
-    ///     The generator under test. Must implement <see cref="IIncrementalGenerator" />
+    ///     The generator type under test. Must implement <see cref="IIncrementalGenerator" />
     ///     and have a parameterless constructor.
     /// </typeparam>
-    /// <param name="hintName">
-    ///     The expected generated hint name (e.g., <c>Person.Builder.g.cs</c>).
-    /// </param>
-    /// <param name="expectedContent">
-    ///     The expected file content. Exact match is enforced by default.
-    ///     Use <see cref="GeneratorTestExtensions.ShouldGenerate{TGenerator}(string,string,string,bool,bool)" />
-    ///     for advanced control.
-    /// </param>
     /// <param name="source">C# source code to compile and feed into the generator.</param>
-    /// <returns>A task that completes when the assertion finishes.</returns>
-    /// <remarks>
-    ///     <para>
-    ///         This is a convenience overload that calls
-    ///         <see cref="GeneratorTestExtensions.ShouldGenerate{TGenerator}(string,string,string,bool,bool)" />
-    ///         with <c>exactMatch: true</c>.
-    ///     </para>
-    /// </remarks>
+    /// <param name="hintName">
+    ///     The expected hint name of the generated file (e.g., "Person.Builder.g.cs").
+    ///     This must match exactly, including the .g.cs suffix.
+    /// </param>
+    /// <param name="expectedContent">The expected content of the generated file.</param>
+    /// <param name="exactMatch">
+    ///     If <c>true</c> (default), the entire content must match exactly.
+    ///     If <c>false</c>, the expected content must be contained within the actual content.
+    /// </param>
+    /// <param name="normalizeNewlines">
+    ///     If <c>true</c> (default), line endings are normalized to Unix style before comparison.
+    /// </param>
+    /// <returns>A task that completes when the assertion is finished.</returns>
     /// <example>
     ///     <code>
     /// await """
     ///     [GenerateBuilder]
-    ///     public class Person { string Name { get; set; } }
-    /// """.ShouldGenerate&lt;MyGenerator&gt;("Person.Builder.g.cs", "public class PersonBuilder");
+    ///     public class Person { public string Name { get; set; } }
+    /// """.ShouldGenerate&lt;BuilderGenerator&gt;("Person.Builder.g.cs", "public class PersonBuilder");
     /// </code>
     /// </example>
-    /// <seealso cref="GeneratorTestExtensions.ShouldGenerate{TGenerator}(string,string,string,bool,bool)" />
-    public static Task ShouldGenerate<TGenerator>(this string source, string hintName, string expectedContent)
-        where TGenerator : IIncrementalGenerator, new()
+    public static async Task ShouldGenerate<TGenerator>(this string source, string hintName, string expectedContent,
+        bool exactMatch = true, bool normalizeNewlines = true) where TGenerator : IIncrementalGenerator, new()
     {
-        return source.ShouldGenerate<TGenerator>(hintName, expectedContent, true);
+        GeneratorTestEngine<TGenerator> engine = new();
+        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
+
+        using AssertionScope scope = new($"Generated file '{hintName}'");
+        TestFormatters.ApplyToScope(scope);
+
+        var generated = firstRun.Should().HaveGeneratedSource(hintName).Which;
+        generated.Should().HaveContent(expectedContent, exactMatch, normalizeNewlines);
+        firstRun.Should().HaveNoDiagnostics();
     }
 
     /// <summary>
@@ -137,11 +145,9 @@ public static class GeneratorTest
     ///     ID and severity.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
-    /// <param name="diagnosticId">Expected diagnostic ID (e.g., <c>GEN001</c>).</param>
-    /// <param name="severity">
-    ///     Expected diagnostic severity. Defaults to <see cref="JSType.Error" />.
-    /// </param>
     /// <param name="source">C# source code to compile and feed into the generator.</param>
+    /// <param name="diagnosticId">Expected diagnostic ID (e.g., <c>GEN001</c>).</param>
+    /// <param name="severity">Expected diagnostic severity. Defaults to <see cref="DiagnosticSeverity.Error" />.</param>
     /// <returns>A task that completes when the assertion finishes.</returns>
     /// <example>
     ///     <code>
@@ -149,7 +155,6 @@ public static class GeneratorTest
     ///     .ShouldHaveDiagnostic&lt;MyGenerator&gt;("GEN001", DiagnosticSeverity.Warning);
     /// </code>
     /// </example>
-    /// <seealso cref="ShouldProduceDiagnostic{TGenerator}(string,string,DiagnosticSeverity,string)" />
     public static Task ShouldHaveDiagnostic<TGenerator>(this string source, string diagnosticId,
         DiagnosticSeverity severity = DiagnosticSeverity.Error) where TGenerator : IIncrementalGenerator, new()
     {
@@ -158,14 +163,60 @@ public static class GeneratorTest
     }
 
     /// <summary>
+    ///     Asserts that running the specified generator on this source code produces
+    ///     the expected diagnostics.
+    /// </summary>
+    /// <typeparam name="TGenerator">The generator type under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
+    /// <param name="expected">The expected diagnostics. Pass an empty array or omit to assert no diagnostics.</param>
+    /// <returns>A task that completes when the assertion is finished.</returns>
+    /// <example>
+    ///     <code>
+    /// await "public class Invalid { }".ShouldHaveDiagnostics&lt;MyGenerator&gt;(
+    ///     new DiagnosticResult("GEN001", DiagnosticSeverity.Error)
+    ///         .WithMessage("Missing required attribute")
+    /// );
+    /// </code>
+    /// </example>
+    public static async Task ShouldHaveDiagnostics<TGenerator>(this string source, params DiagnosticResult[] expected)
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        GeneratorTestEngine<TGenerator> engine = new();
+        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, false);
+
+        using AssertionScope scope = new("Diagnostics");
+        TestFormatters.ApplyToScope(scope);
+
+        var diagnostics = firstRun.Results.SelectMany(r => r.Diagnostics).ToList();
+        diagnostics.BeEquivalentToDiagnostics(expected);
+    }
+
+    /// <summary>
+    ///     Asserts that running the specified generator on this source code produces no diagnostics.
+    /// </summary>
+    /// <typeparam name="TGenerator">The generator type under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
+    /// <returns>A task that completes when the assertion is finished.</returns>
+    /// <example>
+    ///     <code>
+    /// await "[ValidAttribute] public class Valid { }".ShouldHaveNoDiagnostics&lt;MyGenerator&gt;();
+    /// </code>
+    /// </example>
+    public static Task ShouldHaveNoDiagnostics<TGenerator>(this string source)
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        return source.ShouldHaveDiagnostics<TGenerator>();
+    }
+
+    /// <summary>
     ///     Asserts that a diagnostic with the given ID and severity is produced and that its message
     ///     contains the specified text.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <param name="diagnosticId">Diagnostic ID.</param>
     /// <param name="severity">Diagnostic severity.</param>
     /// <param name="messageContains">A substring that must appear in the diagnostic message.</param>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <returns>A task that completes when the assertion finishes.</returns>
     /// <example>
     ///     <code>
@@ -180,15 +231,15 @@ public static class GeneratorTest
         DiagnosticSeverity severity, string messageContains) where TGenerator : IIncrementalGenerator, new()
     {
         var expected = new DiagnosticResult(diagnosticId, severity).WithMessage(messageContains);
-        return source.ShouldHaveDiagnostics<TGenerator>([expected]);
+        return source.ShouldHaveDiagnostics<TGenerator>(expected);
     }
 
     /// <summary>
     ///     Asserts that <typeparamref name="TGenerator" /> does NOT produce a diagnostic with the given ID.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
-    /// <param name="diagnosticId">The diagnostic ID that should NOT be present.</param>
     /// <param name="source">C# source code to compile and feed into the generator.</param>
+    /// <param name="diagnosticId">The diagnostic ID that should NOT be present.</param>
     /// <returns>A task that completes when the assertion finishes.</returns>
     /// <example>
     ///     <code>
@@ -211,42 +262,16 @@ public static class GeneratorTest
     }
 
     /// <summary>
-    ///     Verifies that observable pipeline steps of <typeparamref name="TGenerator" />
-    ///     are cached across two identical runs.
-    /// </summary>
-    /// <typeparam name="TGenerator">The generator under test.</typeparam>
-    /// <param name="trackingNames">
-    ///     Optional explicit step names to validate. When omitted, steps are auto-discovered
-    ///     (excluding infrastructure sinks).
-    /// </param>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
-    /// <returns>A task that completes when the assertion finishes.</returns>
-    /// <remarks>
-    ///     <para>
-    ///         Uses Roslyn's tracked step instrumentation; asserts no forbidden Roslyn runtime types
-    ///         are cached (e.g., <see cref="ISymbol" />).
-    ///     </para>
-    /// </remarks>
-    /// <seealso
-    ///     cref="ShouldCacheWithCompilationUpdate{TGenerator}(string,System.Func{Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.Compilation}(Microsoft.CodeAnalysis.Compilation),Action{CompilationCacheResult}?)" />
-    /// />
-    public static Task ShouldCache<TGenerator>(this string source, params string[] trackingNames)
-        where TGenerator : IIncrementalGenerator, new()
-    {
-        return source.ShouldBeCached<TGenerator>(trackingNames);
-    }
-
-    /// <summary>
     ///     Asserts that <typeparamref name="TGenerator" /> produces no error-level diagnostics.
     ///     Info and warning diagnostics are ignored.
     /// </summary>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <returns>A task that completes when the assertion finishes.</returns>
     /// <remarks>
     ///     This is useful for generators that intentionally emit informational or warning
     ///     diagnostics. If you need to assert zero diagnostics of any severity,
-    ///     use <see cref="GeneratorTestExtensions.ShouldHaveNoDiagnostics{TGenerator}(string)" />.
+    ///     use <see cref="ShouldHaveNoDiagnostics{TGenerator}(string)" />.
     /// </remarks>
     public static async Task ShouldCompile<TGenerator>(this string source)
         where TGenerator : IIncrementalGenerator, new()
@@ -267,31 +292,91 @@ public static class GeneratorTest
     }
 
     /// <summary>
+    ///     Asserts that the specified generator correctly caches its pipeline outputs
+    ///     when run twice on identical source code.
+    /// </summary>
+    /// <typeparam name="TGenerator">The generator type under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
+    /// <param name="trackingNames">
+    ///     Optional array of step names to validate for caching. If provided, only these
+    ///     steps are checked. If omitted, all observable (non-infrastructure) steps are validated.
+    /// </param>
+    /// <returns>A task that completes when the assertion is finished.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method validates three aspects of generator caching:
+    ///         <list type="number">
+    ///             <item>
+    ///                 <description>No forbidden types: Ensures no Roslyn runtime types are cached</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Proper caching: Steps report Cached or Unchanged on second run</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Performance: The second run should not be materially slower</description>
+    ///             </item>
+    ///         </list>
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // Validate all observable steps
+    /// await "public class Person { }".ShouldBeCached&lt;MyGenerator&gt;();
+    /// 
+    /// // Validate specific steps
+    /// await "public class Person { }".ShouldBeCached&lt;MyGenerator&gt;("TransformStep", "CollectStep");
+    /// </code>
+    /// </example>
+    public static async Task ShouldBeCached<TGenerator>(this string source, params string[] trackingNames)
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        GeneratorTestEngine<TGenerator> engine = new();
+        var (firstRun, secondRun) = await engine.ExecuteTwiceAsync(source, true);
+
+        var availableSteps =
+            firstRun.Results.SelectMany(r => r.TrackedSteps).Select(kv => kv.Key).Distinct().ToList();
+        string[] stepsToTrack;
+        if (trackingNames is { Length: > 0 })
+        {
+            var missingSteps = trackingNames.Except(availableSteps, StringComparer.Ordinal).ToArray();
+            if (missingSteps.Length > 0)
+                throw new InvalidOperationException(BuildStepValidationError(missingSteps, availableSteps));
+            stepsToTrack = trackingNames;
+        }
+        else
+        {
+            stepsToTrack = availableSteps.Where(s => !GeneratorStepAnalyzer.IsInfrastructureStep(s)).ToArray();
+            if (stepsToTrack.Length is 0 && availableSteps.Count > 0)
+                throw new InvalidOperationException(
+                    "Auto-Discovery Failed: No observable user steps found. Ensure pipeline steps are named (e.g., .WithTrackingName(\"MyStep\")).\n" +
+                    BuildStepValidationError([], availableSteps));
+        }
+
+        var report = GeneratorCachingReport.Create(firstRun, secondRun, typeof(TGenerator));
+
+        using AssertionScope scope = new($"{typeof(TGenerator).Name} Caching Pipeline");
+        TestFormatters.ApplyToScope(scope);
+
+        report.Should().BeValidAndCached(stepsToTrack);
+
+        if (stepsToTrack is { Length: > 0 })
+            ValidateStepPerformance(firstRun, secondRun, stepsToTrack);
+    }
+
+    /// <summary>
     ///     Validates caching and behavior across a controlled <see cref="Compilation" /> change
     ///     that simulates an IDE edit.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
+    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <param name="makeChange">
     ///     A pure function that returns a modified compilation representing the edit.
-    ///     The input is the original compilation (not the generated one).
     /// </param>
     /// <param name="validate">
     ///     Optional custom validations against the resulting <see cref="CompilationCacheResult" />.
     /// </param>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <returns>A task that completes when all validations finish.</returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method runs the generator with
-    ///         <see
-    ///             cref="GeneratorDriver.RunGeneratorsAndUpdateCompilation(Compilation,out Compilation,out System.Collections.Immutable.ImmutableArray{Diagnostic},System.Threading.CancellationToken)" />
-    ///         ,
-    ///         applies <paramref name="makeChange" /> to the original input compilation,
-    ///         runs again, and exposes a <see cref="CompilationCacheResult" /> for fine-grained checks.
-    ///     </para>
-    /// </remarks>
     /// <example>
-    ///     Add a new file:
     ///     <code>
     /// await "public class Person { }"
     ///     .ShouldCacheWithCompilationUpdate&lt;MyGenerator&gt;(
@@ -299,8 +384,6 @@ public static class GeneratorTest
     ///         result => result.ShouldHaveCached("Person.Builder.g.cs"));
     /// </code>
     /// </example>
-    /// <seealso cref="ShouldRegenerate{TGenerator}(string,string)" />
-    /// <seealso cref="ShouldNotRegenerate{TGenerator}(string,string)" />
     public static async Task ShouldCacheWithCompilationUpdate<TGenerator>(this string source,
         Func<Compilation, Compilation> makeChange,
         Action<CompilationCacheResult>? validate = null)
@@ -309,24 +392,16 @@ public static class GeneratorTest
         GeneratorTestEngine<TGenerator> engine = new();
 
         var compilation1 = await engine.CreateCompilationAsync(source);
-        var driver = GeneratorDriverFactory.CreateDriver<TGenerator>(true);
+        var driver = GeneratorTestEngine<TGenerator>.CreateDriver(true);
 
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation1, out var output1,
-            out var diagnostics1);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation1, out var output1, out var diagnostics1);
 
-        // Apply the controlled edit to the original input
         var compilation2 = makeChange(compilation1);
-
-        // Run #2
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation2, out var output2,
-            out var diagnostics2);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation2, out var output2, out var diagnostics2);
 
         CompilationCacheResult result = new(output1, output2, diagnostics1, diagnostics2, driver.GetRunResult());
 
-        // Default validations
         result.ValidateCaching();
-
-        // Custom validations
         validate?.Invoke(result);
     }
 
@@ -334,8 +409,8 @@ public static class GeneratorTest
     ///     Convenience overload that simulates replacing the first syntax tree with edited source.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
+    /// <param name="source">Original C# source code.</param>
     /// <param name="editedSource">Edited source for the first document.</param>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <returns>A task that completes when validations finish.</returns>
     /// <example>
     ///     <code>
@@ -343,7 +418,7 @@ public static class GeneratorTest
     ///     .ShouldRegenerate&lt;MyGenerator&gt;("""
     ///         public class Person
     ///         {
-    ///             public string Name { get; set; } // Added property
+    ///             public string Name { get; set; }
     ///         }
     ///     """);
     /// </code>
@@ -363,8 +438,8 @@ public static class GeneratorTest
     ///     Convenience overload that simulates adding a new document to the project.
     /// </summary>
     /// <typeparam name="TGenerator">The generator under test.</typeparam>
+    /// <param name="source">Original C# source code.</param>
     /// <param name="newFileContent">Content of the additional C# file to add.</param>
-    /// <param name="source">C# source code to compile and feed into the generator.</param>
     /// <returns>A task that completes when validations finish.</returns>
     /// <remarks>
     ///     This is useful for testing that adding an unrelated file doesn't cause
@@ -382,5 +457,48 @@ public static class GeneratorTest
         var parseOptions = new CSharpParseOptions(TestConfiguration.LanguageVersion);
         return source.ShouldCacheWithCompilationUpdate<TGenerator>(compilation =>
             compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(newFileContent, parseOptions)));
+    }
+
+    private static string BuildStepValidationError(IEnumerable<string> missingSteps, IEnumerable<string> availableSteps)
+    {
+        StringBuilder sb = new();
+        sb.AppendLine("CACHING VALIDATION ERROR: Missing tracking step name(s)");
+        foreach (var step in missingSteps) sb.AppendLine($"  - {step}");
+        sb.AppendLine("\nAvailable steps:");
+        foreach (var step in availableSteps.OrderBy(x => x))
+            sb.AppendLine(
+                $"  {(GeneratorStepAnalyzer.IsInfrastructureStep(step) ? "[Sink]" : "[Observable]")} {step}");
+        return sb.ToString();
+    }
+
+    private static void ValidateStepPerformance(GeneratorDriverRunResult firstRun, GeneratorDriverRunResult secondRun,
+        IEnumerable<string> stepNames)
+    {
+        var firstSteps = GeneratorStepAnalyzer.ExtractSteps(firstRun);
+        var secondSteps = GeneratorStepAnalyzer.ExtractSteps(secondRun);
+
+        foreach (var stepName in stepNames)
+        {
+            var first = firstSteps[stepName];
+            var second = secondSteps[stepName];
+            first.Should().HaveSameCount(second, $"step {stepName} should run same number of times");
+
+            for (var i = 0; i < first.Length; i++)
+            {
+                var allowedTime = first[i].ElapsedTime + Max(TestConfiguration.PerformanceToleranceAbsolute,
+                    TimeSpan.FromTicks(
+                        (long)(first[i].ElapsedTime.Ticks * TestConfiguration.PerformanceTolerancePercent)));
+
+                second[i].ElapsedTime.Should().BeLessThanOrEqualTo(allowedTime,
+                    $"cached run of {stepName}[{i}] should not be materially slower than baseline");
+            }
+        }
+
+        return;
+
+        static TimeSpan Max(TimeSpan a, TimeSpan b)
+        {
+            return a >= b ? a : b;
+        }
     }
 }

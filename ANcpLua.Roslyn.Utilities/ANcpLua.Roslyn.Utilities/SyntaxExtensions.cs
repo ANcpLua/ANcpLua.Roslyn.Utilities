@@ -1,6 +1,3 @@
-// Copyright (c) ANcpLua. All rights reserved.
-// Licensed under the MIT License.
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

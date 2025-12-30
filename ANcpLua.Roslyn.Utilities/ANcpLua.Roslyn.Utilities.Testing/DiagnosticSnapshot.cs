@@ -6,12 +6,12 @@ using Microsoft.CodeAnalysis.Testing;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-///     Normalizes <see cref="Diagnostic" /> and <see cref="DiagnosticResult" /> for comparison in test assertions.
+///     Normalizes <see cref="Diagnostic" /> and <see cref="DiagnosticResult" /> as immutable snapshots for comparison.
 /// </summary>
 /// <remarks>
 ///     <para>
 ///         Roslyn's <see cref="Diagnostic" /> type doesn't implement value equality, making direct comparison
-///         in tests unreliable. This record normalizes diagnostics to comparable values: ID, severity,
+///         in tests unreliable. This record captures a normalized snapshot: ID, severity,
 ///         location (1-based line/column), and message.
 ///     </para>
 ///     <para>
@@ -29,17 +29,17 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <example>
 ///     <code>
 /// // Convert actual diagnostic
-/// var actual = DiagnosticComparable.FromDiagnostic(diagnostic);
+/// var actual = DiagnosticSnapshot.FromDiagnostic(diagnostic);
 /// 
 /// // Convert expected result
-/// var expected = DiagnosticComparable.FromResult(
+/// var expected = DiagnosticSnapshot.FromResult(
 ///     new DiagnosticResult("GEN001", DiagnosticSeverity.Error));
 /// 
 /// // Find differences
-/// var diff = DiagnosticComparable.FindFirstPropertyDifference(expected, actual);
+/// var diff = DiagnosticSnapshot.FindFirstPropertyDifference(expected, actual);
 /// </code>
 /// </example>
-public sealed record DiagnosticComparable(
+public sealed record DiagnosticSnapshot(
     string Id,
     DiagnosticSeverity Severity,
     string Path,
@@ -48,35 +48,35 @@ public sealed record DiagnosticComparable(
     string Message)
 {
     /// <summary>
-    ///     Creates a <see cref="DiagnosticComparable" /> from a Roslyn <see cref="Diagnostic" />.
+    ///     Creates a <see cref="DiagnosticSnapshot" /> from a Roslyn <see cref="Diagnostic" />.
     /// </summary>
     /// <param name="diagnostic">The diagnostic to convert.</param>
-    /// <returns>A normalized comparable representation.</returns>
+    /// <returns>A normalized snapshot representation.</returns>
     /// <remarks>
     ///     Extracts the mapped line span for accurate source location. Line and column are converted
     ///     to 1-based indexing to match editor conventions. If the diagnostic has no source location,
     ///     <see cref="Line" /> and <see cref="Column" /> are set to 0.
     /// </remarks>
-    public static DiagnosticComparable FromDiagnostic(Diagnostic diagnostic)
+    public static DiagnosticSnapshot FromDiagnostic(Diagnostic diagnostic)
     {
         var span = diagnostic.Location.GetMappedLineSpan();
         var hasLocation = diagnostic.Location.IsInSource && span.IsValid;
-        return new DiagnosticComparable(diagnostic.Id, diagnostic.Severity,
+        return new DiagnosticSnapshot(diagnostic.Id, diagnostic.Severity,
             hasLocation ? TextUtilities.NormalizePath(span.Path) : string.Empty,
             hasLocation ? span.StartLinePosition.Line + 1 : 0, hasLocation ? span.StartLinePosition.Character + 1 : 0,
             diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
-    ///     Creates a <see cref="DiagnosticComparable" /> from a <see cref="DiagnosticResult" />.
+    ///     Creates a <see cref="DiagnosticSnapshot" /> from a <see cref="DiagnosticResult" />.
     /// </summary>
     /// <param name="result">The expected diagnostic result to convert.</param>
-    /// <returns>A normalized comparable representation.</returns>
+    /// <returns>A normalized snapshot representation.</returns>
     /// <remarks>
     ///     Used to convert test expectations into a format that can be compared with actual diagnostics.
     ///     Handles the case where <see cref="DiagnosticResult.HasLocation" /> is false.
     /// </remarks>
-    public static DiagnosticComparable FromResult(DiagnosticResult result)
+    public static DiagnosticSnapshot FromResult(DiagnosticResult result)
     {
         var hasLocation = result is { HasLocation: true, Spans.Length: > 0 };
         var span = hasLocation ? result.Spans[0].Span : default;
@@ -84,12 +84,12 @@ public sealed record DiagnosticComparable(
         var line = hasLocation && span.IsValid ? span.StartLinePosition.Line + 1 : 0;
         var column = hasLocation && span.IsValid ? span.StartLinePosition.Character + 1 : 0;
 
-        return new DiagnosticComparable(result.Id, result.Severity, TextUtilities.NormalizePath(path), line, column,
+        return new DiagnosticSnapshot(result.Id, result.Severity, TextUtilities.NormalizePath(path), line, column,
             result.Message ?? string.Empty);
     }
 
     /// <summary>
-    ///     Formats the diagnostic for human-readable display in test output.
+    ///     Formats the diagnostic snapshot for human-readable display in test output.
     /// </summary>
     /// <returns>A formatted string like <c>MyFile.cs@10:5 GEN001 (Error): Message text</c>.</returns>
     /// <remarks>
@@ -104,13 +104,13 @@ public sealed record DiagnosticComparable(
     }
 
     /// <summary>
-    ///     Finds the first property that differs between two diagnostics, for detailed assertion messages.
+    ///     Finds the first property that differs between two diagnostic snapshots, for detailed assertion messages.
     /// </summary>
-    /// <param name="expected">The expected diagnostic.</param>
-    /// <param name="actual">The actual diagnostic.</param>
+    /// <param name="expected">The expected diagnostic snapshot.</param>
+    /// <param name="actual">The actual diagnostic snapshot.</param>
     /// <returns>
     ///     A tuple of (PropertyName, ExpectedValue, ActualValue) if a difference is found;
-    ///     <c>null</c> if the diagnostics match.
+    ///     <c>null</c> if the snapshots match.
     /// </returns>
     /// <remarks>
     ///     <para>
@@ -118,13 +118,13 @@ public sealed record DiagnosticComparable(
     ///         The first mismatch is returned immediately.
     ///     </para>
     ///     <para>
-    ///         Location properties (Path, Line, Column) are only compared if the expected diagnostic
+    ///         Location properties (Path, Line, Column) are only compared if the expected snapshot
     ///         has a location (<see cref="Line" /> &gt; 0). Message is only compared if the expected
     ///         message is non-empty, allowing tests to match just ID and severity.
     ///     </para>
     /// </remarks>
     public static (string Property, string Expected, string Actual)? FindFirstPropertyDifference(
-        DiagnosticComparable expected, DiagnosticComparable actual)
+        DiagnosticSnapshot expected, DiagnosticSnapshot actual)
     {
         if (expected.Severity != actual.Severity)
             return ("Severity", expected.Severity.ToString(), actual.Severity.ToString());
@@ -139,17 +139,12 @@ public sealed record DiagnosticComparable(
                 return ("Column", expected.Column.ToString(), actual.Column.ToString());
         }
 
-        // Skip message comparison if expected message is empty (allows testing just ID and severity)
         var expectedMessage = TextUtilities.NormalizeWhitespace(expected.Message);
-        switch (string.IsNullOrEmpty(expectedMessage))
+        if (!string.IsNullOrEmpty(expectedMessage))
         {
-            case false:
-            {
-                var actualMessage = TextUtilities.NormalizeWhitespace(actual.Message);
-                if (!string.Equals(expectedMessage, actualMessage, StringComparison.Ordinal))
-                    return ("Message", expectedMessage, actualMessage);
-                break;
-            }
+            var actualMessage = TextUtilities.NormalizeWhitespace(actual.Message);
+            if (!string.Equals(expectedMessage, actualMessage, StringComparison.Ordinal))
+                return ("Message", expectedMessage, actualMessage);
         }
 
         return null;

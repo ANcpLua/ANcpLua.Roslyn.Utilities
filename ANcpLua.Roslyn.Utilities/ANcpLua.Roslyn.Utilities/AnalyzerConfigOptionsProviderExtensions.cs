@@ -6,15 +6,13 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-/// Reads MSBuild-provided values surfaced through Roslyn analyzer config options.
-///
-/// MSBuild injects "virtual" keys into <see cref="AnalyzerConfigOptions"/>:
-/// - <c>build_property.&lt;PropertyName&gt;</c> for MSBuild properties
-/// - <c>build_metadata.&lt;ItemGroup&gt;.&lt;MetadataName&gt;</c> for item metadata (commonly AdditionalFiles)
-///
-/// Conventions in this helper:
-/// - Missing keys or empty/whitespace values are treated as "unset" and return <see langword="null"/>.
-/// - Typed helpers parse the common MSBuild forms (e.g. boolean "true/false" and "1/0").
+///     Reads MSBuild-provided values surfaced through Roslyn analyzer config options.
+///     MSBuild injects "virtual" keys into <see cref="AnalyzerConfigOptions" />:
+///     - <c>build_property.&lt;PropertyName&gt;</c> for MSBuild properties
+///     - <c>build_metadata.&lt;ItemGroup&gt;.&lt;MetadataName&gt;</c> for item metadata (commonly AdditionalFiles)
+///     Conventions in this helper:
+///     - Missing keys or empty/whitespace values are treated as "unset" and return <see langword="null" />.
+///     - Typed helpers parse the common MSBuild forms (e.g. boolean "true/false" and "1/0").
 /// </summary>
 public static class AnalyzerConfigOptionsProviderExtensions
 {
@@ -23,7 +21,7 @@ public static class AnalyzerConfigOptionsProviderExtensions
     private const string DefaultAdditionalFilesGroup = "AdditionalFiles";
 
     /// <summary>
-    /// Gets a config value by exact <paramref name="key"/>. Returns <see langword="null"/> when missing or whitespace.
+    ///     Gets a config value by exact <paramref name="key" />. Returns <see langword="null" /> when missing or whitespace.
     /// </summary>
     public static string? GetValueOrNull(this AnalyzerConfigOptions options, string key)
     {
@@ -36,10 +34,9 @@ public static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    /// Reads an MSBuild property from <see cref="AnalyzerConfigOptionsProvider.GlobalOptions"/>.
-    ///
-    /// Example: <c>build_property.TargetFramework</c>
-    /// With prefix: <c>build_property.MyPrefix_TargetFramework</c>
+    ///     Reads an MSBuild property from <see cref="AnalyzerConfigOptionsProvider.GlobalOptions" />.
+    ///     Example: <c>build_property.TargetFramework</c>
+    ///     With prefix: <c>build_property.MyPrefix_TargetFramework</c>
     /// </summary>
     public static string? GetGlobalProperty(this AnalyzerConfigOptionsProvider provider, string name,
         string? prefix = null)
@@ -51,9 +48,8 @@ public static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    /// Reads metadata for an <see cref="AdditionalText"/> item (default group: <c>AdditionalFiles</c>).
-    ///
-    /// Example: <c>build_metadata.AdditionalFiles.MyMetadata</c>
+    ///     Reads metadata for an <see cref="AdditionalText" /> item (default group: <c>AdditionalFiles</c>).
+    ///     Example: <c>build_metadata.AdditionalFiles.MyMetadata</c>
     /// </summary>
     public static string? GetAdditionalTextMetadata(
         this AnalyzerConfigOptionsProvider provider,
@@ -72,15 +68,17 @@ public static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    /// Reads an MSBuild property or throws when missing/unset.
+    ///     Reads an MSBuild property or throws when missing/unset.
     /// </summary>
     public static string GetRequiredGlobalProperty(this AnalyzerConfigOptionsProvider provider, string name,
         string? prefix = null)
-        => provider.GetGlobalProperty(name, prefix)
-           ?? throw new InvalidOperationException($"{CompositeName(name, prefix)} MSBuild property is required.");
+    {
+        return provider.GetGlobalProperty(name, prefix)
+               ?? throw new InvalidOperationException($"{CompositeName(name, prefix)} MSBuild property is required.");
+    }
 
     /// <summary>
-    /// Reads <see cref="AdditionalText"/> metadata or throws when missing/unset.
+    ///     Reads <see cref="AdditionalText" /> metadata or throws when missing/unset.
     /// </summary>
     public static string GetRequiredAdditionalTextMetadata(
         this AnalyzerConfigOptionsProvider provider,
@@ -88,27 +86,33 @@ public static class AnalyzerConfigOptionsProviderExtensions
         string name,
         string? group = null,
         string? prefix = null)
-        => provider.GetAdditionalTextMetadata(text, name, group, prefix)
-           ?? throw new InvalidOperationException(
-               $"{CompositeName(name, prefix)} metadata for AdditionalText is required.");
+    {
+        return provider.GetAdditionalTextMetadata(text, name, group, prefix)
+               ?? throw new InvalidOperationException(
+                   $"{CompositeName(name, prefix)} metadata for AdditionalText is required.");
+    }
 
     /// <summary>
-    /// Tries to read and parse an MSBuild property as a boolean.
-    /// Accepts: "true"/"false" (case-insensitive) and "1"/"0".
+    ///     Tries to read and parse an MSBuild property as a boolean.
+    ///     Accepts: "true"/"false" (case-insensitive) and "1"/"0".
     /// </summary>
     public static bool TryGetGlobalBool(this AnalyzerConfigOptionsProvider provider, string name, out bool value,
         string? prefix = null)
-        => TryParseMsBuildBoolean(provider.GetGlobalProperty(name, prefix), out value);
+    {
+        return TryParseMsBuildBoolean(provider.GetGlobalProperty(name, prefix), out value);
+    }
 
     /// <summary>
-    /// Reads a boolean MSBuild property or returns <paramref name="defaultValue"/> when missing/invalid.
+    ///     Reads a boolean MSBuild property or returns <paramref name="defaultValue" /> when missing/invalid.
     /// </summary>
     public static bool GetGlobalBoolOrDefault(this AnalyzerConfigOptionsProvider provider, string name,
         bool defaultValue, string? prefix = null)
-        => provider.TryGetGlobalBool(name, out var value, prefix) ? value : defaultValue;
+    {
+        return provider.TryGetGlobalBool(name, out var value, prefix) ? value : defaultValue;
+    }
 
     /// <summary>
-    /// Tries to read and parse an MSBuild property as an integer (invariant culture).
+    ///     Tries to read and parse an MSBuild property as an integer (invariant culture).
     /// </summary>
     public static bool TryGetGlobalInt(this AnalyzerConfigOptionsProvider provider, string name, out int value,
         string? prefix = null)
@@ -118,17 +122,19 @@ public static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    /// Reads an integer MSBuild property or returns <paramref name="defaultValue"/> when missing/invalid.
+    ///     Reads an integer MSBuild property or returns <paramref name="defaultValue" /> when missing/invalid.
     /// </summary>
     public static int GetGlobalIntOrDefault(this AnalyzerConfigOptionsProvider provider, string name, int defaultValue,
         string? prefix = null)
-        => provider.TryGetGlobalInt(name, out var value, prefix) ? value : defaultValue;
+    {
+        return provider.TryGetGlobalInt(name, out var value, prefix) ? value : defaultValue;
+    }
 
     /// <summary>
-    /// True when running under an IDE design-time build.
-    /// Heuristics:
-    /// - SDK-style: DesignTimeBuild=true
-    /// - Legacy:    BuildingProject=false
+    ///     True when running under an IDE design-time build.
+    ///     Heuristics:
+    ///     - SDK-style: DesignTimeBuild=true
+    ///     - Legacy:    BuildingProject=false
     /// </summary>
     public static bool IsDesignTimeBuild(this AnalyzerConfigOptionsProvider provider)
     {
@@ -146,13 +152,19 @@ public static class AnalyzerConfigOptionsProviderExtensions
     }
 
     private static string BuildPropertyKey(string name, string? prefix)
-        => BuildPropertyPrefix + CompositeName(name, prefix);
+    {
+        return BuildPropertyPrefix + CompositeName(name, prefix);
+    }
 
     private static string BuildMetadataKey(string group, string name, string? prefix)
-        => BuildMetadataPrefix + group + "." + CompositeName(name, prefix);
+    {
+        return BuildMetadataPrefix + group + "." + CompositeName(name, prefix);
+    }
 
     private static string CompositeName(string name, string? prefix)
-        => prefix is null ? name : prefix + "_" + name;
+    {
+        return prefix is null ? name : prefix + "_" + name;
+    }
 
     private static bool TryParseMsBuildBoolean(string? text, out bool value)
     {
@@ -167,7 +179,6 @@ public static class AnalyzerConfigOptionsProviderExtensions
 
         // MSBuild sometimes uses 1/0 for boolean-ish values
         if (text.Length == 1)
-        {
             switch (text[0])
             {
                 case '1':
@@ -177,7 +188,6 @@ public static class AnalyzerConfigOptionsProviderExtensions
                     value = false;
                     return true;
             }
-        }
 
         value = false;
         return false;

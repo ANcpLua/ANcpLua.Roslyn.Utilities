@@ -1,6 +1,3 @@
-// Copyright (c) ANcpLua. All rights reserved.
-// Licensed under the MIT License.
-
 using System.Collections.Immutable;
 
 namespace ANcpLua.Roslyn.Utilities.Models;
@@ -22,7 +19,7 @@ public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
 
         if (Args.Length != other.Args.Length) return false;
 
-        for (int i = 0; i < Args.Length; i++)
+        for (var i = 0; i < Args.Length; i++)
             if (!Equals(Args[i], other.Args[i]))
                 return false;
 
