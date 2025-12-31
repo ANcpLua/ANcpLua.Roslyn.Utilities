@@ -5,8 +5,11 @@
         <BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>
         <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
 
-        <!-- Version - single source for all packages -->
-        <Version>1.3.0</Version>
+        <!-- Version: derived at build time, CI passes -p:Version=X.Y.Z -->
+        <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.1</VersionPrefix>
+        <VersionSuffix Condition="'$(VersionSuffix)' == '' and '$(CI)' != 'true'">local</VersionSuffix>
+        <Version Condition="'$(Version)' == '' and '$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
+        <Version Condition="'$(Version)' == '' and '$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
 
         <!-- Deterministic builds for reproducibility -->
         <Deterministic>true</Deterministic>

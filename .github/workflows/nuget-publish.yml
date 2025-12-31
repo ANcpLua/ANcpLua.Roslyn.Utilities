@@ -1,9 +1,11 @@
-name: Publish to NuGet
+name: CI
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       version:
@@ -14,44 +16,105 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+
 jobs:
-  publish:
+  # Layer 1: Compute version deterministically
+  version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+      is_release: ${{ steps.ver.outputs.is_release }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '10.0.x'
-          dotnet-quality: 'preview'
-
-      - name: Determine version
-        id: version
+      - id: ver
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
           else
-            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+            COMMITS=$(git rev-list --count HEAD)
+            SHA=$(git rev-parse --short HEAD)
+            echo "version=0.0.$COMMITS-ci.$SHA" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
           fi
 
+  # Layer 2: Build and pack
+  build:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
       - name: Build
-        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release -p:Version=${{ steps.version.outputs.version }}
-
+        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release -p:Version=${{ needs.version.outputs.version }}
+        env:
+          CI: true
       - name: Pack
         run: |
-          dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ steps.version.outputs.version }} --no-build
-          dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ steps.version.outputs.version }} --no-build
+          dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v6
+        with:
+          name: packages
+          path: artifacts/*.nupkg
+          if-no-files-found: error
 
-      - name: NuGet login (OIDC → temp API key)
+  # Layer 3: Test (cross-platform)
+  test:
+    needs: [version, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/download-artifact@v6
+        with:
+          name: packages
+          path: local-feed/
+      - name: Add local NuGet source
+        run: dotnet nuget add source ./local-feed -n local
+      - name: Build with local packages
+        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release -p:Version=${{ needs.version.outputs.version }}
+        env:
+          CI: true
+
+  # Layer 4: Publish (only on tags/dispatch, after tests pass)
+  publish:
+    needs: [version, build, test]
+    if: needs.version.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: packages
+          path: artifacts/
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: NuGet login (OIDC)
         id: login
         uses: NuGet/login@v1
         with:
           user: ${{ secrets.NUGET_USER }}
-
-      - name: Push to NuGet (Trusted Publishing)
+      - name: Push to NuGet
         run: |
           for pkg in artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
