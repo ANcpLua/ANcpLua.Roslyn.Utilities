@@ -1,139 +1,145 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-///     Engine for executing generator tests and creating configured generator drivers.
+///     A builder and runner for executing Roslyn generator tests.
 /// </summary>
 /// <typeparam name="TGenerator">The generator type to test.</typeparam>
-/// <remarks>
-///     <para>
-///         This class provides the core test execution infrastructure for incremental generators.
-///         It handles compilation creation, generator driver setup, and two-pass execution for caching validation.
-///     </para>
-///     <para>
-///         Use <see cref="CreateDriver" /> to create a standalone driver for advanced scenarios,
-///         or <see cref="ExecuteTwiceAsync" /> for standard caching validation tests.
-///     </para>
-/// </remarks>
-/// <example>
-///     <code>
-/// var engine = new GeneratorTestEngine&lt;MyGenerator&gt;();
-/// var (firstRun, secondRun) = await engine.ExecuteTwiceAsync(source, trackSteps: true);
-///
-/// // Or create a driver directly for custom scenarios
-/// var driver = GeneratorTestEngine&lt;MyGenerator&gt;.CreateDriver(trackSteps: true);
-/// </code>
-/// </example>
 public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
-    private readonly CSharpCompilationOptions _compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
-        nullableContextOptions: NullableContextOptions.Enable, allowUnsafe: true);
-
-    private readonly CSharpParseOptions _parseOptions =
-        new(TestConfiguration.LanguageVersion, DocumentationMode.Diagnose);
+    private readonly List<AdditionalText> _additionalTexts = [];
+    private readonly List<MetadataReference> _references = [];
+    private readonly List<SyntaxTree> _sources = [];
+    private AnalyzerConfigOptionsProvider? _analyzerConfigOptions;
+    private LanguageVersion _languageVersion = TestConfiguration.LanguageVersion;
+    private ReferenceAssemblies _referenceAssemblies = TestConfiguration.ReferenceAssemblies;
+    private readonly bool _trackSteps = true; // Default to true for safer defaults in tests
 
     /// <summary>
-    ///     Creates a <see cref="GeneratorDriver" /> configured for the specified generator.
+    ///     Adds source code to the compilation.
     /// </summary>
-    /// <param name="trackSteps">
-    ///     If <c>true</c>, enables pipeline step tracking for caching analysis.
-    ///     This is required for <see cref="GeneratorCachingReport" /> and related functionality.
-    /// </param>
-    /// <returns>A configured <see cref="GeneratorDriver" /> ready to be run against a compilation.</returns>
-    /// <remarks>
-    ///     <para>
-    ///         The driver is configured with:
-    ///         <list type="bullet">
-    ///             <item>
-    ///                 <description>The specified generator wrapped as a source generator</description>
-    ///             </item>
-    ///             <item>
-    ///                 <description>Step tracking as specified by <paramref name="trackSteps" /></description>
-    ///             </item>
-    ///             <item>
-    ///                 <description>Parse options from <see cref="TestConfiguration.LanguageVersion" /></description>
-    ///             </item>
-    ///         </list>
-    ///     </para>
-    ///     <para>
-    ///         Step tracking has a small performance overhead, so it should only be enabled
-    ///         when caching validation is needed.
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// // For generation tests (no step tracking needed)
-    /// var driver = GeneratorTestEngine&lt;MyGenerator&gt;.CreateDriver(false);
-    /// 
-    /// // For caching tests (step tracking required)
-    /// var driver = GeneratorTestEngine&lt;MyGenerator&gt;.CreateDriver(true);
-    /// driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var diagnostics);
-    /// </code>
-    /// </example>
-    public static GeneratorDriver CreateDriver(bool trackSteps)
+    public GeneratorTestEngine<TGenerator> WithSource(string source)
     {
-        var parseOptions = new CSharpParseOptions(TestConfiguration.LanguageVersion);
-        return CSharpGeneratorDriver.Create(
-            [new TGenerator().AsSourceGenerator()],
-            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackSteps),
-            parseOptions: parseOptions);
+        var parseOptions = new CSharpParseOptions(_languageVersion, DocumentationMode.Diagnose);
+        _sources.Add(CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8), parseOptions));
+        return this;
     }
 
     /// <summary>
-    ///     Executes the generator twice with the same source to test caching.
+    ///     Adds a metadata reference to the compilation.
     /// </summary>
-    /// <param name="source">The source code to compile.</param>
-    /// <param name="trackSteps">Whether to track pipeline steps.</param>
-    /// <returns>The results from both runs.</returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method runs the generator twice on equivalent compilations to verify
-    ///         that caching works correctly. The second run should show cached results
-    ///         for unchanged pipeline outputs.
-    ///     </para>
-    /// </remarks>
-    public async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> ExecuteTwiceAsync(
-        string source, bool trackSteps)
+    public GeneratorTestEngine<TGenerator> WithReference(MetadataReference reference)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(source, Encoding.UTF8), _parseOptions);
-        var references =
-            await TestConfiguration.ReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
-        var compilation =
-            CSharpCompilation.Create("TestAssembly", [syntaxTree], references, _compilationOptions);
+        _references.Add(reference);
+        return this;
+    }
 
-        var driver = CreateDriverInternal(trackSteps, _parseOptions);
+    /// <summary>
+    ///     Adds an additional file to the generator driver.
+    /// </summary>
+    public GeneratorTestEngine<TGenerator> WithAdditionalText(string path, string text)
+    {
+        _additionalTexts.Add(new InMemoryAdditionalText(path, text));
+        return this;
+    }
 
-        driver = driver.RunGenerators(compilation);
+    /// <summary>
+    ///     Sets the analyzer config options provider.
+    /// </summary>
+    public GeneratorTestEngine<TGenerator> WithAnalyzerConfigOptions(AnalyzerConfigOptionsProvider options)
+    {
+        _analyzerConfigOptions = options;
+        return this;
+    }
+
+    /// <summary>
+    ///     Sets the language version for parsing.
+    /// </summary>
+    public GeneratorTestEngine<TGenerator> WithLanguageVersion(LanguageVersion version)
+    {
+        _languageVersion = version;
+        return this;
+    }
+
+    /// <summary>
+    ///     Sets the reference assemblies to use (default: .NET 10).
+    /// </summary>
+    public GeneratorTestEngine<TGenerator> WithReferenceAssemblies(ReferenceAssemblies assemblies)
+    {
+        _referenceAssemblies = assemblies;
+        return this;
+    }
+
+    /// <summary>
+    ///     Executes the generator twice (standard caching check).
+    /// </summary>
+    public async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var compilation = await CreateCompilationAsync(cancellationToken);
+        var driver = CreateDriver();
+
+        // First run
+        driver = driver.RunGenerators(compilation, cancellationToken);
         var firstRun = driver.GetRunResult();
 
-        var secondCompilation = CSharpCompilation.Create(compilation.AssemblyName!,
-            compilation.SyntaxTrees, compilation.References, _compilationOptions);
-        driver = driver.RunGenerators(secondCompilation);
+        // Second run (clone compilation to simulate "next key press" or essentially no change)
+        var secondCompilation = CSharpCompilation.Create(
+            compilation.AssemblyName,
+            compilation.SyntaxTrees,
+            compilation.References,
+            compilation.Options);
+
+        driver = driver.RunGenerators(secondCompilation, cancellationToken);
         var secondRun = driver.GetRunResult();
 
         return (firstRun, secondRun);
     }
 
-    /// <summary>
-    ///     Creates a compilation from source code.
-    /// </summary>
-    /// <param name="source">The source code to compile.</param>
-    /// <returns>The compiled Compilation.</returns>
-    public async Task<Compilation> CreateCompilationAsync(string source)
+    private async Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, _parseOptions);
-        var references =
-            await TestConfiguration.ReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
-        return CSharpCompilation.Create("TestAssembly", [syntaxTree], references, _compilationOptions);
+        var resolvedReferences = await _referenceAssemblies.ResolveAsync(LanguageNames.CSharp, cancellationToken);
+
+        var allReferences = resolvedReferences
+            .Concat(_references)
+            .Concat(TestConfiguration.AdditionalReferences);
+
+        var compilationOptions = new CSharpCompilationOptions(
+            OutputKind.DynamicallyLinkedLibrary,
+            nullableContextOptions: NullableContextOptions.Enable,
+            allowUnsafe: true);
+
+        return CSharpCompilation.Create(
+            "TestAssembly",
+            _sources,
+            allReferences,
+            compilationOptions);
     }
 
-    private static GeneratorDriver CreateDriverInternal(bool trackSteps, CSharpParseOptions parseOptions)
+    private GeneratorDriver CreateDriver()
     {
-        return CSharpGeneratorDriver.Create([new TGenerator().AsSourceGenerator()],
-            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackSteps),
-            parseOptions: parseOptions);
+        var parseOptions = new CSharpParseOptions(_languageVersion);
+        var generator = new TGenerator().AsSourceGenerator();
+
+        return CSharpGeneratorDriver.Create(
+            [generator],
+            _additionalTexts,
+            parseOptions,
+            _analyzerConfigOptions,
+            new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, _trackSteps));
+    }
+
+    // Simple in-memory additional text
+    private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
+    {
+        private readonly SourceText _text = SourceText.From(text, Encoding.UTF8);
+
+        public override string Path { get; } = path;
+        public override SourceText GetText(CancellationToken cancellationToken = default) => _text;
     }
 }

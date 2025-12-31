@@ -1,44 +1,59 @@
-# CLAUDE.md — ANcpLua.Roslyn.Utilities
+# CLAUDE.md
 
-## MISSION: Migrate to ANcpLua.NET.Sdk
+## Project Overview
 
-**Current NuGet:** 1.2.7 | **Target SDK:** 1.3.4
+**ANcpLua.Roslyn.Utilities** provides reusable utilities for Roslyn incremental source generators.
 
-### Rules
+**Current SDK Version:** 1.3.7 (ANcpLua.NET.Sdk)
 
-- ✅ Breaking changes FINE — pre-v1.0 semantics
-- ✅ DELETE PolySharp — SDK provides polyfills
-- ✅ DELETE LangVersion/Nullable from Directory.Build.props
-- ❌ NO fallbacks, NO "just in case" code
-
-### Critical Facts
-
-| Fact                        | Action                                                      |
-|-----------------------------|-------------------------------------------------------------|
-| SDK provides polyfills      | DELETE PolySharp entirely                                   |
-| SDK sets LangVersion=latest | DELETE from Directory.Build.props                           |
-| No circular dependency      | PackageId=Dummy NOT needed                                  |
-| Nested project structure    | Paths: `ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/` |
-
-### Target State
-
-```xml
-<Project Sdk="ANcpLua.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-</Project>
-```
-
-### Commands
+## Build Commands
 
 ```bash
-dotnet build
-dotnet test --project ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/
-dotnet pack
+# Build
+dotnet build -c Release
+
+# Pack
+dotnet pack -c Release
 ```
 
-### GitHub Actions Versions (Dec 2025)
+No test project exists in this repository.
+
+## Structure
+
+```
+ANcpLua.Roslyn.Utilities/
+├── ANcpLua.Roslyn.Utilities/        # netstandard2.0 - Core library
+└── ANcpLua.Roslyn.Utilities.Testing/ # net10.0 - Testing framework
+```
+
+## SDK Policies (ANcpLua.NET.Sdk)
+
+### Banned Packages
+
+| Package | Reason | Replacement |
+|---------|--------|-------------|
+| `Microsoft.NET.Test.Sdk` | VSTest legacy | `xunit.v3.mtp-v2` |
+| `FluentAssertions` | Abandoned | `AwesomeAssertions` |
+| `xunit.runner.visualstudio` | VSTest adapter | Use MTP runner |
+| `coverlet.*` | Legacy coverage | MTP built-in coverage |
+
+### SDK-Owned Properties (DO NOT set in csproj)
+
+- `LangVersion` - Set by SDK
+- `Nullable` - Set by SDK
+- `Version` / `VersionPrefix` / `VersionSuffix` - Use Directory.Build.props
+
+### Required Configurations
+
+**Directory.Packages.props:**
+- `ManagePackageVersionsCentrally=true`
+- `CentralPackageTransitivePinningEnabled=true`
+
+**Directory.Build.props:**
+- `Deterministic=true`
+- `ContinuousIntegrationBuild=true` (conditional on `$(CI)`)
+
+### GitHub Actions Versions
 
 ```yaml
 - uses: actions/checkout@v6
@@ -46,19 +61,18 @@ dotnet pack
 - uses: actions/upload-artifact@v6
 ```
 
-### DELETE Checklist
+## Key Libraries
 
-- [ ] PolySharp PackageReference (Directory.Packages.props + csproj)
-- [ ] `<LangVersion>` from Directory.Build.props
-- [ ] `<Nullable>` from Directory.Build.props
-- [ ] Any hardcoded versions outside CPM
+### Main Library (ANcpLua.Roslyn.Utilities)
 
-### Architecture Role
+- `EquatableArray<T>` - Value-equal array for generator caching
+- Symbol extensions for attribute lookup, type hierarchy, accessibility
+- Pipeline extensions for filtered syntax providers
+- Configuration extensions for MSBuild property access
 
-```
-ANcpLua.Roslyn.Utilities (THIS REPO)
-         │
-         ├──► ANcpLua.Analyzers (NuGet reference)
-         │
-         └──► ANcpLua.NET.Sdk (git submodule, source embedding)
-```
+### Testing Library (ANcpLua.Roslyn.Utilities.Testing)
+
+Fluent testing framework for incremental generators:
+- Caching validation
+- Forbidden type detection (ISymbol, Compilation)
+- Comprehensive assertion support
