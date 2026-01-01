@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Meziantou.Framework.FullPath"/>
+    <PackageReference Include="Meziantou.Framework.TemporaryDirectory"/>
     <PackageReference Include="AwesomeAssertions"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>

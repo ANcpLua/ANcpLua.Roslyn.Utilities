@@ -76,6 +76,27 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     }
 
     /// <summary>
+    ///     Creates a compilation from source code (for advanced test scenarios).
+    /// </summary>
+    public async Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default)
+    {
+        return await WithSource(source).CreateCompilationAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     Creates a generator driver (for advanced test scenarios).
+    /// </summary>
+    public static GeneratorDriver CreateDriver(bool trackSteps = true)
+    {
+        var parseOptions = new CSharpParseOptions(TestConfiguration.LanguageVersion);
+        var generator = new TGenerator().AsSourceGenerator();
+        return CSharpGeneratorDriver.Create(
+            [generator],
+            parseOptions: parseOptions,
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackSteps));
+    }
+
+    /// <summary>
     ///     Executes the generator twice (standard caching check).
     /// </summary>
     public async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(

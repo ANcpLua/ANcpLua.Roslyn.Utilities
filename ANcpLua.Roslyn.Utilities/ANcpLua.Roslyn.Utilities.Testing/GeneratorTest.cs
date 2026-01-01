@@ -125,7 +125,7 @@ public static class GeneratorTest
         bool exactMatch = true, bool normalizeNewlines = true) where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
+        var (firstRun, _) = await engine.WithSource(source).RunTwiceAsync();
 
         using AssertionScope scope = new($"Generated file '{hintName}'");
         TestFormatters.ApplyToScope(scope);
@@ -178,7 +178,7 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
+        var (firstRun, _) = await engine.WithSource(source).RunTwiceAsync();
 
         using AssertionScope scope = new("Diagnostics");
         TestFormatters.ApplyToScope(scope);
@@ -251,7 +251,7 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
+        var (firstRun, _) = await engine.WithSource(source).RunTwiceAsync();
 
         using AssertionScope scope = new("Diagnostics");
         TestFormatters.ApplyToScope(scope);
@@ -281,7 +281,7 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, _) = await engine.ExecuteTwiceAsync(source, true);
+        var (firstRun, _) = await engine.WithSource(source).RunTwiceAsync();
 
         using AssertionScope scope = new("Compilation");
         TestFormatters.ApplyToScope(scope);
@@ -339,7 +339,7 @@ public static class GeneratorTest
         where TGenerator : IIncrementalGenerator, new()
     {
         GeneratorTestEngine<TGenerator> engine = new();
-        var (firstRun, secondRun) = await engine.ExecuteTwiceAsync(source, true);
+        var (firstRun, secondRun) = await engine.WithSource(source).RunTwiceAsync();
 
         var availableSteps =
             firstRun.Results.SelectMany(r => r.TrackedSteps).Select(kv => kv.Key).Distinct().ToList();

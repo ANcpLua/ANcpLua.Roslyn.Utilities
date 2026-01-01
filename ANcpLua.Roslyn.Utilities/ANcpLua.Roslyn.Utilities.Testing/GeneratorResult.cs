@@ -243,4 +243,9 @@ public sealed record GeneratedFile(string HintName, string Content)
 /// <summary>
 ///     Exception thrown when generator assertions fail.
 /// </summary>
-public sealed class GeneratorAssertionException(string message) : Exception(message);
+public sealed class GeneratorAssertionException : Exception
+{
+    public GeneratorAssertionException() { }
+    public GeneratorAssertionException(string message) : base(message) { }
+    public GeneratorAssertionException(string message, Exception innerException) : base(message, innerException) { }
+}
