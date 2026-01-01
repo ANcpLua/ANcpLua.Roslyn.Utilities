@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
@@ -26,7 +27,7 @@ internal static class ReportFormatter
 
         var diagnostics = run.Results.SelectMany(static r => r.Diagnostics).ToList();
         sb.AppendLine($"─── DIAGNOSTICS ({diagnostics.Count}) ───");
-        if (diagnostics.Count == 0)
+        if (diagnostics.Count is 0)
         {
             sb.AppendLine("  (none)");
         }
@@ -40,7 +41,7 @@ internal static class ReportFormatter
 
         var outputs = run.Results.SelectMany(static r => r.GeneratedSources).ToList();
         sb.AppendLine($"─── GENERATED OUTPUTS ({outputs.Count}) ───");
-        if (outputs.Count == 0)
+        if (outputs.Count is 0)
         {
             sb.AppendLine("  ⚠ No files generated");
         }
@@ -118,23 +119,29 @@ internal static class ReportFormatter
             sb.AppendLine(StepFormatter.FormatStepLine(step, requiredSteps));
         }
 
-        if (TestConfiguration.EnableJsonReporting)
-        {
-            sb.AppendLine("\n--- JSON ---");
-            sb.AppendLine(FormatJson(report, failedCaching));
-        }
+        sb.AppendLine("\n--- JSON ---");
+        sb.AppendLine(FormatJson(report, failedCaching));
 
         return sb.ToString();
     }
 
-    private static string FormatJson(GeneratorCachingReport report, IReadOnlyList<GeneratorStepAnalysis> failedCaching)
+    private static string FormatJson(GeneratorCachingReport report, IEnumerable<GeneratorStepAnalysis> failedCaching)
     {
         var payload = new
         {
             generator = report.GeneratorName,
             producedOutput = report.ProducedOutput,
-            forbidden = report.ForbiddenTypeViolations.Select(static v => new { v.StepName, Type = v.ForbiddenType.Name, v.Path }),
-            failed = failedCaching.Select(static s => new { s.StepName, s.Cached, s.Modified, s.New, s.Removed })
+            forbidden =
+                report.ForbiddenTypeViolations.Select(static v =>
+                    new { v.StepName, Type = v.ForbiddenType.Name, v.Path }),
+            failed = failedCaching.Select(static s => new
+            {
+                s.StepName,
+                s.Cached,
+                s.Modified,
+                s.New,
+                s.Removed
+            })
         };
         return JsonSerializer.Serialize(payload, JsonOptions);
     }
@@ -146,10 +153,54 @@ internal static class ReportFormatter
         {
             var head = lines.Take(10).Select(static (l, i) => $"{i + 1,4} │ {l}");
             var tail = lines.TakeLast(10).Select((l, i) => $"{lines.Length - 10 + i + 1,4} │ {l}");
-            return string.Join("\n", head) + $"\n       ... ({lines.Length - 20} lines omitted) ...\n" + string.Join("\n", tail);
+            return string.Join("\n", head) + $"\n       ... ({lines.Length - 20} lines omitted) ...\n" +
+                   string.Join("\n", tail);
         }
+
         return string.Join("\n", lines.Select(static (l, i) => $"{i + 1,4} │ {l}"));
     }
 
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
+}
+
+/// <summary>
+///     Formats forbidden type violations consistently across all reports.
+/// </summary>
+internal static class ViolationFormatter
+{
+    /// <summary>
+    ///     Formats violations grouped by step name.
+    /// </summary>
+    /// <param name="violations">The violations to format.</param>
+    /// <returns>Multi-line grouped format.</returns>
+    public static string FormatGrouped(IEnumerable<ForbiddenTypeViolation> violations)
+    {
+        StringBuilder sb = new();
+        foreach (var group in violations.GroupBy(static v => v.StepName))
+        {
+            sb.AppendLine($"  Step '{group.Key}':");
+            foreach (var v in group)
+                sb.AppendLine($"    ✗ {v.ForbiddenType.Name} at {v.Path}");
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     Formats a violation group as an issue block for failure reports.
+    /// </summary>
+    /// <param name="issueNumber">The issue number.</param>
+    /// <param name="group">The group of violations for a step.</param>
+    /// <returns>Formatted issue block.</returns>
+    public static string FormatIssueBlock(int issueNumber, IGrouping<string, ForbiddenTypeViolation> group)
+    {
+        StringBuilder sb = new();
+        sb.AppendLine($"--- ISSUE {issueNumber} (CRITICAL): Forbidden Type Cached in '{group.Key}' ---");
+        sb.AppendLine("  Detail: Caching ISymbol/Compilation/SyntaxNode causes IDE performance degradation.");
+        sb.AppendLine("  Recommendation: Store only simple, equatable data (prefer 'record').");
+        foreach (var violation in group)
+            sb.AppendLine($"    - {violation.ForbiddenType.FullName} at {violation.Path}");
+        sb.AppendLine();
+        return sb.ToString();
+    }
 }

@@ -1,24 +1,10 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
+using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
-
-/// <summary>
-///     Represents a forbidden type violation in the generator pipeline.
-/// </summary>
-/// <param name="StepName">The step where the violation occurred.</param>
-/// <param name="ForbiddenType">The forbidden type that was cached.</param>
-/// <param name="Path">The path to the forbidden type.</param>
-/// <remarks>
-///     <para>
-///         Forbidden types include Roslyn runtime types such as <see cref="ISymbol" />,
-///         <see cref="Compilation" />, <see cref="SyntaxNode" />, etc. Caching these types
-///         causes memory leaks and IDE performance degradation.
-///     </para>
-/// </remarks>
-public sealed record ForbiddenTypeViolation(string StepName, Type ForbiddenType, string Path);
 
 /// <summary>
 ///     Analyzes generator outputs for forbidden Roslyn types that should not be cached.
@@ -85,7 +71,7 @@ internal static class ForbiddenTypeAnalyzer
         List<ForbiddenTypeViolation> violations = [];
         HashSet<object> visited = new(ReferenceEqualityComparer.Instance);
 
-        foreach (var (stepName, steps) in run.Results.SelectMany(r => r.TrackedSteps))
+        foreach (var (stepName, steps) in run.Results.SelectMany(static r => r.TrackedSteps))
         foreach (var step in steps)
         foreach (var (output, _) in step.Outputs)
         {
@@ -131,27 +117,17 @@ internal static class ForbiddenTypeAnalyzer
         }
     }
 
-    /// <summary>
-    ///     Gets fields that should be inspected for forbidden types.
-    /// </summary>
-    /// <param name="type">The type to get fields from.</param>
-    /// <returns>Array of fields that may contain forbidden types.</returns>
-    public static FieldInfo[] GetRelevantFields(Type type)
-    {
-        return FieldCache.GetOrAdd(type,
-            t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
-                             BindingFlags.DeclaredOnly).Where(f => !IsAllowedType(f.FieldType)).ToArray());
-    }
+    private static IEnumerable<FieldInfo> GetRelevantFields(Type type) =>
+        FieldCache.GetOrAdd(type,
+            static t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
+                                    BindingFlags.DeclaredOnly).Where(static f => !IsAllowedType(f.FieldType))
+                .ToArray());
 
-    private static bool IsForbiddenType(Type type)
-    {
-        return ForbiddenTypes.Contains(type) || ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
-    }
+    private static bool IsForbiddenType(Type type) => ForbiddenTypes.Contains(type) ||
+                                                      ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
 
-    private static bool IsAllowedType(Type type)
-    {
-        return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
-               type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
-               (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
-    }
+    private static bool IsAllowedType(Type type) =>
+        type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
+        type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
+        (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
 }

@@ -8,21 +8,6 @@ namespace ANcpLua.Roslyn.Utilities;
 public static class EnumerableExtensions
 {
     /// <summary>
-    ///     Concatenates strings and cleans up line breaks at the beginning and end of the resulting string.
-    ///     Returns " " if collection is empty (to use with
-    ///     <see cref="StringExtensions.TrimBlankLines(string)" />).
-    /// </summary>
-    /// <param name="values">The string values to concatenate.</param>
-    /// <returns>The concatenated string.</returns>
-    public static string Inject(this IEnumerable<string> values)
-    {
-        var text = string.Concat(values)
-            .TrimStart('\r', '\n')
-            .TrimEnd('\r', '\n');
-        return string.IsNullOrWhiteSpace(text) ? " " : text;
-    }
-
-    /// <summary>
     ///     Projects each element to an enumerable and flattens, returning empty if source is null.
     ///     Null-safe version of SelectMany.
     /// </summary>
@@ -49,10 +34,7 @@ public static class EnumerableExtensions
     /// <typeparam name="T">The element type.</typeparam>
     /// <param name="source">The source enumerable.</param>
     /// <returns>The source or empty enumerable.</returns>
-    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source)
-    {
-        return source ?? [];
-    }
+    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source) => source ?? [];
 
     /// <summary>
     ///     Converts to ImmutableArray, returning empty if source is null.
@@ -60,10 +42,8 @@ public static class EnumerableExtensions
     /// <typeparam name="T">The element type.</typeparam>
     /// <param name="source">The source enumerable.</param>
     /// <returns>The immutable array.</returns>
-    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source)
-    {
-        return source is null ? [] : [.. source];
-    }
+    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source) =>
+        source is null ? [] : [.. source];
 
     /// <summary>
     ///     Checks if the enumerable has duplicate elements.
@@ -75,8 +55,10 @@ public static class EnumerableExtensions
     {
         var seen = new HashSet<T>();
         foreach (var item in source)
+        {
             if (!seen.Add(item))
                 return true;
+        }
 
         return false;
     }
@@ -93,27 +75,67 @@ public static class EnumerableExtensions
     {
         var seen = new HashSet<TKey>();
         foreach (var item in source)
+        {
             if (!seen.Add(keySelector(item)))
                 return true;
+        }
 
         return false;
     }
 
     /// <summary>
-    ///     Returns distinct elements by a key selector.
+    ///     Returns the single element, or default if empty or multiple exist.
+    ///     Unlike SingleOrDefault, this does not throw on multiple elements.
+    /// </summary>
+    public static T? SingleOrDefaultIfMultiple<T>(this IEnumerable<T> source)
+    {
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            return default;
+
+        var result = enumerator.Current;
+        return enumerator.MoveNext() ? default : result;
+    }
+
+    /// <summary>
+    ///     Filters null values and returns non-null elements.
+    /// </summary>
+    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : class
+    {
+        foreach (var item in source)
+        {
+            if (item is not null)
+                yield return item;
+        }
+    }
+
+    /// <summary>
+    ///     Filters null values and returns non-null elements (for nullable value types).
+    /// </summary>
+    public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : struct
+    {
+        foreach (var item in source)
+        {
+            if (item.HasValue)
+                yield return item.Value;
+        }
+    }
+
+    /// <summary>
+    ///     Finds the index of the first element matching the predicate.
     /// </summary>
     /// <typeparam name="T">The element type.</typeparam>
-    /// <typeparam name="TKey">The key type.</typeparam>
-    /// <param name="source">The source enumerable.</param>
-    /// <param name="keySelector">The key selector function.</param>
-    /// <returns>The distinct elements.</returns>
-    public static IEnumerable<T> DistinctBy<T, TKey>(
-        this IEnumerable<T> source,
-        Func<T, TKey> keySelector)
+    /// <param name="list">The list to search.</param>
+    /// <param name="predicate">The predicate function.</param>
+    /// <returns>The index of the first match, or -1 if not found.</returns>
+    public static int IndexOf<T>(this IList<T> list, Func<T, bool> predicate)
     {
-        var seen = new HashSet<TKey>();
-        foreach (var item in source)
-            if (seen.Add(keySelector(item)))
-                yield return item;
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (predicate(list[i]))
+                return i;
+        }
+
+        return -1;
     }
 }

@@ -26,7 +26,7 @@ public static class MethodSymbolExtensions
         if (symbol.ExplicitInterfaceImplementations.Length > 0)
             return true;
 
-        return ((ISymbol)symbol).GetImplementingInterfaceMember() is not null;
+        return symbol.GetImplementingInterfaceMember() is not null;
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public static class MethodSymbolExtensions
         if (symbol.ExplicitInterfaceImplementations.Length > 0)
             return true;
 
-        return ((ISymbol)symbol).GetImplementingInterfaceMember() is not null;
+        return symbol.GetImplementingInterfaceMember() is not null;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class MethodSymbolExtensions
         if (symbol.ExplicitInterfaceImplementations.Any())
             return symbol.ExplicitInterfaceImplementations.First();
 
-        return (IMethodSymbol?)((ISymbol)symbol).GetImplementingInterfaceMember();
+        return (IMethodSymbol?)symbol.GetImplementingInterfaceMember();
     }
 
     private static ISymbol? GetImplementingInterfaceMember(this ISymbol symbol)
@@ -76,9 +76,6 @@ public static class MethodSymbolExtensions
     {
         if (symbol is null || baseMethod is null)
             return false;
-
-        if (SymbolEqualityComparer.Default.Equals(symbol, baseMethod))
-            return true;
 
         while (symbol is not null)
         {

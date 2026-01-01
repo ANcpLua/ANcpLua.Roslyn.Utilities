@@ -8,12 +8,12 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// </summary>
 public sealed class GeneratorResult : IDisposable
 {
-    private readonly string? _source;
-    private readonly Type _generatorType;
-    private readonly List<string> _failures = [];
     private readonly Lazy<GeneratorCachingReport> _cachingReport;
-    private readonly Lazy<IReadOnlyList<GeneratedFile>> _files;
     private readonly Lazy<IReadOnlyList<Diagnostic>> _diagnostics;
+    private readonly List<string> _failures = [];
+    private readonly Lazy<IReadOnlyList<GeneratedFile>> _files;
+    private readonly Type _generatorType;
+    private readonly string? _source;
     private bool _disposed;
 
     internal GeneratorResult(
@@ -42,8 +42,6 @@ public sealed class GeneratorResult : IDisposable
             GeneratorCachingReport.Create(FirstRun, SecondRun, _generatorType));
     }
 
-    #region Data Properties
-
     public IEnumerable<GeneratedFile> Files => _files.Value;
     public IReadOnlyList<Diagnostic> Diagnostics => _diagnostics.Value;
     public GeneratorCachingReport CachingReport => _cachingReport.Value;
@@ -53,9 +51,12 @@ public sealed class GeneratorResult : IDisposable
     public GeneratedFile? this[string hintName] =>
         Files.FirstOrDefault(f => f.HintName.Equals(hintName, StringComparison.OrdinalIgnoreCase));
 
-    #endregion
-
-    #region Assertions (collect failures, don't throw)
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        Verify();
+    }
 
     public GeneratorResult Produces(string hintName, string expectedContent, bool exactMatch = true)
     {
@@ -134,7 +135,7 @@ public sealed class GeneratorResult : IDisposable
     public GeneratorResult HasDiagnostic(string id, DiagnosticSeverity? severity = null)
     {
         var matches = Diagnostics.Where(d => d.Id == id && (severity is null || d.Severity == severity)).ToList();
-        if (matches.Count == 0)
+        if (matches.Count is 0)
         {
             var what = severity.HasValue ? $"'{id}' ({severity})" : $"'{id}'";
             Fail($"Missing diagnostic {what}", AssertionHelpers.FormatDiagnosticIds(Diagnostics));
@@ -185,10 +186,6 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
-    #endregion
-
-    #region Failure Collection
-
     private void Fail(string issue, string details)
     {
         var msg = string.IsNullOrEmpty(details) ? issue : $"{issue}\n{details}";
@@ -200,7 +197,7 @@ public sealed class GeneratorResult : IDisposable
     /// </summary>
     public void Verify()
     {
-        if (_failures.Count == 0) return;
+        if (_failures.Count is 0) return;
 
         var sb = new StringBuilder();
         sb.AppendLine($"Generator '{_generatorType.Name}' failed {_failures.Count} assertion(s):");
@@ -218,27 +215,12 @@ public sealed class GeneratorResult : IDisposable
 
         throw new GeneratorAssertionException(sb.ToString());
     }
-
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _disposed = true;
-        Verify();
-    }
-
-    #endregion
 }
 
 /// <summary>
 ///     Represents a generated source file.
 /// </summary>
-public sealed record GeneratedFile(string HintName, string Content)
-{
-    public bool Contains(string text) => Content.Contains(text, StringComparison.Ordinal);
-
-    public bool Matches(string expected) =>
-        TextUtilities.NormalizeNewlines(Content) == TextUtilities.NormalizeNewlines(expected);
-}
+public sealed record GeneratedFile(string HintName, string Content);
 
 /// <summary>
 ///     Exception thrown when generator assertions fail.

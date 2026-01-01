@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -5,7 +7,17 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 public static class StringExtensions
 {
-    private static readonly char[] Separator = ['\n'];
+    private static readonly char[] NewLineSeparator = ['\n'];
+
+    /// <summary>
+    ///     Splits a string into lines without allocating (returns a ref struct enumerator).
+    /// </summary>
+    public static LineSplitEnumerator SplitLines(this string str) => new(str.AsSpan());
+
+    /// <summary>
+    ///     Splits a span into lines without allocating.
+    /// </summary>
+    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str) => new(str);
 
     /// <summary>
     ///     Makes the first letter of the name uppercase.
@@ -43,7 +55,6 @@ public static class StringExtensions
         return input.ToLowerInvariant() switch
 #pragma warning restore CA1308
         {
-            null => throw new ArgumentNullException(nameof(input)),
             "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
 
             // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
@@ -55,7 +66,7 @@ public static class StringExtensions
             "byte" => "@byte",
             "case" => "@case",
             "catch" => "@catch",
-            "cChar" => "@char",
+            "char" => "@char",
             "checked" => "@checked",
             "class" => "@class",
             "const" => "@const",
@@ -147,7 +158,7 @@ public static class StringExtensions
     /// var cleaned = """
     ///     public class Foo
     ///     {
-    /// 
+    ///
     ///         public int Value { get; }
     ///     }
     ///     """.TrimBlankLines();
@@ -158,11 +169,12 @@ public static class StringExtensions
     {
         text = text ?? throw new ArgumentNullException(nameof(text));
 
-        var lines = text.NormalizeLineEndings().Split(Separator, StringSplitOptions.None);
+        var lines = text.NormalizeLineEndings().Split(NewLineSeparator, StringSplitOptions.None);
         var result = new StringBuilder();
         var first = true;
 
         foreach (var line in lines)
+        {
             if (!IsBlankLine(line))
             {
                 if (!first)
@@ -170,17 +182,20 @@ public static class StringExtensions
                 result.Append(line);
                 first = false;
             }
+        }
 
         return result.ToString();
 
         static bool IsBlankLine(string line)
         {
-            if (line.Length == 0)
+            if (line.Length is 0)
                 return false;
 
             foreach (var c in line)
+            {
                 if (!char.IsWhiteSpace(c))
                     return false;
+            }
 
             return true;
         }
@@ -199,48 +214,84 @@ public static class StringExtensions
 
         var newText = text
             .Replace("\r\n", "\n")
-            .Replace("\r", "\n");
+            .Replace('\r', '\n');
         if (newLine is not null) newText = newText.Replace("\n", newLine);
 
         return newText;
     }
 
     /// <summary>
-    ///     Returns the namespace for the selected type's fully qualified name.
+    ///     Zero-allocation line enumerator.
     /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public static string ExtractNamespace(this string text)
+    [StructLayout(LayoutKind.Auto)]
+#pragma warning disable CA1034 // Nested types should not be visible - ref structs require this pattern
+    public ref struct LineSplitEnumerator
     {
-        text = text ?? throw new ArgumentNullException(nameof(text));
+        private ReadOnlySpan<char> _str;
 
-        return text[..text.LastIndexOf('.')];
+        public LineSplitEnumerator(ReadOnlySpan<char> str)
+        {
+            _str = str;
+            Current = default;
+        }
+
+        public readonly LineSplitEnumerator GetEnumerator() => this;
+
+        public bool MoveNext()
+        {
+            if (_str.Length is 0)
+                return false;
+
+            var span = _str;
+            var index = span.IndexOfAny('\r', '\n');
+            if (index == -1)
+            {
+                _str = [];
+                Current = new LineSplitEntry(span, []);
+                return true;
+            }
+
+            if (index < span.Length - 1 && span[index] == '\r')
+            {
+                var next = span[index + 1];
+                if (next == '\n')
+                {
+                    Current = new LineSplitEntry(span[..index], span.Slice(index, 2));
+                    _str = span[(index + 2)..];
+                    return true;
+                }
+            }
+
+            Current = new LineSplitEntry(span[..index], span.Slice(index, 1));
+            _str = span[(index + 1)..];
+            return true;
+        }
+
+        public LineSplitEntry Current { get; private set; }
     }
 
     /// <summary>
-    ///     Returns the simple name(without namespace) for the selected type's fully qualified name.
+    ///     Represents a line and its separator.
     /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public static string ExtractSimpleName(this string text)
+    [StructLayout(LayoutKind.Auto)]
+    public readonly ref struct LineSplitEntry
+#pragma warning restore CA1034
     {
-        text = text ?? throw new ArgumentNullException(nameof(text));
+        public LineSplitEntry(ReadOnlySpan<char> line, ReadOnlySpan<char> separator)
+        {
+            Line = line;
+            Separator = separator;
+        }
 
-        return text[(text.LastIndexOf('.') + 1)..];
-    }
+        public ReadOnlySpan<char> Line { get; }
+        public ReadOnlySpan<char> Separator { get; }
 
-    /// <summary>
-    ///     Returns selected type's fully qualified name with 'global::' prefix.
-    /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public static string WithGlobalPrefix(this string text)
-    {
-        text = text ?? throw new ArgumentNullException(nameof(text));
+        public void Deconstruct(out ReadOnlySpan<char> line, out ReadOnlySpan<char> separator)
+        {
+            line = Line;
+            separator = Separator;
+        }
 
-        return $"global::{text}";
+        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry) => entry.Line;
     }
 }

@@ -7,17 +7,8 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 public static class LanguageVersionExtensions
 {
-    public static bool IsCSharp8OrAbove(this LanguageVersion languageVersion) =>
-        languageVersion >= LanguageVersion.CSharp8;
-
-    public static bool IsCSharp9OrAbove(this LanguageVersion languageVersion) =>
-        languageVersion >= LanguageVersion.CSharp9;
-
     public static bool IsCSharp10OrAbove(this LanguageVersion languageVersion) =>
         languageVersion >= (LanguageVersion)1000;
-
-    public static bool IsCSharp10OrBelow(this LanguageVersion languageVersion) =>
-        languageVersion <= (LanguageVersion)1000;
 
     public static bool IsCSharp11OrAbove(this LanguageVersion languageVersion) =>
         languageVersion >= (LanguageVersion)1100;

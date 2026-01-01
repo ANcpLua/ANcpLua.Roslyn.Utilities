@@ -2,10 +2,6 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
-/// <summary>
-///     God API entry point for generator testing.
-/// </summary>
-/// <typeparam name="TGenerator">The generator type to test.</typeparam>
 public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
     /// <summary>

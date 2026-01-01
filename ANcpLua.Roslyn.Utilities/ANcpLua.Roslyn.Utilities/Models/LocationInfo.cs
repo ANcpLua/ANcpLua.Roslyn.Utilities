@@ -23,24 +23,15 @@ public readonly record struct LocationInfo(string Path, TextSpan Span, LinePosit
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="SyntaxNode" />.
     /// </summary>
-    public static LocationInfo From(SyntaxNode node)
-    {
-        return From(node.GetLocation());
-    }
+    public static LocationInfo From(SyntaxNode node) => From(node.GetLocation());
 
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="SyntaxToken" />.
     /// </summary>
-    public static LocationInfo From(SyntaxToken token)
-    {
-        return From(token.GetLocation());
-    }
+    public static LocationInfo From(SyntaxToken token) => From(token.GetLocation());
 
     /// <summary>
     ///     Converts back to a <see cref="Location" />.
     /// </summary>
-    public Location ToLocation()
-    {
-        return Location.Create(Path, Span, LineSpan);
-    }
+    public Location ToLocation() => Location.Create(Path, Span, LineSpan);
 }

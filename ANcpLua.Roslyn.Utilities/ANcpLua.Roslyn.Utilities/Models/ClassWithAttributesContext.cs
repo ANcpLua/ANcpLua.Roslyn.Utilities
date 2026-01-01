@@ -11,6 +11,16 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// <param name="Attributes">The attributes on the class.</param>
 /// <param name="ClassSyntax">The class declaration syntax.</param>
 /// <param name="ClassSymbol">The named type symbol for the class.</param>
+/// <remarks>
+///     <para>
+///         <b>WARNING:</b> This type contains Roslyn symbols that use reference equality.
+///         Do NOT store this in incremental generator pipelines as it will break caching.
+///     </para>
+///     <para>
+///         Use this only in the initial <c>Select</c>/<c>SelectMany</c> transform, then extract
+///         the data you need into equatable types (strings, primitives, <see cref="LocationInfo" />, etc.).
+///     </para>
+/// </remarks>
 public readonly record struct ClassWithAttributesContext(
     SemanticModel SemanticModel,
     ImmutableArray<AttributeData> Attributes,

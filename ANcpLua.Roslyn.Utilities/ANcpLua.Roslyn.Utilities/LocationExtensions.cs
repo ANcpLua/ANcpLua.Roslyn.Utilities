@@ -10,25 +10,29 @@ public static class LocationExtensions
     /// <summary>
     ///     Gets the location in terms of path, line and column for a given token.
     /// </summary>
-    public static FileLinePositionSpan? GetLineSpan(this SyntaxToken token, CancellationToken cancellationToken = default) =>
+    public static FileLinePositionSpan? GetLineSpan(this SyntaxToken token,
+        CancellationToken cancellationToken = default) =>
         token.SyntaxTree?.GetLineSpan(token.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the location in terms of path, line and column for a given node.
     /// </summary>
-    public static FileLinePositionSpan? GetLineSpan(this SyntaxNode node, CancellationToken cancellationToken = default) =>
-        node.SyntaxTree?.GetLineSpan(node.Span, cancellationToken);
+    public static FileLinePositionSpan?
+        GetLineSpan(this SyntaxNode node, CancellationToken cancellationToken = default) =>
+        node.SyntaxTree.GetLineSpan(node.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the location in terms of path, line and column for a given trivia.
     /// </summary>
-    public static FileLinePositionSpan? GetLineSpan(this SyntaxTrivia trivia, CancellationToken cancellationToken = default) =>
+    public static FileLinePositionSpan? GetLineSpan(this SyntaxTrivia trivia,
+        CancellationToken cancellationToken = default) =>
         trivia.SyntaxTree?.GetLineSpan(trivia.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the location in terms of path, line and column for a given node or token.
     /// </summary>
-    public static FileLinePositionSpan? GetLineSpan(this SyntaxNodeOrToken nodeOrToken, CancellationToken cancellationToken = default) =>
+    public static FileLinePositionSpan? GetLineSpan(this SyntaxNodeOrToken nodeOrToken,
+        CancellationToken cancellationToken = default) =>
         nodeOrToken.SyntaxTree?.GetLineSpan(nodeOrToken.Span, cancellationToken);
 
     /// <summary>

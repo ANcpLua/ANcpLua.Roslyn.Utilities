@@ -1,64 +1,100 @@
-# CLAUDE.md — ANcpLua.Roslyn.Utilities
+# ANcpLua.Roslyn.Utilities.Testing
 
-## MISSION: Migrate to ANcpLua.NET.Sdk
+Test utilities for Roslyn analyzers and generators. net10.0.
 
-**Current NuGet:** 1.2.7 | **Target SDK:** 1.3.4
+## Usage
 
-### Rules
-
-- ✅ Breaking changes FINE — pre-v1.0 semantics
-- ✅ DELETE PolySharp — SDK provides polyfills
-- ✅ DELETE LangVersion/Nullable from Directory.Build.props
-- ❌ NO fallbacks, NO "just in case" code
-
-### Critical Facts
-
-| Fact                        | Action                                                      |
-|-----------------------------|-------------------------------------------------------------|
-| SDK provides polyfills      | DELETE PolySharp entirely                                   |
-| SDK sets LangVersion=latest | DELETE from Directory.Build.props                           |
-| No circular dependency      | PackageId=Dummy NOT needed                                  |
-| Nested project structure    | Paths: `ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/` |
-
-### Target State
-
-```xml
-<Project Sdk="ANcpLua.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-</Project>
+```csharp
+using var result = await Test<MyGenerator>.Run(source);
+result
+    .Produces("Output.g.cs", expectedContent)
+    .IsCached()
+    .IsClean();
+// Verify() called automatically on dispose
 ```
 
-### Commands
+## GeneratorResult Assertions
 
-```bash
-dotnet build
-dotnet test --project ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/
-dotnet pack
+```csharp
+result.Produces(hintName, expected, exactMatch)  // file exists with content
+result.Produces(hintName)                        // file exists
+result.IsClean()                                 // no diagnostics
+result.Compiles()                                // no errors
+result.IsCached(stepNames)                       // caching validated
+result.HasDiagnostic(id, severity)
+result.HasNoDiagnostic(id)
+result.HasNoForbiddenTypes()                     // no ISymbol/Compilation cached
+result.File(hintName, content => assert)         // custom assertion
+result.Verify()                                  // throws if failures
 ```
 
-### GitHub Actions Versions (Dec 2025)
+## GeneratorResult Properties
 
-```yaml
-- uses: actions/checkout@v6
-- uses: actions/setup-dotnet@v5
-- uses: actions/upload-artifact@v6
+```csharp
+result.Files                    // IEnumerable<GeneratedFile>
+result.Diagnostics              // IReadOnlyList<Diagnostic>
+result.CachingReport            // GeneratorCachingReport
+result.FirstRun                 // GeneratorDriverRunResult
+result.SecondRun                // GeneratorDriverRunResult
+result[hintName]                // GeneratedFile?
 ```
 
-### DELETE Checklist
+## GeneratorTestEngine
 
-- [ ] PolySharp PackageReference (Directory.Packages.props + csproj)
-- [ ] `<LangVersion>` from Directory.Build.props
-- [ ] `<Nullable>` from Directory.Build.props
-- [ ] Any hardcoded versions outside CPM
+```csharp
+var engine = new GeneratorTestEngine<TGenerator>()
+    .WithSource(code)
+    .WithReference(reference)
+    .WithAdditionalText(path, content)
+    .WithAnalyzerConfigOptions(provider)
+    .WithLanguageVersion(version)
+    .WithReferenceAssemblies(assemblies);
 
-### Architecture Role
-
+var (first, second) = await engine.RunTwiceAsync(ct);
 ```
-ANcpLua.Roslyn.Utilities (THIS REPO)
-         │
-         ├──► ANcpLua.Analyzers (NuGet reference)
-         │
-         └──► ANcpLua.NET.Sdk (git submodule, source embedding)
+
+## TestConfiguration
+
+```csharp
+TestConfiguration.LanguageVersion          // AsyncLocal, default Preview
+TestConfiguration.ReferenceAssemblies      // AsyncLocal, default net10.0
+TestConfiguration.AdditionalReferences     // AsyncLocal
+
+using (TestConfiguration.WithLanguageVersion(version)) { }
+using (TestConfiguration.WithReferenceAssemblies(assemblies)) { }
 ```
+
+## Caching Analysis
+
+```csharp
+// GeneratorCachingReport
+report.GeneratorName
+report.ObservableSteps              // user pipeline steps
+report.ForbiddenTypeViolations
+report.ProducedOutput
+
+// GeneratorStepAnalysis
+step.StepName
+step.Cached / Unchanged / Modified / New / Removed
+step.HasForbiddenTypes
+step.IsCachedSuccessfully
+step.FormatBreakdown()
+
+// ForbiddenTypeViolation
+violation.StepName
+violation.ForbiddenType
+violation.Path
+```
+
+## Files
+
+- `Test.cs` - entry point + TextUtilities
+- `GeneratorResult.cs` - result + assertions + GeneratedFile record
+- `GeneratorTestEngine.cs` - compilation + driver execution
+- `TestConfiguration.cs` - thread-safe config
+- `GeneratorCachingReport.cs` - caching report factory
+- `GeneratorStepAnalyzer.cs` - step extraction
+- `ForbiddenTypeAnalyzer.cs` - ISymbol/Compilation detection
+- `Analysis/StepClassification.cs` - GeneratorStepAnalysis + step classification
+- `Formatting/ReportFormatter.cs` - failure formatting + ViolationFormatter
+- `Formatting/AssertionHelpers.cs` - message helpers + StepFormatter

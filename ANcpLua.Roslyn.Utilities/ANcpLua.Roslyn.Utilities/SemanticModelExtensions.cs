@@ -11,10 +11,8 @@ public static class SemanticModelExtensions
     ///     Checks if a syntax node represents a constant value.
     /// </summary>
     public static bool IsConstant(this SemanticModel model, SyntaxNode node,
-        CancellationToken cancellationToken = default)
-    {
-        return model.GetConstantValue(node, cancellationToken).HasValue;
-    }
+        CancellationToken cancellationToken = default) =>
+        model.GetConstantValue(node, cancellationToken).HasValue;
 
     /// <summary>
     ///     Checks if all syntax nodes represent constant values.
@@ -23,8 +21,10 @@ public static class SemanticModelExtensions
         CancellationToken cancellationToken = default)
     {
         foreach (var node in nodes)
+        {
             if (!model.GetConstantValue(node, cancellationToken).HasValue)
                 return false;
+        }
 
         return true;
     }

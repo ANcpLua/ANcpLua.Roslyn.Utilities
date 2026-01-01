@@ -29,16 +29,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// </example>
 public static class TestConfiguration
 {
-    /// <summary>
-    ///     Performance tolerance as a percentage (default: 5%).
-    /// </summary>
-    public const double PerformanceTolerancePercent = 0.05;
-
-    /// <summary>
-    ///     Whether to enable JSON reporting in test output.
-    /// </summary>
-    public const bool EnableJsonReporting = true;
-
     private static readonly ReferenceAssemblies Net100Assemblies = new(
         "net10.0",
         new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
@@ -49,11 +39,6 @@ public static class TestConfiguration
 
     private static readonly AsyncLocal<ImmutableArray<PortableExecutableReference>?> AdditionalReferencesOverride =
         new();
-
-    /// <summary>
-    ///     Absolute performance tolerance.
-    /// </summary>
-    public static readonly TimeSpan PerformanceToleranceAbsolute = TimeSpan.FromMilliseconds(2);
 
     /// <summary>
     ///     The C# language version to use for tests. Thread-safe via AsyncLocal.
@@ -97,27 +82,10 @@ public static class TestConfiguration
         return new ConfigurationScope(() => ReferenceAssembliesOverride.Value = previous);
     }
 
-    /// <summary>
-    ///     Creates a scope that temporarily overrides the additional references.
-    /// </summary>
-    /// <param name="references">The additional references to use within the scope.</param>
-    /// <returns>A disposable that restores the previous value when disposed.</returns>
-    public static IDisposable WithAdditionalReferences(ImmutableArray<PortableExecutableReference> references)
+    private sealed class ConfigurationScope(Action restore) : IDisposable
     {
-        var previous = AdditionalReferencesOverride.Value;
-        AdditionalReferencesOverride.Value = references;
-        return new ConfigurationScope(() => AdditionalReferencesOverride.Value = previous);
-    }
-
-    private sealed class ConfigurationScope : IDisposable
-    {
-        private readonly Action _restore;
+        private readonly Action _restore = restore;
         private bool _disposed;
-
-        public ConfigurationScope(Action restore)
-        {
-            _restore = restore;
-        }
 
         public void Dispose()
         {

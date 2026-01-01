@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
@@ -15,55 +16,30 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// </remarks>
 internal static class GeneratorStepAnalyzer
 {
-    private static readonly string[] SinkStepPatterns =
-    [
-        "RegisterSourceOutput", "RegisterImplementationSourceOutput", "RegisterPostInitializationOutput", "SourceOutput"
-    ];
-
-    private static readonly string[] InfrastructureFiles =
-    [
-        "Attribute.g.cs", "Attributes.g.cs", "EmbeddedAttribute", "Polyfill"
-    ];
-
     /// <summary>
     ///     Extracts tracked steps from a generator run result.
     /// </summary>
     /// <param name="result">The generator run result to analyze.</param>
     /// <returns>A dictionary mapping step names to their execution data.</returns>
     public static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> ExtractSteps(
-        GeneratorDriverRunResult result)
-    {
-        return result.Results.SelectMany(x => x.TrackedSteps).GroupBy(kv => kv.Key)
-            .ToDictionary(g => g.Key, g => g.SelectMany(kv => kv.Value).ToImmutableArray());
-    }
-
-    /// <summary>
-    ///     Determines if a step name represents a sink step (output registration).
-    /// </summary>
-    /// <param name="stepName">The name of the step to check.</param>
-    /// <returns><c>true</c> if this is a sink step; otherwise, <c>false</c>.</returns>
-    public static bool IsSink(string stepName)
-    {
-        return SinkStepPatterns.Any(p => stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
-    }
+        GeneratorDriverRunResult result) =>
+        result.Results.SelectMany(static x => x.TrackedSteps)
+            .GroupBy(static kv => kv.Key)
+            .ToDictionary(static g => g.Key, static g => g
+                .SelectMany(static kv => kv.Value)
+                .ToImmutableArray());
 
     /// <summary>
     ///     Determines if a step is an infrastructure step (sink).
     /// </summary>
     /// <param name="stepName">The name of the step to check.</param>
     /// <returns><c>true</c> if this is an infrastructure step; otherwise, <c>false</c>.</returns>
-    public static bool IsInfrastructureStep(string stepName)
-    {
-        return !string.IsNullOrEmpty(stepName) && IsSink(stepName);
-    }
+    public static bool IsInfrastructureStep(string stepName) => StepClassification.IsInfrastructureStep(stepName);
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes).
     /// </summary>
     /// <param name="fileName">The name of the file to check.</param>
     /// <returns><c>true</c> if this is an infrastructure file; otherwise, <c>false</c>.</returns>
-    public static bool IsInfrastructureFile(string fileName)
-    {
-        return InfrastructureFiles.Any(p => fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
-    }
+    public static bool IsInfrastructureFile(string fileName) => StepClassification.IsInfrastructureFile(fileName);
 }

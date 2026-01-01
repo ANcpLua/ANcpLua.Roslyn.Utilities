@@ -32,7 +32,6 @@ public readonly struct GeneratorStepAnalysis
     public int Removed { get; }
     public bool HasForbiddenTypes { get; }
 
-    public int TotalOutputs => Cached + Unchanged + Modified + New + Removed;
     public bool IsCachedSuccessfully => Modified is 0 && New is 0 && Removed is 0;
 
     public GeneratorStepAnalysis(string stepName, ImmutableArray<IncrementalGeneratorRunStep> secondRun,
@@ -93,7 +92,7 @@ internal static class StepClassification
     /// </summary>
     /// <param name="stepName">The name of the step to check.</param>
     /// <returns><c>true</c> if this is an infrastructure step; otherwise, <c>false</c>.</returns>
-    public static bool IsInfrastructureStep(string stepName) => !string.IsNullOrEmpty(stepName) && IsSinkStep(stepName);
+    public static bool IsInfrastructureStep(string stepName) => IsSinkStep(stepName);
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes).

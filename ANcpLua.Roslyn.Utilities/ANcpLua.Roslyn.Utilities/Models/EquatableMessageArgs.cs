@@ -20,8 +20,10 @@ public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
         if (Args.Length != other.Args.Length) return false;
 
         for (var i = 0; i < Args.Length; i++)
+        {
             if (!Equals(Args[i], other.Args[i]))
                 return false;
+        }
 
         return true;
     }
@@ -34,7 +36,7 @@ public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
         unchecked
         {
             var hash = 17;
-            foreach (var arg in Args) hash = hash * 31 + (arg?.GetHashCode() ?? 0);
+            foreach (var arg in Args) hash = (hash * 31) + (arg?.GetHashCode() ?? 0);
 
             return hash;
         }

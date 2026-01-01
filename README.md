@@ -5,56 +5,177 @@
 
 # ANcpLua.Roslyn.Utilities
 
-Utilities for building Roslyn incremental source generators with proper caching.
+Comprehensive utilities for Roslyn analyzers and source generators.
 
 ```shell
-dotnet add package ANcpLua.Roslyn.Utilities              # netstandard2.0
-dotnet add package ANcpLua.Roslyn.Utilities.Testing      # net10.0
+dotnet add package ANcpLua.Roslyn.Utilities
+dotnet add package ANcpLua.Roslyn.Utilities.Testing
 ```
 
-## Key APIs
+## Highlights
 
-### EquatableArray&lt;T&gt;
+### DiagnosticFlow - Railway-Oriented Programming
 
-Value-equal array wrapper — essential for generator caching (ImmutableArray uses reference equality):
+Never lose diagnostics in your pipeline:
 
 ```csharp
-// Pipeline outputs need value equality for caching to work
-context.SyntaxProvider
-    .ForAttributeWithMetadataName("MyAttribute", ...)
-    .Select((ctx, _) => new MyModel { Items = GetItems(ctx).AsEquatableArray() });
+symbol.ToFlow(nullDiag)
+    .Then(ValidateMethod)
+    .Where(m => m.IsAsync, asyncRequired)
+    .WarnIf(m => m.IsObsolete, obsoleteWarn)
+    .Then(GenerateCode);
+
+// Pipeline integration
+provider
+    .SelectFlow(ExtractModel)
+    .ThenFlow(ValidateModel)
+    .ReportAndContinue(context)
+    .AddSource(context);
 ```
 
-### Pipeline Extensions
+### Symbol Pattern Matching
+
+Replace 50-line if-statements with composable patterns:
 
 ```csharp
-// Simplified attribute filtering for classes/records
-var provider = context.SyntaxProvider
-    .ForAttributeWithMetadataNameOfClassesAndRecords("MyNamespace.MyAttribute");
+var asyncTask = SymbolPattern.Method()
+    .Async()
+    .ReturnsTask()
+    .WithCancellationToken()
+    .Public()
+    .Build();
 
-// Add sources with automatic file naming
-provider.Select(GenerateFile).AddSource(context);
-
-// Collect with proper caching
-var collected = provider.CollectAsEquatableArray();
+if (asyncTask.Matches(method)) { ... }
 ```
 
-### Testing
+### SemanticGuard - Declarative Validation
 
 ```csharp
-// Verify generated output
-await source.ShouldGenerate<MyGenerator>("Output.g.cs", expectedContent);
-
-// Verify diagnostics
-await source.ShouldHaveDiagnostics<MyGenerator>(
-    Diagnostic("GEN001", DiagnosticSeverity.Error));
-
-// Validate caching (catches forbidden types: ISymbol, Compilation, SyntaxNode, etc.)
-await source.ShouldBeCached<MyGenerator>();
+SemanticGuard.ForMethod(method)
+    .MustBeAsync(asyncRequired)
+    .MustReturnTask(taskRequired)
+    .MustHaveCancellationToken(ctRequired)
+    .ToFlow();  // -> DiagnosticFlow<IMethodSymbol>
 ```
+
+## API Overview
+
+| Category | Key APIs |
+|----------|----------|
+| **Flow Control** | `DiagnosticFlow<T>`, `ReportAndContinue()` |
+| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*` |
+| **Validation** | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()` |
+| **Domain Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| **Operations** | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder` |
+| **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers` |
+| **Pipeline** | `GroupBy()`, `Batch()`, `Distinct()`, `CollectFlows()` |
+
+## Symbol Extensions
+
+```csharp
+// Core
+symbol.IsEqualTo(other)
+symbol.HasAttribute("Full.Name")
+symbol.IsVisibleOutsideOfAssembly()
+
+// Type checking
+type.InheritsFrom(baseType)
+type.Implements(interfaceType)
+type.IsTaskType() / IsSpanType() / IsEnumerableType()
+
+// Methods
+method.IsInterfaceImplementation()
+method.IsOrOverrideMethod(baseMethod)
+```
+
+## Operation Extensions
+
+```csharp
+// Navigation
+operation.Ancestors()
+operation.FindAncestor<TOperation>()
+operation.Descendants()
+
+// Context
+operation.IsInExpressionTree()
+operation.IsInsideLoop()
+operation.IsInsideTryBlock()
+
+// Invocations
+invocation.GetArgument("name")
+invocation.IsLinqMethod()
+invocation.AllArgumentsAreConstant()
+```
+
+## Domain Contexts
+
+Pre-cached symbol lookups for common patterns:
+
+```csharp
+var ctx = new AwaitableContext(compilation);
+ctx.IsTaskLike(type)
+ctx.IsAwaitable(type)
+ctx.CanUseAsyncKeyword(method)
+
+var asp = new AspNetContext(compilation);
+asp.IsController(type)
+asp.IsAction(method)
+asp.IsFromBody(parameter)
+
+var disp = new DisposableContext(compilation);
+disp.IsDisposable(type)
+disp.HasDisposeMethod(type)
+
+var coll = new CollectionContext(compilation);
+coll.IsImmutable(type)
+coll.GetElementType(type)
+```
+
+## Code Generation
+
+```csharp
+var sb = new IndentedStringBuilder();
+using (sb.BeginNamespace("MyNamespace"))
+using (sb.BeginClass("public partial", "MyClass"))
+using (sb.BeginMethod("public", "void", "Execute"))
+{
+    sb.AppendLine("// generated code");
+}
+```
+
+## Pipeline Extensions
+
+```csharp
+provider
+    .SelectFlow(ExtractModel)
+    .ThenFlow(ValidateModel)
+    .WarnIf(m => m.IsOld, obsoleteWarn)
+    .ReportAndContinue(context)
+    .AddSource(context);
+
+// Collection operations
+provider.GroupBy(keySelector)
+provider.Batch(100)
+provider.Distinct()
+provider.CollectAsEquatableArray()
+```
+
+## Testing Library
+
+```csharp
+using var result = await Test<MyGenerator>.Run(source);
+result
+    .Produces("Output.g.cs", expectedContent)
+    .IsCached()
+    .IsClean()
+    .HasNoForbiddenTypes();
+```
+
+## Full Documentation
+
+See [CLAUDE.md](ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/CLAUDE.md) for complete API reference.
 
 ## Related
 
-- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers) — Analyzers using these utilities
-- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk) — MSBuild SDK with embedded source generator helpers
-
+- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers)
+- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk)

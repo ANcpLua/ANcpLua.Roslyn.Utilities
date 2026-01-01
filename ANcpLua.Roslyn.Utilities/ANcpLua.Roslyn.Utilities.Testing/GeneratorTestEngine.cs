@@ -15,10 +15,10 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     private readonly List<AdditionalText> _additionalTexts = [];
     private readonly List<MetadataReference> _references = [];
     private readonly List<SyntaxTree> _sources = [];
+    private const bool _trackSteps = true; // Default to true for safer defaults in tests
     private AnalyzerConfigOptionsProvider? _analyzerConfigOptions;
     private LanguageVersion _languageVersion = TestConfiguration.LanguageVersion;
     private ReferenceAssemblies _referenceAssemblies = TestConfiguration.ReferenceAssemblies;
-    private readonly bool _trackSteps = true; // Default to true for safer defaults in tests
 
     /// <summary>
     ///     Adds source code to the compilation.
@@ -99,7 +99,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// <summary>
     ///     Executes the generator twice (standard caching check).
     /// </summary>
-    public async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
+    internal async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
         CancellationToken cancellationToken = default)
     {
         var compilation = await CreateCompilationAsync(cancellationToken);

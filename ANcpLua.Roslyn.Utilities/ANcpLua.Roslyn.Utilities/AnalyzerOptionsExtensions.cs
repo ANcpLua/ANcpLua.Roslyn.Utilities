@@ -28,13 +28,10 @@ public static class AnalyzerOptionsExtensions
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        bool defaultValue)
-    {
-        if (!options.TryGetConfigurationValue(syntaxTree, key, out var value))
-            return defaultValue;
-
-        return ParseBoolean(value, defaultValue);
-    }
+        bool defaultValue) =>
+        !options.TryGetConfigurationValue(syntaxTree, key, out var value)
+            ? defaultValue
+            : ParseBoolean(value, defaultValue);
 
     /// <summary>
     ///     Gets an integer configuration value, returning the default if not found or unparseable.
@@ -60,12 +57,10 @@ public static class AnalyzerOptionsExtensions
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        string defaultValue)
-    {
-        return options.TryGetConfigurationValue(syntaxTree, key, out var value)
+        string defaultValue) =>
+        options.TryGetConfigurationValue(syntaxTree, key, out var value)
             ? value
             : defaultValue;
-    }
 
     /// <summary>
     ///     Gets an enum configuration value, returning the default if not found or unparseable.
@@ -79,7 +74,7 @@ public static class AnalyzerOptionsExtensions
         if (!options.TryGetConfigurationValue(syntaxTree, key, out var value))
             return defaultValue;
 
-        return Enum.TryParse<T>(value, ignoreCase: true, out var result)
+        return Enum.TryParse<T>(value, true, out var result)
             ? result
             : defaultValue;
     }

@@ -16,42 +16,32 @@ public readonly record struct DiagnosticInfo(
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument.
     /// </summary>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0)
-    {
-        return new DiagnosticInfo(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
-    }
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0) =>
+        new(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument from a node.
     /// </summary>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0)
-    {
-        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
-    }
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0) =>
+        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments.
     /// </summary>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args)
-    {
-        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([.. args]));
-    }
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args) =>
+        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([.. args]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with no arguments.
     /// </summary>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location)
-    {
-        return new DiagnosticInfo(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
-    }
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location) =>
+        new(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
 
     /// <summary>
     ///     Creates the <see cref="Diagnostic" /> from this info.
     /// </summary>
-    public Diagnostic ToDiagnostic()
-    {
-        return MessageArgs.Args.IsDefaultOrEmpty
+    public Diagnostic ToDiagnostic() =>
+        MessageArgs.Args.IsDefaultOrEmpty
             ? Diagnostic.Create(Descriptor, Location.ToLocation())
             : Diagnostic.Create(Descriptor, Location.ToLocation(), [.. MessageArgs.Args]);
-    }
 }

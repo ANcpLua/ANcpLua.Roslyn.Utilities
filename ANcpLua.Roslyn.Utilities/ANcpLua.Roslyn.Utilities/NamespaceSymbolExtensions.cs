@@ -10,7 +10,9 @@ public static class NamespaceSymbolExtensions
     /// <summary>
     ///     Checks if a namespace matches the given parts (zero-allocation).
     /// </summary>
+#pragma warning disable MA0109 // Span overload not practical for netstandard2.0
     public static bool IsNamespace(this INamespaceSymbol? namespaceSymbol, string[] namespaceParts)
+#pragma warning restore MA0109
     {
         for (var i = namespaceParts.Length - 1; i >= 0; i--)
         {
@@ -24,13 +26,5 @@ public static class NamespaceSymbolExtensions
         }
 
         return namespaceSymbol is null || namespaceSymbol.IsGlobalNamespace;
-    }
-
-    /// <summary>
-    ///     Checks if a namespace matches the given namespace string.
-    /// </summary>
-    public static bool IsNamespace(this INamespaceSymbol? namespaceSymbol, string namespaceName)
-    {
-        return IsNamespace(namespaceSymbol, namespaceName.Split('.'));
     }
 }

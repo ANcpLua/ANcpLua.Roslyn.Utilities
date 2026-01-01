@@ -1,3 +1,4 @@
+using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
@@ -7,8 +8,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
 /// </summary>
 internal static class AssertionHelpers
 {
-    #region List Formatting
-
     /// <summary>
     ///     Formats a list as "[item1, item2]" or "none" if empty.
     /// </summary>
@@ -31,20 +30,10 @@ internal static class AssertionHelpers
         FormatList(files, static f => f.HintName);
 
     /// <summary>
-    ///     Gets hint names from generated sources as a formatted list.
-    /// </summary>
-    public static string FormatSourceList(IEnumerable<GeneratedSourceResult> sources) =>
-        FormatList(sources, static s => s.HintName);
-
-    /// <summary>
     ///     Gets diagnostic IDs as a formatted list.
     /// </summary>
     public static string FormatDiagnosticIds(IEnumerable<Diagnostic> diagnostics) =>
         FormatList(diagnostics.Select(static d => d.Id).Distinct());
-
-    #endregion
-
-    #region Diagnostic Formatting
 
     /// <summary>
     ///     Formats a diagnostic as "  ✗ ID @line:col: message" or "  ⚠ ID: message".
@@ -72,37 +61,38 @@ internal static class AssertionHelpers
             .Where(static d => d.Severity == DiagnosticSeverity.Error)
             .Select(static d => $"  ✗ {d.Id}: {d.GetMessage()}"));
 
-    #endregion
-
-    #region Assertion Messages
-
-    /// <summary>
-    ///     Builds "Expected {what} but not found. Available: [list]" message.
-    /// </summary>
-    public static string NotFound(string what, string available) =>
-        $"Expected {what} but it was not found. Available: {available}";
-
-    /// <summary>
-    ///     Builds "Expected {what} but found {count}" message.
-    /// </summary>
-    public static string UnexpectedCount(string what, int count, string details) =>
-        $"Expected {what}, but found {count}:\n{details}";
-
-    /// <summary>
-    ///     Builds "Expected no {what} but found one" message.
-    /// </summary>
-    public static string ShouldNotExist(string what) =>
-        $"Expected no {what} but one was found.";
-
-    #endregion
-
-    #region Step Formatting
-
     /// <summary>
     ///     Formats failed caching steps as a list.
     /// </summary>
     public static string FormatFailedSteps(IEnumerable<GeneratorStepAnalysis> steps) =>
         string.Join("\n", steps.Select(static s => $"  ✗ {s.StepName}: {s.FormatBreakdown()}"));
+}
 
-    #endregion
+/// <summary>
+///     Formats generator step analysis data.
+/// </summary>
+internal static class StepFormatter
+{
+    public static string FormatBreakdown(GeneratorStepAnalysis step) =>
+        $"C:{step.Cached} U:{step.Unchanged} | M:{step.Modified} N:{step.New} R:{step.Removed}";
+
+    public static string FormatStepLine(GeneratorStepAnalysis step, string[]? requiredSteps = null)
+    {
+        var tracked = requiredSteps?.Contains(step.StepName) == true ? "[Tracked]" : "";
+        var forbidden = step.HasForbiddenTypes ? "[!]" : "";
+        var icon = step.IsCachedSuccessfully ? "[OK]" : "[FAIL]";
+        return $"  {icon} {step.StepName} {tracked}{forbidden} | {FormatBreakdown(step)}";
+    }
+
+    public static string FormatStepIssue(int issueNumber, GeneratorStepAnalysis step)
+    {
+        StringBuilder sb = new();
+        sb.AppendLine($"--- ISSUE {issueNumber}: Step Not Cached '{step.StepName}' ---");
+        sb.AppendLine($"  Breakdown: {FormatBreakdown(step)}");
+        sb.AppendLine(step.HasForbiddenTypes
+            ? "  Cause: Forbidden Roslyn types cached."
+            : "  Fix: Ensure output model has value equality.");
+        sb.AppendLine();
+        return sb.ToString();
+    }
 }

@@ -1,11 +1,21 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Core utilities -->
+    <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
+
+    <!-- Pin transitive dependencies to .NET 10 versions -->
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.1"/>
+    <PackageVersion Include="System.Reflection.Metadata" Version="10.0.1"/>
+
+    <!-- Analyzers -->
+    <PackageVersion Include="JetBrains.Annotations" Version="2024.3.0"/>
+    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.187"/>
+
     <!-- Testing -->
     <PackageVersion Include="Meziantou.Framework.FullPath" Version="1.1.11"/>
     <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="1.0.16"/>
