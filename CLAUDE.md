@@ -4,7 +4,7 @@
 
 **ANcpLua.Roslyn.Utilities** provides reusable utilities for Roslyn incremental source generators.
 
-**Current SDK Version:** 1.3.7 (ANcpLua.NET.Sdk)
+**Current SDK Version:** 1.3.15 (ANcpLua.NET.Sdk)
 
 ## Build Commands
 
