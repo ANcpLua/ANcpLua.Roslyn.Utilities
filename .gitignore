@@ -22,7 +22,6 @@ packages/
 # Test results
 TestResults/
 *.trx
-Version.props
 
 # DocFX
 docs/_site/
