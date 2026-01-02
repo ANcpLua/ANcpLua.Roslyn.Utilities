@@ -1,28 +1,45 @@
 <Project>
+  <!--
+    ═══════════════════════════════════════════════════════════════════════════
+    ANcpLua.Roslyn.Utilities - Directory.Packages.props
+    ═══════════════════════════════════════════════════════════════════════════
+
+    All version variables are defined in Version.props (symlinked from SDK).
+    This file only declares WHICH packages are used, not their versions.
+  -->
+
+  <!-- Import centralized versions from symlinked Version.props -->
+  <Import Project="$(MSBuildThisFileDirectory)Version.props" Condition="'$(RoslynVersion)' == ''"/>
+
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-  <ItemGroup>
+
+  <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
-    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0"/>
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)"/>
+  </ItemGroup>
 
-    <!-- Pin transitive dependencies to .NET 10 versions -->
-    <PackageVersion Include="System.Collections.Immutable" Version="10.0.1"/>
-    <PackageVersion Include="System.Reflection.Metadata" Version="10.0.1"/>
+  <ItemGroup Label="Transitive Pins">
+    <!-- Pin transitive dependencies - these need variables in Version.props -->
+    <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)"/>
+    <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)"/>
+  </ItemGroup>
 
-    <!-- Analyzers -->
-    <PackageVersion Include="JetBrains.Annotations" Version="2024.3.0"/>
-    <PackageVersion Include="Meziantou.Analyzer" Version="2.0.187"/>
+  <ItemGroup Label="Analyzers">
+    <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)"/>
+    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)"/>
+  </ItemGroup>
 
-    <!-- Testing -->
-    <PackageVersion Include="Meziantou.Framework.FullPath" Version="1.1.12"/>
-    <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="1.0.30"/>
-    <PackageVersion Include="AwesomeAssertions" Version="9.3.0"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.3-beta1.25564.1"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.3-beta1.25564.1"/>
-    <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="1.8.4"/>
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)"/>
+    <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)"/>
+    <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)"/>
+    <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)"/>
   </ItemGroup>
 </Project>
