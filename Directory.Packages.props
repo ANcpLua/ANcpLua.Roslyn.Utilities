@@ -9,7 +9,7 @@
   -->
 
   <!-- Import centralized versions from symlinked Version.props -->
-  <Import Project="$(MSBuildThisFileDirectory)Version.props" Condition="'$(RoslynVersion)' == ''"/>
+  <Import Project="$(MSBuildThisFileDirectory)Version.props"/>
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -19,6 +19,7 @@
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)"/>
   </ItemGroup>

@@ -241,7 +241,7 @@ public static class SymbolExtensions
     public static ImmutableArray<ISymbol> ExplicitOrImplicitInterfaceImplementations(this ISymbol symbol)
     {
         if (symbol.Kind is not SymbolKind.Method and not SymbolKind.Property and not SymbolKind.Event)
-            return [];
+            return ImmutableArray<ISymbol>.Empty;
 
         var containingType = symbol.ContainingType;
         var query = from iface in containingType.AllInterfaces
@@ -249,7 +249,7 @@ public static class SymbolExtensions
             let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
             where SymbolEqualityComparer.Default.Equals(symbol, impl)
             select interfaceMember;
-        return [.. query];
+        return query.ToImmutableArray();
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ public static class SymbolExtensions
             IEventSymbol @event => ImmutableArray<ISymbol>.CastUp(@event.ExplicitInterfaceImplementations),
             IMethodSymbol method => ImmutableArray<ISymbol>.CastUp(method.ExplicitInterfaceImplementations),
             IPropertySymbol property => ImmutableArray<ISymbol>.CastUp(property.ExplicitInterfaceImplementations),
-            _ => []
+            _ => ImmutableArray<ISymbol>.Empty
         };
 
     /// <summary>
@@ -287,7 +287,7 @@ public static class SymbolExtensions
         {
             IMethodSymbol m => m.TypeParameters,
             INamedTypeSymbol nt => nt.TypeParameters,
-            _ => []
+            _ => ImmutableArray<ITypeParameterSymbol>.Empty
         };
 
     /// <summary>
@@ -298,7 +298,7 @@ public static class SymbolExtensions
         {
             IMethodSymbol m => m.TypeArguments,
             INamedTypeSymbol nt => nt.TypeArguments,
-            _ => []
+            _ => ImmutableArray<ITypeSymbol>.Empty
         };
 
     /// <summary>

@@ -19,7 +19,8 @@ public readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
         {
             foreach (var d in Diagnostics.AsImmutableArray())
             {
-                if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
+                // Defensive: guard against default(DiagnosticInfo) with null Descriptor
+                if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
                     return true;
             }
             return false;
@@ -195,7 +196,8 @@ public static class DiagnosticFlow
         var hasErrors = false;
         foreach (var d in diagnostics)
         {
-            if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
+            // Defensive: guard against default(DiagnosticInfo) with null Descriptor
+            if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
             {
                 hasErrors = true;
                 break;
@@ -223,9 +225,9 @@ file static class DiagnosticFlowHelpers
         EquatableArray<DiagnosticInfo> first,
         EquatableArray<DiagnosticInfo> second)
     {
-        if (first.IsDefaultOrEmpty)
+        if (first.IsEmpty)
             return second;
-        if (second.IsDefaultOrEmpty)
+        if (second.IsEmpty)
             return first;
 
         var builder = ImmutableArray.CreateBuilder<DiagnosticInfo>(first.Length + second.Length);
@@ -241,7 +243,7 @@ file static class DiagnosticFlowHelpers
         EquatableArray<DiagnosticInfo> array,
         DiagnosticInfo item)
     {
-        if (array.IsDefaultOrEmpty)
+        if (array.IsEmpty)
             return ImmutableArray.Create(item).AsEquatableArray();
 
         var builder = ImmutableArray.CreateBuilder<DiagnosticInfo>(array.Length + 1);

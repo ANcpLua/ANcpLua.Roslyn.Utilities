@@ -418,7 +418,7 @@ public static class IncrementalValuesProviderExtensions
     {
         // Report all diagnostics
         context.RegisterSourceOutput(
-            source.SelectMany(static (flow, _) => flow.Diagnostics.IsDefaultOrEmpty
+            source.SelectMany(static (flow, _) => flow.Diagnostics.IsEmpty
                 ? ImmutableArray<DiagnosticInfo>.Empty
                 : flow.Diagnostics.AsImmutableArray()),
             static (ctx, diagnostic) => ctx.ReportDiagnostic(diagnostic));
@@ -438,7 +438,7 @@ public static class IncrementalValuesProviderExtensions
     {
         // Report diagnostics
         context.RegisterSourceOutput(
-            source.SelectMany(static (flow, _) => flow.Diagnostics.IsDefaultOrEmpty
+            source.SelectMany(static (flow, _) => flow.Diagnostics.IsEmpty
                 ? ImmutableArray<DiagnosticInfo>.Empty
                 : flow.Diagnostics.AsImmutableArray()),
             static (ctx, diagnostic) => ctx.ReportDiagnostic(diagnostic));
@@ -456,7 +456,7 @@ public static class IncrementalValuesProviderExtensions
     {
         // Report errors and warnings
         context.RegisterSourceOutput(
-            source.SelectMany(static (flow, _) => flow.Diagnostics.IsDefaultOrEmpty
+            source.SelectMany(static (flow, _) => flow.Diagnostics.IsEmpty
                 ? ImmutableArray<DiagnosticInfo>.Empty
                 : flow.Diagnostics.AsImmutableArray()),
             static (ctx, diagnostic) => ctx.ReportDiagnostic(diagnostic));
@@ -472,7 +472,7 @@ public static class IncrementalValuesProviderExtensions
     /// </summary>
     public static IncrementalValueProvider<DiagnosticFlow<ImmutableArray<T>>> CollectFlows<T>(
         this IncrementalValuesProvider<DiagnosticFlow<T>> source) =>
-        source.Collect().Select(static (flows, _) => DiagnosticFlow.Collect(flows));
+        source.Collect().Select(static (flows, _) => DiagnosticFlow.Collect((IEnumerable<DiagnosticFlow<T>>)flows));
 
     /// <summary>
     /// Transform values into flows.
