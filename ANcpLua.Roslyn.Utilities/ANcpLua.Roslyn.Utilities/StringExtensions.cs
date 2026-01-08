@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -7,7 +8,7 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 public static class StringExtensions
 {
-    private static readonly char[] NewLineSeparator = ['\n'];
+    private static readonly char[] NewLineSeparator = new[] { '\n' };
 
     /// <summary>
     ///     Splits a string into lines without allocating (returns a ref struct enumerator).
@@ -221,6 +222,40 @@ public static class StringExtensions
     }
 
     /// <summary>
+    ///     Cleans whitespace in generated source code for consistent formatting.
+    /// </summary>
+    /// <remarks>
+    ///     <para>Performs the following cleanup operations:</para>
+    ///     <list type="bullet">
+    ///         <item><description>Strips trailing whitespace from all lines</description></item>
+    ///         <item><description>Collapses 3+ consecutive empty lines to 2</description></item>
+    ///         <item><description>Removes empty lines immediately after <c>{</c> or <c>]</c></description></item>
+    ///         <item><description>Removes empty lines immediately before <c>}</c></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <param name="source">The generated source code to clean.</param>
+    /// <returns>The cleaned source code with normalized whitespace.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
+    public static string CleanWhiteSpace(this string source)
+    {
+        source = source ?? throw new ArgumentNullException(nameof(source));
+
+        // Strip trailing whitespace from lines
+        source = Regex.Replace(source, @"[ \t]+(\r?\n)", "$1");
+
+        // Collapse 3+ empty lines to 2
+        source = Regex.Replace(source, @"(\r?\n){3,}", "$1$1");
+
+        // Remove empty line after { or ]
+        source = Regex.Replace(source, @"([\{\]])(\r?\n){2}", "$1$2");
+
+        // Remove empty line before }
+        source = Regex.Replace(source, @"(\r?\n){2}([\}])", "$1$2");
+
+        return source;
+    }
+
+    /// <summary>
     ///     Zero-allocation line enumerator.
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
@@ -246,8 +281,8 @@ public static class StringExtensions
             var index = span.IndexOfAny('\r', '\n');
             if (index == -1)
             {
-                _str = [];
-                Current = new LineSplitEntry(span, []);
+                _str = ReadOnlySpan<char>.Empty;
+                Current = new LineSplitEntry(span, ReadOnlySpan<char>.Empty);
                 return true;
             }
 

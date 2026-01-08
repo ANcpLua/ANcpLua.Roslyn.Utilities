@@ -1,23 +1,29 @@
 <Project Sdk="ANcpLua.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
     <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
     <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
 
-    <!-- Enable polyfills for netstandard2.0 -->
-    <InjectANcpLuaLanguageFeaturesPolyfills>true</InjectANcpLuaLanguageFeaturesPolyfills>
-    <InjectANcpLuaIndexRangePolyfills>true</InjectANcpLuaIndexRangePolyfills>
-
     <!-- Generate XML documentation for DocFX -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Suppress warnings: NU1701 (version compat), CA1822 (static members), CA1510 (throw helpers), CA1307 (string comparison) -->
+    <NoWarn>$(NoWarn);NU1701;CA1822;CA1510;CA1307</NoWarn>
+
+    <!-- Resolve assembly version conflicts by preferring newer versions -->
+    <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
+    <!-- Suppress CS1705 assembly version conflict warnings -->
+    <NoWarn>$(NoWarn);CS1705</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    <PackageReference Include="System.Collections.Immutable"/>
   </ItemGroup>
 
   <ItemGroup>

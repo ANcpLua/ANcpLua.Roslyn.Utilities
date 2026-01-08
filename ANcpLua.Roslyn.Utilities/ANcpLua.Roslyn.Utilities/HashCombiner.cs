@@ -101,12 +101,21 @@ public static class EqualityExtensions
     public static EquatableArray<T> ToEquatableArray<T>(this ImmutableArray<T> source) where T : IEquatable<T> =>
         source.AsEquatableArray();
 
+    /// <summary>
+    ///     Compares two immutable arrays for sequence equality.
+    ///     Treats default (uninitialized) and empty arrays as equivalent.
+    /// </summary>
     public static bool SequenceEquals<T>(this ImmutableArray<T> left, ImmutableArray<T> right)
     {
-        if (left.IsDefault && right.IsDefault)
+        // Treat default and empty as equivalent (null = empty pattern)
+        var leftEmpty = left.IsDefaultOrEmpty;
+        var rightEmpty = right.IsDefaultOrEmpty;
+
+        if (leftEmpty && rightEmpty)
             return true;
-        if (left.IsDefault || right.IsDefault)
+        if (leftEmpty || rightEmpty)
             return false;
+
         if (left.Length != right.Length)
             return false;
 
@@ -119,12 +128,21 @@ public static class EqualityExtensions
         return true;
     }
 
+    /// <summary>
+    ///     Compares two immutable arrays for sequence equality using a custom comparer.
+    ///     Treats default (uninitialized) and empty arrays as equivalent.
+    /// </summary>
     public static bool SequenceEquals<T>(this ImmutableArray<T> left, ImmutableArray<T> right, IEqualityComparer<T> comparer)
     {
-        if (left.IsDefault && right.IsDefault)
+        // Treat default and empty as equivalent (null = empty pattern)
+        var leftEmpty = left.IsDefaultOrEmpty;
+        var rightEmpty = right.IsDefaultOrEmpty;
+
+        if (leftEmpty && rightEmpty)
             return true;
-        if (left.IsDefault || right.IsDefault)
+        if (leftEmpty || rightEmpty)
             return false;
+
         if (left.Length != right.Length)
             return false;
 
@@ -137,9 +155,13 @@ public static class EqualityExtensions
         return true;
     }
 
+    /// <summary>
+    ///     Gets a hash code for the sequence of items.
+    ///     Returns 0 for empty or default arrays (they are equivalent).
+    /// </summary>
     public static int GetSequenceHashCode<T>(this ImmutableArray<T> array)
     {
-        if (array.IsDefault)
+        if (array.IsDefaultOrEmpty)
             return 0;
 
         var hash = HashCombiner.Create();

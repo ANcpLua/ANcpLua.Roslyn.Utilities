@@ -19,7 +19,8 @@
 
         <!-- NU1604: Suppress CPM lower bound warnings (SDK injects packages without bounds) -->
         <!-- NU1701: Suppress for netstandard2.0 Roslyn projects (expected for some transitive deps) -->
-        <NoWarn Condition="'$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);NU1604;NU1701</NoWarn>
+        <NoWarn>$(NoWarn);NU1604</NoWarn>
+        <NoWarn Condition="'$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);NU1701</NoWarn>
 
         <!-- Package metadata -->
         <Authors>Alexander Nachtmann</Authors>

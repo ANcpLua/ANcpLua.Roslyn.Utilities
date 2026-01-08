@@ -22,11 +22,11 @@ public sealed class PublicApiWalker : SymbolVisitor
         _events = new HashSet<IEventSymbol>(SymbolEqualityComparer.Default);
     }
 
-    public ImmutableArray<INamedTypeSymbol> Types => [.. _types];
-    public ImmutableArray<IMethodSymbol> Methods => [.. _methods];
-    public ImmutableArray<IPropertySymbol> Properties => [.. _properties];
-    public ImmutableArray<IFieldSymbol> Fields => [.. _fields];
-    public ImmutableArray<IEventSymbol> Events => [.. _events];
+    public ImmutableArray<INamedTypeSymbol> Types => _types.ToImmutableArray();
+    public ImmutableArray<IMethodSymbol> Methods => _methods.ToImmutableArray();
+    public ImmutableArray<IPropertySymbol> Properties => _properties.ToImmutableArray();
+    public ImmutableArray<IFieldSymbol> Fields => _fields.ToImmutableArray();
+    public ImmutableArray<IEventSymbol> Events => _events.ToImmutableArray();
 
     public static PublicApiWalker Walk(IAssemblySymbol assembly, CancellationToken cancellationToken = default)
     {
