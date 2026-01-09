@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for location and line span operations.
 /// </summary>
-public static class LocationExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class LocationExtensions
 {
     /// <summary>
     ///     Gets the location in terms of path, line and column for a given token.

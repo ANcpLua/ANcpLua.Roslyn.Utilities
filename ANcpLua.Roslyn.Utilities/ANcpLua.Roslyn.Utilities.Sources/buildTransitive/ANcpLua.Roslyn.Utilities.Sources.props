@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Consumers can override namespace -->
+    <ANcpLuaRoslynUtilitiesNamespace Condition="'$(ANcpLuaRoslynUtilitiesNamespace)' == ''">ANcpLua.Roslyn.Utilities</ANcpLuaRoslynUtilitiesNamespace>
+  </PropertyGroup>
+</Project>

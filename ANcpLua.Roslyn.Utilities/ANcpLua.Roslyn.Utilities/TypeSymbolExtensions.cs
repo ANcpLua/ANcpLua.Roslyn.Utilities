@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -5,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="ITypeSymbol" />.
 /// </summary>
-public static class TypeSymbolExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class TypeSymbolExtensions
 {
     /// <summary>
     ///     Gets all interfaces including the type itself if it's an interface.

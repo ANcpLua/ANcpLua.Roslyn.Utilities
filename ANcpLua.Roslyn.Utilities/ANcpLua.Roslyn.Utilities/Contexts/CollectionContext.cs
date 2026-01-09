@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
-public sealed class CollectionContext
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class CollectionContext
 {
     public INamedTypeSymbol? IEnumerable { get; }
     public INamedTypeSymbol? IEnumerableOfT { get; }

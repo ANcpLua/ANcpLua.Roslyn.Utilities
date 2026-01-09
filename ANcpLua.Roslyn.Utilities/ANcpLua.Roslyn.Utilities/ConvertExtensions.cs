@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for converting <see cref="TypedConstant" /> values.
 /// </summary>
-public static class ConvertExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class ConvertExtensions
 {
     /// <summary>
     ///     Converts the typed constant to a boolean.

@@ -1,6 +1,11 @@
 namespace ANcpLua.Roslyn.Utilities;
 
-public static class GeneratedCodeHelpers
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class GeneratedCodeHelpers
 {
     public static string NullableEnable => "#nullable enable";
     public static string NullableDisable => "#nullable disable";
@@ -52,7 +57,12 @@ public static class GeneratedCodeHelpers
     }
 }
 
-public sealed class IndentedStringBuilder
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class IndentedStringBuilder
 {
     private readonly StringBuilder _sb;
     private readonly string _indentString;
@@ -192,7 +202,12 @@ public sealed class IndentedStringBuilder
     }
 }
 
-public readonly struct IndentScope : IDisposable
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly struct IndentScope : IDisposable
 {
     private readonly IndentedStringBuilder _builder;
 

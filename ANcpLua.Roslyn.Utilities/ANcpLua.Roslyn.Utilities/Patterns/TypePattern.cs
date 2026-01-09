@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
 
-public sealed class TypePatternBuilder
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class TypePatternBuilder
 {
     private readonly List<Func<INamedTypeSymbol, bool>> _predicates = [];
 

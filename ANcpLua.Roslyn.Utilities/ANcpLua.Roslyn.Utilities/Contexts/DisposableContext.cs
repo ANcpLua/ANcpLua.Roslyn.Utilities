@@ -3,7 +3,12 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
-public sealed class DisposableContext
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class DisposableContext
 {
     public INamedTypeSymbol? IDisposable { get; }
     public INamedTypeSymbol? IAsyncDisposable { get; }

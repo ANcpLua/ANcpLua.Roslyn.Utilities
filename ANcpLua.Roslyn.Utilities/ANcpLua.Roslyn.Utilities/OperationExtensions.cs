@@ -5,7 +5,12 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-public static class OperationExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class OperationExtensions
 {
     public static IEnumerable<IOperation> Ancestors(this IOperation operation)
     {

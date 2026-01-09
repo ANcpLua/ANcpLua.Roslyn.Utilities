@@ -6,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// Murmur3-based hash combiner for implementing GetHashCode in equatable types.
 /// This is a mutable struct for performance; use it in a single method scope.
 /// </summary>
-public struct HashCombiner
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+struct HashCombiner
 {
     private uint _len;
     private uint _hash;
@@ -93,7 +98,12 @@ public struct HashCombiner
         (value << bits) | (value >> (32 - bits));
 }
 
-public static class EqualityExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class EqualityExtensions
 {
     public static EquatableArray<T> ToEquatableArray<T>(this IEnumerable<T> source) where T : IEquatable<T> =>
         source.ToImmutableArray().AsEquatableArray();

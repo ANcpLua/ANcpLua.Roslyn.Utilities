@@ -8,7 +8,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <remarks>
 ///     Follows the "null = empty" pattern throughout for consistency.
 /// </remarks>
-public static class EnumerableExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class EnumerableExtensions
 {
     /// <summary>
     ///     Projects each element to an enumerable and flattens, returning empty if source is null.
@@ -381,7 +386,12 @@ public static class EnumerableExtensions
 /// <summary>
 ///     Span-based extension methods for zero-allocation operations.
 /// </summary>
-public static class SpanExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SpanExtensions
 {
     /// <summary>
     ///     Returns the element with the minimum value according to a selector.
@@ -508,7 +518,12 @@ public static class SpanExtensions
 /// <summary>
 ///     ValueTuple extension methods for null checking.
 /// </summary>
-public static class ValueTupleExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class ValueTupleExtensions
 {
     /// <summary>
     ///     Checks if any element in the tuple is not null.

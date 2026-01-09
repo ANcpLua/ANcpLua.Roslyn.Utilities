@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -6,7 +7,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Fluent extension methods for <see cref="AnalyzerOptions" /> to access configuration values.
 /// </summary>
-public static class AnalyzerOptionsExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class AnalyzerOptionsExtensions
 {
     /// <summary>
     ///     Tries to get a configuration value for a specific syntax tree.

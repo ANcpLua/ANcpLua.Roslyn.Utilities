@@ -12,7 +12,12 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     - Missing keys or empty/whitespace values are treated as "unset" and return <see langword="null" />.
 ///     - Typed helpers parse the common MSBuild forms (e.g. boolean "true/false" and "1/0").
 /// </summary>
-public static class AnalyzerConfigOptionsProviderExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class AnalyzerConfigOptionsProviderExtensions
 {
     private const string BuildPropertyPrefix = "build_property.";
     private const string BuildMetadataPrefix = "build_metadata.";

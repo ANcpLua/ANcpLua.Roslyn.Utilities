@@ -9,7 +9,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///     Treats default (uninitialized) and empty arrays as equivalent.
 ///     This follows the "null = empty" pattern for consistency.
 /// </remarks>
-public readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
 {
     /// <summary>An empty args array.</summary>
     public static readonly EquatableMessageArgs Empty = new(ImmutableArray<object?>.Empty);

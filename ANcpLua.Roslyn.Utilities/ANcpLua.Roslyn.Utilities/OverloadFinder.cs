@@ -3,7 +3,12 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-public sealed class OverloadFinder(Compilation compilation)
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class OverloadFinder(Compilation compilation)
 {
     private readonly INamedTypeSymbol? _obsoleteAttribute =
         compilation.GetTypeByMetadataName("System.ObsoleteAttribute");

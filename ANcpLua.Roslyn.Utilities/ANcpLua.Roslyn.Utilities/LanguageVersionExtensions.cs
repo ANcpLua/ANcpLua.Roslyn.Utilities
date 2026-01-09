@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="LanguageVersion" />.
 /// </summary>
-public static class LanguageVersionExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class LanguageVersionExtensions
 {
     public static bool IsCSharp10OrAbove(this LanguageVersion languageVersion) =>
         languageVersion >= (LanguageVersion)1000;

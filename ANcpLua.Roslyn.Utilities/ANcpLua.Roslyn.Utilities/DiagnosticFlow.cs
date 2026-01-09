@@ -8,7 +8,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// Railway-oriented result type for generator pipelines.
 /// Carries a value AND accumulated diagnostics through transformations.
 /// </summary>
-public readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
 {
     public T? Value { get; }
     public EquatableArray<DiagnosticInfo> Diagnostics { get; }
@@ -118,7 +123,12 @@ public readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
 /// <summary>
 /// Factory methods for DiagnosticFlow.
 /// </summary>
-public static class DiagnosticFlow
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class DiagnosticFlow
 {
     public static DiagnosticFlow<T> Ok<T>(T value) =>
         new(value, default);
@@ -258,7 +268,12 @@ file static class DiagnosticFlowHelpers
 /// <summary>
 /// Extensions for reporting diagnostics from flows.
 /// </summary>
-public static class DiagnosticFlowReportingExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class DiagnosticFlowReportingExtensions
 {
     public static void Report<T>(this DiagnosticFlow<T> flow, SourceProductionContext context)
     {

@@ -3,7 +3,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-public sealed class PublicApiWalker : SymbolVisitor
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class PublicApiWalker : SymbolVisitor
 {
     private readonly CancellationToken _cancellationToken;
     private readonly HashSet<INamedTypeSymbol> _types;
@@ -96,7 +101,12 @@ public sealed class PublicApiWalker : SymbolVisitor
     }
 }
 
-public static class NamespaceExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class NamespaceExtensions
 {
     public static IEnumerable<INamedTypeSymbol> GetAllTypes(this INamespaceSymbol ns)
     {

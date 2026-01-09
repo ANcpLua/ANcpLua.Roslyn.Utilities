@@ -6,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for the <see cref="Compilation" /> type.
 /// </summary>
-public static class CompilationExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class CompilationExtensions
 {
     /// <summary>
     ///     Checks whether a given compilation (assumed to be for C#) is using at least a given language version.

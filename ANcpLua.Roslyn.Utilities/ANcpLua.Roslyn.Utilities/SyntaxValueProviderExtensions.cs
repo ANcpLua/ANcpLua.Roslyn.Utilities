@@ -10,7 +10,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="SyntaxValueProvider" />.
 /// </summary>
-public static class SyntaxValueProviderExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SyntaxValueProviderExtensions
 {
     /// <summary>
     ///     Creates an <see cref="IncrementalValuesProvider{T}" /> for classes and records with the specified attribute.

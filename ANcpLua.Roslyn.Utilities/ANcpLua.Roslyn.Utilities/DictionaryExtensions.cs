@@ -3,7 +3,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="Dictionary{TKey, TValue}" /> with allocation-free patterns.
 /// </summary>
-public static class DictionaryExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class DictionaryExtensions
 {
     /// <summary>
     ///     Gets the value for the specified key, or inserts a new value using the factory if the key doesn't exist.

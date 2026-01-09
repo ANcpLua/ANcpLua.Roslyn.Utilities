@@ -6,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// <summary>
 ///     An equatable representation of a source location for use in source generators.
 /// </summary>
-public readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan LineSpan)
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan LineSpan)
 {
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="Location" />.

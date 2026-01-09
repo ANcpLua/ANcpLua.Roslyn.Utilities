@@ -12,7 +12,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extensions and factory methods for <see cref="EquatableArray{T}" />.
 /// </summary>
-public static class EquatableArray
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class EquatableArray
 {
     /// <summary>
     ///     Creates an <see cref="EquatableArray{T}" /> from a given <see cref="ImmutableArray{T}" />.
@@ -52,7 +57,12 @@ public static class EquatableArray
 ///     </para>
 /// </remarks>
 /// <typeparam name="T">The type of values in the array.</typeparam>
-public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyCollection<T>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyCollection<T>
     where T : IEquatable<T>
 {
     /// <summary>
@@ -225,7 +235,12 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadO
 /// <summary>
 ///     Additional extension methods for <see cref="EquatableArray{T}" />.
 /// </summary>
-public static class EquatableArrayExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class EquatableArrayExtensions
 {
     /// <summary>
     ///     Appends a single item to the array.

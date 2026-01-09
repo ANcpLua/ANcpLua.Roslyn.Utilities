@@ -21,7 +21,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///         the data you need into equatable types (strings, primitives, <see cref="LocationInfo" />, etc.).
 ///     </para>
 /// </remarks>
-public readonly record struct ClassWithAttributesContext(
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct ClassWithAttributesContext(
     SemanticModel SemanticModel,
     ImmutableArray<AttributeData> Attributes,
     ClassDeclarationSyntax ClassSyntax,

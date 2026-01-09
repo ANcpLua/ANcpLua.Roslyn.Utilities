@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="IMethodSymbol" />.
 /// </summary>
-public static class MethodSymbolExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class MethodSymbolExtensions
 {
     /// <summary>
     ///     Checks if a method is an interface implementation.

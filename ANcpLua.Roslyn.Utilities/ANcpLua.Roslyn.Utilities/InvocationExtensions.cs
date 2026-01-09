@@ -3,7 +3,12 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-public static class InvocationExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class InvocationExtensions
 {
     public static IArgumentOperation? GetArgument(this IInvocationOperation operation, string parameterName)
     {

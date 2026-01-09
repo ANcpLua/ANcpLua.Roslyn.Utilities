@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="INamespaceSymbol" />.
 /// </summary>
-public static class NamespaceSymbolExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class NamespaceSymbolExtensions
 {
     /// <summary>
     ///     Checks if a namespace matches the given parts (zero-allocation).

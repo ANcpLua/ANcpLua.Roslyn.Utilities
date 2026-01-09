@@ -8,7 +8,12 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     Extension methods for <see cref="IncrementalValuesProvider{TValues}" /> and
 ///     <see cref="IncrementalValueProvider{TValue}" />.
 /// </summary>
-public static class IncrementalValuesProviderExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class IncrementalValuesProviderExtensions
 {
     /// <summary>
     ///     Registers a source output for files with names.

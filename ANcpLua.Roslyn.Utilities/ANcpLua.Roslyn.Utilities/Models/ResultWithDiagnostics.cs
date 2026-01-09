@@ -13,7 +13,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///     <c>Diagnostic</c> contains <c>Location</c> which uses reference equality,
 ///     breaking incremental generator caching.
 /// </remarks>
-public readonly record struct ResultWithDiagnostics<T>(
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct ResultWithDiagnostics<T>(
     T Result,
     EquatableArray<DiagnosticInfo> Diagnostics
 )
@@ -30,7 +35,12 @@ public readonly record struct ResultWithDiagnostics<T>(
 /// <summary>
 ///     Extension methods for creating <see cref="ResultWithDiagnostics{T}" /> instances.
 /// </summary>
-public static class ResultWithDiagnosticsExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class ResultWithDiagnosticsExtensions
 {
     /// <summary>
     ///     Converts a value to a <see cref="ResultWithDiagnostics{T}" /> with no diagnostics.

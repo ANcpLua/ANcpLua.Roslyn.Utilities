@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
-public sealed class AwaitableContext
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class AwaitableContext
 {
     private readonly INamedTypeSymbol?[] _taskLikeSymbols;
 

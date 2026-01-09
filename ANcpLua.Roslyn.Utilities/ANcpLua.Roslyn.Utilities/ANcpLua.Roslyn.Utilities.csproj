@@ -17,6 +17,10 @@
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <!-- Suppress CS1705 assembly version conflict warnings -->
     <NoWarn>$(NoWarn);CS1705</NoWarn>
+
+    <!-- Define ANCPLUA_ROSLYN_PUBLIC so types are public in the compiled DLL -->
+    <!-- When consumed as source-only package, this is not defined, so types become internal -->
+    <DefineConstants>$(DefineConstants);ANCPLUA_ROSLYN_PUBLIC</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

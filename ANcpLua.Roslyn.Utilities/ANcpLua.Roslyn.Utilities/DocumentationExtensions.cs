@@ -14,7 +14,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for retrieving and processing documentation comments from Roslyn symbols.
 /// </summary>
-public static class DocumentationExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class DocumentationExtensions
 {
     /// <summary>
     ///     Gets the documentation comment for a symbol, optionally expanding inheritdoc elements.

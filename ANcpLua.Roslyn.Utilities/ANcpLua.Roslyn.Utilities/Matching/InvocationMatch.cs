@@ -6,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities.Matching;
 /// <summary>
 ///     Entry point for fluent invocation matching DSL.
 /// </summary>
-public static class Invoke
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class Invoke
 {
     /// <summary>Creates an invocation matcher.</summary>
     public static InvocationMatcher Method() => new();
@@ -18,7 +23,12 @@ public static class Invoke
 /// <summary>
 ///     Fluent matcher for IInvocationOperation - the bread and butter of analyzers.
 /// </summary>
-public sealed class InvocationMatcher
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class InvocationMatcher
 {
     private readonly List<Func<IInvocationOperation, bool>> _predicates = [];
 

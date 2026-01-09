@@ -8,7 +8,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 /// Declarative validation for symbols. Reads like intent, accumulates violations.
 /// </summary>
-public sealed class SemanticGuard<T> where T : ISymbol
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class SemanticGuard<T> where T : ISymbol
 {
     private readonly T _symbol;
     private readonly List<DiagnosticInfo> _violations = [];
@@ -121,7 +126,12 @@ public sealed class SemanticGuard<T> where T : ISymbol
 /// <summary>
 /// SemanticGuard extensions for specific symbol types.
 /// </summary>
-public static class SemanticGuardExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SemanticGuardExtensions
 {
     // Method-specific guards
     public static SemanticGuard<IMethodSymbol> MustBeAsync(this SemanticGuard<IMethodSymbol> guard, DiagnosticInfo onFail) =>
@@ -223,7 +233,12 @@ public static class SemanticGuardExtensions
 /// <summary>
 /// Static entry point for SemanticGuard.
 /// </summary>
-public static class SemanticGuard
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SemanticGuard
 {
     public static SemanticGuard<T> For<T>(T symbol) where T : ISymbol => SemanticGuard<T>.Create(symbol);
 

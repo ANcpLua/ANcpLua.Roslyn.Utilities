@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
-public sealed class AspNetContext
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class AspNetContext
 {
     // ASP.NET Core MVC
     public INamedTypeSymbol? ControllerBase { get; }

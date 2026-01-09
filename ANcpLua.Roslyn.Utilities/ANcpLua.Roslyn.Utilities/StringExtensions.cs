@@ -6,7 +6,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for string manipulation in source generators.
 /// </summary>
-public static class StringExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class StringExtensions
 {
     private static readonly char[] NewLineSeparator = new[] { '\n' };
 

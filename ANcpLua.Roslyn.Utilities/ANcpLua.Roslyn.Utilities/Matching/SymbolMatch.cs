@@ -7,7 +7,12 @@ namespace ANcpLua.Roslyn.Utilities.Matching;
 /// <summary>
 ///     Entry point for fluent symbol matching DSL.
 /// </summary>
-public static class Match
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class Match
 {
     /// <summary>Creates a method matcher.</summary>
     public static MethodMatcher Method() => new();
@@ -40,7 +45,12 @@ public static class Match
 /// <summary>
 ///     Base class for all symbol matchers providing common functionality.
 /// </summary>
-public abstract class SymbolMatcherBase<TSelf, TSymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+abstract class SymbolMatcherBase<TSelf, TSymbol>
     where TSelf : SymbolMatcherBase<TSelf, TSymbol>
     where TSymbol : class, ISymbol
 {
@@ -149,7 +159,12 @@ public abstract class SymbolMatcherBase<TSelf, TSymbol>
 /// <summary>
 ///     Fluent matcher for IMethodSymbol.
 /// </summary>
-public sealed class MethodMatcher : SymbolMatcherBase<MethodMatcher, IMethodSymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class MethodMatcher : SymbolMatcherBase<MethodMatcher, IMethodSymbol>
 {
     /// <summary>Matches constructors.</summary>
     public MethodMatcher Constructor() => AddPredicate(m => m.MethodKind == MethodKind.Constructor);
@@ -226,7 +241,12 @@ public sealed class MethodMatcher : SymbolMatcherBase<MethodMatcher, IMethodSymb
 /// <summary>
 ///     Fluent matcher for INamedTypeSymbol.
 /// </summary>
-public sealed class TypeMatcher : SymbolMatcherBase<TypeMatcher, INamedTypeSymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class TypeMatcher : SymbolMatcherBase<TypeMatcher, INamedTypeSymbol>
 {
     /// <summary>Matches classes.</summary>
     public TypeMatcher Class() => AddPredicate(t => t.TypeKind == TypeKind.Class);
@@ -315,7 +335,12 @@ public sealed class TypeMatcher : SymbolMatcherBase<TypeMatcher, INamedTypeSymbo
 /// <summary>
 ///     Fluent matcher for IPropertySymbol.
 /// </summary>
-public sealed class PropertyMatcher : SymbolMatcherBase<PropertyMatcher, IPropertySymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class PropertyMatcher : SymbolMatcherBase<PropertyMatcher, IPropertySymbol>
 {
     /// <summary>Matches properties with a getter.</summary>
     public PropertyMatcher WithGetter() => AddPredicate(p => p.GetMethod is not null);
@@ -342,7 +367,12 @@ public sealed class PropertyMatcher : SymbolMatcherBase<PropertyMatcher, IProper
 /// <summary>
 ///     Fluent matcher for IFieldSymbol.
 /// </summary>
-public sealed class FieldMatcher : SymbolMatcherBase<FieldMatcher, IFieldSymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class FieldMatcher : SymbolMatcherBase<FieldMatcher, IFieldSymbol>
 {
     /// <summary>Matches const fields.</summary>
     public FieldMatcher Const() => AddPredicate(f => f.IsConst);
@@ -366,7 +396,12 @@ public sealed class FieldMatcher : SymbolMatcherBase<FieldMatcher, IFieldSymbol>
 /// <summary>
 ///     Fluent matcher for IParameterSymbol.
 /// </summary>
-public sealed class ParameterMatcher : SymbolMatcherBase<ParameterMatcher, IParameterSymbol>
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class ParameterMatcher : SymbolMatcherBase<ParameterMatcher, IParameterSymbol>
 {
     /// <summary>Matches ref parameters.</summary>
     public ParameterMatcher Ref() => AddPredicate(p => p.RefKind == RefKind.Ref);

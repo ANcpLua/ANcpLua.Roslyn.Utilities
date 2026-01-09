@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// </summary>
 /// <param name="Name">The hint name for the generated file.</param>
 /// <param name="Text">The source text content.</param>
-public readonly record struct FileWithName(
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct FileWithName(
     string Name,
     string Text)
 {

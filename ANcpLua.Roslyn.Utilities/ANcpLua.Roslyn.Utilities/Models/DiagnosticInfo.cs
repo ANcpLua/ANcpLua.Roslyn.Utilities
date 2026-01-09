@@ -11,7 +11,12 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// <summary>
 ///     An equatable representation of a diagnostic for use in source generators.
 /// </summary>
-public readonly record struct DiagnosticInfo(
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+readonly record struct DiagnosticInfo(
     DiagnosticDescriptor Descriptor,
     LocationInfo Location,
     EquatableMessageArgs MessageArgs)

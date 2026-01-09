@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities.Patterns;
 /// <summary>
 /// Composable pattern for matching symbols. Like regex, but for Roslyn symbols.
 /// </summary>
-public abstract class SymbolPattern<T> where T : ISymbol
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+abstract class SymbolPattern<T> where T : ISymbol
 {
     public abstract bool Matches(T symbol);
 
@@ -47,7 +52,12 @@ internal sealed class AlwaysTruePattern<T> : SymbolPattern<T> where T : ISymbol
 /// <summary>
 /// Entry point for creating symbol patterns.
 /// </summary>
-public static class SymbolPattern
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SymbolPattern
 {
     public static MethodPatternBuilder Method() => new();
     public static TypePatternBuilder Type() => new();

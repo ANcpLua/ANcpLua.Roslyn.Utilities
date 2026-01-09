@@ -5,7 +5,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for SemanticModel.
 /// </summary>
-public static class SemanticModelExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SemanticModelExtensions
 {
     /// <summary>
     ///     Checks if a syntax node represents a constant value.

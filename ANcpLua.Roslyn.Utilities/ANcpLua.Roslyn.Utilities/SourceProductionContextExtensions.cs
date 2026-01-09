@@ -10,7 +10,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="SourceProductionContext" />.
 /// </summary>
-public static class SourceProductionContextExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SourceProductionContextExtensions
 {
     /// <summary>
     ///     Adds source code with a standardized header.

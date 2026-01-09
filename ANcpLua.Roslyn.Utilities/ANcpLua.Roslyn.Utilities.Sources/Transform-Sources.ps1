@@ -1,0 +1,67 @@
+#!/usr/bin/env pwsh
+# Transform source files for source-only package
+# Converts public -> internal visibility
+
+param(
+    [Parameter(Mandatory)]
+    [string]$SourceDir,
+    
+    [Parameter(Mandatory)]
+    [string]$OutputDir,
+    
+    [switch]$ShowDetails
+)
+
+$ErrorActionPreference = 'Stop'
+
+# Resolve paths
+$SourceDir = (Resolve-Path $SourceDir).Path
+if (-not (Test-Path $SourceDir)) {
+    Write-Error "Source directory not found: $SourceDir"
+    exit 1
+}
+
+# Clean and create output
+if (Test-Path $OutputDir) {
+    Remove-Item $OutputDir -Recurse -Force
+}
+New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+# Find all .cs files
+$files = Get-ChildItem $SourceDir -Filter "*.cs" -Recurse
+
+$count = 0
+foreach ($file in $files) {
+    $relativePath = $file.FullName.Substring($SourceDir.Length + 1)
+    $content = Get-Content $file.FullName -Raw
+
+    # Transform visibility: public -> internal
+    $content = $content -replace 'public static class', 'internal static class'
+    $content = $content -replace 'public readonly struct', 'internal readonly struct'
+    $content = $content -replace 'public readonly record struct', 'internal readonly record struct'
+    $content = $content -replace 'public sealed class', 'internal sealed class'
+    $content = $content -replace 'public record struct', 'internal record struct'
+    $content = $content -replace 'public static partial class', 'internal static partial class'
+    $content = $content -replace 'public partial class', 'internal partial class'
+    $content = $content -replace 'public class', 'internal class'
+    $content = $content -replace 'public interface', 'internal interface'
+    $content = $content -replace 'public enum', 'internal enum'
+    $content = $content -replace 'public delegate', 'internal delegate'
+    $content = $content -replace 'public abstract class', 'internal abstract class'
+    $content = $content -replace 'public record', 'internal record'
+
+    # Preserve directory structure
+    $outputPath = Join-Path $OutputDir $relativePath
+    $outputDirPath = Split-Path $outputPath -Parent
+    if (-not (Test-Path $outputDirPath)) {
+        New-Item -ItemType Directory -Path $outputDirPath -Force | Out-Null
+    }
+
+    Set-Content $outputPath $content -NoNewline
+    $count++
+    if ($ShowDetails) {
+        Write-Host "Transformed: $relativePath"
+    }
+}
+
+Write-Host "Transformed $count files to $OutputDir"

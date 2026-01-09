@@ -7,8 +7,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for Roslyn syntax types.
 /// </summary>
-public static class
-    SyntaxExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class SyntaxExtensions
 {
     /// <summary>
     ///     Gets the method name from an invocation expression.

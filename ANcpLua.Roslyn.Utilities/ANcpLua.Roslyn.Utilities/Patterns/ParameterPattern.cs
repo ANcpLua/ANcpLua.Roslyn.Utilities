@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
 
-public sealed class ParameterPatternBuilder
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class ParameterPatternBuilder
 {
     private readonly List<Func<IParameterSymbol, bool>> _predicates = [];
 

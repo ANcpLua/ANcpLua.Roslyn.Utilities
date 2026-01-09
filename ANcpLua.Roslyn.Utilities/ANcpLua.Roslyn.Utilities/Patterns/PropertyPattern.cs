@@ -2,7 +2,12 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
 
-public sealed class PropertyPatternBuilder
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class PropertyPatternBuilder
 {
     private readonly List<Func<IPropertySymbol, bool>> _predicates = [];
 
@@ -145,7 +150,12 @@ public sealed class PropertyPatternBuilder
     public static implicit operator SymbolPattern<IPropertySymbol>(PropertyPatternBuilder builder) => builder.Build();
 }
 
-public sealed class FieldPatternBuilder
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+sealed class FieldPatternBuilder
 {
     private readonly List<Func<IFieldSymbol, bool>> _predicates = [];
 

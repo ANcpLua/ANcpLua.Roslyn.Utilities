@@ -3,7 +3,12 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="List{T}" /> with allocation-free patterns.
 /// </summary>
-public static class ListExtensions
+#if ANCPLUA_ROSLYN_PUBLIC
+public
+#else
+internal
+#endif
+static class ListExtensions
 {
     /// <summary>
     ///     Removes all elements that match the conditions defined by the specified predicate.
