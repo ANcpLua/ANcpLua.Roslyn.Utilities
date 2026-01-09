@@ -52,9 +52,6 @@ dotnet build -c Release
 
 # Pack
 dotnet pack -c Release
-
-# Build with specific version
-dotnet build -c Release -p:VersionPrefix=1.0.0 -p:VersionSuffix=""
 ```
 
 ## Highlights
