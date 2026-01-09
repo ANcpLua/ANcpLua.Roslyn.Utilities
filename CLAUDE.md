@@ -1,16 +1,31 @@
-# CLAUDE.md
+# CLAUDE.md - ANcpLua.Roslyn.Utilities
 
-## CRITICAL: Dependency Direction
+Reusable utilities for Roslyn incremental source generators.
+
+## 🏗️ Ecosystem Position
 
 ```
-THIS REPO IS UPSTREAM - IT CANNOT DEPEND ON ANcpLua.NET.Sdk
-
-Layer 0: ANcpLua.Roslyn.Utilities ← YOU ARE HERE (publishes first)
-    ↓
-Layer 1: ANcpLua.NET.Sdk (consumes this package)
-    ↓
-Layer 2: Downstream repos (consume SDK)
+LAYER 0: ANcpLua.Roslyn.Utilities  ← YOU ARE HERE (UPSTREAM)
+         ↓ publishes .Sources
+LAYER 1: ANcpLua.NET.Sdk           ← SOURCE OF TRUTH (Version.props)
+         ↓ auto-syncs Version.props
+LAYER 2: ANcpLua.Analyzers         ← DOWNSTREAM (uses SDK)
+         ↓ consumed by
+LAYER 3: qyl, other projects       ← END USERS
 ```
+
+### This Repo: LAYER 0 (Upstream)
+
+| Property | Value |
+|----------|-------|
+| **Upstream dependencies** | None (Microsoft.NET.Sdk only) |
+| **Downstream consumers** | ANcpLua.NET.Sdk |
+| **Version.props** | CUSTOM (own Roslyn versions) |
+| **Auto-sync** | NO (manual sync only) |
+
+## ⚠️ CRITICAL: Dependency Direction
+
+**THIS REPO IS UPSTREAM - IT CANNOT DEPEND ON ANcpLua.NET.Sdk**
 
 **NEVER add:**
 - `Sdk="ANcpLua.NET.Sdk"` in any csproj
