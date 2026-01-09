@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
   </ItemGroup>
 
