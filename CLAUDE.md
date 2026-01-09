@@ -71,3 +71,14 @@ Fluent testing framework for incremental generators:
 ## Polyfills
 
 This repo uses `PolySharp` for netstandard2.0 polyfills (IsExternalInit, NotNullWhen, etc.) instead of SDK-provided polyfills.
+
+## ⚠️ Release Order (CRITICAL!)
+
+This repo must be published FIRST before SDK can update:
+
+```
+1. Roslyn.Utilities → publish to NuGet  ← YOU ARE HERE
+2. SDK → update Version.props → publish to NuGet
+3. THEN sync Version.props to Analyzers
+4. Analyzers → can now build
+```
