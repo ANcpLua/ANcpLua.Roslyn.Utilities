@@ -106,7 +106,7 @@ sealed class InvocationMatcher
 
     /// <summary>Matches static method invocations.</summary>
     public InvocationMatcher Static() =>
-        AddPredicate(i => i.TargetMethod.IsStatic && !i.TargetMethod.IsExtensionMethod);
+        AddPredicate(i => i.TargetMethod is { IsStatic: true, IsExtensionMethod: false });
 
     /// <summary>Matches instance method invocations.</summary>
     public InvocationMatcher Instance() =>

@@ -84,7 +84,7 @@ sealed class PublicApiWalker : SymbolVisitor
 
             switch (member)
             {
-                case IMethodSymbol method when method.MethodKind is MethodKind.Ordinary or MethodKind.Constructor:
+                case IMethodSymbol { MethodKind: MethodKind.Ordinary or MethodKind.Constructor } method:
                     _methods.Add(method);
                     break;
                 case IPropertySymbol property:

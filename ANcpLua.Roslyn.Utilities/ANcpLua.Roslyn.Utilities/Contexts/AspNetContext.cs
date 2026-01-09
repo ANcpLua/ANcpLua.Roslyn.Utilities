@@ -2,59 +2,55 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
+/// <summary>
+/// Provides cached type symbols and helper methods for analyzing ASP.NET Core and legacy Web API code patterns.
+/// </summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-sealed class AspNetContext
+    sealed class AspNetContext
 {
-    // ASP.NET Core MVC
-    public INamedTypeSymbol? ControllerBase { get; }
-    public INamedTypeSymbol? Controller { get; }
-    public INamedTypeSymbol? IActionResult { get; }
-    public INamedTypeSymbol? ActionResult { get; }
-    public INamedTypeSymbol? ActionResultOfT { get; }
-    public INamedTypeSymbol? NonActionAttribute { get; }
-    public INamedTypeSymbol? NonControllerAttribute { get; }
-    public INamedTypeSymbol? HttpMethodAttribute { get; }
-    public INamedTypeSymbol? RouteAttribute { get; }
-    public INamedTypeSymbol? ApiControllerAttribute { get; }
-    public INamedTypeSymbol? ControllerAttribute { get; }
-    public INamedTypeSymbol? FromBodyAttribute { get; }
-    public INamedTypeSymbol? FromQueryAttribute { get; }
-    public INamedTypeSymbol? FromRouteAttribute { get; }
-    public INamedTypeSymbol? FromServicesAttribute { get; }
-    public INamedTypeSymbol? FromHeaderAttribute { get; }
-    public INamedTypeSymbol? FromFormAttribute { get; }
-    public INamedTypeSymbol? BindPropertyAttribute { get; }
-    public INamedTypeSymbol? ModelBinderAttribute { get; }
+    // ASP.NET Core MVC - used internally
+    private INamedTypeSymbol? ControllerBase { get; }
+    private INamedTypeSymbol? ActionResultInterface { get; }
+    private INamedTypeSymbol? ActionResult { get; }
+    private INamedTypeSymbol? ActionResultOfT { get; }
+    private INamedTypeSymbol? NonActionAttribute { get; }
+    private INamedTypeSymbol? NonControllerAttribute { get; }
+    private INamedTypeSymbol? HttpMethodAttribute { get; }
+    private INamedTypeSymbol? RouteAttribute { get; }
+    private INamedTypeSymbol? ApiControllerAttribute { get; }
+    private INamedTypeSymbol? ControllerAttribute { get; }
+    private INamedTypeSymbol? FromBodyAttribute { get; }
+    private INamedTypeSymbol? FromQueryAttribute { get; }
+    private INamedTypeSymbol? FromRouteAttribute { get; }
+    private INamedTypeSymbol? FromServicesAttribute { get; }
+    private INamedTypeSymbol? FromHeaderAttribute { get; }
+    private INamedTypeSymbol? FromFormAttribute { get; }
 
-    // ASP.NET Core Minimal APIs
-    public INamedTypeSymbol? IEndpointRouteBuilder { get; }
-    public INamedTypeSymbol? IResult { get; }
-    public INamedTypeSymbol? Results { get; }
-    public INamedTypeSymbol? TypedResults { get; }
+    // ASP.NET Core Minimal APIs - used internally
+    private INamedTypeSymbol? ResultInterface { get; }
 
-    // ASP.NET Core Common
-    public INamedTypeSymbol? HttpContext { get; }
-    public INamedTypeSymbol? HttpRequest { get; }
-    public INamedTypeSymbol? HttpResponse { get; }
-    public INamedTypeSymbol? IFormFile { get; }
-    public INamedTypeSymbol? CancellationToken { get; }
+    // ASP.NET Core Common - used internally
+    private INamedTypeSymbol? HttpContext { get; }
+    private INamedTypeSymbol? FormFileInterface { get; }
 
-    // Legacy Web API
-    public INamedTypeSymbol? ApiController { get; }
-    public INamedTypeSymbol? IHttpController { get; }
-    public INamedTypeSymbol? IHttpActionResult { get; }
-    public INamedTypeSymbol? HttpResponseMessage { get; }
+    // Legacy Web API - used internally
+    private INamedTypeSymbol? ApiController { get; }
+    private INamedTypeSymbol? HttpControllerInterface { get; }
+    private INamedTypeSymbol? HttpActionResultInterface { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AspNetContext"/> class by resolving ASP.NET type symbols from the compilation.
+    /// </summary>
+    /// <param name="compilation">The compilation to resolve type symbols from.</param>
     public AspNetContext(Compilation compilation)
     {
         // ASP.NET Core MVC
         ControllerBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerBase");
-        Controller = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Controller");
-        IActionResult = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.IActionResult");
+        ActionResultInterface = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.IActionResult");
         ActionResult = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ActionResult");
         ActionResultOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ActionResult`1");
         NonActionAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.NonActionAttribute");
@@ -69,86 +65,54 @@ sealed class AspNetContext
         FromServicesAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromServicesAttribute");
         FromHeaderAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromHeaderAttribute");
         FromFormAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.FromFormAttribute");
-        BindPropertyAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.BindPropertyAttribute");
-        ModelBinderAttribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ModelBinderAttribute");
 
         // ASP.NET Core Minimal APIs
-        IEndpointRouteBuilder = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Routing.IEndpointRouteBuilder");
-        IResult = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IResult");
-        Results = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.Results");
-        TypedResults = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.TypedResults");
+        ResultInterface = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IResult");
 
         // ASP.NET Core Common
         HttpContext = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpContext");
-        HttpRequest = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpRequest");
-        HttpResponse = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.HttpResponse");
-        IFormFile = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IFormFile");
-        CancellationToken = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        FormFileInterface = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Http.IFormFile");
 
         // Legacy Web API
         ApiController = compilation.GetTypeByMetadataName("System.Web.Http.ApiController");
-        IHttpController = compilation.GetTypeByMetadataName("System.Web.Http.Controllers.IHttpController");
-        IHttpActionResult = compilation.GetTypeByMetadataName("System.Web.Http.IHttpActionResult");
-        HttpResponseMessage = compilation.GetTypeByMetadataName("System.Net.Http.HttpResponseMessage");
+        HttpControllerInterface = compilation.GetTypeByMetadataName("System.Web.Http.Controllers.IHttpController");
+        HttpActionResultInterface = compilation.GetTypeByMetadataName("System.Web.Http.IHttpActionResult");
     }
 
+    /// <summary>
+    /// Determines whether the specified type is an ASP.NET controller.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the type is a controller; otherwise, <c>false</c>.</returns>
     public bool IsController(INamedTypeSymbol type)
     {
-        if (type.TypeKind is not TypeKind.Class)
+        if (!IsValidControllerCandidate(type))
             return false;
 
-        if (type.IsAbstract)
+        if (HasNonControllerAttribute(type))
             return false;
 
-        if (type.DeclaredAccessibility is not Accessibility.Public)
-            return false;
-
-        // Check for [NonController] attribute
-        if (NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute))
-            return false;
-
-        // Check for [Controller] attribute - makes any class a controller
-        if (ControllerAttribute is not null && type.HasAttribute(ControllerAttribute))
-            return true;
-
-        // ASP.NET Core: inherits from ControllerBase
-        if (ControllerBase is not null && type.InheritsFrom(ControllerBase))
-            return true;
-
-        // Legacy Web API: inherits from ApiController or implements IHttpController
-        if (ApiController is not null && type.InheritsFrom(ApiController))
-            return true;
-
-        if (IHttpController is not null && type.Implements(IHttpController))
-        {
-            // Legacy convention: name must end with "Controller"
-            if (type.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
+        return HasControllerAttribute(type) || InheritsFromControllerBase(type) || IsLegacyController(type);
     }
 
+    /// <summary>
+    /// Determines whether the specified type is an API controller (has [ApiController] attribute).
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the type is an API controller; otherwise, <c>false</c>.</returns>
     public bool IsApiController(INamedTypeSymbol type)
     {
         if (!IsController(type))
             return false;
 
-        if (ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute))
-            return true;
-
-        // Check if any base type has [ApiController]
-        var baseType = type.BaseType;
-        while (baseType is not null)
-        {
-            if (ApiControllerAttribute is not null && baseType.HasAttribute(ApiControllerAttribute))
-                return true;
-            baseType = baseType.BaseType;
-        }
-
-        return false;
+        return HasApiControllerAttribute(type) || BaseTypeHasApiControllerAttribute(type);
     }
 
+    /// <summary>
+    /// Determines whether the specified method is a controller action.
+    /// </summary>
+    /// <param name="method">The method symbol to check.</param>
+    /// <returns><c>true</c> if the method is an action; otherwise, <c>false</c>.</returns>
     public bool IsAction(IMethodSymbol method)
     {
         if (method.MethodKind is not MethodKind.Ordinary)
@@ -160,17 +124,17 @@ sealed class AspNetContext
         if (method.DeclaredAccessibility is not Accessibility.Public)
             return false;
 
-        // Check for [NonAction] attribute
         if (NonActionAttribute is not null && method.HasAttribute(NonActionAttribute))
             return false;
 
-        // Must be in a controller
-        if (method.ContainingType is not INamedTypeSymbol containingType || !IsController(containingType))
-            return false;
-
-        return true;
+        return method.ContainingType is { } containingType && IsController(containingType);
     }
 
+    /// <summary>
+    /// Determines whether the specified method has an HTTP method attribute (HttpGet, HttpPost, etc.).
+    /// </summary>
+    /// <param name="method">The method symbol to check.</param>
+    /// <returns><c>true</c> if the method has an HTTP method attribute; otherwise, <c>false</c>.</returns>
     public bool HasHttpMethodAttribute(IMethodSymbol method)
     {
         if (HttpMethodAttribute is null)
@@ -185,15 +149,120 @@ sealed class AspNetContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified symbol has a [Route] attribute.
+    /// </summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns><c>true</c> if the symbol has a route attribute; otherwise, <c>false</c>.</returns>
     public bool HasRouteAttribute(ISymbol symbol) =>
         RouteAttribute is not null && symbol.HasAttribute(RouteAttribute);
 
+    /// <summary>
+    /// Determines whether the specified type is an action result type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the type is an action result; otherwise, <c>false</c>.</returns>
     public bool IsActionResult(ITypeSymbol? type)
     {
         if (type is null)
             return false;
 
-        if (IActionResult is not null && type.IsOrImplements(IActionResult))
+        return IsMvcActionResult(type) || IsMinimalApiResult(type) || IsLegacyActionResult(type);
+    }
+
+    /// <summary>
+    /// Determines whether the specified parameter has a binding source attribute.
+    /// </summary>
+    /// <param name="parameter">The parameter symbol to check.</param>
+    /// <returns><c>true</c> if the parameter has a binding attribute; otherwise, <c>false</c>.</returns>
+    public bool HasBindingAttribute(IParameterSymbol parameter)
+    {
+        foreach (var attr in parameter.GetAttributes())
+        {
+            if (IsBindingSourceAttribute(attr.AttributeClass))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether the specified parameter has a [FromBody] attribute.
+    /// </summary>
+    /// <param name="parameter">The parameter symbol to check.</param>
+    /// <returns><c>true</c> if the parameter is from body; otherwise, <c>false</c>.</returns>
+    public bool IsFromBody(IParameterSymbol parameter) =>
+        FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
+
+    /// <summary>
+    /// Determines whether the specified parameter has a [FromServices] attribute.
+    /// </summary>
+    /// <param name="parameter">The parameter symbol to check.</param>
+    /// <returns><c>true</c> if the parameter is from services; otherwise, <c>false</c>.</returns>
+    public bool IsFromServices(IParameterSymbol parameter) =>
+        FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
+
+    /// <summary>
+    /// Determines whether the specified type is the HttpContext type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the type is HttpContext; otherwise, <c>false</c>.</returns>
+    public bool IsHttpContextType(ITypeSymbol? type) =>
+        HttpContext is not null && type.IsEqualTo(HttpContext);
+
+    /// <summary>
+    /// Determines whether the specified type is or implements IFormFile.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the type is a form file; otherwise, <c>false</c>.</returns>
+    public bool IsFormFile(ITypeSymbol? type) =>
+        type is not null && FormFileInterface is not null && type.IsOrImplements(FormFileInterface);
+
+    // Helper methods to reduce cognitive complexity
+
+    private static bool IsValidControllerCandidate(ITypeSymbol type) =>
+        type.TypeKind is TypeKind.Class &&
+        type is { IsAbstract: false, DeclaredAccessibility: Accessibility.Public };
+
+    private bool HasNonControllerAttribute(ISymbol type) =>
+        NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute);
+
+    private bool HasControllerAttribute(ISymbol type) =>
+        ControllerAttribute is not null && type.HasAttribute(ControllerAttribute);
+
+    private bool InheritsFromControllerBase(ITypeSymbol type) =>
+        ControllerBase is not null && type.InheritsFrom(ControllerBase);
+
+    private bool IsLegacyController(ITypeSymbol type)
+    {
+        if (ApiController is not null && type.InheritsFrom(ApiController))
+            return true;
+
+        if (HttpControllerInterface is not null && type.Implements(HttpControllerInterface))
+            return type.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase);
+
+        return false;
+    }
+
+    private bool HasApiControllerAttribute(ISymbol type) =>
+        ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute);
+
+    private bool BaseTypeHasApiControllerAttribute(ITypeSymbol type)
+    {
+        var baseType = type.BaseType;
+        while (baseType is not null)
+        {
+            if (HasApiControllerAttribute(baseType))
+                return true;
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    private bool IsMvcActionResult(ITypeSymbol type)
+    {
+        if (ActionResultInterface is not null && type.IsOrImplements(ActionResultInterface))
             return true;
 
         if (ActionResult is not null && type.IsOrInheritsFrom(ActionResult))
@@ -203,48 +272,25 @@ sealed class AspNetContext
             SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, ActionResultOfT))
             return true;
 
-        // Minimal APIs
-        if (IResult is not null && type.IsOrImplements(IResult))
-            return true;
-
-        // Legacy
-        if (IHttpActionResult is not null && type.IsOrImplements(IHttpActionResult))
-            return true;
-
         return false;
     }
 
-    public bool HasBindingAttribute(IParameterSymbol parameter)
+    private bool IsMinimalApiResult(ITypeSymbol type) =>
+        ResultInterface is not null && type.IsOrImplements(ResultInterface);
+
+    private bool IsLegacyActionResult(ITypeSymbol type) =>
+        HttpActionResultInterface is not null && type.IsOrImplements(HttpActionResultInterface);
+
+    private bool IsBindingSourceAttribute(INamedTypeSymbol? attrType)
     {
-        foreach (var attr in parameter.GetAttributes())
-        {
-            var attrType = attr.AttributeClass;
-            if (attrType is null)
-                continue;
+        if (attrType is null)
+            return false;
 
-            if ((FromBodyAttribute is not null && attrType.IsEqualTo(FromBodyAttribute)) ||
-                (FromQueryAttribute is not null && attrType.IsEqualTo(FromQueryAttribute)) ||
-                (FromRouteAttribute is not null && attrType.IsEqualTo(FromRouteAttribute)) ||
-                (FromServicesAttribute is not null && attrType.IsEqualTo(FromServicesAttribute)) ||
-                (FromHeaderAttribute is not null && attrType.IsEqualTo(FromHeaderAttribute)) ||
-                (FromFormAttribute is not null && attrType.IsEqualTo(FromFormAttribute)))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (FromBodyAttribute is not null && attrType.IsEqualTo(FromBodyAttribute)) ||
+               (FromQueryAttribute is not null && attrType.IsEqualTo(FromQueryAttribute)) ||
+               (FromRouteAttribute is not null && attrType.IsEqualTo(FromRouteAttribute)) ||
+               (FromServicesAttribute is not null && attrType.IsEqualTo(FromServicesAttribute)) ||
+               (FromHeaderAttribute is not null && attrType.IsEqualTo(FromHeaderAttribute)) ||
+               (FromFormAttribute is not null && attrType.IsEqualTo(FromFormAttribute));
     }
-
-    public bool IsFromBody(IParameterSymbol parameter) =>
-        FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
-
-    public bool IsFromServices(IParameterSymbol parameter) =>
-        FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
-
-    public bool IsHttpContextType(ITypeSymbol? type) =>
-        HttpContext is not null && type.IsEqualTo(HttpContext);
-
-    public bool IsFormFile(ITypeSymbol? type) =>
-        type is not null && IFormFile is not null && type.IsOrImplements(IFormFile);
 }

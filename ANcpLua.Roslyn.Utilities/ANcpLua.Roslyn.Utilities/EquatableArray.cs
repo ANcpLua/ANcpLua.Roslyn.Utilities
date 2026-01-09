@@ -85,7 +85,12 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     Creates a new <see cref="EquatableArray{T}" /> from a raw array.
     /// </summary>
     /// <param name="array">The input array. Ownership is transferred - do not mutate after passing.</param>
-    public EquatableArray(T[]? array)
+    /// <remarks>
+    ///     This constructor is internal to avoid ambiguity with collection expressions in C# 12+.
+    ///     Use <see cref="EquatableArray.ToEquatableArray{T}"/> extension method instead:
+    ///     <code>myArray.ToEquatableArray()</code>
+    /// </remarks>
+    internal EquatableArray(T[]? array)
     {
         // Normalize: empty arrays become null (single empty state)
         _array = array is { Length: > 0 } ? array : null;
@@ -99,6 +104,19 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     There is no distinction between "uninitialized" and "empty".
     /// </remarks>
     public bool IsEmpty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _array is null;
+    }
+
+    /// <summary>
+    ///     Gets a value indicating whether this array is default or empty.
+    /// </summary>
+    /// <remarks>
+    ///     Provided for API compatibility with <see cref="ImmutableArray{T}.IsDefaultOrEmpty"/>.
+    ///     Since this struct unifies default and empty states, this is equivalent to <see cref="IsEmpty"/>.
+    /// </remarks>
+    public bool IsDefaultOrEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _array is null;

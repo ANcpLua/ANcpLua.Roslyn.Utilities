@@ -199,7 +199,7 @@ static class DiagnosticFlow
             foreach (var d in flow.Diagnostics.AsImmutableArray())
                 diagnostics.Add(d);
 
-            if (flow.IsSuccess && flow.Value is not null)
+            if (flow is { IsSuccess: true, Value: not null })
                 values.Add(flow.Value);
         }
 
@@ -293,7 +293,7 @@ static class DiagnosticFlowReportingExtensions
         Action<T> onSuccess)
     {
         flow.Report(context);
-        if (flow.IsSuccess && flow.Value is not null)
+        if (flow is { IsSuccess: true, Value: not null })
             onSuccess(flow.Value);
     }
 
@@ -302,7 +302,7 @@ static class DiagnosticFlowReportingExtensions
         SourceProductionContext context)
     {
         flow.Report(context);
-        if (flow.IsSuccess && flow.Value is { } file)
+        if (flow is { IsSuccess: true, Value: { } file })
             context.AddSource(file.Name, file.Text);
     }
 
@@ -311,7 +311,7 @@ static class DiagnosticFlowReportingExtensions
         SourceProductionContext context)
     {
         flow.Report(context);
-        if (flow.IsSuccess && flow.Value is { } files)
+        if (flow is { IsSuccess: true, Value: { } files })
         {
             foreach (var file in files)
                 context.AddSource(file.Name, file.Text);
