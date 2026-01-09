@@ -7,9 +7,54 @@
 
 Comprehensive utilities for Roslyn analyzers and source generators.
 
+> **CRITICAL: Layer 0 Package - No SDK Dependency Allowed**
+>
+> This is an **upstream** package in the ANcpLua ecosystem. It **CANNOT** depend on ANcpLua.NET.Sdk.
+> Any such dependency would create a circular reference and break the entire build chain.
+
+## Dependency Hierarchy
+
+```
+Layer 0: ANcpLua.Roslyn.Utilities     <- YOU ARE HERE (publishes first)
+    |
+    v
+Layer 1: ANcpLua.NET.Sdk              <- Consumes this package
+    |
+    v
+Layer 2: Downstream repos             <- Consume the SDK
+```
+
+**Why this matters:**
+- This package must be published to NuGet **before** ANcpLua.NET.Sdk can reference it
+- Uses `Microsoft.NET.Sdk` directly (not any custom SDK)
+- Uses [PolySharp](https://github.com/Sergio0694/PolySharp) for netstandard2.0 polyfills instead of SDK-provided polyfills
+- CI enforcement: GitHub Actions checks fail if any ANcpLua.NET.Sdk dependency is detected
+
+## Installation
+
 ```shell
 dotnet add package ANcpLua.Roslyn.Utilities
 dotnet add package ANcpLua.Roslyn.Utilities.Testing
+```
+
+## Packages
+
+| Package | Target | Description |
+|---------|--------|-------------|
+| **ANcpLua.Roslyn.Utilities** | netstandard2.0 | Core library with EquatableArray, symbol extensions, pipeline extensions, DiagnosticFlow |
+| **ANcpLua.Roslyn.Utilities.Testing** | net10.0 | Testing framework for incremental generators with caching validation |
+
+## Building
+
+```bash
+# Build
+dotnet build -c Release
+
+# Pack
+dotnet pack -c Release
+
+# Build with specific version
+dotnet build -c Release -p:VersionPrefix=1.0.0 -p:VersionSuffix=""
 ```
 
 ## Highlights

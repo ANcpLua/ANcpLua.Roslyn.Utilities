@@ -2,6 +2,10 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
+/// <summary>
+///     Provides a fluent API for testing Roslyn incremental generators.
+/// </summary>
+/// <typeparam name="TGenerator">The type of the incremental generator to test.</typeparam>
 public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
     /// <summary>

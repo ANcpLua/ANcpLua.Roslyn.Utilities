@@ -112,6 +112,7 @@
     <BclAsyncInterfacesVersion>6.0.0</BclAsyncInterfacesVersion>
     <TasksExtensionsVersion>4.5.4</TasksExtensionsVersion>
     <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
+    <PolySharpVersion>1.15.0</PolySharpVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════

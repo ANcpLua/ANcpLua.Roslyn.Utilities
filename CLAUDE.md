@@ -1,10 +1,23 @@
 # CLAUDE.md
 
-## Project Overview
+## CRITICAL: Dependency Direction
 
-**ANcpLua.Roslyn.Utilities** provides reusable utilities for Roslyn incremental source generators.
+```
+THIS REPO IS UPSTREAM - IT CANNOT DEPEND ON ANcpLua.NET.Sdk
 
-**Current SDK Version:** 1.3.22 (ANcpLua.NET.Sdk)
+Layer 0: ANcpLua.Roslyn.Utilities ← YOU ARE HERE (publishes first)
+    ↓
+Layer 1: ANcpLua.NET.Sdk (consumes this package)
+    ↓
+Layer 2: Downstream repos (consume SDK)
+```
+
+**NEVER add:**
+- `Sdk="ANcpLua.NET.Sdk"` in any csproj
+- `msbuild-sdks` referencing ANcpLua.NET.Sdk in global.json
+- Any PackageReference to ANcpLua.NET.Sdk packages
+
+CI will fail if these are detected.
 
 ## Build Commands
 
@@ -16,49 +29,12 @@ dotnet build -c Release
 dotnet pack -c Release
 ```
 
-No test project exists in this repository.
-
 ## Structure
 
 ```
 ANcpLua.Roslyn.Utilities/
 ├── ANcpLua.Roslyn.Utilities/        # netstandard2.0 - Core library
 └── ANcpLua.Roslyn.Utilities.Testing/ # net10.0 - Testing framework
-```
-
-## SDK Policies (ANcpLua.NET.Sdk)
-
-### Banned Packages
-
-| Package | Reason | Replacement |
-|---------|--------|-------------|
-| `Microsoft.NET.Test.Sdk` | VSTest legacy | `xunit.v3.mtp-v2` |
-| `FluentAssertions` | Abandoned | `AwesomeAssertions` |
-| `xunit.runner.visualstudio` | VSTest adapter | Use MTP runner |
-| `coverlet.*` | Legacy coverage | MTP built-in coverage |
-
-### SDK-Owned Properties (DO NOT set in csproj)
-
-- `LangVersion` - Set by SDK
-- `Nullable` - Set by SDK
-- `Version` / `VersionPrefix` / `VersionSuffix` - Use Directory.Build.props
-
-### Required Configurations
-
-**Directory.Packages.props:**
-- `ManagePackageVersionsCentrally=true`
-- `CentralPackageTransitivePinningEnabled=true`
-
-**Directory.Build.props:**
-- `Deterministic=true`
-- `ContinuousIntegrationBuild=true` (conditional on `$(CI)`)
-
-### GitHub Actions Versions
-
-```yaml
-- uses: actions/checkout@v6
-- uses: actions/setup-dotnet@v5
-- uses: actions/upload-artifact@v6
 ```
 
 ## Key Libraries
@@ -76,3 +52,7 @@ Fluent testing framework for incremental generators:
 - Caching validation
 - Forbidden type detection (ISymbol, Compilation)
 - Comprehensive assertion support
+
+## Polyfills
+
+This repo uses `PolySharp` for netstandard2.0 polyfills (IsExternalInit, NotNullWhen, etc.) instead of SDK-provided polyfills.

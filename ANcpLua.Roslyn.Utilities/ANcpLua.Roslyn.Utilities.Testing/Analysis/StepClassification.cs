@@ -24,16 +24,52 @@ public sealed record ForbiddenTypeViolation(string StepName, Type ForbiddenType,
 /// </summary>
 public readonly struct GeneratorStepAnalysis
 {
+    /// <summary>
+    ///     Gets the name of the analyzed step.
+    /// </summary>
     public string StepName { get; }
+
+    /// <summary>
+    ///     Gets the count of cached outputs.
+    /// </summary>
     public int Cached { get; }
+
+    /// <summary>
+    ///     Gets the count of unchanged outputs.
+    /// </summary>
     public int Unchanged { get; }
+
+    /// <summary>
+    ///     Gets the count of modified outputs.
+    /// </summary>
     public int Modified { get; }
+
+    /// <summary>
+    ///     Gets the count of new outputs.
+    /// </summary>
     public int New { get; }
+
+    /// <summary>
+    ///     Gets the count of removed outputs.
+    /// </summary>
     public int Removed { get; }
+
+    /// <summary>
+    ///     Gets a value indicating whether this step has forbidden type violations.
+    /// </summary>
     public bool HasForbiddenTypes { get; }
 
+    /// <summary>
+    ///     Gets a value indicating whether this step was cached successfully (no modified, new, or removed outputs).
+    /// </summary>
     public bool IsCachedSuccessfully => Modified is 0 && New is 0 && Removed is 0;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="GeneratorStepAnalysis" /> struct.
+    /// </summary>
+    /// <param name="stepName">The name of the step.</param>
+    /// <param name="secondRun">The steps from the second generator run.</param>
+    /// <param name="hasForbiddenTypes">Whether this step has forbidden type violations.</param>
     public GeneratorStepAnalysis(string stepName, ImmutableArray<IncrementalGeneratorRunStep> secondRun,
         bool hasForbiddenTypes)
     {
@@ -61,6 +97,10 @@ public readonly struct GeneratorStepAnalysis
         Removed = removed;
     }
 
+    /// <summary>
+    ///     Formats a breakdown of the step analysis results.
+    /// </summary>
+    /// <returns>A formatted string showing the counts of each output reason.</returns>
     public string FormatBreakdown() => StepFormatter.FormatBreakdown(this);
 }
 

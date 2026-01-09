@@ -1,6 +1,9 @@
-<Project Sdk="ANcpLua.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
     <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
     <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
     <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
@@ -23,9 +26,23 @@
     <DefineConstants>$(DefineConstants);ANCPLUA_ROSLYN_PUBLIC</DefineConstants>
   </PropertyGroup>
 
+  <!-- Global usings for netstandard2.0 -->
+  <ItemGroup>
+    <Using Include="System"/>
+    <Using Include="System.Collections.Generic"/>
+    <Using Include="System.Collections.Immutable"/>
+    <Using Include="System.Diagnostics.CodeAnalysis"/>
+    <Using Include="System.Globalization"/>
+    <Using Include="System.Linq"/>
+    <Using Include="System.Text"/>
+    <Using Include="System.Threading"/>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    <!-- Polyfills for netstandard2.0 (IsExternalInit, NotNullWhen, etc.) -->
+    <PackageReference Include="PolySharp" PrivateAssets="all"/>
   </ItemGroup>
 
   <ItemGroup>

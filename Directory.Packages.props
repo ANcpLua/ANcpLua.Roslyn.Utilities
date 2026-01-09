@@ -30,6 +30,10 @@
     <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)"/>
   </ItemGroup>
 
+  <ItemGroup Label="Polyfills">
+    <PackageVersion Include="PolySharp" Version="$(PolySharpVersion)"/>
+  </ItemGroup>
+
   <ItemGroup Label="Analyzers">
     <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)"/>
     <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)"/>

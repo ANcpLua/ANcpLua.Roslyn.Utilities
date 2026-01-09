@@ -42,15 +42,40 @@ public sealed class GeneratorResult : IDisposable
             GeneratorCachingReport.Create(FirstRun, SecondRun, _generatorType));
     }
 
+    /// <summary>
+    ///     Gets the generated source files from the first run.
+    /// </summary>
     public IEnumerable<GeneratedFile> Files => _files.Value;
+
+    /// <summary>
+    ///     Gets all diagnostics reported by the generator.
+    /// </summary>
     public IReadOnlyList<Diagnostic> Diagnostics => _diagnostics.Value;
+
+    /// <summary>
+    ///     Gets the caching report comparing first and second runs.
+    /// </summary>
     public GeneratorCachingReport CachingReport => _cachingReport.Value;
+
+    /// <summary>
+    ///     Gets the result of the first generator run.
+    /// </summary>
     public GeneratorDriverRunResult FirstRun { get; }
+
+    /// <summary>
+    ///     Gets the result of the second generator run (used for caching verification).
+    /// </summary>
     public GeneratorDriverRunResult SecondRun { get; }
 
+    /// <summary>
+    ///     Gets a generated file by its hint name.
+    /// </summary>
+    /// <param name="hintName">The hint name of the file to find.</param>
+    /// <returns>The generated file if found; otherwise, <c>null</c>.</returns>
     public GeneratedFile? this[string hintName] =>
         Files.FirstOrDefault(f => f.HintName.Equals(hintName, StringComparison.OrdinalIgnoreCase));
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_disposed) return;
@@ -58,6 +83,13 @@ public sealed class GeneratorResult : IDisposable
         Verify();
     }
 
+    /// <summary>
+    ///     Asserts that the generator produced a file with the expected content.
+    /// </summary>
+    /// <param name="hintName">The hint name of the expected file.</param>
+    /// <param name="expectedContent">The expected content of the file.</param>
+    /// <param name="exactMatch">If <c>true</c>, content must match exactly; otherwise, content must contain the expected text.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult Produces(string hintName, string expectedContent, bool exactMatch = true)
     {
         var file = this[hintName];
@@ -79,6 +111,11 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that the generator produced a file with the specified hint name.
+    /// </summary>
+    /// <param name="hintName">The hint name of the expected file.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult Produces(string hintName)
     {
         if (this[hintName] is null)
@@ -89,6 +126,10 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that the generator produced no diagnostics.
+    /// </summary>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult IsClean()
     {
         if (Diagnostics.Count > 0)
@@ -99,6 +140,10 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that the generated code compiles without errors.
+    /// </summary>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult Compiles()
     {
         var errors = Diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error).ToList();
@@ -110,6 +155,11 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that generator outputs are properly cached across runs.
+    /// </summary>
+    /// <param name="stepNames">Optional step names to check; if empty, all steps are verified.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult IsCached(params string[] stepNames)
     {
         var report = CachingReport;
@@ -132,6 +182,12 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that the generator produced a diagnostic with the specified ID.
+    /// </summary>
+    /// <param name="id">The expected diagnostic ID.</param>
+    /// <param name="severity">Optional severity filter.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult HasDiagnostic(string id, DiagnosticSeverity? severity = null)
     {
         var matches = Diagnostics.Where(d => d.Id == id && (severity is null || d.Severity == severity)).ToList();
@@ -144,6 +200,11 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that the generator did not produce a diagnostic with the specified ID.
+    /// </summary>
+    /// <param name="id">The diagnostic ID that should not be present.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult HasNoDiagnostic(string id)
     {
         if (Diagnostics.Any(d => d.Id == id))
@@ -154,6 +215,10 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Asserts that no forbidden types are present in the generated output.
+    /// </summary>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult HasNoForbiddenTypes()
     {
         var violations = ForbiddenTypeAnalyzer.AnalyzeGeneratorRun(FirstRun);
@@ -165,6 +230,12 @@ public sealed class GeneratorResult : IDisposable
         return this;
     }
 
+    /// <summary>
+    ///     Executes a custom assertion on a generated file's content.
+    /// </summary>
+    /// <param name="hintName">The hint name of the file to inspect.</param>
+    /// <param name="assert">The assertion action to execute on the file content.</param>
+    /// <returns>This instance for fluent chaining.</returns>
     public GeneratorResult File(string hintName, Action<string> assert)
     {
         var file = this[hintName];
@@ -227,7 +298,12 @@ public sealed record GeneratedFile(string HintName, string Content);
 /// </summary>
 public sealed class GeneratorAssertionException : Exception
 {
+    /// <inheritdoc />
     public GeneratorAssertionException() { }
+
+    /// <inheritdoc />
     public GeneratorAssertionException(string message) : base(message) { }
+
+    /// <inheritdoc />
     public GeneratorAssertionException(string message, Exception innerException) : base(message, innerException) { }
 }
