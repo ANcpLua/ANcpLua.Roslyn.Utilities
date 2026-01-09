@@ -82,3 +82,18 @@ This repo must be published FIRST before SDK can update:
 3. THEN sync Version.props to Analyzers
 4. Analyzers → can now build
 ```
+
+## ⚠️ Common CI Errors
+
+### SDK Version Not Found (in downstream repos)
+```
+error: Unable to find package ANcpLua.NET.Sdk with version (= X.X.X)
+```
+
+**Cause:** global.json references SDK version not yet published to NuGet.
+
+**Fix Options:**
+1. **Downgrade:** Change global.json to latest published version
+2. **Publish:** Tag and push in SDK repo: `git tag vX.X.X && git push --tags`
+
+**Prevention:** Always publish SDK BEFORE syncing version to downstream repos.
