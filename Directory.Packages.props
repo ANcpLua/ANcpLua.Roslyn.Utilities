@@ -41,6 +41,7 @@
   <ItemGroup Label="Testing">
     <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)"/>
     <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)"/>
+    <PackageVersion Include="Meziantou.Framework.Threading" Version="$(MeziantouThreadingVersion)"/>
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
@@ -48,5 +49,13 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)"/>
     <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)"/>
     <PackageVersion Include="Basic.Reference.Assemblies.NetStandard20" Version="$(BasicReferenceAssembliesVersion)"/>
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitV3Version)"/>
+    <PackageVersion Include="xunit.v3.assert" Version="$(XunitV3Version)"/>
+    <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup Label="MSBuild Testing">
+    <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)"/>
+    <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
   </ItemGroup>
 </Project>

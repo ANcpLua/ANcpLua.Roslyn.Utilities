@@ -21,7 +21,7 @@
     <Using Include="System.Text"/>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Label="Roslyn Testing">
     <PackageReference Include="Meziantou.Framework.FullPath"/>
     <PackageReference Include="Meziantou.Framework.TemporaryDirectory"/>
     <PackageReference Include="AwesomeAssertions"/>
@@ -33,6 +33,15 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
     <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
     <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
+  </ItemGroup>
+
+  <ItemGroup Label="MSBuild Testing">
+    <PackageReference Include="Meziantou.Framework"/>
+    <PackageReference Include="Meziantou.Framework.Threading"/>
+    <PackageReference Include="MSBuild.StructuredLogger"/>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases"/>
+    <PackageReference Include="xunit.v3.extensibility.core"/>
+    <PackageReference Include="xunit.v3.assert"/>
   </ItemGroup>
 
   <ItemGroup>
