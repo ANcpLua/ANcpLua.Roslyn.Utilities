@@ -25,19 +25,19 @@ readonly record struct DiagnosticInfo(
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0) =>
-        new(descriptor, LocationInfo.From(token), new EquatableMessageArgs(ImmutableArray.Create(arg0)));
+        new(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument from a node.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0) =>
-        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs(ImmutableArray.Create(arg0)));
+        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args) =>
-        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs(ImmutableArray.Create(args)));
+        new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([..args]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with no arguments.
@@ -49,7 +49,7 @@ readonly record struct DiagnosticInfo(
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments from a location.
     /// </summary>
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location, params object?[] args) =>
-        new(descriptor, LocationInfo.From(location), new EquatableMessageArgs(ImmutableArray.Create(args)));
+        new(descriptor, LocationInfo.From(location), new EquatableMessageArgs([..args]));
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> from a symbol with multiple arguments.
@@ -57,7 +57,7 @@ readonly record struct DiagnosticInfo(
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, ISymbol symbol, params object?[] args)
     {
         var location = symbol.Locations.FirstOrDefault() ?? Microsoft.CodeAnalysis.Location.None;
-        return new(descriptor, LocationInfo.From(location), new EquatableMessageArgs(ImmutableArray.Create(args)));
+        return new(descriptor, LocationInfo.From(location), new EquatableMessageArgs([..args]));
     }
 
     /// <summary>

@@ -112,7 +112,7 @@ static class SyntaxValueProviderExtensions
             {
                 builder.Add(new ClassWithAttributesContext(
                     context.SemanticModel,
-                    ImmutableArray.Create(attribute),
+                    [attribute],
                     classSyntax,
                     targetSymbol));
             }

@@ -16,14 +16,6 @@ internal static partial class TextUtilities
     }
 
     /// <summary>
-    ///     Normalizes line endings to Unix style (\n).
-    /// </summary>
-    public static string NormalizeNewlines(string source)
-    {
-        return source.Replace("\r\n", "\n").Replace("\r", "\n");
-    }
-
-    /// <summary>
     ///     Normalizes whitespace by collapsing multiple spaces into one.
     /// </summary>
     public static string NormalizeWhitespace(string? input)

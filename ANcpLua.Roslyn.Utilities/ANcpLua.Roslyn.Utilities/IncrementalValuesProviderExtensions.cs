@@ -372,7 +372,7 @@ static class IncrementalValuesProviderExtensions
             return source.Where(_ => false);
 
         return source.Collect().SelectMany((values, _) =>
-            values.Length <= count ? values : values.Take(count).ToImmutableArray());
+            values.Length <= count ? values : [..values.Take(count)]);
     }
 
     public static IncrementalValuesProvider<T> Skip<T>(
@@ -383,7 +383,7 @@ static class IncrementalValuesProviderExtensions
             return source;
 
         return source.Collect().SelectMany((values, _) =>
-            values.Length <= count ? ImmutableArray<T>.Empty : values.Skip(count).ToImmutableArray());
+            values.Length <= count ? ImmutableArray<T>.Empty : [..values.Skip(count)]);
     }
 
     public static IncrementalValueProvider<int> Count<T>(

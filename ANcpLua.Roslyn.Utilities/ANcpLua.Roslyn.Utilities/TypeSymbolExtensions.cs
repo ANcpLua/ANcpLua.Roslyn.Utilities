@@ -84,48 +84,6 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Gets attributes of a specific type with optional inheritance checking.
-    /// </summary>
-    public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol? attributeType,
-        bool inherits = true)
-    {
-        if (attributeType is null)
-            yield break;
-
-        if (attributeType.IsSealed)
-            inherits = false;
-
-        foreach (var attribute in symbol.GetAttributes())
-        {
-            if (attribute.AttributeClass is null)
-                continue;
-
-            if (inherits)
-            {
-                if (attribute.AttributeClass.IsOrInheritsFrom(attributeType))
-                    yield return attribute;
-            }
-            else
-            {
-                if (SymbolEqualityComparer.Default.Equals(attributeType, attribute.AttributeClass))
-                    yield return attribute;
-            }
-        }
-    }
-
-    /// <summary>
-    ///     Gets the first attribute of a specific type.
-    /// </summary>
-    public static AttributeData? GetAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) =>
-        symbol.GetAttributes(attributeType, inherits).FirstOrDefault();
-
-    /// <summary>
-    ///     Checks if a symbol has an attribute of a specific type.
-    /// </summary>
-    public static bool HasAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) =>
-        symbol.GetAttribute(attributeType, inherits) is not null;
-
-    /// <summary>
     ///     Checks if a type is or inherits from another type.
     /// </summary>
     public static bool IsOrInheritsFrom(this ITypeSymbol symbol, ITypeSymbol? expectedType)
@@ -242,13 +200,14 @@ static class TypeSymbolExtensions
                 if (name.StartsWith("Xunit.", StringComparison.Ordinal))
                     return true;
 
-                // NUnit
-                if (name is "NUnit.Framework.TestAttribute" or "NUnit.Framework.TestCaseAttribute")
-                    return true;
-
-                // MSTest
-                if (name is "Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute")
-                    return true;
+                switch (name)
+                {
+                    // NUnit
+                    case "NUnit.Framework.TestAttribute" or "NUnit.Framework.TestCaseAttribute":
+                    // MSTest
+                    case "Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute":
+                        return true;
+                }
             }
         }
 

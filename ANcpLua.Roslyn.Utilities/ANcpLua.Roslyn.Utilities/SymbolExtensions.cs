@@ -67,6 +67,48 @@ static class SymbolExtensions
     }
 
     /// <summary>
+    ///     Gets attributes of a specific type with optional inheritance checking.
+    /// </summary>
+    public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, ITypeSymbol? attributeType,
+        bool inherits = true)
+    {
+        if (attributeType is null)
+            yield break;
+
+        if (attributeType.IsSealed)
+            inherits = false;
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (attribute.AttributeClass is null)
+                continue;
+
+            if (inherits)
+            {
+                if (attribute.AttributeClass.IsOrInheritsFrom(attributeType))
+                    yield return attribute;
+            }
+            else
+            {
+                if (SymbolEqualityComparer.Default.Equals(attributeType, attribute.AttributeClass))
+                    yield return attribute;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Gets the first attribute of a specific type.
+    /// </summary>
+    public static AttributeData? GetAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) =>
+        symbol.GetAttributes(attributeType, inherits).FirstOrDefault();
+
+    /// <summary>
+    ///     Checks if a symbol has an attribute of a specific type.
+    /// </summary>
+    public static bool HasAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) =>
+        symbol.GetAttribute(attributeType, inherits) is not null;
+
+    /// <summary>
     ///     Checks if a symbol is visible outside its assembly.
     /// </summary>
     public static bool IsVisibleOutsideOfAssembly([NotNullWhen(true)] this ISymbol? symbol)
@@ -255,7 +297,7 @@ static class SymbolExtensions
             let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
             where SymbolEqualityComparer.Default.Equals(symbol, impl)
             select interfaceMember;
-        return query.ToImmutableArray();
+        return [..query];
     }
 
     /// <summary>

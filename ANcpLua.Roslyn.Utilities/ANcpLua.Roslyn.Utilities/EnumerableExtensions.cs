@@ -40,7 +40,7 @@ static class EnumerableExtensions
     ///     Converts to ImmutableArray, returning empty if source is null.
     /// </summary>
     public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source) =>
-        source is null ? ImmutableArray<T>.Empty : source.ToImmutableArray();
+        source is null ? ImmutableArray<T>.Empty : [..source];
 
     /// <summary>
     ///     Checks if the enumerable is null or empty.

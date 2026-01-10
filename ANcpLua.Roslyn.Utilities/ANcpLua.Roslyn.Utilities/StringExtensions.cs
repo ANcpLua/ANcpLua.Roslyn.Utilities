@@ -13,7 +13,7 @@ internal
 #endif
 static class StringExtensions
 {
-    private static readonly char[] NewLineSeparator = new[] { '\n' };
+    private static readonly char[] NewLineSeparator = ['\n'];
 
     /// <summary>
     ///     Splits a string into lines without allocating (returns a ref struct enumerator).

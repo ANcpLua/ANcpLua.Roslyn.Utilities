@@ -99,8 +99,8 @@ public sealed class GeneratorResult : IDisposable
             return this;
         }
 
-        var actual = TextUtilities.NormalizeNewlines(file.Content);
-        var expected = TextUtilities.NormalizeNewlines(expectedContent);
+        var actual = file.Content.NormalizeLineEndings();
+        var expected = expectedContent.NormalizeLineEndings();
 
         if (exactMatch ? actual != expected : !actual.Contains(expected, StringComparison.Ordinal))
         {

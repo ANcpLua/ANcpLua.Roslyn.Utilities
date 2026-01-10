@@ -126,8 +126,9 @@ SemanticGuard.ForType(type)
 // SymbolExtensions.cs
 symbol.IsEqualTo(other)              // SymbolEqualityComparer.Default
 symbol.HasAttribute("Full.Name")
-symbol.HasAttribute(typeSymbol)
+symbol.HasAttribute(typeSymbol, inherits)
 symbol.GetAttribute("Full.Name")
+symbol.GetAttributes(typeSymbol, inherits)
 symbol.IsVisibleOutsideOfAssembly()
 symbol.IsOperator()
 symbol.IsConst()
@@ -150,8 +151,6 @@ type.InheritsFrom(baseType)
 type.Implements(interfaceType)
 type.IsOrImplements(interfaceType)
 type.IsOrInheritsFrom(expectedType)
-type.HasAttribute(attributeType, inherits)
-type.GetAttributes(attributeType)
 type.IsObject/String/Char/Int32/Boolean/...()
 type.IsEnumeration()
 type.IsNumberType()
@@ -169,7 +168,7 @@ method.IsInterfaceImplementation()
 method.IsOrOverrideMethod(baseMethod)
 method.OverridesMethod(baseMethod)
 
-// NamespaceSymbolExtensions.cs
+// NamespaceExtensions.cs
 ns.IsNamespace(string[] parts)       // zero-alloc
 ns.GetAllTypes()                     // recursive
 ns.GetAllNamespaces()
@@ -326,22 +325,15 @@ method.HasOverloadWithReturnType(returnType)
 method.HasOverloadWithFewerParameters()
 ```
 
-## Symbol Walking
+## Namespace Extensions
 
 ```csharp
-// PublicApiWalker
-var walker = PublicApiWalker.Walk(assembly);
-walker.Types       // ImmutableArray<INamedTypeSymbol>
-walker.Methods     // ImmutableArray<IMethodSymbol>
-walker.Properties  // ImmutableArray<IPropertySymbol>
-walker.Fields      // ImmutableArray<IFieldSymbol>
-walker.Events      // ImmutableArray<IEventSymbol>
-
-// Extensions
-assembly.GetTypesRecursive()
-assembly.GetPublicTypes()
-ns.GetAllTypes()
-ns.GetAllNamespaces()
+// NamespaceExtensions.cs
+assembly.GetTypesRecursive()       // all types in assembly
+assembly.GetPublicTypes()          // visible outside assembly
+ns.GetAllTypes()                   // recursive type enumeration
+ns.GetAllNamespaces()              // recursive namespace enumeration
+ns.GetPublicTypes()                // visible types in namespace
 ```
 
 ## Pipeline Extensions
