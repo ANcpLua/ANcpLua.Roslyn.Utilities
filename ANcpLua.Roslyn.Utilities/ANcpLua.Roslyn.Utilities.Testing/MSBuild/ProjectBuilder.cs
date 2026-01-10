@@ -60,18 +60,60 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// <seealso cref="NetSdkVersion"/>
 public class ProjectBuilder : IAsyncDisposable
 {
-    private const string SarifFileName = "BuildOutput.sarif";
+    /// <summary>
+    /// The SARIF output filename used for diagnostic output.
+    /// </summary>
+    protected const string SarifFileName = "BuildOutput.sarif";
 
-    private readonly TemporaryDirectory _directory;
-    private readonly FullPath _githubStepSummaryFile;
-    private readonly List<NuGetReference> _nugetPackages = [];
-    private readonly List<(string Key, string Value)> _properties = [];
-    private readonly List<(string Name, string Content)> _sourceFiles = [];
-    private readonly ITestOutputHelper? _testOutputHelper;
-    private int _buildCount;
-    private NetSdkVersion _sdkVersion = NetSdkVersion.Net100;
-    private string? _projectFilename = "TestProject.csproj";
-    private string _rootSdk = "Microsoft.NET.Sdk";
+    /// <summary>
+    /// The temporary directory for the project files.
+    /// </summary>
+    protected readonly TemporaryDirectory Directory;
+
+    /// <summary>
+    /// Path to the GitHub step summary file for CI simulation.
+    /// </summary>
+    protected readonly FullPath GithubStepSummaryFile;
+
+    /// <summary>
+    /// The NuGet package references configured for this project.
+    /// </summary>
+    protected readonly List<NuGetReference> NuGetPackages = [];
+
+    /// <summary>
+    /// The MSBuild properties configured for this project.
+    /// </summary>
+    protected readonly List<(string Key, string Value)> Properties = [];
+
+    /// <summary>
+    /// The source files to be added to the project.
+    /// </summary>
+    protected readonly List<(string Name, string Content)> SourceFiles = [];
+
+    /// <summary>
+    /// The test output helper for logging, if provided.
+    /// </summary>
+    protected readonly ITestOutputHelper? TestOutputHelper;
+
+    /// <summary>
+    /// Counter for the number of build operations performed.
+    /// </summary>
+    protected int BuildCount;
+
+    /// <summary>
+    /// The .NET SDK version to use for builds.
+    /// </summary>
+    protected NetSdkVersion SdkVersion = NetSdkVersion.Net100;
+
+    /// <summary>
+    /// The project filename (defaults to "TestProject.csproj").
+    /// </summary>
+    protected string? ProjectFilename = "TestProject.csproj";
+
+    /// <summary>
+    /// The root SDK for the project (defaults to "Microsoft.NET.Sdk").
+    /// </summary>
+    protected string RootSdk = "Microsoft.NET.Sdk";
 
     /// <summary>
     /// Creates a new <see cref="ProjectBuilder"/> with an isolated temporary directory.
@@ -104,19 +146,19 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     public ProjectBuilder(ITestOutputHelper? testOutputHelper = null)
     {
-        _testOutputHelper = testOutputHelper;
-        _directory = TemporaryDirectory.Create();
-        _githubStepSummaryFile = _directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
+        TestOutputHelper = testOutputHelper;
+        Directory = TemporaryDirectory.Create();
+        GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
 
         // Create isolated global.json
-        _directory.CreateTextFile("global.json", """
-                                                 {
-                                                   "sdk": {
-                                                     "rollForward": "latestMinor",
-                                                     "version": "10.0.100"
-                                                   }
-                                                 }
-                                                 """);
+        Directory.CreateTextFile("global.json", """
+                                                {
+                                                  "sdk": {
+                                                    "rollForward": "latestMinor",
+                                                    "version": "10.0.100"
+                                                  }
+                                                }
+                                                """);
     }
 
     /// <summary>
@@ -127,7 +169,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// Use this property to access generated files, add additional files, or inspect the project structure
     /// after build operations complete.
     /// </remarks>
-    public FullPath RootFolder => _directory.FullPath;
+    public FullPath RootFolder => Directory.FullPath;
 
     /// <summary>
     /// Gets environment variables that simulate a GitHub Actions CI environment.
@@ -158,7 +200,7 @@ public class ProjectBuilder : IAsyncDisposable
         get
         {
             yield return ("GITHUB_ACTIONS", "true");
-            yield return ("GITHUB_STEP_SUMMARY", _githubStepSummaryFile);
+            yield return ("GITHUB_STEP_SUMMARY", GithubStepSummaryFile);
         }
     }
 
@@ -170,9 +212,9 @@ public class ProjectBuilder : IAsyncDisposable
     /// This method removes all files and directories created during the build process.
     /// Always use <c>await using</c> to ensure proper cleanup.
     /// </remarks>
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
-        await _directory.DisposeAsync();
+        await Directory.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 
@@ -189,7 +231,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="GitHubEnvironmentVariables"/>
     public string? GetGitHubStepSummaryContent()
     {
-        return File.Exists(_githubStepSummaryFile) ? File.ReadAllText(_githubStepSummaryFile) : null;
+        return File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
     }
 
     /// <summary>
@@ -210,7 +252,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     public FullPath AddFile(string relativePath, string content)
     {
-        var path = _directory.FullPath / relativePath;
+        var path = Directory.FullPath / relativePath;
         path.CreateParentDirectory();
         File.WriteAllText(path, content);
         return path;
@@ -240,7 +282,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="WithPackageSource"/>
     public ProjectBuilder WithNuGetConfig(string nugetConfigContent)
     {
-        _directory.CreateTextFile("NuGet.config", nugetConfigContent);
+        Directory.CreateTextFile("NuGet.config", nugetConfigContent);
         return this;
     }
 
@@ -305,7 +347,7 @@ public class ProjectBuilder : IAsyncDisposable
                           {patternElements}
                       </configuration>
                       """;
-        _directory.CreateTextFile("NuGet.config", config);
+        Directory.CreateTextFile("NuGet.config", config);
         return this;
     }
 
@@ -322,7 +364,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="DotNetSdkHelpers"/>
     public ProjectBuilder WithDotnetSdkVersion(NetSdkVersion dotnetSdkVersion)
     {
-        _sdkVersion = dotnetSdkVersion;
+        SdkVersion = dotnetSdkVersion;
         return this;
     }
 
@@ -345,17 +387,17 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     public ProjectBuilder WithMtpMode()
     {
-        _directory.CreateTextFile("global.json", """
-                                                 {
-                                                   "sdk": {
-                                                     "rollForward": "latestMinor",
-                                                     "version": "10.0.100"
-                                                   },
-                                                   "test": {
-                                                     "runner": "Microsoft.Testing.Platform"
-                                                   }
-                                                 }
-                                                 """);
+        Directory.CreateTextFile("global.json", """
+                                                {
+                                                  "sdk": {
+                                                    "rollForward": "latestMinor",
+                                                    "version": "10.0.100"
+                                                  },
+                                                  "test": {
+                                                    "runner": "Microsoft.Testing.Platform"
+                                                  }
+                                                }
+                                                """);
         return this;
     }
 
@@ -376,7 +418,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="Tfm"/>
     public ProjectBuilder WithTargetFramework(string tfm)
     {
-        _properties.Add((Prop.TargetFramework, tfm));
+        Properties.Add((Prop.TargetFramework, tfm));
         return this;
     }
 
@@ -397,7 +439,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="Val"/>
     public ProjectBuilder WithOutputType(string type)
     {
-        _properties.Add((Prop.OutputType, type));
+        Properties.Add((Prop.OutputType, type));
         return this;
     }
 
@@ -413,7 +455,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="Val.Preview"/>
     public ProjectBuilder WithLangVersion(string version = Val.Latest)
     {
-        _properties.Add((Prop.LangVersion, version));
+        Properties.Add((Prop.LangVersion, version));
         return this;
     }
 
@@ -439,7 +481,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="WithProperties"/>
     public ProjectBuilder WithProperty(string name, string value)
     {
-        _properties.Add((name, value));
+        Properties.Add((name, value));
         return this;
     }
 
@@ -459,7 +501,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="WithProperty"/>
     public ProjectBuilder WithProperties(params (string Key, string Value)[] properties)
     {
-        _properties.AddRange(properties);
+        Properties.AddRange(properties);
         return this;
     }
 
@@ -488,7 +530,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="AddFile"/>
     public ProjectBuilder AddSource(string filename, string content)
     {
-        _sourceFiles.Add((filename, content));
+        SourceFiles.Add((filename, content));
         return this;
     }
 
@@ -508,7 +550,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="NuGetReference"/>
     public ProjectBuilder WithPackage(string name, string version)
     {
-        _nugetPackages.Add(new NuGetReference(name, version));
+        NuGetPackages.Add(new NuGetReference(name, version));
         return this;
     }
 
@@ -522,7 +564,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// </remarks>
     public ProjectBuilder WithFilename(string filename)
     {
-        _projectFilename = filename;
+        ProjectFilename = filename;
         return this;
     }
 
@@ -541,7 +583,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     public ProjectBuilder WithRootSdk(string sdk)
     {
-        _rootSdk = sdk;
+        RootSdk = sdk;
         return this;
     }
 
@@ -644,7 +686,7 @@ public class ProjectBuilder : IAsyncDisposable
     {
         GenerateCsprojFile();
 
-        foreach (var (name, content) in _sourceFiles)
+        foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
         return await ExecuteDotnetCommandAsync("build", buildArguments, environmentVariables);
@@ -678,7 +720,7 @@ public class ProjectBuilder : IAsyncDisposable
     {
         GenerateCsprojFile();
 
-        foreach (var (name, content) in _sourceFiles)
+        foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
         return await ExecuteDotnetCommandAsync("run", ["--", .. arguments ?? []], environmentVariables);
@@ -716,7 +758,7 @@ public class ProjectBuilder : IAsyncDisposable
     {
         GenerateCsprojFile();
 
-        foreach (var (name, content) in _sourceFiles)
+        foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
         return await ExecuteDotnetCommandAsync("test", arguments, environmentVariables);
@@ -750,7 +792,7 @@ public class ProjectBuilder : IAsyncDisposable
     {
         GenerateCsprojFile();
 
-        foreach (var (name, content) in _sourceFiles)
+        foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
         return await ExecuteDotnetCommandAsync("pack", arguments, environmentVariables);
@@ -775,20 +817,27 @@ public class ProjectBuilder : IAsyncDisposable
         return await ExecuteDotnetCommandAsync("restore", arguments, environmentVariables);
     }
 
-    private void GenerateCsprojFile()
+    /// <summary>
+    /// Generates the .csproj file from the configured properties and packages.
+    /// </summary>
+    /// <remarks>
+    /// Override this method in derived classes to customize the project file generation,
+    /// such as adding SDK import styles or additional project elements.
+    /// </remarks>
+    protected virtual void GenerateCsprojFile()
     {
         var propertiesElement = new XElement("PropertyGroup");
-        foreach (var prop in _properties)
+        foreach (var prop in Properties)
             propertiesElement.Add(new XElement(prop.Key, prop.Value));
 
         var packagesElement = new XElement("ItemGroup");
-        foreach (var package in _nugetPackages)
+        foreach (var package in NuGetPackages)
             packagesElement.Add(new XElement("PackageReference",
                 new XAttribute("Include", package.Name),
                 new XAttribute("Version", package.Version)));
 
         var content = $"""
-                       <Project Sdk="{_rootSdk}">
+                       <Project Sdk="{RootSdk}">
                            <PropertyGroup>
                                <ErrorLog>{SarifFileName},version=2.1</ErrorLog>
                            </PropertyGroup>
@@ -797,7 +846,7 @@ public class ProjectBuilder : IAsyncDisposable
                        </Project>
                        """;
 
-        var fullPath = _directory.FullPath / (_projectFilename ?? "TestProject.csproj");
+        var fullPath = Directory.FullPath / (ProjectFilename ?? "TestProject.csproj");
         fullPath.CreateParentDirectory();
         File.WriteAllText(fullPath, content);
     }
@@ -837,26 +886,26 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     /// <seealso cref="BuildAsync"/>
     /// <seealso cref="BuildResult"/>
-    public async Task<BuildResult> ExecuteDotnetCommandAsync(string command, string[]? arguments = null,
+    public virtual async Task<BuildResult> ExecuteDotnetCommandAsync(string command, string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
-        _buildCount++;
+        BuildCount++;
 
-        if (_testOutputHelper is not null)
+        if (TestOutputHelper is not null)
         {
-            foreach (var file in Directory.GetFiles(_directory.FullPath, "*", SearchOption.AllDirectories))
+            foreach (var file in System.IO.Directory.GetFiles(Directory.FullPath, "*", SearchOption.AllDirectories))
             {
-                _testOutputHelper.WriteLine("File: " + file);
+                TestOutputHelper.WriteLine("File: " + file);
                 var content = await File.ReadAllTextAsync(file);
-                _testOutputHelper.WriteLine(content);
+                TestOutputHelper.WriteLine(content);
             }
 
-            _testOutputHelper.WriteLine("-------- dotnet " + command);
+            TestOutputHelper.WriteLine("-------- dotnet " + command);
         }
 
-        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(_sdkVersion))
+        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion))
         {
-            WorkingDirectory = _directory.FullPath,
+            WorkingDirectory = Directory.FullPath,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false
@@ -886,14 +935,14 @@ public class ProjectBuilder : IAsyncDisposable
             foreach (var env in environmentVariables)
                 psi.Environment[env.Name] = env.Value;
 
-        _testOutputHelper?.WriteLine("Executing: " + psi.FileName + " " + string.Join(' ', psi.ArgumentList));
+        TestOutputHelper?.WriteLine("Executing: " + psi.FileName + " " + string.Join(' ', psi.ArgumentList));
 
         var result = await psi.RunAsTaskAsync();
 
-        _testOutputHelper?.WriteLine("Process exit code: " + result.ExitCode);
-        _testOutputHelper?.WriteLine(result.Output.ToString());
+        TestOutputHelper?.WriteLine("Process exit code: " + result.ExitCode);
+        TestOutputHelper?.WriteLine(result.Output.ToString());
 
-        var sarifPath = _directory.FullPath / SarifFileName;
+        var sarifPath = Directory.FullPath / SarifFileName;
         SarifFile? sarif = null;
         if (File.Exists(sarifPath))
         {
@@ -901,7 +950,7 @@ public class ProjectBuilder : IAsyncDisposable
             sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
         }
 
-        var binlogContent = await File.ReadAllBytesAsync(_directory.FullPath / "msbuild.binlog");
+        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
 
         return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent);
     }

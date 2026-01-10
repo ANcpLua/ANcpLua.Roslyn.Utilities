@@ -368,10 +368,10 @@ public static class TestConfiguration
     public static IDisposable WithAdditionalReferences(params Type[] types)
     {
         var references = types
-            .Select(t => t.Assembly.Location)
-            .Where(loc => !string.IsNullOrEmpty(loc))
+            .Select(static t => t.Assembly.Location)
+            .Where(static loc => !string.IsNullOrEmpty(loc))
             .Distinct()
-            .Select(loc => MetadataReference.CreateFromFile(loc))
+            .Select(static loc => MetadataReference.CreateFromFile(loc))
             .ToImmutableArray();
 
         return WithAdditionalReferences(references);
