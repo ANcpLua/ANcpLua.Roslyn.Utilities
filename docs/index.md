@@ -14,7 +14,7 @@ Comprehensive documentation for the ANcpLua .NET development ecosystem.
 
 ```xml
 <!-- Use the SDK for zero-config best practices -->
-<Project Sdk="ANcpLua.NET.Sdk/1.3.15" />
+<Project Sdk="ANcpLua.NET.Sdk" />
 
 <!-- Or add utilities to your analyzer/generator project -->
 <PackageReference Include="ANcpLua.Roslyn.Utilities" Version="*" />

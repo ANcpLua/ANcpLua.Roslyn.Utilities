@@ -7,7 +7,7 @@ ANcpLua.NET.Sdk comes in three variants, each tailored for specific project type
 For libraries, console applications, and worker services.
 
 ```xml
-<Project Sdk="ANcpLua.NET.Sdk/1.3.15">
+<Project Sdk="ANcpLua.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
@@ -25,7 +25,7 @@ For libraries, console applications, and worker services.
 For ASP.NET Core applications. Adds ServiceDefaults with OpenTelemetry, health checks, and resilience.
 
 ```xml
-<Project Sdk="ANcpLua.NET.Sdk.Web/1.3.15">
+<Project Sdk="ANcpLua.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
@@ -45,7 +45,7 @@ For ASP.NET Core applications. Adds ServiceDefaults with OpenTelemetry, health c
 For test projects. Adds xUnit v3, AwesomeAssertions, and Microsoft Testing Platform.
 
 ```xml
-<Project Sdk="ANcpLua.NET.Sdk.Test/1.3.15">
+<Project Sdk="ANcpLua.NET.Sdk.Test">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>

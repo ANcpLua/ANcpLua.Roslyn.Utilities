@@ -82,6 +82,35 @@ public static class TestConfiguration
         return new ConfigurationScope(() => ReferenceAssembliesOverride.Value = previous);
     }
 
+    /// <summary>
+    ///     Creates a scope that temporarily sets additional references.
+    /// </summary>
+    /// <param name="references">The additional references to include in compilations.</param>
+    /// <returns>A disposable that restores the previous value when disposed.</returns>
+    public static IDisposable WithAdditionalReferences(ImmutableArray<PortableExecutableReference> references)
+    {
+        var previous = AdditionalReferencesOverride.Value;
+        AdditionalReferencesOverride.Value = references;
+        return new ConfigurationScope(() => AdditionalReferencesOverride.Value = previous);
+    }
+
+    /// <summary>
+    ///     Creates a scope that temporarily sets additional references from types.
+    /// </summary>
+    /// <param name="types">Types whose assemblies should be included as references.</param>
+    /// <returns>A disposable that restores the previous value when disposed.</returns>
+    public static IDisposable WithAdditionalReferences(params Type[] types)
+    {
+        var references = types
+            .Select(t => t.Assembly.Location)
+            .Where(loc => !string.IsNullOrEmpty(loc))
+            .Distinct()
+            .Select(loc => MetadataReference.CreateFromFile(loc))
+            .ToImmutableArray();
+
+        return WithAdditionalReferences(references);
+    }
+
     private sealed class ConfigurationScope(Action restore) : IDisposable
     {
         private readonly Action _restore = restore;

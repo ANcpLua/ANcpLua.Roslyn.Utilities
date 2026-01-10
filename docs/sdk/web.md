@@ -5,7 +5,7 @@ The Web SDK variant auto-registers production-ready defaults via source generato
 ## Usage
 
 ```xml
-<Project Sdk="ANcpLua.NET.Sdk.Web/1.3.15">
+<Project Sdk="ANcpLua.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>

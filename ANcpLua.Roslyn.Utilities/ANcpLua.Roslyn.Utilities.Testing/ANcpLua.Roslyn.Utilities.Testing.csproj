@@ -6,9 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
     <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
-    <Description>Fluent testing framework for Roslyn incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
+    <Description>Fluent testing framework for Roslyn analyzers, code fixes, and incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>roslyn;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
+    <PackageTags>roslyn;analyzer;codefix;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
     <!-- Suppress analyzer warnings for test library -->
     <NoWarn>$(NoWarn);NU1903;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859;RS0030;CA1307;IDE1006;CA1002;CA1000;CS1574;CS1591</NoWarn>
 
@@ -26,10 +26,13 @@
     <PackageReference Include="Meziantou.Framework.TemporaryDirectory"/>
     <PackageReference Include="AwesomeAssertions"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
     <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
+    <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
   </ItemGroup>
 
   <ItemGroup>
