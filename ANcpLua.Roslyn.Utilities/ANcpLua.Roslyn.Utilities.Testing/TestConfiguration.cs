@@ -15,7 +15,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     </para>
 ///     <para>
 ///         Use <see cref="WithLanguageVersion" />, <see cref="WithReferenceAssemblies" />, or
-///         <see cref="WithAdditionalReferences" /> to temporarily override settings within a scope.
+///         <c>WithAdditionalReferences</c> to temporarily override settings within a scope.
 ///     </para>
 /// </remarks>
 /// <example>

@@ -2,6 +2,23 @@ using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
+/// <summary>
+/// Provides cached type symbols and utility methods for working with collection types in Roslyn analysis.
+/// <para>
+/// This context caches commonly used collection type symbols from the compilation to avoid repeated lookups,
+/// and provides methods to classify and analyze collection types.
+/// </para>
+/// </summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item><description>Type symbols are resolved once during construction and cached for the lifetime of the context.</description></item>
+/// <item><description>Properties may be <c>null</c> if the corresponding type is not available in the compilation.</description></item>
+/// <item><description>All methods handle <c>null</c> input gracefully by returning <c>false</c> or <c>null</c>.</description></item>
+/// </list>
+/// </remarks>
+/// <seealso cref="AwaitableContext"/>
+/// <seealso cref="DisposableContext"/>
+/// <seealso cref="AspNetContext"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -9,37 +26,101 @@ internal
 #endif
 sealed class CollectionContext
 {
+    /// <summary>Gets the <see cref="System.Collections.IEnumerable"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IEnumerable { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IEnumerable{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IEnumerableOfT { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.ICollection"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ICollection { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.ICollection{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ICollectionOfT { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.IList"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IList { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IList{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IListOfT { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IReadOnlyCollection{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IReadOnlyCollection { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IReadOnlyList{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IReadOnlyList { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.IDictionary"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IDictionary { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IDictionaryOfTKeyTValue { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.IReadOnlyDictionary{TKey, TValue}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IReadOnlyDictionary { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.ISet{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ISet { get; }
+
+    /// <summary>Gets the <c>IReadOnlySet&lt;T&gt;</c> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? IReadOnlySet { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.List{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? List { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? Dictionary { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.HashSet{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? HashSet { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.Queue{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? Queue { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.Stack{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? Stack { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Generic.LinkedList{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? LinkedList { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Immutable.ImmutableArray{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ImmutableArray { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Immutable.ImmutableList{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ImmutableList { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Immutable.ImmutableDictionary{TKey, TValue}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ImmutableDictionary { get; }
+
+    /// <summary>Gets the <see cref="System.Collections.Immutable.ImmutableHashSet{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ImmutableHashSet { get; }
+
+    /// <summary>Gets the <c>System.Collections.Frozen.FrozenSet&lt;T&gt;</c> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? FrozenSet { get; }
+
+    /// <summary>Gets the <c>System.Collections.Frozen.FrozenDictionary&lt;TKey, TValue&gt;</c> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? FrozenDictionary { get; }
+
+    /// <summary>Gets the <see cref="System.ArraySegment{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ArraySegment { get; }
+
+    /// <summary>Gets the <see cref="System.Span{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? Span { get; }
+
+    /// <summary>Gets the <see cref="System.ReadOnlySpan{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ReadOnlySpan { get; }
+
+    /// <summary>Gets the <see cref="System.Memory{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? Memory { get; }
+
+    /// <summary>Gets the <see cref="System.ReadOnlyMemory{T}"/> type symbol, or <c>null</c> if not available.</summary>
     public INamedTypeSymbol? ReadOnlyMemory { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CollectionContext"/> class by resolving
+    /// all collection type symbols from the specified compilation.
+    /// </summary>
+    /// <param name="compilation">The compilation from which to resolve collection type symbols.</param>
     public CollectionContext(Compilation compilation)
     {
         IEnumerable = compilation.GetTypeByMetadataName("System.Collections.IEnumerable");
@@ -74,6 +155,16 @@ sealed class CollectionContext
         ReadOnlyMemory = compilation.GetTypeByMetadataName("System.ReadOnlyMemory`1");
     }
 
+    /// <summary>
+    /// Determines whether the specified type is enumerable.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is an array, implements <see cref="System.Collections.IEnumerable"/>,
+    /// or implements <see cref="System.Collections.Generic.IEnumerable{T}"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsCollection"/>
+    /// <seealso cref="IsList"/>
     public bool IsEnumerable(ITypeSymbol? type)
     {
         if (type is null)
@@ -97,6 +188,16 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a collection.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is an array, implements <see cref="System.Collections.ICollection"/>,
+    /// or implements <see cref="System.Collections.Generic.ICollection{T}"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsEnumerable"/>
+    /// <seealso cref="IsList"/>
     public bool IsCollection(ITypeSymbol? type)
     {
         if (type is null)
@@ -120,6 +221,16 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a list.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is an array, implements <see cref="System.Collections.IList"/>,
+    /// or implements <see cref="System.Collections.Generic.IList{T}"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsEnumerable"/>
+    /// <seealso cref="IsCollection"/>
     public bool IsList(ITypeSymbol? type)
     {
         if (type is null)
@@ -143,6 +254,15 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a dictionary.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> implements <see cref="System.Collections.IDictionary"/>
+    /// or <see cref="System.Collections.Generic.IDictionary{TKey, TValue}"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsSet"/>
     public bool IsDictionary(ITypeSymbol? type)
     {
         if (type is null)
@@ -163,6 +283,14 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a set.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> implements <see cref="System.Collections.Generic.ISet{T}"/>; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsDictionary"/>
     public bool IsSet(ITypeSymbol? type)
     {
         if (type is null)
@@ -180,6 +308,18 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is an immutable collection type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is one of the immutable collection types
+    /// (<c>ImmutableArray&lt;T&gt;</c>, <c>ImmutableList&lt;T&gt;</c>, <c>ImmutableDictionary&lt;TKey, TValue&gt;</c>,
+    /// <c>ImmutableHashSet&lt;T&gt;</c>, <c>FrozenSet&lt;T&gt;</c>, or <c>FrozenDictionary&lt;TKey, TValue&gt;</c>);
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsFrozen"/>
+    /// <seealso cref="IsReadOnly"/>
     public bool IsImmutable(ITypeSymbol? type)
     {
         if (type is null)
@@ -198,6 +338,15 @@ sealed class CollectionContext
                (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a frozen collection type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is <c>FrozenSet&lt;T&gt;</c> or <c>FrozenDictionary&lt;TKey, TValue&gt;</c>;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsImmutable"/>
     public bool IsFrozen(ITypeSymbol? type)
     {
         if (type is null)
@@ -212,6 +361,15 @@ sealed class CollectionContext
                (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a span-like type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is <see cref="System.Span{T}"/> or <see cref="System.ReadOnlySpan{T}"/>;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsMemoryLike"/>
     public bool IsSpanLike(ITypeSymbol? type)
     {
         if (type is null)
@@ -226,6 +384,15 @@ sealed class CollectionContext
                (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan));
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a memory-like type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is <see cref="System.Memory{T}"/> or <see cref="System.ReadOnlyMemory{T}"/>;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsSpanLike"/>
     public bool IsMemoryLike(ITypeSymbol? type)
     {
         if (type is null)
@@ -240,6 +407,14 @@ sealed class CollectionContext
                (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
     }
 
+    /// <summary>
+    /// Determines whether the specified type has a <c>Count</c> or <c>Length</c> property with a getter.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> has a readable <c>Count</c> or <c>Length</c> property;
+    /// otherwise, <c>false</c>.
+    /// </returns>
     public static bool HasCountProperty(ITypeSymbol type)
     {
         foreach (var member in type.GetAllMembers("Count"))
@@ -257,6 +432,18 @@ sealed class CollectionContext
         return false;
     }
 
+    /// <summary>
+    /// Determines whether the specified type is a read-only collection type.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="type"/> is immutable, frozen, or implements a read-only collection interface
+    /// (<c>IReadOnlyCollection&lt;T&gt;</c>, <c>IReadOnlyList&lt;T&gt;</c>, <c>IReadOnlyDictionary&lt;TKey, TValue&gt;</c>,
+    /// <c>IReadOnlySet&lt;T&gt;</c>), or is <c>ReadOnlySpan&lt;T&gt;</c> or <c>ReadOnlyMemory&lt;T&gt;</c>;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsImmutable"/>
+    /// <seealso cref="IsFrozen"/>
     public bool IsReadOnly(ITypeSymbol? type)
     {
         if (type is null)
@@ -278,6 +465,21 @@ sealed class CollectionContext
                (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
     }
 
+    /// <summary>
+    /// Gets the element type of a collection type.
+    /// </summary>
+    /// <param name="type">The collection type symbol to analyze.</param>
+    /// <returns>
+    /// The element type of the collection if <paramref name="type"/> is an array, a recognized generic collection type,
+    /// or implements <see cref="System.Collections.Generic.IEnumerable{T}"/>; otherwise, <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// For arrays, returns the <see cref="IArrayTypeSymbol.ElementType"/>.
+    /// For generic collection types with a single type argument, returns that type argument.
+    /// For types implementing <c>IEnumerable&lt;T&gt;</c>, returns the <c>T</c> type argument from the interface.
+    /// </para>
+    /// </remarks>
     public ITypeSymbol? GetElementType(ITypeSymbol? type)
     {
         if (type is null)

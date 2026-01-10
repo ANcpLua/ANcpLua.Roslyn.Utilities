@@ -14,6 +14,35 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for retrieving and processing documentation comments from Roslyn symbols.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This class provides functionality to retrieve XML documentation comments from symbols,
+///         with support for expanding <c>inheritdoc</c> elements to include inherited documentation.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>
+///                 Supports the <c>inheritdoc</c> element with optional <c>cref</c> and <c>path</c> attributes.
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Automatically resolves documentation from base types, implemented interfaces, and overridden members.
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Handles type parameter reference rewriting when inheriting documentation from generic types.
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Prevents infinite recursion when processing circular <c>inheritdoc</c> references.
+///             </description>
+///         </item>
+///     </list>
+/// </remarks>
+/// <seealso cref="ISymbol.GetDocumentationCommentXml"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -22,8 +51,69 @@ internal
 static class DocumentationExtensions
 {
     /// <summary>
-    ///     Gets the documentation comment for a symbol, optionally expanding inheritdoc elements.
+    ///     Gets the documentation comment for a symbol, optionally expanding <c>inheritdoc</c> elements.
     /// </summary>
+    /// <param name="symbol">The symbol to retrieve documentation for.</param>
+    /// <param name="compilation">
+    ///     The compilation containing the symbol. Used to resolve <c>cref</c> references in <c>inheritdoc</c> elements.
+    /// </param>
+    /// <param name="preferredCulture">
+    ///     The preferred culture for localized documentation. Pass <c>null</c> to use the default culture.
+    /// </param>
+    /// <param name="expandIncludes">
+    ///     <c>true</c> to expand <c>include</c> elements that reference external documentation files;
+    ///     otherwise, <c>false</c>.
+    /// </param>
+    /// <param name="expandInheritdoc">
+    ///     <c>true</c> to expand <c>inheritdoc</c> elements by resolving and inlining inherited documentation;
+    ///     otherwise, <c>false</c>.
+    /// </param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    ///     The XML documentation comment string for the symbol. Returns an empty string if no documentation is found.
+    ///     When <paramref name="expandInheritdoc"/> is <c>true</c>, any <c>inheritdoc</c> elements are replaced
+    ///     with the actual inherited documentation content.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         When <paramref name="expandInheritdoc"/> is enabled, the method automatically synthesizes
+    ///         an <c>inheritdoc</c> element for symbols that are eligible but lack documentation:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Override members (methods, properties, events)</description></item>
+    ///         <item><description>Explicit interface implementations</description></item>
+    ///         <item><description>Implicit interface implementations</description></item>
+    ///     </list>
+    ///     <para>
+    ///         The method handles the following <c>inheritdoc</c> scenarios:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <c>&lt;inheritdoc/&gt;</c> - Inherits from the most relevant base member (override target,
+    ///                 interface implementation, or base type).
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>&lt;inheritdoc cref="Member"/&gt;</c> - Inherits from the specified member.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>&lt;inheritdoc path="/summary"/&gt;</c> - Inherits only the specified XPath elements.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    ///     // Get documentation with inheritdoc expansion
+    ///     var docs = method.GetDocumentationComment(
+    ///         compilation,
+    ///         expandInheritdoc: true);
+    ///     </code>
+    /// </example>
     public static string GetDocumentationComment(
         this ISymbol symbol,
         Compilation compilation,
@@ -342,15 +432,58 @@ static class DocumentationExtensions
 /// <summary>
 ///     Internal XML element and attribute names used for documentation comment processing.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This file-scoped class contains constant strings for XML element and attribute names
+///         commonly found in C# XML documentation comments. These constants are used when
+///         parsing and rewriting documentation comments, particularly for <c>inheritdoc</c> expansion.
+///     </para>
+///     <list type="bullet">
+///         <item><description><c>inheritdoc</c> - Inherits documentation from a base or interface member.</description></item>
+///         <item><description><c>typeparamref</c> - References a type parameter by name.</description></item>
+///         <item><description><c>see</c> - Creates a hyperlink reference to another type or member.</description></item>
+///     </list>
+/// </remarks>
 file static class DocumentationXmlNames
 {
+    /// <summary>
+    ///     The element name for <c>inheritdoc</c> elements.
+    /// </summary>
     public const string InheritdocElementName = "inheritdoc";
+
+    /// <summary>
+    ///     The element name for <c>typeparamref</c> elements.
+    /// </summary>
     public const string TypeParameterReferenceElementName = "typeparamref";
+
+    /// <summary>
+    ///     The element name for <c>see</c> elements.
+    /// </summary>
     public const string SeeElementName = "see";
+
+    /// <summary>
+    ///     The attribute name for <c>cref</c> attributes.
+    /// </summary>
     public const string CrefAttributeName = "cref";
+
+    /// <summary>
+    ///     The attribute name for <c>name</c> attributes.
+    /// </summary>
     public const string NameAttributeName = "name";
+
+    /// <summary>
+    ///     The attribute name for <c>path</c> attributes.
+    /// </summary>
     public const string PathAttributeName = "path";
 
+    /// <summary>
+    ///     Compares two element names for equality using case-insensitive comparison.
+    /// </summary>
+    /// <param name="name1">The first element name to compare.</param>
+    /// <param name="name2">The second element name to compare.</param>
+    /// <returns>
+    ///     <c>true</c> if the element names are equal (ignoring case); otherwise, <c>false</c>.
+    /// </returns>
     public static bool ElementEquals(string name1, string name2) =>
         string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
 }

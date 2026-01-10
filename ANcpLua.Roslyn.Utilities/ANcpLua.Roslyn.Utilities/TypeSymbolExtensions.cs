@@ -6,6 +6,21 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <summary>
 ///     Extension methods for <see cref="ITypeSymbol" />.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This class provides extension methods for working with type symbols in Roslyn analyzers
+///         and source generators. It includes functionality for:
+///     </para>
+///     <list type="bullet">
+///         <item><description>Type inheritance and interface implementation checks</description></item>
+///         <item><description>Special type detection (numeric, span, memory, task, enumerable)</description></item>
+///         <item><description>Nullable type unwrapping</description></item>
+///         <item><description>Unit test class detection</description></item>
+///         <item><description>Static class candidacy analysis</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="SymbolExtensions" />
+/// <seealso cref="MethodSymbolExtensions" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -14,8 +29,19 @@ internal
 static class TypeSymbolExtensions
 {
     /// <summary>
-    ///     Gets all interfaces including the type itself if it's an interface.
+    ///     Gets all interfaces implemented by the type, including the type itself if it is an interface.
     /// </summary>
+    /// <param name="type">The type symbol to get interfaces from.</param>
+    /// <returns>
+    ///     An enumerable of all interfaces. If <paramref name="type" /> is an interface,
+    ///     it is included in the result along with all its inherited interfaces.
+    /// </returns>
+    /// <remarks>
+    ///     Unlike <see cref="ITypeSymbol.AllInterfaces" />, which only returns inherited interfaces,
+    ///     this method includes the type itself when querying an interface type.
+    /// </remarks>
+    /// <seealso cref="Implements" />
+    /// <seealso cref="IsOrImplements" />
     public static IEnumerable<INamedTypeSymbol> GetAllInterfacesIncludingThis(this ITypeSymbol type)
     {
         var allInterfaces = type.AllInterfaces;
@@ -31,8 +57,19 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type inherits from a base type (using SymbolEqualityComparer).
+    ///     Determines whether a type inherits from a specified base type.
     /// </summary>
+    /// <param name="classSymbol">The type symbol to check.</param>
+    /// <param name="baseClassType">The potential base type to check against.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="classSymbol" /> inherits from <paramref name="baseClassType" />;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method walks the inheritance chain using <see cref="SymbolEqualityComparer.Default" />
+    ///     for comparison. It does not consider the type itself as inheriting from itself.
+    /// </remarks>
+    /// <seealso cref="IsOrInheritsFrom" />
     public static bool InheritsFrom(this ITypeSymbol classSymbol, ITypeSymbol? baseClassType)
     {
         if (baseClassType is null)
@@ -51,8 +88,20 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type implements an interface (using SymbolEqualityComparer).
+    ///     Determines whether a type implements a specified interface.
     /// </summary>
+    /// <param name="classSymbol">The type symbol to check.</param>
+    /// <param name="interfaceType">The interface type to check for.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="classSymbol" /> implements <paramref name="interfaceType" />;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method uses <see cref="SymbolEqualityComparer.Default" /> for comparison
+    ///     and checks against <see cref="ITypeSymbol.AllInterfaces" />.
+    /// </remarks>
+    /// <seealso cref="IsOrImplements" />
+    /// <seealso cref="GetAllInterfacesIncludingThis" />
     public static bool Implements(this ITypeSymbol classSymbol, ITypeSymbol? interfaceType)
     {
         if (interfaceType is null)
@@ -67,8 +116,20 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is or implements an interface.
+    ///     Determines whether a type is or implements a specified interface.
     /// </summary>
+    /// <param name="symbol">The type symbol to check.</param>
+    /// <param name="interfaceType">The interface type to check for.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is or implements <paramref name="interfaceType" />;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     Unlike <see cref="Implements" />, this method returns <c>true</c> if the symbol itself
+    ///     is the interface being checked.
+    /// </remarks>
+    /// <seealso cref="Implements" />
+    /// <seealso cref="GetAllInterfacesIncludingThis" />
     public static bool IsOrImplements(this ITypeSymbol symbol, ITypeSymbol? interfaceType)
     {
         if (interfaceType is null)
@@ -84,8 +145,18 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is or inherits from another type.
+    ///     Determines whether a type is or inherits from a specified type.
     /// </summary>
+    /// <param name="symbol">The type symbol to check.</param>
+    /// <param name="expectedType">The expected type or base type to check against.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> equals or inherits from <paramref name="expectedType" />;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method first checks for equality, then checks inheritance if the expected type is not sealed.
+    /// </remarks>
+    /// <seealso cref="InheritsFrom" />
     public static bool IsOrInheritsFrom(this ITypeSymbol symbol, ITypeSymbol? expectedType)
     {
         if (expectedType is null)
@@ -95,38 +166,154 @@ static class TypeSymbolExtensions
                (!expectedType.IsSealed && symbol.InheritsFrom(expectedType));
     }
 
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="object" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="object" />; otherwise, <c>false</c>.</returns>
     public static bool IsObject(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Object;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="string" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="string" />; otherwise, <c>false</c>.</returns>
     public static bool IsString(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_String;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="char" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="char" />; otherwise, <c>false</c>.</returns>
     public static bool IsChar(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Char;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="int" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="int" />; otherwise, <c>false</c>.</returns>
     public static bool IsInt32(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int32;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="long" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="long" />; otherwise, <c>false</c>.</returns>
     public static bool IsInt64(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int64;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="bool" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="bool" />; otherwise, <c>false</c>.</returns>
     public static bool IsBoolean(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Boolean;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="DateTime" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="DateTime" />; otherwise, <c>false</c>.</returns>
     public static bool IsDateTime(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_DateTime;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="byte" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="byte" />; otherwise, <c>false</c>.</returns>
     public static bool IsByte(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Byte;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="sbyte" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="sbyte" />; otherwise, <c>false</c>.</returns>
     public static bool IsSByte(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_SByte;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="short" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="short" />; otherwise, <c>false</c>.</returns>
     public static bool IsInt16(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int16;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="ushort" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="ushort" />; otherwise, <c>false</c>.</returns>
     public static bool IsUInt16(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt16;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="uint" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="uint" />; otherwise, <c>false</c>.</returns>
     public static bool IsUInt32(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt32;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="ulong" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="ulong" />; otherwise, <c>false</c>.</returns>
     public static bool IsUInt64(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt64;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="float" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="float" />; otherwise, <c>false</c>.</returns>
     public static bool IsSingle(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Single;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="double" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="double" />; otherwise, <c>false</c>.</returns>
     public static bool IsDouble(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Double;
+
+    /// <summary>
+    ///     Determines whether the type symbol represents <see cref="decimal" />.
+    /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="decimal" />; otherwise, <c>false</c>.</returns>
     public static bool IsDecimal(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Decimal;
 
     /// <summary>
-    ///     Checks if a type is an enumeration.
+    ///     Determines whether the type symbol represents an enumeration type.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns><c>true</c> if <paramref name="symbol" /> is an enumeration type; otherwise, <c>false</c>.</returns>
+    /// <seealso cref="GetEnumerationType" />
     public static bool IsEnumeration([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         (symbol?.GetEnumerationType()) is not null;
 
     /// <summary>
-    ///     Gets the underlying type of an enum.
+    ///     Gets the underlying type of an enumeration.
     /// </summary>
+    /// <param name="symbol">The type symbol to get the underlying type from, or <c>null</c>.</param>
+    /// <returns>
+    ///     The underlying type of the enumeration (e.g., <see cref="int" />), or <c>null</c>
+    ///     if <paramref name="symbol" /> is not an enumeration.
+    /// </returns>
+    /// <seealso cref="IsEnumeration" />
     public static INamedTypeSymbol? GetEnumerationType(this ITypeSymbol? symbol) =>
         (symbol as INamedTypeSymbol)?.EnumUnderlyingType;
 
     /// <summary>
-    ///     Checks if a type is a numeric type.
+    ///     Determines whether the type symbol represents a numeric type.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is a numeric type; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>Numeric types include:</para>
+    ///     <list type="bullet">
+    ///         <item><description>Signed integers: <see cref="sbyte" />, <see cref="short" />, <see cref="int" />, <see cref="long" /></description></item>
+    ///         <item><description>Unsigned integers: <see cref="byte" />, <see cref="ushort" />, <see cref="uint" />, <see cref="ulong" /></description></item>
+    ///         <item><description>Floating-point: <see cref="float" />, <see cref="double" />, <see cref="decimal" /></description></item>
+    ///     </list>
+    /// </remarks>
     public static bool IsNumberType(this ITypeSymbol? symbol)
     {
         if (symbol is null)
@@ -143,8 +330,16 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Gets the underlying type of Nullable&lt;T&gt; or returns the type itself.
+    ///     Gets the underlying type of a <see cref="Nullable{T}" /> or returns the type itself.
     /// </summary>
+    /// <param name="typeSymbol">The type symbol to unwrap, or <c>null</c>.</param>
+    /// <returns>
+    ///     The underlying type if <paramref name="typeSymbol" /> is <see cref="Nullable{T}" />;
+    ///     otherwise, <paramref name="typeSymbol" /> itself.
+    /// </returns>
+    /// <remarks>
+    ///     This method is useful for analyzing nullable value types without special-casing nullability.
+    /// </remarks>
     [return: NotNullIfNotNull(nameof(typeSymbol))]
     public static ITypeSymbol? GetUnderlyingNullableTypeOrSelf(this ITypeSymbol? typeSymbol)
     {
@@ -161,8 +356,20 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is a unit test class (xUnit, NUnit, MSTest).
+    ///     Determines whether the type symbol represents a unit test class.
     /// </summary>
+    /// <param name="symbol">The named type symbol to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is a unit test class; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>This method detects test classes from the following frameworks:</para>
+    ///     <list type="bullet">
+    ///         <item><description><b>MSTest:</b> Classes with <c>[TestClass]</c> attribute or methods with <c>[TestMethod]</c></description></item>
+    ///         <item><description><b>NUnit:</b> Classes with <c>[TestFixture]</c> attribute or methods with <c>[Test]</c>/<c>[TestCase]</c></description></item>
+    ///         <item><description><b>xUnit:</b> Classes with methods having <c>[Fact]</c>, <c>[Theory]</c>, or other Xunit.* attributes</description></item>
+    ///     </list>
+    /// </remarks>
     public static bool IsUnitTestClass(this INamedTypeSymbol symbol)
     {
         if (symbol.TypeKind is not TypeKind.Class)
@@ -215,8 +422,26 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type could potentially be made static (no instance members, no base class, no interfaces).
+    ///     Determines whether a type could potentially be made static.
     /// </summary>
+    /// <param name="symbol">The named type symbol to check.</param>
+    /// <param name="cancellationToken">A cancellation token to observe.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> could be made static; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>A type is considered a candidate for being static if:</para>
+    ///     <list type="bullet">
+    ///         <item><description>It is not abstract or already static</description></item>
+    ///         <item><description>It is not implicitly declared</description></item>
+    ///         <item><description>It has no interfaces</description></item>
+    ///         <item><description>It has no base class other than <see cref="object" /></description></item>
+    ///         <item><description>It is not a unit test class</description></item>
+    ///         <item><description>It is not a top-level statement container</description></item>
+    ///         <item><description>All non-implicitly-declared members are static or operators</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="IsUnitTestClass" />
     public static bool IsPotentialStatic(this INamedTypeSymbol symbol, CancellationToken cancellationToken = default)
     {
         if (symbol is not { IsAbstract: false, IsStatic: false, IsImplicitlyDeclared: false })
@@ -247,8 +472,14 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is a Span or ReadOnlySpan.
+    ///     Determines whether the type symbol represents <see cref="Span{T}" /> or <see cref="ReadOnlySpan{T}" />.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is a span type; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsMemoryType" />
+    /// <seealso cref="GetElementType" />
     public static bool IsSpanType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
         if (symbol is not INamedTypeSymbol namedType)
@@ -259,8 +490,14 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is a Memory or ReadOnlyMemory.
+    ///     Determines whether the type symbol represents <see cref="Memory{T}" /> or <see cref="ReadOnlyMemory{T}" />.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is a memory type; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsSpanType" />
+    /// <seealso cref="GetElementType" />
     public static bool IsMemoryType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
         if (symbol is not INamedTypeSymbol namedType)
@@ -271,8 +508,21 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is a Task or ValueTask (generic or non-generic).
+    ///     Determines whether the type symbol represents a task type.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is a task type; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>Task types include:</para>
+    ///     <list type="bullet">
+    ///         <item><description><see cref="System.Threading.Tasks.Task" /></description></item>
+    ///         <item><description><see cref="System.Threading.Tasks.Task{TResult}" /></description></item>
+    ///         <item><description><see cref="System.Threading.Tasks.ValueTask" /></description></item>
+    ///         <item><description><see cref="System.Threading.Tasks.ValueTask{TResult}" /></description></item>
+    ///     </list>
+    /// </remarks>
     public static bool IsTaskType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
         if (symbol is null)
@@ -289,8 +539,14 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Checks if a type is IEnumerable or IEnumerable&lt;T&gt;.
+    ///     Determines whether the type symbol represents an enumerable type.
     /// </summary>
+    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol" /> is <see cref="System.Collections.IEnumerable" />
+    ///     or <see cref="System.Collections.Generic.IEnumerable{T}" />; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="GetElementType" />
     public static bool IsEnumerableType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
         if (symbol is null)
@@ -306,8 +562,25 @@ static class TypeSymbolExtensions
     }
 
     /// <summary>
-    ///     Gets the element type if this is an array, Span, Memory, or IEnumerable&lt;T&gt;.
+    ///     Gets the element type of a collection or span-like type.
     /// </summary>
+    /// <param name="symbol">The type symbol to get the element type from, or <c>null</c>.</param>
+    /// <returns>
+    ///     The element type if <paramref name="symbol" /> is an array, span, memory, or generic enumerable;
+    ///     otherwise, <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>This method extracts element types from:</para>
+    ///     <list type="bullet">
+    ///         <item><description>Arrays (e.g., <c>int[]</c> returns <c>int</c>)</description></item>
+    ///         <item><description><see cref="Span{T}" /> and <see cref="ReadOnlySpan{T}" /></description></item>
+    ///         <item><description><see cref="Memory{T}" /> and <see cref="ReadOnlyMemory{T}" /></description></item>
+    ///         <item><description><see cref="System.Collections.Generic.IEnumerable{T}" /></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="IsSpanType" />
+    /// <seealso cref="IsMemoryType" />
+    /// <seealso cref="IsEnumerableType" />
     public static ITypeSymbol? GetElementType(this ITypeSymbol? symbol)
     {
         switch (symbol)

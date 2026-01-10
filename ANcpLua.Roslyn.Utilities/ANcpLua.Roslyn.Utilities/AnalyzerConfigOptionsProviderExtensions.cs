@@ -4,14 +4,42 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Reads MSBuild-provided values surfaced through Roslyn analyzer config options.
-///     MSBuild injects "virtual" keys into <see cref="AnalyzerConfigOptions" />:
-///     - <c>build_property.&lt;PropertyName&gt;</c> for MSBuild properties
-///     - <c>build_metadata.&lt;ItemGroup&gt;.&lt;MetadataName&gt;</c> for item metadata (commonly AdditionalFiles)
-///     Conventions in this helper:
-///     - Missing keys or empty/whitespace values are treated as "unset" and return <see langword="null" />.
-///     - Typed helpers parse the common MSBuild forms (e.g. boolean "true/false" and "1/0").
+///     Provides extension methods for reading MSBuild-provided values surfaced through Roslyn analyzer config options.
 /// </summary>
+/// <remarks>
+///     <para>
+///         MSBuild injects "virtual" keys into <see cref="AnalyzerConfigOptions" />:
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>
+///                 <c>build_property.&lt;PropertyName&gt;</c> for MSBuild properties
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 <c>build_metadata.&lt;ItemGroup&gt;.&lt;MetadataName&gt;</c> for item metadata (commonly AdditionalFiles)
+///             </description>
+///         </item>
+///     </list>
+///     <para>
+///         Conventions in this helper:
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>
+///                 Missing keys or empty/whitespace values are treated as "unset" and return <c>null</c>.
+///             </description>
+///         </item>
+///         <item>
+///             <description>
+///                 Typed helpers parse the common MSBuild forms (e.g. boolean "true/false" and "1/0").
+///             </description>
+///         </item>
+///     </list>
+/// </remarks>
+/// <seealso cref="AnalyzerConfigOptions" />
+/// <seealso cref="AnalyzerConfigOptionsProvider" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -24,8 +52,19 @@ static class AnalyzerConfigOptionsProviderExtensions
     private const string DefaultAdditionalFilesGroup = "AdditionalFiles";
 
     /// <summary>
-    ///     Gets a config value by exact <paramref name="key" />. Returns <see langword="null" /> when missing or whitespace.
+    ///     Gets a configuration value by its exact key.
     /// </summary>
+    /// <param name="options">The <see cref="AnalyzerConfigOptions" /> to read from.</param>
+    /// <param name="key">The exact key to look up.</param>
+    /// <returns>
+    ///     The value associated with <paramref name="key" />, or <c>null</c> if the key is missing
+    ///     or the value is empty or whitespace.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="options" /> or <paramref name="key" /> is <c>null</c>.
+    /// </exception>
+    /// <seealso cref="GetGlobalProperty" />
+    /// <seealso cref="GetAdditionalTextMetadata" />
     public static string? GetValueOrNull(this AnalyzerConfigOptions options, string key)
     {
         if (options is null) throw new ArgumentNullException(nameof(options));
@@ -37,10 +76,24 @@ static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    ///     Reads an MSBuild property from <see cref="AnalyzerConfigOptionsProvider.GlobalOptions" />.
-    ///     Example: <c>build_property.TargetFramework</c>
-    ///     With prefix: <c>build_property.MyPrefix_TargetFramework</c>
+    ///     Reads an MSBuild property from the global options.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    ///     For example, if <paramref name="prefix" /> is <c>"MyPrefix"</c> and <paramref name="name" /> is <c>"TargetFramework"</c>,
+    ///     the resulting key is <c>build_property.MyPrefix_TargetFramework</c>.
+    /// </param>
+    /// <returns>
+    ///     The value of the MSBuild property, or <c>null</c> if not found or empty.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="provider" /> or <paramref name="name" /> is <c>null</c>.
+    /// </exception>
+    /// <seealso cref="GetRequiredGlobalProperty" />
+    /// <seealso cref="TryGetGlobalBool" />
+    /// <seealso cref="TryGetGlobalInt" />
     public static string? GetGlobalProperty(this AnalyzerConfigOptionsProvider provider, string name,
         string? prefix = null)
     {
@@ -51,9 +104,28 @@ static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    ///     Reads metadata for an <see cref="AdditionalText" /> item (default group: <c>AdditionalFiles</c>).
-    ///     Example: <c>build_metadata.AdditionalFiles.MyMetadata</c>
+    ///     Reads metadata for an <see cref="AdditionalText" /> item.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="text">The <see cref="AdditionalText" /> file to get metadata for.</param>
+    /// <param name="name">The metadata name (without the <c>build_metadata.</c> prefix).</param>
+    /// <param name="group">
+    ///     The item group name. Defaults to <c>"AdditionalFiles"</c> if not specified.
+    /// </param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     The metadata value, or <c>null</c> if not found or empty.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="provider" />, <paramref name="text" />, or <paramref name="name" /> is <c>null</c>.
+    /// </exception>
+    /// <remarks>
+    ///     The resulting key format is <c>build_metadata.{group}.{prefix}_{name}</c> when prefix is specified,
+    ///     or <c>build_metadata.{group}.{name}</c> otherwise.
+    /// </remarks>
+    /// <seealso cref="GetRequiredAdditionalTextMetadata" />
     public static string? GetAdditionalTextMetadata(
         this AnalyzerConfigOptionsProvider provider,
         AdditionalText text,
@@ -71,16 +143,40 @@ static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    ///     Reads an MSBuild property or throws when missing/unset.
+    ///     Reads an MSBuild property or throws when missing or unset.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>The value of the MSBuild property.</returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown when the property is not found, empty, or whitespace.
+    /// </exception>
+    /// <seealso cref="GetGlobalProperty" />
     public static string GetRequiredGlobalProperty(this AnalyzerConfigOptionsProvider provider, string name,
         string? prefix = null) =>
         provider.GetGlobalProperty(name, prefix)
         ?? throw new InvalidOperationException($"{CompositeName(name, prefix)} MSBuild property is required.");
 
     /// <summary>
-    ///     Reads <see cref="AdditionalText" /> metadata or throws when missing/unset.
+    ///     Reads <see cref="AdditionalText" /> metadata or throws when missing or unset.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="text">The <see cref="AdditionalText" /> file to get metadata for.</param>
+    /// <param name="name">The metadata name (without the <c>build_metadata.</c> prefix).</param>
+    /// <param name="group">
+    ///     The item group name. Defaults to <c>"AdditionalFiles"</c> if not specified.
+    /// </param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>The metadata value.</returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown when the metadata is not found, empty, or whitespace.
+    /// </exception>
+    /// <seealso cref="GetAdditionalTextMetadata" />
     public static string GetRequiredAdditionalTextMetadata(
         this AnalyzerConfigOptionsProvider provider,
         AdditionalText text,
@@ -93,22 +189,67 @@ static class AnalyzerConfigOptionsProviderExtensions
 
     /// <summary>
     ///     Tries to read and parse an MSBuild property as a boolean.
-    ///     Accepts: "true"/"false" (case-insensitive) and "1"/"0".
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="value">
+    ///     When this method returns <c>true</c>, contains the parsed boolean value.
+    ///     When this method returns <c>false</c>, contains <c>false</c>.
+    /// </param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the property was found and successfully parsed as a boolean; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     Accepts the following values (case-insensitive):
+    ///     <list type="bullet">
+    ///         <item><description><c>"true"</c> or <c>"1"</c> for <c>true</c></description></item>
+    ///         <item><description><c>"false"</c> or <c>"0"</c> for <c>false</c></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="GetGlobalBoolOrDefault" />
     public static bool TryGetGlobalBool(this AnalyzerConfigOptionsProvider provider, string name, out bool value,
         string? prefix = null) =>
         TryParseMsBuildBoolean(provider.GetGlobalProperty(name, prefix), out value);
 
     /// <summary>
-    ///     Reads a boolean MSBuild property or returns <paramref name="defaultValue" /> when missing/invalid.
+    ///     Reads a boolean MSBuild property or returns a default value when missing or invalid.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="defaultValue">The value to return if the property is missing or cannot be parsed.</param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     The parsed boolean value, or <paramref name="defaultValue" /> if the property is missing or invalid.
+    /// </returns>
+    /// <seealso cref="TryGetGlobalBool" />
     public static bool GetGlobalBoolOrDefault(this AnalyzerConfigOptionsProvider provider, string name,
         bool defaultValue, string? prefix = null) =>
         provider.TryGetGlobalBool(name, out var value, prefix) ? value : defaultValue;
 
     /// <summary>
-    ///     Tries to read and parse an MSBuild property as an integer (invariant culture).
+    ///     Tries to read and parse an MSBuild property as an integer.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="value">
+    ///     When this method returns <c>true</c>, contains the parsed integer value.
+    ///     When this method returns <c>false</c>, contains <c>0</c>.
+    /// </param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the property was found and successfully parsed as an integer; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     Parsing uses <see cref="CultureInfo.InvariantCulture" /> and <see cref="NumberStyles.Integer" />.
+    /// </remarks>
+    /// <seealso cref="GetGlobalIntOrDefault" />
     public static bool TryGetGlobalInt(this AnalyzerConfigOptionsProvider provider, string name, out int value,
         string? prefix = null)
     {
@@ -117,18 +258,49 @@ static class AnalyzerConfigOptionsProviderExtensions
     }
 
     /// <summary>
-    ///     Reads an integer MSBuild property or returns <paramref name="defaultValue" /> when missing/invalid.
+    ///     Reads an integer MSBuild property or returns a default value when missing or invalid.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <param name="name">The MSBuild property name (without the <c>build_property.</c> prefix).</param>
+    /// <param name="defaultValue">The value to return if the property is missing or cannot be parsed.</param>
+    /// <param name="prefix">
+    ///     An optional prefix to prepend to <paramref name="name" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     The parsed integer value, or <paramref name="defaultValue" /> if the property is missing or invalid.
+    /// </returns>
+    /// <seealso cref="TryGetGlobalInt" />
     public static int GetGlobalIntOrDefault(this AnalyzerConfigOptionsProvider provider, string name, int defaultValue,
         string? prefix = null) =>
         provider.TryGetGlobalInt(name, out var value, prefix) ? value : defaultValue;
 
     /// <summary>
-    ///     True when running under an IDE design-time build.
-    ///     Heuristics:
-    ///     - SDK-style: DesignTimeBuild=true
-    ///     - Legacy:    BuildingProject=false
+    ///     Determines whether the current build is an IDE design-time build.
     /// </summary>
+    /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
+    /// <returns>
+    ///     <c>true</c> if the build is a design-time build; otherwise, <c>false</c>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="provider" /> is <c>null</c>.
+    /// </exception>
+    /// <remarks>
+    ///     <para>
+    ///         Uses the following heuristics to detect design-time builds:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 SDK-style projects: <c>DesignTimeBuild=true</c>
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Legacy projects: <c>BuildingProject=false</c>
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </remarks>
     public static bool IsDesignTimeBuild(this AnalyzerConfigOptionsProvider provider)
     {
         if (provider is null) throw new ArgumentNullException(nameof(provider));

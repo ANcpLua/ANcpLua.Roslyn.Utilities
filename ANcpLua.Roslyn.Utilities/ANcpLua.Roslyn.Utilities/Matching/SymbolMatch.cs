@@ -7,6 +7,24 @@ namespace ANcpLua.Roslyn.Utilities.Matching;
 /// <summary>
 ///     Entry point for fluent symbol matching DSL.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides factory methods for creating strongly-typed symbol matchers
+///         that can be composed using a fluent API.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Use <see cref="Method()"/> or <see cref="Method(string)"/> for matching <see cref="IMethodSymbol"/> instances.</description></item>
+///         <item><description>Use <see cref="Type()"/> or <see cref="Type(string)"/> for matching <see cref="INamedTypeSymbol"/> instances.</description></item>
+///         <item><description>Use <see cref="Property()"/> or <see cref="Property(string)"/> for matching <see cref="IPropertySymbol"/> instances.</description></item>
+///         <item><description>Use <see cref="Field()"/> or <see cref="Field(string)"/> for matching <see cref="IFieldSymbol"/> instances.</description></item>
+///         <item><description>Use <see cref="Parameter()"/> for matching <see cref="IParameterSymbol"/> instances.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="MethodMatcher"/>
+/// <seealso cref="TypeMatcher"/>
+/// <seealso cref="PropertyMatcher"/>
+/// <seealso cref="FieldMatcher"/>
+/// <seealso cref="ParameterMatcher"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -14,37 +32,89 @@ internal
 #endif
 static class Match
 {
-    /// <summary>Creates a method matcher.</summary>
+    /// <summary>
+    ///     Creates a new method matcher with no initial constraints.
+    /// </summary>
+    /// <returns>A new <see cref="MethodMatcher"/> instance.</returns>
+    /// <seealso cref="Method(string)"/>
     public static MethodMatcher Method() => new();
 
-    /// <summary>Creates a method matcher for a specific name.</summary>
+    /// <summary>
+    ///     Creates a new method matcher that matches methods with the specified name.
+    /// </summary>
+    /// <param name="name">The exact name to match against the method's <see cref="ISymbol.Name"/>.</param>
+    /// <returns>A new <see cref="MethodMatcher"/> instance configured to match methods with the specified name.</returns>
+    /// <seealso cref="Method()"/>
     public static MethodMatcher Method(string name) => new MethodMatcher().Named(name);
 
-    /// <summary>Creates a type matcher.</summary>
+    /// <summary>
+    ///     Creates a new type matcher with no initial constraints.
+    /// </summary>
+    /// <returns>A new <see cref="TypeMatcher"/> instance.</returns>
+    /// <seealso cref="Type(string)"/>
     public static TypeMatcher Type() => new();
 
-    /// <summary>Creates a type matcher for a specific name.</summary>
+    /// <summary>
+    ///     Creates a new type matcher that matches types with the specified name.
+    /// </summary>
+    /// <param name="name">The exact name to match against the type's <see cref="ISymbol.Name"/>.</param>
+    /// <returns>A new <see cref="TypeMatcher"/> instance configured to match types with the specified name.</returns>
+    /// <seealso cref="Type()"/>
     public static TypeMatcher Type(string name) => new TypeMatcher().Named(name);
 
-    /// <summary>Creates a property matcher.</summary>
+    /// <summary>
+    ///     Creates a new property matcher with no initial constraints.
+    /// </summary>
+    /// <returns>A new <see cref="PropertyMatcher"/> instance.</returns>
+    /// <seealso cref="Property(string)"/>
     public static PropertyMatcher Property() => new();
 
-    /// <summary>Creates a property matcher for a specific name.</summary>
+    /// <summary>
+    ///     Creates a new property matcher that matches properties with the specified name.
+    /// </summary>
+    /// <param name="name">The exact name to match against the property's <see cref="ISymbol.Name"/>.</param>
+    /// <returns>A new <see cref="PropertyMatcher"/> instance configured to match properties with the specified name.</returns>
+    /// <seealso cref="Property()"/>
     public static PropertyMatcher Property(string name) => new PropertyMatcher().Named(name);
 
-    /// <summary>Creates a field matcher.</summary>
+    /// <summary>
+    ///     Creates a new field matcher with no initial constraints.
+    /// </summary>
+    /// <returns>A new <see cref="FieldMatcher"/> instance.</returns>
+    /// <seealso cref="Field(string)"/>
     public static FieldMatcher Field() => new();
 
-    /// <summary>Creates a field matcher for a specific name.</summary>
+    /// <summary>
+    ///     Creates a new field matcher that matches fields with the specified name.
+    /// </summary>
+    /// <param name="name">The exact name to match against the field's <see cref="ISymbol.Name"/>.</param>
+    /// <returns>A new <see cref="FieldMatcher"/> instance configured to match fields with the specified name.</returns>
+    /// <seealso cref="Field()"/>
     public static FieldMatcher Field(string name) => new FieldMatcher().Named(name);
 
-    /// <summary>Creates a parameter matcher.</summary>
+    /// <summary>
+    ///     Creates a new parameter matcher with no initial constraints.
+    /// </summary>
+    /// <returns>A new <see cref="ParameterMatcher"/> instance.</returns>
     public static ParameterMatcher Parameter() => new();
 }
 
 /// <summary>
 ///     Base class for all symbol matchers providing common functionality.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This abstract class provides the foundational predicate-based matching
+///         infrastructure used by all concrete matcher types.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Predicates are added via the fluent API and evaluated in order.</description></item>
+///         <item><description>All predicates must pass for a symbol to be considered a match.</description></item>
+///         <item><description>The matcher uses the Curiously Recurring Template Pattern (CRTP) for fluent method chaining.</description></item>
+///     </list>
+/// </remarks>
+/// <typeparam name="TSelf">The concrete matcher type, used for fluent method chaining.</typeparam>
+/// <typeparam name="TSymbol">The type of symbol this matcher operates on, must implement <see cref="ISymbol"/>.</typeparam>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -56,17 +126,37 @@ abstract class SymbolMatcherBase<TSelf, TSymbol>
 {
     private readonly List<Func<TSymbol, bool>> _predicates = [];
 
-    /// <summary>Adds a custom predicate to the matcher.</summary>
+    /// <summary>
+    ///     Adds a custom predicate to the matcher's collection.
+    /// </summary>
+    /// <param name="predicate">A function that returns <c>true</c> if the symbol matches the condition.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     protected TSelf AddPredicate(Func<TSymbol, bool> predicate)
     {
         _predicates.Add(predicate);
         return (TSelf)this;
     }
 
-    /// <summary>Tests if a symbol matches all predicates.</summary>
+    /// <summary>
+    ///     Tests if the specified symbol matches all configured predicates.
+    /// </summary>
+    /// <param name="symbol">The symbol to test, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol"/> is of type <typeparamref name="TSymbol"/>
+    ///     and matches all predicates; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="Matches(TSymbol?)"/>
     public bool Matches(ISymbol? symbol) => symbol is TSymbol typed && MatchesAll(typed);
 
-    /// <summary>Tests if a symbol matches all predicates.</summary>
+    /// <summary>
+    ///     Tests if the specified strongly-typed symbol matches all configured predicates.
+    /// </summary>
+    /// <param name="symbol">The symbol to test, or <c>null</c>.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="symbol"/> is not <c>null</c>
+    ///     and matches all predicates; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="Matches(ISymbol?)"/>
     public bool Matches(TSymbol? symbol) => symbol is not null && MatchesAll(symbol);
 
     private bool MatchesAll(TSymbol symbol)
@@ -80,85 +170,217 @@ abstract class SymbolMatcherBase<TSelf, TSymbol>
         return true;
     }
 
-    // Name matching
-    /// <summary>Matches symbols with the exact name.</summary>
+    /// <summary>
+    ///     Matches symbols with the exact specified name.
+    /// </summary>
+    /// <param name="name">The exact name to match against <see cref="ISymbol.Name"/>.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NameMatches"/>
+    /// <seealso cref="NameStartsWith"/>
+    /// <seealso cref="NameEndsWith"/>
+    /// <seealso cref="NameContains"/>
     public TSelf Named(string name) => AddPredicate(s => s.Name == name);
 
-    /// <summary>Matches symbols whose name matches a regex pattern.</summary>
+    /// <summary>
+    ///     Matches symbols whose name matches a regular expression pattern.
+    /// </summary>
+    /// <param name="pattern">The regex pattern to match against <see cref="ISymbol.Name"/>.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     The regex evaluation has a timeout of 1 second to prevent ReDoS attacks.
+    /// </remarks>
+    /// <seealso cref="Named"/>
     public TSelf NameMatches(string pattern) =>
         AddPredicate(s => Regex.IsMatch(s.Name, pattern, RegexOptions.None, TimeSpan.FromSeconds(1)));
 
-    /// <summary>Matches symbols whose name starts with prefix.</summary>
+    /// <summary>
+    ///     Matches symbols whose name starts with the specified prefix.
+    /// </summary>
+    /// <param name="prefix">The prefix to match at the start of <see cref="ISymbol.Name"/>.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Named"/>
+    /// <seealso cref="NameEndsWith"/>
     public TSelf NameStartsWith(string prefix) =>
         AddPredicate(s => s.Name.StartsWith(prefix, StringComparison.Ordinal));
 
-    /// <summary>Matches symbols whose name ends with suffix.</summary>
+    /// <summary>
+    ///     Matches symbols whose name ends with the specified suffix.
+    /// </summary>
+    /// <param name="suffix">The suffix to match at the end of <see cref="ISymbol.Name"/>.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Named"/>
+    /// <seealso cref="NameStartsWith"/>
     public TSelf NameEndsWith(string suffix) =>
         AddPredicate(s => s.Name.EndsWith(suffix, StringComparison.Ordinal));
 
-    /// <summary>Matches symbols whose name contains substring.</summary>
+    /// <summary>
+    ///     Matches symbols whose name contains the specified substring.
+    /// </summary>
+    /// <param name="substring">The substring to search for within <see cref="ISymbol.Name"/>.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Named"/>
     public TSelf NameContains(string substring) =>
         AddPredicate(s => s.Name.Contains(substring, StringComparison.Ordinal));
 
-    // Accessibility
-    /// <summary>Matches public symbols.</summary>
+    /// <summary>
+    ///     Matches symbols with <see cref="Accessibility.Public"/> accessibility.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Private"/>
+    /// <seealso cref="Internal"/>
+    /// <seealso cref="Protected"/>
+    /// <seealso cref="VisibleOutsideAssembly"/>
     public TSelf Public() => AddPredicate(s => s.DeclaredAccessibility == Accessibility.Public);
 
-    /// <summary>Matches private symbols.</summary>
+    /// <summary>
+    ///     Matches symbols with <see cref="Accessibility.Private"/> accessibility.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Public"/>
+    /// <seealso cref="Internal"/>
+    /// <seealso cref="Protected"/>
     public TSelf Private() => AddPredicate(s => s.DeclaredAccessibility == Accessibility.Private);
 
-    /// <summary>Matches internal symbols.</summary>
+    /// <summary>
+    ///     Matches symbols with <see cref="Accessibility.Internal"/> accessibility.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Public"/>
+    /// <seealso cref="Private"/>
+    /// <seealso cref="Protected"/>
     public TSelf Internal() => AddPredicate(s => s.DeclaredAccessibility == Accessibility.Internal);
 
-    /// <summary>Matches protected symbols.</summary>
+    /// <summary>
+    ///     Matches symbols with <see cref="Accessibility.Protected"/> accessibility.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Public"/>
+    /// <seealso cref="Private"/>
+    /// <seealso cref="Internal"/>
     public TSelf Protected() => AddPredicate(s => s.DeclaredAccessibility == Accessibility.Protected);
 
-    /// <summary>Matches symbols visible outside assembly.</summary>
+    /// <summary>
+    ///     Matches symbols that are visible outside their containing assembly.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     This includes public symbols and protected symbols in non-sealed types.
+    /// </remarks>
+    /// <seealso cref="Public"/>
     public TSelf VisibleOutsideAssembly() => AddPredicate(s => s.IsVisibleOutsideOfAssembly());
 
-    // Modifiers
-    /// <summary>Matches static symbols.</summary>
+    /// <summary>
+    ///     Matches static symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotStatic"/>
     public TSelf Static() => AddPredicate(s => s.IsStatic);
 
-    /// <summary>Matches non-static symbols.</summary>
+    /// <summary>
+    ///     Matches non-static (instance) symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Static"/>
     public TSelf NotStatic() => AddPredicate(s => !s.IsStatic);
 
-    /// <summary>Matches abstract symbols.</summary>
+    /// <summary>
+    ///     Matches abstract symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Virtual"/>
+    /// <seealso cref="Override"/>
     public TSelf Abstract() => AddPredicate(s => s.IsAbstract);
 
-    /// <summary>Matches sealed symbols.</summary>
+    /// <summary>
+    ///     Matches sealed symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Virtual"/>
     public TSelf Sealed() => AddPredicate(s => s.IsSealed);
 
-    /// <summary>Matches virtual symbols.</summary>
+    /// <summary>
+    ///     Matches virtual symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Abstract"/>
+    /// <seealso cref="Override"/>
     public TSelf Virtual() => AddPredicate(s => s.IsVirtual);
 
-    /// <summary>Matches override symbols.</summary>
+    /// <summary>
+    ///     Matches override symbols.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Virtual"/>
+    /// <seealso cref="Abstract"/>
     public TSelf Override() => AddPredicate(s => s.IsOverride);
 
-    // Attributes
-    /// <summary>Matches symbols with the specified attribute.</summary>
+    /// <summary>
+    ///     Matches symbols that have the specified attribute.
+    /// </summary>
+    /// <param name="fullyQualifiedName">
+    ///     The fully qualified name of the attribute type (e.g., <c>"System.ObsoleteAttribute"</c>).
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithoutAttribute"/>
     public TSelf WithAttribute(string fullyQualifiedName) =>
         AddPredicate(s => s.HasAttribute(fullyQualifiedName));
 
-    /// <summary>Matches symbols without the specified attribute.</summary>
+    /// <summary>
+    ///     Matches symbols that do not have the specified attribute.
+    /// </summary>
+    /// <param name="fullyQualifiedName">
+    ///     The fully qualified name of the attribute type (e.g., <c>"System.ObsoleteAttribute"</c>).
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithAttribute"/>
     public TSelf WithoutAttribute(string fullyQualifiedName) =>
         AddPredicate(s => !s.HasAttribute(fullyQualifiedName));
 
-    // Location
-    /// <summary>Matches symbols declared in a type with the specified name.</summary>
+    /// <summary>
+    ///     Matches symbols declared in a type with the specified name.
+    /// </summary>
+    /// <param name="typeName">The name of the containing type.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="InNamespace"/>
     public TSelf DeclaredIn(string typeName) => AddPredicate(s => s.ContainingType?.Name == typeName);
 
-    /// <summary>Matches symbols declared in the specified namespace.</summary>
+    /// <summary>
+    ///     Matches symbols declared in the specified namespace.
+    /// </summary>
+    /// <param name="namespaceName">
+    ///     The fully qualified namespace name (e.g., <c>"System.Collections.Generic"</c>).
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="DeclaredIn"/>
     public TSelf InNamespace(string namespaceName) =>
         AddPredicate(s => s.ContainingNamespace?.ToDisplayString() == namespaceName);
 
-    /// <summary>Adds a custom matching condition.</summary>
+    /// <summary>
+    ///     Adds a custom matching condition using a predicate function.
+    /// </summary>
+    /// <param name="predicate">
+    ///     A function that returns <c>true</c> if the symbol should be considered a match.
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public TSelf Where(Func<TSymbol, bool> predicate) => AddPredicate(predicate);
 }
 
 /// <summary>
-///     Fluent matcher for IMethodSymbol.
+///     Fluent matcher for <see cref="IMethodSymbol"/> instances.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides method-specific matching predicates in addition to the common
+///         symbol matching functionality from <see cref="SymbolMatcherBase{TSelf, TSymbol}"/>.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Match by method kind (constructor, async, extension, generic).</description></item>
+///         <item><description>Match by parameter count and types.</description></item>
+///         <item><description>Match by return type.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Match.Method()"/>
+/// <seealso cref="Match.Method(string)"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -166,63 +388,148 @@ internal
 #endif
 sealed class MethodMatcher : SymbolMatcherBase<MethodMatcher, IMethodSymbol>
 {
-    /// <summary>Matches constructors.</summary>
+    /// <summary>
+    ///     Matches constructor methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher Constructor() => AddPredicate(m => m.MethodKind == MethodKind.Constructor);
 
-    /// <summary>Matches async methods.</summary>
+    /// <summary>
+    ///     Matches async methods (methods declared with the <c>async</c> keyword).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotAsync"/>
     public MethodMatcher Async() => AddPredicate(m => m.IsAsync);
 
-    /// <summary>Matches non-async methods.</summary>
+    /// <summary>
+    ///     Matches non-async methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Async"/>
     public MethodMatcher NotAsync() => AddPredicate(m => !m.IsAsync);
 
-    /// <summary>Matches extension methods.</summary>
+    /// <summary>
+    ///     Matches extension methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotExtension"/>
     public MethodMatcher Extension() => AddPredicate(m => m.IsExtensionMethod);
 
-    /// <summary>Matches non-extension methods.</summary>
+    /// <summary>
+    ///     Matches non-extension methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Extension"/>
     public MethodMatcher NotExtension() => AddPredicate(m => !m.IsExtensionMethod);
 
-    /// <summary>Matches generic methods.</summary>
+    /// <summary>
+    ///     Matches generic methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotGeneric"/>
+    /// <seealso cref="WithTypeParameters"/>
     public MethodMatcher Generic() => AddPredicate(m => m.IsGenericMethod);
 
-    /// <summary>Matches non-generic methods.</summary>
+    /// <summary>
+    ///     Matches non-generic methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Generic"/>
     public MethodMatcher NotGeneric() => AddPredicate(m => !m.IsGenericMethod);
 
-    /// <summary>Matches methods with specified number of type parameters.</summary>
+    /// <summary>
+    ///     Matches methods with the specified number of type parameters.
+    /// </summary>
+    /// <param name="count">The exact number of type parameters required.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Generic"/>
     public MethodMatcher WithTypeParameters(int count) => AddPredicate(m => m.TypeParameters.Length == count);
 
-    /// <summary>Matches methods with no parameters.</summary>
+    /// <summary>
+    ///     Matches methods with no parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithParameters"/>
+    /// <seealso cref="WithMinParameters"/>
     public MethodMatcher WithNoParameters() => AddPredicate(m => m.Parameters.Length == 0);
 
-    /// <summary>Matches methods with specified number of parameters.</summary>
+    /// <summary>
+    ///     Matches methods with the specified number of parameters.
+    /// </summary>
+    /// <param name="count">The exact number of parameters required.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithNoParameters"/>
+    /// <seealso cref="WithMinParameters"/>
     public MethodMatcher WithParameters(int count) => AddPredicate(m => m.Parameters.Length == count);
 
-    /// <summary>Matches methods with at least specified number of parameters.</summary>
+    /// <summary>
+    ///     Matches methods with at least the specified number of parameters.
+    /// </summary>
+    /// <param name="count">The minimum number of parameters required.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithParameters"/>
+    /// <seealso cref="WithNoParameters"/>
     public MethodMatcher WithMinParameters(int count) => AddPredicate(m => m.Parameters.Length >= count);
 
-    /// <summary>Matches methods with a CancellationToken parameter.</summary>
+    /// <summary>
+    ///     Matches methods that have a <see cref="System.Threading.CancellationToken"/> parameter.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher WithCancellationToken() =>
         AddPredicate(m => HasParameterOfType(m.Parameters, "CancellationToken"));
 
-    /// <summary>Matches void methods.</summary>
+    /// <summary>
+    ///     Matches methods that return <c>void</c>.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Returning"/>
+    /// <seealso cref="ReturningTask"/>
     public MethodMatcher ReturningVoid() => AddPredicate(m => m.ReturnsVoid);
 
-    /// <summary>Matches methods returning type with specified name.</summary>
+    /// <summary>
+    ///     Matches methods returning a type with the specified name.
+    /// </summary>
+    /// <param name="typeName">The name of the return type to match.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="ReturningVoid"/>
+    /// <seealso cref="ReturningTask"/>
+    /// <seealso cref="ReturningBool"/>
+    /// <seealso cref="ReturningString"/>
     public MethodMatcher Returning(string typeName) => AddPredicate(m => m.ReturnType.Name == typeName);
 
-    /// <summary>Matches methods returning Task or ValueTask.</summary>
+    /// <summary>
+    ///     Matches methods returning <see cref="System.Threading.Tasks.Task"/> or <see cref="System.Threading.Tasks.ValueTask"/>.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     Matches both generic and non-generic Task/ValueTask types.
+    /// </remarks>
+    /// <seealso cref="Async"/>
+    /// <seealso cref="ReturningVoid"/>
     public MethodMatcher ReturningTask() =>
         AddPredicate(m => m.ReturnType.Name is "Task" or "ValueTask" ||
                          m.ReturnType.OriginalDefinition.Name is "Task" or "ValueTask");
 
-    /// <summary>Matches methods returning bool.</summary>
+    /// <summary>
+    ///     Matches methods returning <see cref="bool"/>.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Returning"/>
     public MethodMatcher ReturningBool() =>
         AddPredicate(m => m.ReturnType.SpecialType == SpecialType.System_Boolean);
 
-    /// <summary>Matches methods returning string.</summary>
+    /// <summary>
+    ///     Matches methods returning <see cref="string"/>.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Returning"/>
     public MethodMatcher ReturningString() =>
         AddPredicate(m => m.ReturnType.SpecialType == SpecialType.System_String);
 
-    /// <summary>Matches explicit interface implementations.</summary>
+    /// <summary>
+    ///     Matches explicit interface implementation methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher ExplicitImplementation() =>
         AddPredicate(m => m.ExplicitInterfaceImplementations.Length > 0);
 
@@ -239,8 +546,22 @@ sealed class MethodMatcher : SymbolMatcherBase<MethodMatcher, IMethodSymbol>
 }
 
 /// <summary>
-///     Fluent matcher for INamedTypeSymbol.
+///     Fluent matcher for <see cref="INamedTypeSymbol"/> instances.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides type-specific matching predicates in addition to the common
+///         symbol matching functionality from <see cref="SymbolMatcherBase{TSelf, TSymbol}"/>.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Match by type kind (class, struct, interface, enum, record).</description></item>
+///         <item><description>Match by inheritance hierarchy.</description></item>
+///         <item><description>Match by interface implementations.</description></item>
+///         <item><description>Match by nesting level and member presence.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Match.Type()"/>
+/// <seealso cref="Match.Type(string)"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -248,51 +569,131 @@ internal
 #endif
 sealed class TypeMatcher : SymbolMatcherBase<TypeMatcher, INamedTypeSymbol>
 {
-    /// <summary>Matches classes.</summary>
+    /// <summary>
+    ///     Matches class types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Struct"/>
+    /// <seealso cref="Interface"/>
+    /// <seealso cref="Enum"/>
+    /// <seealso cref="Record"/>
     public TypeMatcher Class() => AddPredicate(t => t.TypeKind == TypeKind.Class);
 
-    /// <summary>Matches structs.</summary>
+    /// <summary>
+    ///     Matches struct types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Class"/>
+    /// <seealso cref="Record"/>
     public TypeMatcher Struct() => AddPredicate(t => t.TypeKind == TypeKind.Struct);
 
-    /// <summary>Matches interfaces.</summary>
+    /// <summary>
+    ///     Matches interface types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Class"/>
     public TypeMatcher Interface() => AddPredicate(t => t.TypeKind == TypeKind.Interface);
 
-    /// <summary>Matches enums.</summary>
+    /// <summary>
+    ///     Matches enum types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Class"/>
+    /// <seealso cref="Struct"/>
     public TypeMatcher Enum() => AddPredicate(t => t.TypeKind == TypeKind.Enum);
 
-    /// <summary>Matches records.</summary>
+    /// <summary>
+    ///     Matches record types (both class and struct records).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Class"/>
+    /// <seealso cref="Struct"/>
     public TypeMatcher Record() => AddPredicate(t => t.IsRecord);
 
-    /// <summary>Matches generic types.</summary>
+    /// <summary>
+    ///     Matches generic types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotGeneric"/>
     public TypeMatcher Generic() => AddPredicate(t => t.IsGenericType);
 
-    /// <summary>Matches non-generic types.</summary>
+    /// <summary>
+    ///     Matches non-generic types.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Generic"/>
     public TypeMatcher NotGeneric() => AddPredicate(t => !t.IsGenericType);
 
-    /// <summary>Matches types that inherit from base type.</summary>
+    /// <summary>
+    ///     Matches types that inherit from a base type with the specified name.
+    /// </summary>
+    /// <param name="baseTypeName">
+    ///     The name or fully qualified name of the base type to check for in the inheritance hierarchy.
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     Traverses the entire inheritance hierarchy, not just the immediate base type.
+    /// </remarks>
+    /// <seealso cref="Implements"/>
     public TypeMatcher InheritsFrom(string baseTypeName) =>
         AddPredicate(t => InheritsFromName(t, baseTypeName));
 
-    /// <summary>Matches types that implement interface.</summary>
+    /// <summary>
+    ///     Matches types that implement an interface with the specified name.
+    /// </summary>
+    /// <param name="interfaceName">
+    ///     The name or fully qualified name of the interface to check for.
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     Checks all interfaces including inherited ones via <see cref="INamedTypeSymbol"/>.<c>AllInterfaces</c>.
+    /// </remarks>
+    /// <seealso cref="InheritsFrom"/>
+    /// <seealso cref="Disposable"/>
     public TypeMatcher Implements(string interfaceName) =>
         AddPredicate(t => ImplementsInterface(t, interfaceName));
 
-    /// <summary>Matches types implementing IDisposable.</summary>
+    /// <summary>
+    ///     Matches types that implement <see cref="System.IDisposable"/>.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Implements"/>
     public TypeMatcher Disposable() => Implements("System.IDisposable");
 
-    /// <summary>Matches nested types.</summary>
+    /// <summary>
+    ///     Matches nested types (types declared within another type).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="TopLevel"/>
     public TypeMatcher Nested() => AddPredicate(t => t.ContainingType is not null);
 
-    /// <summary>Matches top-level types.</summary>
+    /// <summary>
+    ///     Matches top-level types (types not declared within another type).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Nested"/>
     public TypeMatcher TopLevel() => AddPredicate(t => t.ContainingType is null);
 
-    /// <summary>Matches static classes.</summary>
+    /// <summary>
+    ///     Matches static classes.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Class"/>
     public TypeMatcher StaticClass() => AddPredicate(t => t.IsStatic && t.TypeKind == TypeKind.Class);
 
-    /// <summary>Matches types with a member of specified name.</summary>
+    /// <summary>
+    ///     Matches types that have a member with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the member to look for.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="HasParameterlessConstructor"/>
     public TypeMatcher HasMember(string name) => AddPredicate(t => t.GetMembers(name).Length > 0);
 
-    /// <summary>Matches types with parameterless constructor.</summary>
+    /// <summary>
+    ///     Matches types that have a parameterless constructor.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="HasMember"/>
     public TypeMatcher HasParameterlessConstructor() =>
         AddPredicate(t => HasParameterlessCtor(t));
 
@@ -333,8 +734,21 @@ sealed class TypeMatcher : SymbolMatcherBase<TypeMatcher, INamedTypeSymbol>
 }
 
 /// <summary>
-///     Fluent matcher for IPropertySymbol.
+///     Fluent matcher for <see cref="IPropertySymbol"/> instances.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides property-specific matching predicates in addition to the common
+///         symbol matching functionality from <see cref="SymbolMatcherBase{TSelf, TSymbol}"/>.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Match by accessor presence (getter, setter, init).</description></item>
+///         <item><description>Match by property characteristics (indexer, required, read-only).</description></item>
+///         <item><description>Match by property type.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Match.Property()"/>
+/// <seealso cref="Match.Property(string)"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -342,31 +756,73 @@ internal
 #endif
 sealed class PropertyMatcher : SymbolMatcherBase<PropertyMatcher, IPropertySymbol>
 {
-    /// <summary>Matches properties with a getter.</summary>
+    /// <summary>
+    ///     Matches properties that have a getter accessor.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithSetter"/>
+    /// <seealso cref="ReadOnly"/>
     public PropertyMatcher WithGetter() => AddPredicate(p => p.GetMethod is not null);
 
-    /// <summary>Matches properties with a setter.</summary>
+    /// <summary>
+    ///     Matches properties that have a setter accessor.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithGetter"/>
+    /// <seealso cref="WithInitSetter"/>
     public PropertyMatcher WithSetter() => AddPredicate(p => p.SetMethod is not null);
 
-    /// <summary>Matches properties with init-only setter.</summary>
+    /// <summary>
+    ///     Matches properties that have an init-only setter.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithSetter"/>
     public PropertyMatcher WithInitSetter() => AddPredicate(p => p.SetMethod?.IsInitOnly == true);
 
-    /// <summary>Matches read-only properties.</summary>
+    /// <summary>
+    ///     Matches read-only properties (properties with a getter but no setter).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithGetter"/>
+    /// <seealso cref="WithSetter"/>
     public PropertyMatcher ReadOnly() => AddPredicate(p => p.GetMethod is not null && p.SetMethod is null);
 
-    /// <summary>Matches indexers.</summary>
+    /// <summary>
+    ///     Matches indexer properties.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public PropertyMatcher Indexer() => AddPredicate(p => p.IsIndexer);
 
-    /// <summary>Matches required properties.</summary>
+    /// <summary>
+    ///     Matches required properties (C# 11+).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public PropertyMatcher Required() => AddPredicate(p => p.IsRequired);
 
-    /// <summary>Matches properties with specified type name.</summary>
+    /// <summary>
+    ///     Matches properties with the specified type name.
+    /// </summary>
+    /// <param name="typeName">The name of the property type to match.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public PropertyMatcher OfType(string typeName) => AddPredicate(p => p.Type.Name == typeName);
 }
 
 /// <summary>
-///     Fluent matcher for IFieldSymbol.
+///     Fluent matcher for <see cref="IFieldSymbol"/> instances.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides field-specific matching predicates in addition to the common
+///         symbol matching functionality from <see cref="SymbolMatcherBase{TSelf, TSymbol}"/>.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Match by field modifiers (const, readonly, volatile).</description></item>
+///         <item><description>Match by field type.</description></item>
+///         <item><description>Match by backing field status.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Match.Field()"/>
+/// <seealso cref="Match.Field(string)"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -374,28 +830,63 @@ internal
 #endif
 sealed class FieldMatcher : SymbolMatcherBase<FieldMatcher, IFieldSymbol>
 {
-    /// <summary>Matches const fields.</summary>
+    /// <summary>
+    ///     Matches const fields.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="ReadOnly"/>
     public FieldMatcher Const() => AddPredicate(f => f.IsConst);
 
-    /// <summary>Matches readonly fields.</summary>
+    /// <summary>
+    ///     Matches readonly fields.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Const"/>
     public FieldMatcher ReadOnly() => AddPredicate(f => f.IsReadOnly);
 
-    /// <summary>Matches volatile fields.</summary>
+    /// <summary>
+    ///     Matches volatile fields.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public FieldMatcher Volatile() => AddPredicate(f => f.IsVolatile);
 
-    /// <summary>Matches fields with specified type name.</summary>
+    /// <summary>
+    ///     Matches fields with the specified type name.
+    /// </summary>
+    /// <param name="typeName">The name of the field type to match.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
     public FieldMatcher OfType(string typeName) => AddPredicate(f => f.Type.Name == typeName);
 
-    /// <summary>Matches backing fields.</summary>
+    /// <summary>
+    ///     Matches compiler-generated backing fields for auto-properties.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="NotBackingField"/>
     public FieldMatcher BackingField() => AddPredicate(f => f.AssociatedSymbol is not null);
 
-    /// <summary>Matches non-backing fields.</summary>
+    /// <summary>
+    ///     Matches fields that are not compiler-generated backing fields.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="BackingField"/>
     public FieldMatcher NotBackingField() => AddPredicate(f => f.AssociatedSymbol is null);
 }
 
 /// <summary>
-///     Fluent matcher for IParameterSymbol.
+///     Fluent matcher for <see cref="IParameterSymbol"/> instances.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Provides parameter-specific matching predicates in addition to the common
+///         symbol matching functionality from <see cref="SymbolMatcherBase{TSelf, TSymbol}"/>.
+///     </para>
+///     <list type="bullet">
+///         <item><description>Match by parameter passing mode (ref, out, in).</description></item>
+///         <item><description>Match by parameter modifiers (params, optional).</description></item>
+///         <item><description>Match by parameter type.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Match.Parameter()"/>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -403,24 +894,56 @@ internal
 #endif
 sealed class ParameterMatcher : SymbolMatcherBase<ParameterMatcher, IParameterSymbol>
 {
-    /// <summary>Matches ref parameters.</summary>
+    /// <summary>
+    ///     Matches ref parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Out"/>
+    /// <seealso cref="In"/>
     public ParameterMatcher Ref() => AddPredicate(p => p.RefKind == RefKind.Ref);
 
-    /// <summary>Matches out parameters.</summary>
+    /// <summary>
+    ///     Matches out parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Ref"/>
+    /// <seealso cref="In"/>
     public ParameterMatcher Out() => AddPredicate(p => p.RefKind == RefKind.Out);
 
-    /// <summary>Matches in parameters.</summary>
+    /// <summary>
+    ///     Matches in (readonly ref) parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Ref"/>
+    /// <seealso cref="Out"/>
     public ParameterMatcher In() => AddPredicate(p => p.RefKind == RefKind.In);
 
-    /// <summary>Matches params array parameters.</summary>
+    /// <summary>
+    ///     Matches params array parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Optional"/>
     public ParameterMatcher Params() => AddPredicate(p => p.IsParams);
 
-    /// <summary>Matches optional parameters.</summary>
+    /// <summary>
+    ///     Matches optional parameters (parameters with default values).
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Params"/>
     public ParameterMatcher Optional() => AddPredicate(p => p.IsOptional);
 
-    /// <summary>Matches parameters with specified type name.</summary>
+    /// <summary>
+    ///     Matches parameters with the specified type name.
+    /// </summary>
+    /// <param name="typeName">The name of the parameter type to match.</param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="CancellationToken"/>
     public ParameterMatcher OfType(string typeName) => AddPredicate(p => p.Type.Name == typeName);
 
-    /// <summary>Matches CancellationToken parameters.</summary>
+    /// <summary>
+    ///     Matches <see cref="System.Threading.CancellationToken"/> parameters.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="OfType"/>
     public ParameterMatcher CancellationToken() => OfType("CancellationToken");
 }

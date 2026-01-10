@@ -4,8 +4,30 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Extension methods for the <see cref="Compilation" /> type.
+///     Provides extension methods for the <see cref="Compilation" /> type.
 /// </summary>
+/// <remarks>
+///     <para>
+///         This class contains utility methods for working with Roslyn compilations,
+///         including language version checks, type accessibility queries, and type resolution.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>Language version validation for C# compilations</description>
+///         </item>
+///         <item>
+///             <description>Type accessibility checks across assembly boundaries</description>
+///         </item>
+///         <item>
+///             <description>Best-match type resolution for metadata names</description>
+///         </item>
+///         <item>
+///             <description>Target framework detection</description>
+///         </item>
+///     </list>
+/// </remarks>
+/// <seealso cref="Compilation" />
+/// <seealso cref="CSharpCompilation" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -14,15 +36,55 @@ internal
 static class CompilationExtensions
 {
     /// <summary>
-    ///     Checks whether a given compilation (assumed to be for C#) is using at least a given language version.
+    ///     Checks whether the specified compilation is using at least the given C# language version.
     /// </summary>
+    /// <param name="compilation">
+    ///     The compilation to check. This is assumed to be a C# compilation.
+    /// </param>
+    /// <param name="languageVersion">
+    ///     The minimum language version to check for.
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the <paramref name="compilation" /> uses a language version
+    ///     greater than or equal to <paramref name="languageVersion" />; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method casts the compilation to <see cref="CSharpCompilation" /> to access
+    ///     the language version. Ensure that the compilation is a C# compilation before calling.
+    /// </remarks>
+    /// <seealso cref="LanguageVersion" />
+    /// <seealso cref="CSharpCompilation.LanguageVersion" />
     public static bool
         HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion) =>
         ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
 
     /// <summary>
-    ///     Checks whether or not a type with a specified metadata name is accessible from a given <see cref="Compilation" />.
+    ///     Checks whether a type with the specified metadata name is accessible from the given compilation.
     /// </summary>
+    /// <param name="compilation">
+    ///     The compilation to check for type accessibility.
+    /// </param>
+    /// <param name="fullyQualifiedMetadataName">
+    ///     The fully qualified metadata name of the type to look for (e.g., "System.Collections.Generic.List`1").
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if a type with the specified <paramref name="fullyQualifiedMetadataName" />
+    ///     exists and is accessible from the <paramref name="compilation" />'s assembly; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method first attempts to find the type using <see cref="Compilation.GetTypeByMetadataName" />,
+    ///         and if that fails, falls back to <see cref="Compilation.GetTypesByMetadataName" /> to handle
+    ///         cases where multiple types with the same metadata name exist across referenced assemblies.
+    ///     </para>
+    ///     <para>
+    ///         Accessibility is determined using <see cref="Compilation.IsSymbolAccessibleWithin" />,
+    ///         which accounts for internal visibility and friend assemblies.
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="Compilation.GetTypeByMetadataName" />
+    /// <seealso cref="Compilation.GetTypesByMetadataName" />
+    /// <seealso cref="Compilation.IsSymbolAccessibleWithin" />
     public static bool HasAccessibleTypeWithMetadataName(this Compilation compilation,
         string fullyQualifiedMetadataName)
     {
@@ -39,8 +101,19 @@ static class CompilationExtensions
     }
 
     /// <summary>
-    ///     Checks if the compilation targets .NET 9 or greater.
+    ///     Checks if the compilation targets .NET 9 or a later version.
     /// </summary>
+    /// <param name="compilation">
+    ///     The compilation to check.
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the <paramref name="compilation" /> targets .NET 9 or greater;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method determines the target framework version by examining the version
+    ///     of the assembly containing <see cref="object" /> (typically mscorlib or System.Runtime).
+    /// </remarks>
     public static bool IsNet9OrGreater(this Compilation compilation)
     {
         var type = compilation.GetSpecialType(SpecialType.System_Object);
@@ -49,13 +122,52 @@ static class CompilationExtensions
     }
 
     /// <summary>
-    ///     Gets a type by its metadata name, preferring the best match for code analysis.
-    ///     Returns the symbol matching these rules in order:
-    ///     1. If only one type exists, return it regardless of accessibility
-    ///     2. If the current compilation defines it, return that
-    ///     3. If exactly one referenced assembly defines it visibly, return that
-    ///     4. Otherwise, return null
+    ///     Gets a type by its metadata name, selecting the best match for code analysis purposes.
     /// </summary>
+    /// <param name="compilation">
+    ///     The compilation to search for the type.
+    /// </param>
+    /// <param name="fullyQualifiedMetadataName">
+    ///     The fully qualified metadata name of the type to find (e.g., "System.String" or "System.Collections.Generic.List`1").
+    /// </param>
+    /// <returns>
+    ///     The best matching <see cref="INamedTypeSymbol" /> if one can be determined unambiguously;
+    ///     otherwise, <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method resolves type ambiguity by applying the following priority rules in order:
+    ///     </para>
+    ///     <list type="number">
+    ///         <item>
+    ///             <description>
+    ///                 If only one type with the metadata name exists, return it regardless of accessibility.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 If the current compilation defines the type, prefer that definition.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 If exactly one referenced assembly defines the type with public or internal
+    ///                 visibility (with friend access), return that.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 If multiple visible types exist, return <c>null</c> to indicate ambiguity.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    ///     <para>
+    ///         This approach ensures predictable behavior when the same type is defined in multiple
+    ///         referenced assemblies (a common scenario with polyfill packages).
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="Compilation.GetTypesByMetadataName" />
+    /// <seealso cref="HasAccessibleTypeWithMetadataName" />
     public static INamedTypeSymbol? GetBestTypeByMetadataName(this Compilation compilation,
         string fullyQualifiedMetadataName)
     {
