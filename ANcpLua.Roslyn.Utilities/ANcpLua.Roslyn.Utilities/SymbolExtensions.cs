@@ -78,6 +78,40 @@ static class SymbolExtensions
     ///     The fully qualified name of the attribute type (e.g., <c>"System.ObsoleteAttribute"</c>).
     /// </param>
     /// <returns><c>true</c> if the symbol has the specified attribute; otherwise, <c>false</c>.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         The fully qualified name must match the format returned by
+    ///         <c>ISymbol.ToDisplayString()</c> using the default format, which is
+    ///         <c>Namespace.TypeName</c> without the <c>global::</c> prefix.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Include the full namespace path (e.g., <c>"System.Serializable"</c>)</description></item>
+    ///         <item><description>Include the <c>Attribute</c> suffix if present in the type name</description></item>
+    ///         <item><description>For nested types, use <c>+</c> separator (e.g., <c>"Outer+InnerAttribute"</c>)</description></item>
+    ///         <item><description>For generic attributes, include type parameters (e.g., <c>"MyNamespace.GenericAttribute`1"</c>)</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check for common attributes
+    /// if (methodSymbol.HasAttribute("System.ObsoleteAttribute"))
+    /// {
+    ///     // Method is marked obsolete
+    /// }
+    ///
+    /// // Check for custom attributes
+    /// if (classSymbol.HasAttribute("MyNamespace.MyCustomAttribute"))
+    /// {
+    ///     // Apply custom logic
+    /// }
+    ///
+    /// // Check for serialization attributes
+    /// if (fieldSymbol.HasAttribute("System.NonSerializedAttribute"))
+    /// {
+    ///     // Field should be excluded from serialization
+    /// }
+    /// </code>
+    /// </example>
     /// <seealso cref="GetAttribute(ISymbol, string)"/>
     /// <seealso cref="HasAttribute(ISymbol, ITypeSymbol?, bool)"/>
     public static bool HasAttribute(this ISymbol symbol, string fullyQualifiedAttributeName)

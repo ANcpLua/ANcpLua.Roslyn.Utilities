@@ -6,22 +6,141 @@ using Microsoft.CodeAnalysis.Testing;
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
-/// Base class for analyzer unit tests.
-/// Provides pre-configured reference assemblies for .NET 10 and .NET Standard 2.0.
+/// Provides a base class for unit testing Roslyn diagnostic analyzers with pre-configured
+/// reference assemblies for .NET 10 and .NET Standard 2.0 target frameworks.
 /// </summary>
-/// <typeparam name="TAnalyzer">The analyzer type to test.</typeparam>
+/// <typeparam name="TAnalyzer">
+/// The type of the <see cref="DiagnosticAnalyzer"/> to test.
+/// Must have a parameterless constructor.
+/// </typeparam>
+/// <remarks>
+/// <para>
+/// This class simplifies analyzer testing by providing:
+/// </para>
+/// <list type="bullet">
+/// <item>
+/// <description>Pre-configured reference assemblies for common target frameworks</description>
+/// </item>
+/// <item>
+/// <description>Automatic line ending normalization for cross-platform compatibility</description>
+/// </item>
+/// <item>
+/// <description>Integration with Microsoft.CodeAnalysis.Testing infrastructure</description>
+/// </item>
+/// </list>
+/// </remarks>
+/// <example>
+/// <para>
+/// Create a test class that inherits from <see cref="AnalyzerTest{TAnalyzer}"/>:
+/// </para>
+/// <code>
+/// public class MyAnalyzerTests : AnalyzerTest&lt;MyAnalyzer&gt;
+/// {
+///     [Fact]
+///     public async Task ReportsWarning_ForInvalidCode()
+///     {
+///         var source = """
+///             class Test
+///             {
+///                 void Method() { /* invalid code */ }
+///             }
+///             """;
+///
+///         await VerifyAsync(source);
+///     }
+/// }
+/// </code>
+/// </example>
+/// <seealso cref="DiagnosticAnalyzer"/>
+/// <seealso cref="CSharpAnalyzerTest{TAnalyzer, TVerifier}"/>
 public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new() {
+    /// <summary>
+    /// Reference assemblies configuration for .NET 10.0 target framework.
+    /// </summary>
     private static readonly ReferenceAssemblies Net100Tfm = new("net10.0");
+
+    /// <summary>
+    /// Reference assemblies configuration for .NET Standard 2.0 target framework.
+    /// </summary>
     private static readonly ReferenceAssemblies NetStandard20Tfm = new("netstandard2.0");
 
     /// <summary>
-    /// Verifies that the analyzer produces expected diagnostics for the given source.
+    /// Verifies that the analyzer produces the expected diagnostics for the given source code.
     /// </summary>
-    /// <param name="source">The source code to analyze.</param>
-    /// <param name="useNet10References">
-    /// If true (default), uses .NET 10 reference assemblies.
-    /// If false, uses .NET Standard 2.0 reference assemblies.
+    /// <param name="source">
+    /// The C# source code to analyze. Line endings are automatically normalized
+    /// for cross-platform compatibility.
     /// </param>
+    /// <param name="useNet10References">
+    /// <see langword="true"/> to use .NET 10 reference assemblies (default);
+    /// <see langword="false"/> to use .NET Standard 2.0 reference assemblies.
+    /// Use <see langword="false"/> when testing analyzers that target netstandard2.0,
+    /// such as source generator analyzers.
+    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> that completes when the verification is finished.
+    /// The task will throw if any expected diagnostics are missing or if
+    /// unexpected diagnostics are reported.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs the following steps:
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <description>Normalizes line endings in the source code using <see cref="string.ReplaceLineEndings()"/></description>
+    /// </item>
+    /// <item>
+    /// <description>Configures the appropriate reference assemblies based on the <paramref name="useNet10References"/> parameter</description>
+    /// </item>
+    /// <item>
+    /// <description>Runs the analyzer and compares results against expected diagnostics marked in the source</description>
+    /// </item>
+    /// </list>
+    /// <para>
+    /// To specify expected diagnostics in the source code, use the standard diagnostic markup
+    /// format supported by Microsoft.CodeAnalysis.Testing. For example:
+    /// </para>
+    /// <code>
+    /// var source = """
+    ///     class Test
+    ///     {
+    ///         void Method({|DiagnosticId:problematicCode|}) { }
+    ///     }
+    ///     """;
+    /// </code>
+    /// </remarks>
+    /// <example>
+    /// <para>
+    /// Test an analyzer with .NET 10 references (default):
+    /// </para>
+    /// <code>
+    /// [Fact]
+    /// public async Task Analyzer_ReportsWarning()
+    /// {
+    ///     var source = """
+    ///         class Test
+    ///         {
+    ///             void {|MY001:BadMethod|}() { }
+    ///         }
+    ///         """;
+    ///
+    ///     await VerifyAsync(source);
+    /// }
+    /// </code>
+    /// <para>
+    /// Test an analyzer with .NET Standard 2.0 references:
+    /// </para>
+    /// <code>
+    /// [Fact]
+    /// public async Task Analyzer_WorksWithNetStandard20()
+    /// {
+    ///     var source = "class Test { }";
+    ///     await VerifyAsync(source, useNet10References: false);
+    /// }
+    /// </code>
+    /// </example>
+    /// <seealso cref="CSharpAnalyzerTest{TAnalyzer, TVerifier}"/>
     protected static Task VerifyAsync(string source, bool useNet10References = true) {
         var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier> {
             TestCode = source.ReplaceLineEndings(),

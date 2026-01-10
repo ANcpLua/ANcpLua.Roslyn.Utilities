@@ -47,7 +47,37 @@ static class MethodSymbolExtensions
     ///         is declared with the interface name prefix) and implicit implementations
     ///         (where the method matches an interface member by signature).
     ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <b>Explicit implementation:</b> The method is declared as <c>void IInterface.Method()</c>.
+    ///                 Detected via <see cref="IMethodSymbol.ExplicitInterfaceImplementations"/>.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <b>Implicit implementation:</b> The method has matching signature and is public.
+    ///                 Detected via <c>INamedTypeSymbol.FindImplementationForInterfaceMember()</c>.
+    ///             </description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// // In an analyzer, check if a method implements an interface
+    /// public void AnalyzeMethod(SymbolAnalysisContext context)
+    /// {
+    ///     var method = (IMethodSymbol)context.Symbol;
+    ///
+    ///     if (method.IsInterfaceImplementation())
+    ///     {
+    ///         // Method implements an interface - may need special handling
+    ///         var interfaceMethod = method.GetImplementingInterfaceSymbol();
+    ///         // Check interface method for attributes, constraints, etc.
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
     /// <seealso cref="GetImplementingInterfaceSymbol" />
     public static bool IsInterfaceImplementation(this IMethodSymbol symbol)
     {

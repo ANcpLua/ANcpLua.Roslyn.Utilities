@@ -107,6 +107,34 @@ static class EnumerableExtensions
     ///     <c>true</c> if <paramref name="source" /> contains at least one duplicate element;
     ///     otherwise, <c>false</c>.
     /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method uses a <see cref="HashSet{T}"/> internally for O(1) lookup performance,
+    ///         resulting in O(n) time complexity where n is the number of elements.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Short-circuits on first duplicate found for optimal performance</description></item>
+    ///         <item><description>Memory usage is O(k) where k is the number of unique elements seen before the first duplicate</description></item>
+    ///         <item><description>Uses <see cref="EqualityComparer{T}.Default"/> for element comparison</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check for duplicate method names in a type
+    /// var methodNames = typeSymbol.GetMembers()
+    ///     .OfType&lt;IMethodSymbol&gt;()
+    ///     .Select(m => m.Name);
+    ///
+    /// if (methodNames.HasDuplicates())
+    /// {
+    ///     // Type has overloaded methods
+    /// }
+    ///
+    /// // Check for duplicate values in a collection
+    /// var numbers = new[] { 1, 2, 3, 2, 4 };
+    /// bool hasDupes = numbers.HasDuplicates(); // true
+    /// </code>
+    /// </example>
     /// <seealso cref="HasDuplicates{T,TKey}(IEnumerable{T},Func{T,TKey})" />
     /// <seealso cref="DistinctBy{T,TKey}" />
     public static bool HasDuplicates<T>(this IEnumerable<T> source)
@@ -132,6 +160,30 @@ static class EnumerableExtensions
     ///     <c>true</c> if <paramref name="source" /> contains elements with duplicate keys;
     ///     otherwise, <c>false</c>.
     /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method uses a <see cref="HashSet{T}"/> of keys internally for O(1) lookup,
+    ///         resulting in O(n) time complexity. The key selector is called once per element.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Short-circuits on first duplicate key found</description></item>
+    ///         <item><description>Useful when comparing complex objects by a specific property</description></item>
+    ///         <item><description>Key comparison uses <see cref="EqualityComparer{T}.Default"/> for <typeparamref name="TKey"/></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check for duplicate parameter names in a method
+    /// if (methodSymbol.Parameters.HasDuplicates(p => p.Name))
+    /// {
+    ///     // Report diagnostic: duplicate parameter names
+    /// }
+    ///
+    /// // Check for duplicate file paths (case-insensitive)
+    /// var files = new[] { "File.txt", "file.TXT", "other.cs" };
+    /// bool hasDupes = files.HasDuplicates(f => f.ToLowerInvariant()); // true
+    /// </code>
+    /// </example>
     /// <seealso cref="HasDuplicates{T}(IEnumerable{T})" />
     /// <seealso cref="DistinctBy{T,TKey}" />
     public static bool HasDuplicates<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
@@ -390,6 +442,28 @@ static class EnumerableExtensions
     ///     An <see cref="IEnumerable{T}" /> that contains distinct elements from
     ///     <paramref name="source" /> based on the keys.
     /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method uses a <see cref="HashSet{T}"/> internally to track seen keys,
+    ///         providing O(n) time complexity with O(k) memory where k is distinct key count.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Returns the first element for each unique key (preserves order)</description></item>
+    ///         <item><description>Uses deferred execution - the sequence is enumerated lazily</description></item>
+    ///         <item><description>Key comparison uses <see cref="EqualityComparer{T}.Default"/> for <typeparamref name="TKey"/></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Get one method per unique name (first overload only)
+    /// var uniqueMethods = typeSymbol.GetMembers()
+    ///     .OfType&lt;IMethodSymbol&gt;()
+    ///     .DistinctBy(m => m.Name);
+    ///
+    /// // Remove duplicate diagnostics by location
+    /// var uniqueDiagnostics = diagnostics.DistinctBy(d => d.Location);
+    /// </code>
+    /// </example>
     /// <seealso cref="HasDuplicates{T,TKey}(IEnumerable{T},Func{T,TKey})" />
     public static IEnumerable<T> DistinctBy<T, TKey>(
         this IEnumerable<T> source,

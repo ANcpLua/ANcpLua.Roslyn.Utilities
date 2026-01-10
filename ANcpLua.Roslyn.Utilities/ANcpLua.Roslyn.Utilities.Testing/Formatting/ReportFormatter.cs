@@ -5,8 +5,19 @@ using Microsoft.CodeAnalysis;
 namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
 
 /// <summary>
-///     Central formatting for test failure reports.
+///     Central formatting for test failure reports in the generator testing framework.
 /// </summary>
+/// <remarks>
+///     <list type="bullet">
+///         <item><description>Formats generator execution contexts with source, diagnostics, and outputs.</description></item>
+///         <item><description>Provides content mismatch diff formatting with contextual highlighting.</description></item>
+///         <item><description>Generates comprehensive caching failure reports with JSON payloads.</description></item>
+///         <item><description>Delegates step and violation formatting to specialized helper classes.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="ViolationFormatter"/>
+/// <seealso cref="StepFormatter"/>
+/// <seealso cref="AssertionHelpers"/>
 internal static class ReportFormatter
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -14,6 +25,20 @@ internal static class ReportFormatter
     /// <summary>
     ///     Formats a generator execution context for test failures.
     /// </summary>
+    /// <param name="run">The generator driver run result containing diagnostics and generated sources.</param>
+    /// <param name="inputSource">The optional input source code that was compiled.</param>
+    /// <returns>
+    ///     A formatted string containing the input source (with line numbers), diagnostics summary,
+    ///     and list of generated outputs with their sizes.
+    /// </returns>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item><description>Long source files (over 30 lines) are truncated showing head and tail.</description></item>
+    ///         <item><description>Diagnostics are formatted using <see cref="AssertionHelpers.FormatDiagnosticLine"/>.</description></item>
+    ///         <item><description>Generated outputs show hint names and character counts.</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="GeneratorDriverRunResult"/>
     public static string FormatGeneratorContext(GeneratorDriverRunResult run, string? inputSource)
     {
         var sb = new StringBuilder();
@@ -57,8 +82,28 @@ internal static class ReportFormatter
     }
 
     /// <summary>
-    ///     Formats a content mismatch failure.
+    ///     Formats a content mismatch failure between expected and actual generated content.
     /// </summary>
+    /// <param name="hintName">The hint name of the generated file with mismatched content.</param>
+    /// <param name="actual">The actual content that was generated.</param>
+    /// <param name="expected">The expected content for comparison.</param>
+    /// <param name="exactMatch">
+    ///     When <c>true</c>, formats as an exact match failure with character-level diff;
+    ///     when <c>false</c>, formats as a contains-match failure.
+    /// </param>
+    /// <returns>
+    ///     A formatted string showing the mismatch details with contextual diff for exact matches
+    ///     or a summary for contains matches.
+    /// </returns>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item><description>Exact matches use <see cref="TextUtilities"/> for precise diff location.</description></item>
+    ///         <item><description>Contains matches show a truncated expected string (100 chars max).</description></item>
+    ///         <item><description>Includes a one-line caret indicator for exact match failures.</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="TextUtilities.FirstDiffIndex"/>
+    /// <seealso cref="TextUtilities.BuildContextualDiff"/>
     public static string FormatContentFailure(string hintName, string actual, string expected, bool exactMatch)
     {
         StringBuilder sb = new();
@@ -85,8 +130,29 @@ internal static class ReportFormatter
     }
 
     /// <summary>
-    ///     Formats a caching failure report.
+    ///     Formats a comprehensive caching failure report including violations, step issues, and a JSON payload.
     /// </summary>
+    /// <param name="report">The generator caching report containing analysis results.</param>
+    /// <param name="failedCaching">The list of steps that failed caching validation.</param>
+    /// <param name="requiredSteps">
+    ///     Optional array of step names that were required to be cached.
+    ///     Used for highlighting in the pipeline overview.
+    /// </param>
+    /// <returns>
+    ///     A formatted multi-section report containing issues, pipeline overview, and JSON data.
+    /// </returns>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item><description>Forbidden type violations are grouped by step and formatted first.</description></item>
+    ///         <item><description>Each failed caching step is formatted as a numbered issue.</description></item>
+    ///         <item><description>A pipeline overview shows all observable steps with their status.</description></item>
+    ///         <item><description>A JSON section provides machine-readable failure data.</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="GeneratorCachingReport"/>
+    /// <seealso cref="GeneratorStepAnalysis"/>
+    /// <seealso cref="ViolationFormatter.FormatIssueBlock"/>
+    /// <seealso cref="StepFormatter.FormatStepIssue"/>
     public static string FormatFailureReport(GeneratorCachingReport report,
         IReadOnlyList<GeneratorStepAnalysis> failedCaching, string[]? requiredSteps)
     {
@@ -125,6 +191,12 @@ internal static class ReportFormatter
         return sb.ToString();
     }
 
+    /// <summary>
+    ///     Serializes the caching report and failed steps to a JSON format.
+    /// </summary>
+    /// <param name="report">The caching report to serialize.</param>
+    /// <param name="failedCaching">The failed caching steps to include.</param>
+    /// <returns>An indented JSON string containing the failure summary.</returns>
     private static string FormatJson(GeneratorCachingReport report, IEnumerable<GeneratorStepAnalysis> failedCaching)
     {
         var payload = new
@@ -146,6 +218,14 @@ internal static class ReportFormatter
         return JsonSerializer.Serialize(payload, JsonOptions);
     }
 
+    /// <summary>
+    ///     Formats source code with line numbers, truncating long files.
+    /// </summary>
+    /// <param name="source">The source code to format.</param>
+    /// <returns>
+    ///     The source with line numbers. Files over 30 lines show the first 10 and last 10 lines
+    ///     with an omission indicator in between.
+    /// </returns>
     private static string FormatSourceWithLineNumbers(string source)
     {
         var lines = source.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
@@ -160,19 +240,43 @@ internal static class ReportFormatter
         return string.Join("\n", lines.Select(static (l, i) => $"{i + 1,4} │ {l}"));
     }
 
+    /// <summary>
+    ///     Truncates a string to a maximum length, adding an ellipsis if truncated.
+    /// </summary>
+    /// <param name="s">The string to truncate.</param>
+    /// <param name="max">The maximum length before truncation.</param>
+    /// <returns>The original string if within limit, otherwise truncated with "..." appended.</returns>
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
 }
 
 /// <summary>
-///     Formats forbidden type violations consistently across all reports.
+///     Formats forbidden type violations consistently across all test failure reports.
 /// </summary>
+/// <remarks>
+///     <list type="bullet">
+///         <item><description>Groups violations by pipeline step name for organized output.</description></item>
+///         <item><description>Provides detailed issue blocks with remediation recommendations.</description></item>
+///         <item><description>Used by <see cref="ReportFormatter"/> for caching failure reports.</description></item>
+///     </list>
+/// </remarks>
+/// <seealso cref="ForbiddenTypeViolation"/>
+/// <seealso cref="ReportFormatter"/>
 internal static class ViolationFormatter
 {
     /// <summary>
-    ///     Formats violations grouped by step name.
+    ///     Formats violations grouped by step name for summary output.
     /// </summary>
     /// <param name="violations">The violations to format.</param>
-    /// <returns>Multi-line grouped format.</returns>
+    /// <returns>
+    ///     A multi-line string with violations organized by step, showing the forbidden type name
+    ///     and property path for each violation.
+    /// </returns>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item><description>Each step group is indented with the step name as a header.</description></item>
+    ///         <item><description>Individual violations show the type name and path with a failure marker.</description></item>
+    ///     </list>
+    /// </remarks>
     public static string FormatGrouped(IEnumerable<ForbiddenTypeViolation> violations)
     {
         StringBuilder sb = new();
@@ -187,11 +291,25 @@ internal static class ViolationFormatter
     }
 
     /// <summary>
-    ///     Formats a violation group as an issue block for failure reports.
+    ///     Formats a violation group as a numbered issue block for failure reports.
     /// </summary>
-    /// <param name="issueNumber">The issue number.</param>
-    /// <param name="group">The group of violations for a step.</param>
-    /// <returns>Formatted issue block.</returns>
+    /// <param name="issueNumber">The sequential issue number in the report.</param>
+    /// <param name="group">
+    ///     The group of violations for a single step, keyed by <see cref="ForbiddenTypeViolation.StepName"/>.
+    /// </param>
+    /// <returns>
+    ///     A formatted issue block with a critical severity header, explanation,
+    ///     recommendation, and detailed violation list.
+    /// </returns>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item><description>Marked as CRITICAL to indicate severe caching issues.</description></item>
+    ///         <item><description>Explains that caching <c>ISymbol</c>, <c>Compilation</c>, or <c>SyntaxNode</c> degrades IDE performance.</description></item>
+    ///         <item><description>Recommends using simple, equatable data types (preferably records).</description></item>
+    ///         <item><description>Lists each violation with its full type name and property path.</description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="ForbiddenTypeViolation"/>
     public static string FormatIssueBlock(int issueNumber, IGrouping<string, ForbiddenTypeViolation> group)
     {
         StringBuilder sb = new();

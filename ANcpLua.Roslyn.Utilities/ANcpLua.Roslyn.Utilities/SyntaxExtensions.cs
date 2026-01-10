@@ -99,7 +99,36 @@ static class SyntaxExtensions
     ///         <see cref="SyntaxKind.PrivateKeyword"/>, <see cref="SyntaxKind.StaticKeyword"/>,
     ///         <see cref="SyntaxKind.AsyncKeyword"/>, and <see cref="SyntaxKind.PartialKeyword"/>.
     ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Access modifiers: <see cref="SyntaxKind.PublicKeyword"/>, <see cref="SyntaxKind.PrivateKeyword"/>, <see cref="SyntaxKind.ProtectedKeyword"/>, <see cref="SyntaxKind.InternalKeyword"/></description></item>
+    ///         <item><description>Member modifiers: <see cref="SyntaxKind.StaticKeyword"/>, <see cref="SyntaxKind.ReadOnlyKeyword"/>, <see cref="SyntaxKind.ConstKeyword"/>, <see cref="SyntaxKind.VolatileKeyword"/></description></item>
+    ///         <item><description>Inheritance modifiers: <see cref="SyntaxKind.AbstractKeyword"/>, <see cref="SyntaxKind.VirtualKeyword"/>, <see cref="SyntaxKind.OverrideKeyword"/>, <see cref="SyntaxKind.SealedKeyword"/>, <see cref="SyntaxKind.NewKeyword"/></description></item>
+    ///         <item><description>Async/unsafe: <see cref="SyntaxKind.AsyncKeyword"/>, <see cref="SyntaxKind.UnsafeKeyword"/></description></item>
+    ///         <item><description>Type modifiers: <see cref="SyntaxKind.PartialKeyword"/>, <see cref="SyntaxKind.FileKeyword"/></description></item>
+    ///     </list>
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check for async methods in an analyzer
+    /// if (methodDeclaration.HasModifier(SyntaxKind.AsyncKeyword))
+    /// {
+    ///     // Analyze async-specific patterns
+    /// }
+    ///
+    /// // Check for static members
+    /// if (memberDeclaration.HasModifier(SyntaxKind.StaticKeyword))
+    /// {
+    ///     // Apply static member rules
+    /// }
+    ///
+    /// // Check for virtual methods that could be overridden
+    /// if (methodDeclaration.HasModifier(SyntaxKind.VirtualKeyword) ||
+    ///     methodDeclaration.HasModifier(SyntaxKind.AbstractKeyword))
+    /// {
+    ///     // Method can be overridden in derived classes
+    /// }
+    /// </code>
+    /// </example>
     /// <seealso cref="IsPartial"/>
     public static bool HasModifier(this MemberDeclarationSyntax member, SyntaxKind kind) => member.Modifiers.Any(kind);
 

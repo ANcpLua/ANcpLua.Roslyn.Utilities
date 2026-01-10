@@ -66,9 +66,34 @@ static class TypeSymbolExtensions
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    ///     This method walks the inheritance chain using <see cref="SymbolEqualityComparer.Default" />
-    ///     for comparison. It does not consider the type itself as inheriting from itself.
+    ///     <para>
+    ///         This method walks the inheritance chain using <see cref="SymbolEqualityComparer.Default" />
+    ///         for comparison. It does not consider the type itself as inheriting from itself.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Returns <c>false</c> if <paramref name="classSymbol" /> equals <paramref name="baseClassType" /></description></item>
+    ///         <item><description>Walks the entire base type chain until <see cref="object" /> or <c>null</c></description></item>
+    ///         <item><description>Use <see cref="IsOrInheritsFrom" /> if you need to include the type itself in the check</description></item>
+    ///     </list>
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Check if a type inherits from a specific base class
+    /// INamedTypeSymbol? exceptionType = compilation.GetTypeByMetadataName("System.Exception");
+    /// if (typeSymbol.InheritsFrom(exceptionType))
+    /// {
+    ///     // Type is a custom exception (but not System.Exception itself)
+    /// }
+    ///
+    /// // Walk inheritance chain manually for analysis
+    /// ITypeSymbol? current = typeSymbol.BaseType;
+    /// while (current is not null)
+    /// {
+    ///     // Analyze each base type
+    ///     current = current.BaseType;
+    /// }
+    /// </code>
+    /// </example>
     /// <seealso cref="IsOrInheritsFrom" />
     public static bool InheritsFrom(this ITypeSymbol classSymbol, ITypeSymbol? baseClassType)
     {
