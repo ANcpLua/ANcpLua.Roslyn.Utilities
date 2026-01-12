@@ -576,3 +576,57 @@ public static class Attr
     /// </remarks>
     public const string Label = "Label";
 }
+
+/// <summary>
+/// Provides factory methods for generating MSBuild XML property snippets.
+/// </summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item><description>Generates well-formed XML elements for common MSBuild properties.</description></item>
+/// <item><description>Useful for building test project files or Directory.Build.props content.</description></item>
+/// <item><description>All methods return strings suitable for embedding in MSBuild XML files.</description></item>
+/// </list>
+/// </remarks>
+/// <seealso cref="Prop"/>
+/// <seealso cref="Val"/>
+public static class XmlSnippetBuilder
+{
+    /// <summary>
+    /// Generates a <c>&lt;TargetFramework&gt;</c> XML element.
+    /// </summary>
+    /// <param name="tfm">The target framework moniker value.</param>
+    /// <returns>An XML element string like <c>&lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;</c>.</returns>
+    /// <seealso cref="Tfm"/>
+    public static string TargetFramework(string tfm)
+        => $"<{Prop.TargetFramework}>{tfm}</{Prop.TargetFramework}>";
+
+    /// <summary>
+    /// Generates a <c>&lt;LangVersion&gt;</c> XML element.
+    /// </summary>
+    /// <param name="version">The C# language version value.</param>
+    /// <returns>An XML element string like <c>&lt;LangVersion&gt;14&lt;/LangVersion&gt;</c>.</returns>
+    /// <seealso cref="Val.Latest"/>
+    /// <seealso cref="Val.Preview"/>
+    public static string LangVersion(string version)
+        => $"<{Prop.LangVersion}>{version}</{Prop.LangVersion}>";
+
+    /// <summary>
+    /// Generates an <c>&lt;OutputType&gt;</c> XML element.
+    /// </summary>
+    /// <param name="type">The output type value.</param>
+    /// <returns>An XML element string like <c>&lt;OutputType&gt;Library&lt;/OutputType&gt;</c>.</returns>
+    /// <seealso cref="Val.Library"/>
+    /// <seealso cref="Val.Exe"/>
+    public static string OutputType(string type)
+        => $"<{Prop.OutputType}>{type}</{Prop.OutputType}>";
+
+    /// <summary>
+    /// Generates an XML element for any MSBuild property.
+    /// </summary>
+    /// <param name="name">The property name.</param>
+    /// <param name="value">The property value.</param>
+    /// <returns>An XML element string like <c>&lt;PropertyName&gt;value&lt;/PropertyName&gt;</c>.</returns>
+    /// <seealso cref="Prop"/>
+    public static string Property(string name, string value)
+        => $"<{name}>{value}</{name}>";
+}
