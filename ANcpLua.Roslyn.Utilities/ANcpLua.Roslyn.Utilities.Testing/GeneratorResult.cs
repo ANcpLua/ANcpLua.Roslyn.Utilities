@@ -339,9 +339,14 @@ public sealed class GeneratorResult : IDisposable
     {
         var report = CachingReport;
 
-        if (report.ForbiddenTypeViolations.Count > 0)
+        // When step names are provided, only check forbidden types in those steps
+        var violationsToCheck = stepNames.Length > 0
+            ? report.ForbiddenTypeViolations.Where(v => stepNames.Contains(v.StepName, StringComparer.Ordinal)).ToList()
+            : report.ForbiddenTypeViolations;
+
+        if (violationsToCheck.Count > 0)
         {
-            Fail("Forbidden types cached", ViolationFormatter.FormatGrouped(report.ForbiddenTypeViolations));
+            Fail("Forbidden types cached", ViolationFormatter.FormatGrouped(violationsToCheck));
         }
 
         var stepsToCheck = stepNames.Length > 0

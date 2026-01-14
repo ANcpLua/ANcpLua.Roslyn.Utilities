@@ -86,6 +86,20 @@ internal static class ForbiddenTypeAnalyzer
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldCache = new();
 
     /// <summary>
+    ///     Maximum depth to traverse into nested object structures.
+    /// </summary>
+    /// <remarks>
+    ///     Prevents pathological cases where generators produce extremely deep nested structures.
+    ///     Set to 100 levels which is sufficient for detecting forbidden types in typical scenarios.
+    /// </remarks>
+    private const int MaxTraversalDepth = 100;
+
+    /// <summary>
+    ///     Maximum number of violations to collect before stopping analysis.
+    /// </summary>
+    private const int MaxViolations = 256;
+
+    /// <summary>
     ///     Analyzes a generator run result for forbidden type violations.
     /// </summary>
     /// <param name="run">The generator driver run result to analyze.</param>
@@ -102,12 +116,18 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Uses a recursive object graph traversal to detect forbidden types in nested structures.
+    ///                 Uses an iterative depth-first traversal with an explicit stack to avoid
+    ///                 stack overflow on deeply nested object graphs.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
     ///                 Employs reference equality tracking to prevent infinite loops in cyclic graphs.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Limits traversal depth to <see cref="MaxTraversalDepth" /> (100 levels).
     ///             </description>
     ///         </item>
     ///         <item>
@@ -123,50 +143,73 @@ internal static class ForbiddenTypeAnalyzer
         List<ForbiddenTypeViolation> violations = [];
         HashSet<object> visited = new(ReferenceEqualityComparer.Instance);
 
+        // Use explicit stack for iterative traversal to avoid stack overflow on deep graphs
+        Stack<(object Node, string Step, string Path, int Depth)> pending = new();
+
+        // Seed the stack with initial outputs
         foreach (var (stepName, steps) in run.Results.SelectMany(static r => r.TrackedSteps))
         foreach (var step in steps)
-        foreach (var (output, _) in step.Outputs)
         {
-            Visit(output, stepName, "Output");
-            if (violations.Count >= 256) return violations;
+            if (step.Outputs.IsDefault)
+                continue;
+            foreach (var (output, _) in step.Outputs)
+                if (output is not null)
+                    pending.Push((output, stepName, "Output", 0));
         }
 
-        return violations;
-
-        void Visit(object? node, string step, string path)
+        // Iterative depth-first traversal
+        while (pending.Count > 0 && violations.Count < MaxViolations)
         {
-            if (node is null) return;
+            var (node, step, path, depth) = pending.Pop();
+
+            // Skip nodes beyond maximum depth
+            if (depth >= MaxTraversalDepth)
+                continue;
 
             var type = node.GetType();
 
-            if (!type.IsValueType && !visited.Add(node)) return;
+            // Cycle detection using reference equality
+            if (!type.IsValueType && !visited.Add(node))
+                continue;
 
             if (IsForbiddenType(type))
             {
                 violations.Add(new ForbiddenTypeViolation(step, type, path));
-                return;
+                continue;
             }
 
-            if (IsAllowedType(type)) return;
+            if (IsAllowedType(type))
+                continue;
 
+            // Handle collections - push elements onto stack
             if (node is IEnumerable collection and not string)
             {
-                var index = 0;
-                foreach (var element in collection)
+                // Skip default ImmutableArray<T> instances which throw on enumeration
+                if (type.IsGenericType &&
+                    type.GetGenericTypeDefinition().FullName == "System.Collections.Immutable.ImmutableArray`1")
                 {
-                    Visit(element, step, $"{path}[{index++}]");
-                    if (violations.Count >= 256) return;
+                    var isDefaultProp = type.GetProperty("IsDefault");
+                    if (isDefaultProp is not null && (bool)isDefaultProp.GetValue(node)!)
+                        continue;
                 }
 
-                return;
+                var index = 0;
+                foreach (var element in collection)
+                    if (element is not null)
+                        pending.Push((element, step, $"{path}[{index++}]", depth + 1));
+                continue;
             }
 
+            // Handle object fields - push field values onto stack
             foreach (var field in GetRelevantFields(type))
             {
-                Visit(field.GetValue(node), step, $"{path}.{field.Name}");
-                if (violations.Count >= 256) return;
+                var value = field.GetValue(node);
+                if (value is not null)
+                    pending.Push((value, step, $"{path}.{field.Name}", depth + 1));
             }
         }
+
+        return violations;
     }
 
     /// <summary>
