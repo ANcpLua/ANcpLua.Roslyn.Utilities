@@ -2,6 +2,40 @@
 
 All notable changes to ANcpLua.Roslyn.Utilities will be documented in this file.
 
+## [1.11.0] - 2026-01-14
+
+### Fixed
+
+- **ForbiddenTypeAnalyzer** stack overflow on recursive type hierarchies
+- **IsCached** step filtering for generator caching validation
+
+### Changed
+
+- Documentation moved to [ANcpLua.io](https://ancplua.io)
+- Updated ANcpLuaAnalyzersVersion to 1.6.1
+
+## [1.10.0] - 2026-01-12
+
+### Changed
+
+- **ProjectBuilder** now supports inheritance for customization
+
+## [1.9.0] - 2026-01-11
+
+### Added
+
+- Comprehensive XML documentation across all public APIs
+
+## [1.8.0] - 2026-01-10
+
+### Added
+
+- **MSBuild project testing infrastructure** in Testing library
+  - `ProjectBuilder` - Fluent builder for isolated .NET project tests
+  - `BuildResult` + `BuildResultAssertions` - SARIF parsing, binary log analysis
+  - `DotNetSdkHelpers` - Automatic SDK download and caching
+  - MSBuild constants: `Tfm`, `Prop`, `Val`, `Item`, `Attr`
+
 ## [1.7.0] - 2026-01-10
 
 ### Added

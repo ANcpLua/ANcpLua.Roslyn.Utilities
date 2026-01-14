@@ -110,10 +110,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: Push to NuGet (Trusted Publishing)
+      - name: Push to NuGet
         run: |
           for pkg in artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
               --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
               --skip-duplicate
           done
