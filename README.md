@@ -215,7 +215,7 @@ result
 
 ## Full Documentation
 
-See [ANcpLua.io/utilities](https://ancplua.io/content/utilities/) for complete documentation and [API Reference](https://ancplua.io/api/utilities/).
+See [ANcpLua.io/utilities](https://ancplua.github.io/ANcpLua.io/utilities/) for complete documentation and [API Reference](https://ancplua.github.io/ANcpLua.io/api/utilities/).
 
 ## Related
 
