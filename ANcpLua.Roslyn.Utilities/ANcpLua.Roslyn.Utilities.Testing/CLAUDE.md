@@ -75,7 +75,7 @@ public class MyAnalyzerTests : AnalyzerTest<MyAnalyzer>
 {
     [Fact]
     public async Task Test() => await Verify("""
-        class C { [|string|] s; }  // [| |] marks expected diagnostic
+        class C { [|string|] s; }  // [|...|] marks the span of an expected diagnostic
         """);
 }
 ```
@@ -165,15 +165,21 @@ builder.GetGitHubStepSummaryContent()
 ### BuildResult
 
 ```csharp
-result.Succeeded / result.Failed
+result.Succeeded
+result.Failed
 result.ExitCode
 result.Output                                 // ProcessOutputCollection
 
 // SARIF diagnostics
-result.HasError() / result.HasError(ruleId)
-result.HasWarning() / result.HasWarning(ruleId)
-result.HasNote(ruleId) / result.HasInfo(ruleId)
-result.GetAllDiagnostics() / result.GetErrors() / result.GetWarnings()
+result.HasError()
+result.HasError(ruleId)
+result.HasWarning()
+result.HasWarning(ruleId)
+result.HasNote(ruleId)
+result.HasInfo(ruleId)
+result.GetAllDiagnostics()
+result.GetErrors()
+result.GetWarnings()
 
 // Output inspection
 result.OutputContains(text, comparison)
@@ -269,7 +275,7 @@ report.ProducedOutput
 
 ```csharp
 step.StepName
-step.Cached / step.Unchanged / step.Modified / step.New / step.Removed
+step.Cached, step.Unchanged, step.Modified, step.New, step.Removed
 step.HasForbiddenTypes
 step.IsCachedSuccessfully
 step.FormatBreakdown()
