@@ -2,16 +2,16 @@
 
 Reusable utilities for Roslyn incremental source generators.
 
-## 🏗️ Ecosystem Position
+## Ecosystem Position
 
 ```
-LAYER 0: ANcpLua.Roslyn.Utilities  ← YOU ARE HERE (UPSTREAM)
-         ↓ publishes .Sources
-LAYER 1: ANcpLua.NET.Sdk           ← SOURCE OF TRUTH (Version.props)
-         ↓ auto-syncs Version.props
-LAYER 2: ANcpLua.Analyzers         ← DOWNSTREAM (uses SDK)
-         ↓ consumed by
-LAYER 3: qyl, other projects       ← END USERS
+LAYER 0: ANcpLua.Roslyn.Utilities  <-- YOU ARE HERE (UPSTREAM)
+         | publishes .Sources
+LAYER 1: ANcpLua.NET.Sdk           <-- SOURCE OF TRUTH (Version.props)
+         | auto-syncs Version.props
+LAYER 2: ANcpLua.Analyzers         <-- DOWNSTREAM (uses SDK)
+         | consumed by
+LAYER 3: qyl, other projects       <-- END USERS
 ```
 
 ### This Repo: LAYER 0 (Upstream)
@@ -23,7 +23,7 @@ LAYER 3: qyl, other projects       ← END USERS
 | **Version.props** | CUSTOM (own Roslyn versions) |
 | **Auto-sync** | NO (manual sync only) |
 
-## ⚠️ CRITICAL: Dependency Direction
+## CRITICAL: Dependency Direction
 
 **THIS REPO IS UPSTREAM - IT CANNOT DEPEND ON ANcpLua.NET.Sdk**
 
@@ -63,27 +63,41 @@ ANcpLua.Roslyn.Utilities/
 
 ### Testing Library (ANcpLua.Roslyn.Utilities.Testing)
 
-Fluent testing framework for incremental generators:
-- Caching validation
-- Forbidden type detection (ISymbol, Compilation)
-- Comprehensive assertion support
+Comprehensive testing framework for Roslyn tooling:
+
+**Generator Testing:**
+- `Test<TGenerator>` - Fluent API entry point for generator tests
+- `GeneratorResult` - Assertions for output files, caching, diagnostics
+- `GeneratorTestEngine<TGenerator>` - Low-level test compilation engine
+- Caching validation and forbidden type detection (ISymbol, Compilation)
+
+**Analyzer Testing:**
+- `AnalyzerTest<TAnalyzer>` - Base class for analyzer tests
+- `CodeFixTest<TAnalyzer, TCodeFix>` - Base class for code fix tests
+- `CodeFixTestWithEditorConfig` - Tests with EditorConfig support
+
+**MSBuild Integration Testing:**
+- `ProjectBuilder` - Fluent builder for isolated .NET project tests
+- `BuildResult` + `BuildResultAssertions` - SARIF parsing, binary log analysis
+- `DotNetSdkHelpers` - Automatic SDK download and caching
+- MSBuild constants: `Tfm`, `Prop`, `Val`, `Item`, `Attr`
 
 ## Polyfills
 
 This repo uses `PolySharp` for netstandard2.0 polyfills (IsExternalInit, NotNullWhen, etc.) instead of SDK-provided polyfills.
 
-## ⚠️ Release Order (CRITICAL!)
+## Release Order (CRITICAL!)
 
 This repo must be published FIRST before SDK can update:
 
 ```
-1. Roslyn.Utilities → publish to NuGet  ← YOU ARE HERE
-2. SDK → update Version.props → publish to NuGet
+1. Roslyn.Utilities -> publish to NuGet  <-- YOU ARE HERE
+2. SDK -> update Version.props -> publish to NuGet
 3. THEN sync Version.props to Analyzers
-4. Analyzers → can now build
+4. Analyzers -> can now build
 ```
 
-## ⚠️ Common CI Errors
+## Common CI Errors
 
 ### SDK Version Not Found (in downstream repos)
 ```

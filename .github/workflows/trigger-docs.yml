@@ -1,0 +1,24 @@
+name: Trigger Docs Rebuild
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  trigger-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ANcpLua.io docs rebuild
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_TRIGGER_PAT }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/ANcpLua/ANcpLua.io/dispatches \
+            -f "event_type=docs-update" \
+            -f "client_payload[source]=ANcpLua.Roslyn.Utilities" \
+            -f "client_payload[ref]=${{ github.ref }}"
