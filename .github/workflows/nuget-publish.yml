@@ -28,7 +28,7 @@ jobs:
       version: ${{ steps.ver.outputs.version }}
       is_release: ${{ steps.ver.outputs.is_release }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: ver
@@ -52,8 +52,8 @@ jobs:
     needs: version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
       - name: Build
@@ -67,7 +67,7 @@ jobs:
           dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
         env:
           CI: true
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v4
         with:
           name: packages
           path: artifacts/*.nupkg
@@ -82,11 +82,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v4
         with:
           name: packages
           path: local-feed/
@@ -103,23 +103,17 @@ jobs:
     if: needs.version.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v4
         with:
           name: packages
           path: artifacts/
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - name: NuGet login (OIDC)
-        id: login
-        uses: NuGet/login@v1
-        with:
-          user: ${{ secrets.NUGET_USER }}
-      - name: Push to NuGet
+      - name: Push to NuGet (Trusted Publishing)
         run: |
           for pkg in artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
               --source https://api.nuget.org/v3/index.json \
-              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
               --skip-duplicate
           done
