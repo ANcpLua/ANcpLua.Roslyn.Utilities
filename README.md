@@ -215,7 +215,7 @@ result
 
 ## Full Documentation
 
-See [CLAUDE.md](ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/CLAUDE.md) for complete API reference.
+See [ANcpLua.io/utilities](https://ancplua.io/content/utilities/) for complete documentation and [API Reference](https://ancplua.io/api/utilities/).
 
 ## Related
 
