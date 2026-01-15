@@ -12,9 +12,15 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         attribute arguments in analyzers and source generators.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description>Provides safe conversions with default value fallbacks.</description></item>
-///         <item><description>Supports nullable return types for optional attribute arguments.</description></item>
-///         <item><description>Handles boolean, enum, and other primitive type conversions.</description></item>
+///         <item>
+///             <description>Provides safe conversions with default value fallbacks.</description>
+///         </item>
+///         <item>
+///             <description>Supports nullable return types for optional attribute arguments.</description>
+///         </item>
+///         <item>
+///             <description>Handles boolean, enum, and other primitive type conversions.</description>
+///         </item>
 ///     </list>
 /// </remarks>
 /// <seealso cref="TypedConstant" />
@@ -23,7 +29,7 @@ public
 #else
 internal
 #endif
-static class ConvertExtensions
+    static class ConvertExtensions
 {
     /// <summary>
     ///     Converts the <see cref="TypedConstant" /> to a <see cref="bool" /> value.
@@ -38,12 +44,14 @@ static class ConvertExtensions
     ///     otherwise, <paramref name="defaultValue" />.
     /// </returns>
     /// <seealso cref="ToNullableBoolean" />
-    public static bool ToBoolean(this TypedConstant typedConstant, bool defaultValue = false) =>
-        typedConstant.Value switch
+    public static bool ToBoolean(this TypedConstant typedConstant, bool defaultValue = false)
+    {
+        return typedConstant.Value switch
         {
             bool b => b,
             _ => defaultValue
         };
+    }
 
     /// <summary>
     ///     Converts the <see cref="TypedConstant" /> to a nullable <see cref="bool" /> value.
@@ -54,12 +62,14 @@ static class ConvertExtensions
     ///     otherwise, <c>null</c>.
     /// </returns>
     /// <seealso cref="ToBoolean" />
-    public static bool? ToNullableBoolean(this TypedConstant typedConstant) =>
-        typedConstant.Value switch
+    public static bool? ToNullableBoolean(this TypedConstant typedConstant)
+    {
+        return typedConstant.Value switch
         {
             bool b => b,
             _ => null
         };
+    }
 
     /// <summary>
     ///     Converts the <see cref="TypedConstant" /> to an enum value of type <typeparamref name="T" />.
@@ -74,8 +84,10 @@ static class ConvertExtensions
     ///     or <paramref name="defaultValue" /> if the value is <c>null</c>.
     /// </returns>
     /// <seealso cref="ToEnum{T}(TypedConstant)" />
-    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum =>
-        (T)(typedConstant.Value ?? defaultValue);
+    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum
+    {
+        return (T)(typedConstant.Value ?? defaultValue);
+    }
 
     /// <summary>
     ///     Converts the <see cref="TypedConstant" /> to a nullable enum value of type <typeparamref name="T" />.

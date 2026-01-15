@@ -25,7 +25,7 @@ public
 #else
 internal
 #endif
-static class DictionaryExtensions
+    static class DictionaryExtensions
 {
     /// <summary>
     ///     Gets the value for the specified key, or inserts a new value using the factory if the key doesn't exist.
@@ -57,12 +57,13 @@ static class DictionaryExtensions
     ///     <code>
     /// // Without context (causes closure allocation):
     /// var value = dict.GetValueOrDefault(key) ?? (dict[key] = CreateValue(expensiveData));
-    ///
+    /// 
     /// // With context (allocation-free):
     /// var value = dict.GetOrInsert(key, expensiveData, static ctx => CreateValue(ctx));
     /// </code>
     /// </example>
-    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
+    /// <seealso
+    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
     /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
         this Dictionary<TKey, TValue> dictionary,
@@ -140,7 +141,8 @@ static class DictionaryExtensions
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
-    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
+    /// <seealso
+    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
     public static TValue? GetOrInsertDefault<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey key)

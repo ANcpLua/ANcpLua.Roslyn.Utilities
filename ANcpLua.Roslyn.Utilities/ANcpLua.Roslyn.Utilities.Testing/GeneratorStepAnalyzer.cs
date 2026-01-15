@@ -16,7 +16,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
-///                 Extracts tracked steps from <see cref="GeneratorDriverRunResult"/> instances
+///                 Extracts tracked steps from <see cref="GeneratorDriverRunResult" /> instances
 ///                 for caching analysis.
 ///             </description>
 ///         </item>
@@ -35,21 +35,21 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="GeneratorCachingReport"/>
-/// <seealso cref="GeneratorStepAnalysis"/>
-/// <seealso cref="StepClassification"/>
+/// <seealso cref="GeneratorCachingReport" />
+/// <seealso cref="GeneratorStepAnalysis" />
+/// <seealso cref="StepClassification" />
 internal static class GeneratorStepAnalyzer
 {
     /// <summary>
     ///     Extracts tracked steps from a generator run result.
     /// </summary>
     /// <param name="result">
-    ///     The <see cref="GeneratorDriverRunResult"/> to analyze. Must have tracking enabled
+    ///     The <see cref="GeneratorDriverRunResult" /> to analyze. Must have tracking enabled
     ///     via <c>WithTrackingName</c> on pipeline steps for meaningful results.
     /// </param>
     /// <returns>
     ///     A dictionary mapping step names to their execution data as an
-    ///     <see cref="ImmutableArray{T}"/> of <see cref="IncrementalGeneratorRunStep"/>.
+    ///     <see cref="ImmutableArray{T}" /> of <see cref="IncrementalGeneratorRunStep" />.
     ///     Steps from all generators in the result are merged by name.
     /// </returns>
     /// <remarks>
@@ -63,27 +63,29 @@ internal static class GeneratorStepAnalyzer
     ///         <item>
     ///             <description>
     ///                 The returned dictionary includes both infrastructure steps and user steps.
-    ///                 Use <see cref="IsInfrastructureStep"/> to filter infrastructure steps.
+    ///                 Use <see cref="IsInfrastructureStep" /> to filter infrastructure steps.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </remarks>
-    /// <seealso cref="GeneratorCachingReport.Create"/>
+    /// <seealso cref="GeneratorCachingReport.Create" />
     public static Dictionary<string, ImmutableArray<IncrementalGeneratorRunStep>> ExtractSteps(
-        GeneratorDriverRunResult result) =>
-        result.Results.SelectMany(static x => x.TrackedSteps)
+        GeneratorDriverRunResult result)
+    {
+        return result.Results.SelectMany(static x => x.TrackedSteps)
             .GroupBy(static kv => kv.Key)
             .ToDictionary(static g => g.Key, static g => g
                 .SelectMany(static kv => kv.Value)
                 .ToImmutableArray());
+    }
 
     /// <summary>
     ///     Determines if a step is an infrastructure step (sink).
     /// </summary>
     /// <param name="stepName">The name of the step to check.</param>
     /// <returns>
-    ///     <see langword="true"/> if this is an infrastructure step that should be excluded
-    ///     from user-facing caching reports; otherwise, <see langword="false"/>.
+    ///     <see langword="true" /> if this is an infrastructure step that should be excluded
+    ///     from user-facing caching reports; otherwise, <see langword="false" />.
     /// </returns>
     /// <remarks>
     ///     <para>
@@ -91,27 +93,46 @@ internal static class GeneratorStepAnalyzer
     ///         output with the generator driver. These include:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description><c>RegisterSourceOutput</c></description></item>
-    ///         <item><description><c>RegisterImplementationSourceOutput</c></description></item>
-    ///         <item><description><c>RegisterPostInitializationOutput</c></description></item>
-    ///         <item><description><c>SourceOutput</c></description></item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>RegisterSourceOutput</c>
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>RegisterImplementationSourceOutput</c>
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>RegisterPostInitializationOutput</c>
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <c>SourceOutput</c>
+    ///             </description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         These steps are excluded from caching validation because they represent
     ///         the final output registration rather than intermediate pipeline processing.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="StepClassification.IsInfrastructureStep"/>
-    /// <seealso cref="StepClassification.IsSinkStep"/>
-    public static bool IsInfrastructureStep(string stepName) => StepClassification.IsInfrastructureStep(stepName);
+    /// <seealso cref="StepClassification.IsInfrastructureStep" />
+    /// <seealso cref="StepClassification.IsSinkStep" />
+    public static bool IsInfrastructureStep(string stepName)
+    {
+        return StepClassification.IsInfrastructureStep(stepName);
+    }
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes).
     /// </summary>
     /// <param name="fileName">The name of the file to check (typically the hint name).</param>
     /// <returns>
-    ///     <see langword="true"/> if this is an infrastructure file that should be excluded
-    ///     from user-facing output validation; otherwise, <see langword="false"/>.
+    ///     <see langword="true" /> if this is an infrastructure file that should be excluded
+    ///     from user-facing output validation; otherwise, <see langword="false" />.
     /// </returns>
     /// <remarks>
     ///     <para>
@@ -119,15 +140,24 @@ internal static class GeneratorStepAnalyzer
     ///         part of the user's intended generator output. These include:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Files ending with <c>Attribute.g.cs</c> or <c>Attributes.g.cs</c></description></item>
-    ///         <item><description>Files containing <c>EmbeddedAttribute</c></description></item>
-    ///         <item><description>Files containing <c>Polyfill</c></description></item>
+    ///         <item>
+    ///             <description>Files ending with <c>Attribute.g.cs</c> or <c>Attributes.g.cs</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Files containing <c>EmbeddedAttribute</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Files containing <c>Polyfill</c></description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         Excluding these files ensures that caching reports and output validation
     ///         focus on the meaningful generator output rather than framework boilerplate.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="StepClassification.IsInfrastructureFile"/>
-    public static bool IsInfrastructureFile(string fileName) => StepClassification.IsInfrastructureFile(fileName);
+    /// <seealso cref="StepClassification.IsInfrastructureFile" />
+    public static bool IsInfrastructureFile(string fileName)
+    {
+        return StepClassification.IsInfrastructureFile(fileName);
+    }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace ANcpLua.Roslyn.Utilities.Models;
 
 /// <summary>
@@ -8,16 +6,19 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This type wraps an <see cref="ImmutableArray{T}"/> of message arguments and provides
+///         This type wraps an <see cref="ImmutableArray{T}" /> of message arguments and provides
 ///         proper value-based equality semantics required for incremental generator caching.
 ///         Without proper equality, generators may produce redundant outputs or miss necessary updates.
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>Treats default (uninitialized) and empty arrays as equivalent, following the "null = empty" pattern.</description>
+///             <description>
+///                 Treats default (uninitialized) and empty arrays as equivalent, following the "null = empty"
+///                 pattern.
+///             </description>
 ///         </item>
 ///         <item>
-///             <description>Compares array elements using <see cref="object.Equals(object, object)"/> for deep equality.</description>
+///             <description>Compares array elements using <see cref="object.Equals(object, object)" /> for deep equality.</description>
 ///         </item>
 ///         <item>
 ///             <description>Produces consistent hash codes where empty and default arrays both return 0.</description>
@@ -25,14 +26,14 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///     </list>
 /// </remarks>
 /// <param name="Args">The immutable array of message arguments to wrap.</param>
-/// <seealso cref="DiagnosticInfo"/>
-/// <seealso cref="EquatableArray{T}"/>
+/// <seealso cref="DiagnosticInfo" />
+/// <seealso cref="EquatableArray{T}" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
+    readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
 {
     /// <summary>
     ///     An empty args array instance for reuse.
@@ -47,15 +48,15 @@ readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
     ///     Gets a value indicating whether this instance has no arguments.
     /// </summary>
     /// <value>
-    ///     <c>true</c> if the <see cref="Args"/> array is default (uninitialized) or empty;
+    ///     <c>true</c> if the <see cref="Args" /> array is default (uninitialized) or empty;
     ///     otherwise, <c>false</c>.
     /// </value>
     public bool IsEmpty => Args.IsDefaultOrEmpty;
 
     /// <summary>
-    ///     Determines whether the specified <see cref="EquatableMessageArgs"/> is equal to this instance.
+    ///     Determines whether the specified <see cref="EquatableMessageArgs" /> is equal to this instance.
     /// </summary>
-    /// <param name="other">The <see cref="EquatableMessageArgs"/> to compare with this instance.</param>
+    /// <param name="other">The <see cref="EquatableMessageArgs" /> to compare with this instance.</param>
     /// <returns>
     ///     <c>true</c> if both instances are empty, or if they contain the same number of elements
     ///     and all corresponding elements are equal; otherwise, <c>false</c>.
@@ -79,10 +80,8 @@ readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
             return false;
 
         for (var i = 0; i < Args.Length; i++)
-        {
             if (!Equals(Args[i], other.Args[i]))
                 return false;
-        }
 
         return true;
     }
@@ -91,12 +90,12 @@ readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
     ///     Returns a hash code for this instance.
     /// </summary>
     /// <returns>
-    ///     A hash code computed from all elements in the <see cref="Args"/> array,
+    ///     A hash code computed from all elements in the <see cref="Args" /> array,
     ///     or 0 if the array is empty or default.
     /// </returns>
     /// <remarks>
     ///     Empty and default arrays both return 0 to ensure they are treated as equivalent
-    ///     in hash-based collections, consistent with the <see cref="Equals(EquatableMessageArgs)"/> behavior.
+    ///     in hash-based collections, consistent with the <see cref="Equals(EquatableMessageArgs)" /> behavior.
     /// </remarks>
     public override int GetHashCode()
     {
@@ -108,7 +107,7 @@ readonly record struct EquatableMessageArgs(ImmutableArray<object?> Args)
         {
             var hash = 17;
             foreach (var arg in Args)
-                hash = (hash * 31) + (arg?.GetHashCode() ?? 0);
+                hash = hash * 31 + (arg?.GetHashCode() ?? 0);
 
             return hash;
         }

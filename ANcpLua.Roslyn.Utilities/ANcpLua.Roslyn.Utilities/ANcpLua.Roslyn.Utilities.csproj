@@ -1,52 +1,52 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
-    <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
-    <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <RootNamespace>ANcpLua.Roslyn.Utilities</RootNamespace>
+        <PackageId>ANcpLua.Roslyn.Utilities</PackageId>
+        <Description>Reusable utilities for Roslyn incremental source generators including EquatableArray, pipeline extensions, and diagnostic helpers.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>roslyn;source-generator;incremental-generator;utilities;equatable-array</PackageTags>
 
-    <!-- Generate XML documentation for DocFX -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- Generate XML documentation for DocFX -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <!-- Suppress warnings: NU1701 (version compat), CA1822 (static members), CA1510 (throw helpers), CA1307 (string comparison), CS1591 (missing XML docs - add incrementally) -->
-    <NoWarn>$(NoWarn);NU1701;CA1822;CA1510;CA1307;CS1591</NoWarn>
+        <!-- Suppress warnings: NU1701 (version compat), CA1822 (static members), CA1510 (throw helpers), CA1307 (string comparison), CS1591 (missing XML docs - add incrementally) -->
+        <NoWarn>$(NoWarn);NU1701;CA1822;CA1510;CA1307;CS1591</NoWarn>
 
-    <!-- Resolve assembly version conflicts by preferring newer versions -->
-    <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
-    <!-- Suppress CS1705 assembly version conflict warnings -->
-    <NoWarn>$(NoWarn);CS1705</NoWarn>
+        <!-- Resolve assembly version conflicts by preferring newer versions -->
+        <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
+        <!-- Suppress CS1705 assembly version conflict warnings -->
+        <NoWarn>$(NoWarn);CS1705</NoWarn>
 
-    <!-- Define ANCPLUA_ROSLYN_PUBLIC so types are public in the compiled DLL -->
-    <!-- When consumed as source-only package, this is not defined, so types become internal -->
-    <DefineConstants>$(DefineConstants);ANCPLUA_ROSLYN_PUBLIC</DefineConstants>
-  </PropertyGroup>
+        <!-- Define ANCPLUA_ROSLYN_PUBLIC so types are public in the compiled DLL -->
+        <!-- When consumed as source-only package, this is not defined, so types become internal -->
+        <DefineConstants>$(DefineConstants);ANCPLUA_ROSLYN_PUBLIC</DefineConstants>
+    </PropertyGroup>
 
-  <!-- Global usings for netstandard2.0 -->
-  <ItemGroup>
-    <Using Include="System"/>
-    <Using Include="System.Collections.Generic"/>
-    <Using Include="System.Collections.Immutable"/>
-    <Using Include="System.Diagnostics.CodeAnalysis"/>
-    <Using Include="System.Globalization"/>
-    <Using Include="System.Linq"/>
-    <Using Include="System.Text"/>
-    <Using Include="System.Threading"/>
-  </ItemGroup>
+    <!-- Global usings for netstandard2.0 -->
+    <ItemGroup>
+        <Using Include="System"/>
+        <Using Include="System.Collections.Generic"/>
+        <Using Include="System.Collections.Immutable"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Globalization"/>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Text"/>
+        <Using Include="System.Threading"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.HashCode"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
-    <!-- Polyfills for netstandard2.0 (IsExternalInit, NotNullWhen, etc.) -->
-    <PackageReference Include="PolySharp" PrivateAssets="all"/>
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.HashCode"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <!-- Polyfills for netstandard2.0 (IsExternalInit, NotNullWhen, etc.) -->
+        <PackageReference Include="PolySharp" PrivateAssets="all"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 </Project>

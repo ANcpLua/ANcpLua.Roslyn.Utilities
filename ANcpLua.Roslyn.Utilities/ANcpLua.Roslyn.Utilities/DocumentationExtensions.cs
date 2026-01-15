@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Xml;
 using System.Xml.Linq;
@@ -42,13 +41,13 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="ISymbol.GetDocumentationCommentXml"/>
+/// <seealso cref="ISymbol.GetDocumentationCommentXml" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-static class DocumentationExtensions
+    static class DocumentationExtensions
 {
     /// <summary>
     ///     Gets the documentation comment for a symbol, optionally expanding <c>inheritdoc</c> elements.
@@ -71,18 +70,24 @@ static class DocumentationExtensions
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     ///     The XML documentation comment string for the symbol. Returns an empty string if no documentation is found.
-    ///     When <paramref name="expandInheritdoc"/> is <c>true</c>, any <c>inheritdoc</c> elements are replaced
+    ///     When <paramref name="expandInheritdoc" /> is <c>true</c>, any <c>inheritdoc</c> elements are replaced
     ///     with the actual inherited documentation content.
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         When <paramref name="expandInheritdoc"/> is enabled, the method automatically synthesizes
+    ///         When <paramref name="expandInheritdoc" /> is enabled, the method automatically synthesizes
     ///         an <c>inheritdoc</c> element for symbols that are eligible but lack documentation:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Override members (methods, properties, events)</description></item>
-    ///         <item><description>Explicit interface implementations</description></item>
-    ///         <item><description>Implicit interface implementations</description></item>
+    ///         <item>
+    ///             <description>Override members (methods, properties, events)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Explicit interface implementations</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Implicit interface implementations</description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         The method handles the following <c>inheritdoc</c> scenarios:
@@ -120,9 +125,11 @@ static class DocumentationExtensions
         CultureInfo? preferredCulture = null,
         bool expandIncludes = false,
         bool expandInheritdoc = false,
-        CancellationToken cancellationToken = default) =>
-        GetDocumentationComment(symbol, visitedSymbols: null, compilation, preferredCulture, expandIncludes,
+        CancellationToken cancellationToken = default)
+    {
+        return GetDocumentationComment(symbol, null, compilation, preferredCulture, expandIncludes,
             expandInheritdoc, cancellationToken);
+    }
 
     private static string GetDocumentationComment(
         ISymbol symbol,
@@ -188,10 +195,10 @@ static class DocumentationExtensions
         }
 
         if (node is not XContainer container)
-            return [Copy(node, copyAttributeAnnotations: false)];
+            return [Copy(node, false)];
 
         var oldNodes = container.Nodes();
-        container = Copy(container, copyAttributeAnnotations: false);
+        container = Copy(container, false);
 
         var rewrittenNodes = RewriteMany(symbol, visitedSymbols, compilation, oldNodes.ToArray(), cancellationToken);
         container.ReplaceNodes(rewrittenNodes);
@@ -248,7 +255,7 @@ static class DocumentationExtensions
         try
         {
             var inheritedDocumentation = GetDocumentationComment(symbol, visitedSymbols, compilation,
-                preferredCulture: null, expandIncludes: true, expandInheritdoc: true, cancellationToken);
+                null, true, true, cancellationToken);
 
             if (string.IsNullOrEmpty(inheritedDocumentation))
                 return [];
@@ -301,16 +308,16 @@ static class DocumentationExtensions
                 return false;
 
             for (var i = 0; i < left.Parameters.Length; i++)
-            {
                 if (!SymbolEqualityComparer.Default.Equals(left.Parameters[i].Type, right.Parameters[i].Type))
                     return false;
-            }
 
             return true;
         }
 
-        static string NormalizePath(string path) =>
-            path.StartsWith("/", StringComparison.Ordinal) ? "/*" + path : path;
+        static string NormalizePath(string path)
+        {
+            return path.StartsWith("/", StringComparison.Ordinal) ? "/*" + path : path;
+        }
 
         static string BuildXPathForElement(XElement element)
         {
@@ -424,9 +431,11 @@ static class DocumentationExtensions
         }
     }
 
-    private static bool ElementNameIs(XElement element, string name) =>
-        string.IsNullOrEmpty(element.Name.NamespaceName) &&
-        DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
+    private static bool ElementNameIs(XElement element, string name)
+    {
+        return string.IsNullOrEmpty(element.Name.NamespaceName) &&
+               DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
+    }
 }
 
 /// <summary>
@@ -439,9 +448,15 @@ static class DocumentationExtensions
 ///         parsing and rewriting documentation comments, particularly for <c>inheritdoc</c> expansion.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description><c>inheritdoc</c> - Inherits documentation from a base or interface member.</description></item>
-///         <item><description><c>typeparamref</c> - References a type parameter by name.</description></item>
-///         <item><description><c>see</c> - Creates a hyperlink reference to another type or member.</description></item>
+///         <item>
+///             <description><c>inheritdoc</c> - Inherits documentation from a base or interface member.</description>
+///         </item>
+///         <item>
+///             <description><c>typeparamref</c> - References a type parameter by name.</description>
+///         </item>
+///         <item>
+///             <description><c>see</c> - Creates a hyperlink reference to another type or member.</description>
+///         </item>
 ///     </list>
 /// </remarks>
 file static class DocumentationXmlNames
@@ -484,6 +499,8 @@ file static class DocumentationXmlNames
     /// <returns>
     ///     <c>true</c> if the element names are equal (ignoring case); otherwise, <c>false</c>.
     /// </returns>
-    public static bool ElementEquals(string name1, string name2) =>
-        string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+    public static bool ElementEquals(string name1, string name2)
+    {
+        return string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+    }
 }

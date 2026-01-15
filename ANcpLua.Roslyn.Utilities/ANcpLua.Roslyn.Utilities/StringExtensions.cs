@@ -37,7 +37,7 @@ public
 #else
 internal
 #endif
-static class StringExtensions
+    static class StringExtensions
 {
     private static readonly char[] NewLineSeparator = ['\n'];
 
@@ -60,7 +60,10 @@ static class StringExtensions
     /// <seealso cref="SplitLines(ReadOnlySpan{char})" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this string str) => new(str.AsSpan());
+    public static LineSplitEnumerator SplitLines(this string str)
+    {
+        return new LineSplitEnumerator(str.AsSpan());
+    }
 
     /// <summary>
     ///     Splits a character span into lines without allocating intermediate string arrays.
@@ -81,7 +84,10 @@ static class StringExtensions
     /// <seealso cref="SplitLines(string)" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str) => new(str);
+    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str)
+    {
+        return new LineSplitEnumerator(str);
+    }
 
     /// <summary>
     ///     Converts a string to PascalCase by making the first character uppercase.
@@ -141,9 +147,15 @@ static class StringExtensions
     ///         For example:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description><c>"FirstName"</c> becomes <c>"firstName"</c></description></item>
-    ///         <item><description><c>"Class"</c> becomes <c>"@class"</c></description></item>
-    ///         <item><description><c>"Object"</c> becomes <c>"@object"</c></description></item>
+    ///         <item>
+    ///             <description><c>"FirstName"</c> becomes <c>"firstName"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"Class"</c> becomes <c>"@class"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"Object"</c> becomes <c>"@object"</c></description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <seealso cref="ToPropertyName" />
@@ -291,7 +303,6 @@ static class StringExtensions
         var first = true;
 
         foreach (var line in lines)
-        {
             if (!IsBlankLine(line))
             {
                 if (!first)
@@ -299,7 +310,6 @@ static class StringExtensions
                 result.Append(line);
                 first = false;
             }
-        }
 
         return result.ToString();
 
@@ -309,10 +319,8 @@ static class StringExtensions
                 return false;
 
             foreach (var c in line)
-            {
                 if (!char.IsWhiteSpace(c))
                     return false;
-            }
 
             return true;
         }
@@ -367,10 +375,18 @@ static class StringExtensions
     /// <remarks>
     ///     <para>Performs the following cleanup operations:</para>
     ///     <list type="bullet">
-    ///         <item><description>Strips trailing whitespace (spaces and tabs) from all lines</description></item>
-    ///         <item><description>Collapses 3 or more consecutive empty lines to exactly 2</description></item>
-    ///         <item><description>Removes empty lines immediately after <c>{</c> or <c>]</c></description></item>
-    ///         <item><description>Removes empty lines immediately before <c>}</c></description></item>
+    ///         <item>
+    ///             <description>Strips trailing whitespace (spaces and tabs) from all lines</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Collapses 3 or more consecutive empty lines to exactly 2</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Removes empty lines immediately after <c>{</c> or <c>]</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Removes empty lines immediately before <c>}</c></description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         This method is designed to produce clean, consistent output from source generators
@@ -444,7 +460,10 @@ static class StringExtensions
         /// <remarks>
         ///     This method enables the use of this enumerator directly in a foreach statement.
         /// </remarks>
-        public readonly LineSplitEnumerator GetEnumerator() => this;
+        public readonly LineSplitEnumerator GetEnumerator()
+        {
+            return this;
+        }
 
         /// <summary>
         ///     Advances the enumerator to the next line in the span.
@@ -561,6 +580,9 @@ static class StringExtensions
         /// <returns>
         ///     A <see cref="ReadOnlySpan{T}" /> of <see cref="char" /> containing the line content.
         /// </returns>
-        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry) => entry.Line;
+        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry)
+        {
+            return entry.Line;
+        }
     }
 }

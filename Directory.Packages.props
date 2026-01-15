@@ -1,61 +1,61 @@
 <Project>
-  <!--
-    ═══════════════════════════════════════════════════════════════════════════
-    ANcpLua.Roslyn.Utilities - Directory.Packages.props
-    ═══════════════════════════════════════════════════════════════════════════
+    <!--
+      ═══════════════════════════════════════════════════════════════════════════
+      ANcpLua.Roslyn.Utilities - Directory.Packages.props
+      ═══════════════════════════════════════════════════════════════════════════
 
-    Version.props is a COPY - sync manually with SDK.
-    This file only declares WHICH packages are used, not their versions.
-  -->
+      Version.props is a COPY - sync manually with SDK.
+      This file only declares WHICH packages are used, not their versions.
+    -->
 
-  <!-- Import centralized versions from symlinked Version.props -->
-  <Import Project="$(MSBuildThisFileDirectory)Version.props"/>
+    <!-- Import centralized versions from symlinked Version.props -->
+    <Import Project="$(MSBuildThisFileDirectory)Version.props"/>
 
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-  </PropertyGroup>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    </PropertyGroup>
 
-  <ItemGroup Label="Roslyn">
-    <!-- Core Roslyn packages -->
-    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="Roslyn">
+        <!-- Core Roslyn packages -->
+        <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)"/>
+    </ItemGroup>
 
-  <ItemGroup Label="Transitive Pins">
-    <!-- Pin transitive dependencies - these need variables in Version.props -->
-    <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)"/>
-    <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="Transitive Pins">
+        <!-- Pin transitive dependencies - these need variables in Version.props -->
+        <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)"/>
+        <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)"/>
+    </ItemGroup>
 
-  <ItemGroup Label="Polyfills">
-    <PackageVersion Include="PolySharp" Version="$(PolySharpVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="Polyfills">
+        <PackageVersion Include="PolySharp" Version="$(PolySharpVersion)"/>
+    </ItemGroup>
 
-  <ItemGroup Label="Analyzers">
-    <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)"/>
-    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="Analyzers">
+        <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)"/>
+        <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)"/>
+    </ItemGroup>
 
-  <ItemGroup Label="Testing">
-    <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)"/>
-    <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)"/>
-    <PackageVersion Include="Meziantou.Framework.Threading" Version="$(MeziantouThreadingVersion)"/>
-    <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(AnalyzerTestingVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)"/>
-    <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)"/>
-    <PackageVersion Include="Basic.Reference.Assemblies.NetStandard20" Version="$(BasicReferenceAssembliesVersion)"/>
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitV3Version)"/>
-    <PackageVersion Include="xunit.v3.assert" Version="$(XunitV3Version)"/>
-    <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="Testing">
+        <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)"/>
+        <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)"/>
+        <PackageVersion Include="Meziantou.Framework.Threading" Version="$(MeziantouThreadingVersion)"/>
+        <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)"/>
+        <PackageVersion Include="Basic.Reference.Assemblies.NetStandard20" Version="$(BasicReferenceAssembliesVersion)"/>
+        <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitV3Version)"/>
+        <PackageVersion Include="xunit.v3.assert" Version="$(XunitV3Version)"/>
+        <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)"/>
+    </ItemGroup>
 
-  <ItemGroup Label="MSBuild Testing">
-    <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)"/>
-    <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
-  </ItemGroup>
+    <ItemGroup Label="MSBuild Testing">
+        <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)"/>
+        <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
+    </ItemGroup>
 </Project>

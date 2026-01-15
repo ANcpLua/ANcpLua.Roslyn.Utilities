@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 
@@ -18,22 +17,25 @@ namespace ANcpLua.Roslyn.Utilities;
 ///             <description><b>Immutable.</b> All operations return new instances; the original flow is never modified.</description>
 ///         </item>
 ///         <item>
-///             <description><b>Short-circuiting.</b> Once failed, subsequent <see cref="Then{TNext}"/> and <see cref="Select{TNext}"/>
-///             operations preserve existing diagnostics without invoking transformations.</description>
+///             <description>
+///                 <b>Short-circuiting.</b> Once failed, subsequent <see cref="Then{TNext}" /> and
+///                 <see cref="Select{TNext}" />
+///                 operations preserve existing diagnostics without invoking transformations.
+///             </description>
 ///         </item>
 ///         <item>
 ///             <description><b>Equatable.</b> Implements value equality for incremental generator caching.</description>
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="DiagnosticFlow"/>
-/// <seealso cref="DiagnosticFlowReportingExtensions"/>
+/// <seealso cref="DiagnosticFlow" />
+/// <seealso cref="DiagnosticFlowReportingExtensions" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
+    readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
 {
     /// <summary>Gets the wrapped value, or <c>default</c> if this flow has failed.</summary>
     public T? Value { get; }
@@ -44,27 +46,25 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     /// <summary>
     ///     Gets a value indicating whether this flow contains any error-severity diagnostics.
     /// </summary>
-    /// <value><c>true</c> if any diagnostic has <see cref="DiagnosticSeverity.Error"/>; otherwise, <c>false</c>.</value>
+    /// <value><c>true</c> if any diagnostic has <see cref="DiagnosticSeverity.Error" />; otherwise, <c>false</c>.</value>
     public bool HasErrors
     {
         get
         {
             foreach (var d in Diagnostics.AsImmutableArray())
-            {
                 // Defensive: guard against default(DiagnosticInfo) with null Descriptor
                 if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
                     return true;
-            }
             return false;
         }
     }
 
     /// <summary>Gets a value indicating whether this flow has a non-null value and no errors.</summary>
-    /// <value><c>true</c> if <see cref="Value"/> is not <c>null</c> and <see cref="HasErrors"/> is <c>false</c>.</value>
+    /// <value><c>true</c> if <see cref="Value" /> is not <c>null</c> and <see cref="HasErrors" /> is <c>false</c>.</value>
     public bool IsSuccess => Value is not null && !HasErrors;
 
     /// <summary>Gets a value indicating whether this flow has failed (null value or errors).</summary>
-    /// <value>The inverse of <see cref="IsSuccess"/>.</value>
+    /// <value>The inverse of <see cref="IsSuccess" />.</value>
     public bool IsFailed => !IsSuccess;
 
     internal DiagnosticFlow(T? value, EquatableArray<DiagnosticInfo> diagnostics)
@@ -74,7 +74,7 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     }
 
     /// <summary>
-    ///     Chains a transformation that produces a new <see cref="DiagnosticFlow{T}"/>,
+    ///     Chains a transformation that produces a new <see cref="DiagnosticFlow{T}" />,
     ///     merging diagnostics from both operations.
     /// </summary>
     /// <typeparam name="TNext">The result type of the chained operation.</typeparam>
@@ -83,17 +83,18 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Only invoked if this flow is successful.
     /// </param>
     /// <returns>
-    ///     A new <see cref="DiagnosticFlow{TNext}"/> containing the transformed value
+    ///     A new <see cref="DiagnosticFlow{TNext}" /> containing the transformed value
     ///     and merged diagnostics, or a failed flow preserving existing diagnostics if this flow has errors.
     /// </returns>
-    /// <seealso cref="Select{TNext}"/>
+    /// <seealso cref="Select{TNext}" />
     public DiagnosticFlow<TNext> Then<TNext>(Func<T, DiagnosticFlow<TNext>> next)
     {
         if (IsFailed || Value is null)
             return new DiagnosticFlow<TNext>(default, Diagnostics);
 
         var result = next(Value);
-        return new DiagnosticFlow<TNext>(result.Value, DiagnosticFlowHelpers.MergeDiagnostics(Diagnostics, result.Diagnostics));
+        return new DiagnosticFlow<TNext>(result.Value,
+            DiagnosticFlowHelpers.MergeDiagnostics(Diagnostics, result.Diagnostics));
     }
 
     /// <summary>
@@ -105,10 +106,10 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Only invoked if this flow is successful.
     /// </param>
     /// <returns>
-    ///     A new <see cref="DiagnosticFlow{TNext}"/> with the transformed value and same diagnostics,
+    ///     A new <see cref="DiagnosticFlow{TNext}" /> with the transformed value and same diagnostics,
     ///     or a failed flow preserving existing diagnostics if this flow has errors.
     /// </returns>
-    /// <seealso cref="Then{TNext}"/>
+    /// <seealso cref="Then{TNext}" />
     public DiagnosticFlow<TNext> Select<TNext>(Func<T, TNext> map)
     {
         if (IsFailed || Value is null)
@@ -121,20 +122,22 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Appends a warning diagnostic to this flow without affecting success state.
     /// </summary>
     /// <param name="warning">The warning diagnostic to append.</param>
-    /// <returns>A new flow with the warning appended to <see cref="Diagnostics"/>.</returns>
-    /// <seealso cref="WarnIf"/>
-    /// <seealso cref="Error"/>
-    public DiagnosticFlow<T> Warn(DiagnosticInfo warning) =>
-        new(Value, DiagnosticFlowHelpers.AppendDiagnostic(Diagnostics, warning));
+    /// <returns>A new flow with the warning appended to <see cref="Diagnostics" />.</returns>
+    /// <seealso cref="WarnIf" />
+    /// <seealso cref="Error" />
+    public DiagnosticFlow<T> Warn(DiagnosticInfo warning)
+    {
+        return new DiagnosticFlow<T>(Value, DiagnosticFlowHelpers.AppendDiagnostic(Diagnostics, warning));
+    }
 
     /// <summary>
     ///     Conditionally appends a warning diagnostic based on the current value.
     /// </summary>
     /// <param name="condition">A predicate evaluated against the current value.</param>
-    /// <param name="warning">The warning diagnostic to append if <paramref name="condition"/> returns <c>true</c>.</param>
+    /// <param name="warning">The warning diagnostic to append if <paramref name="condition" /> returns <c>true</c>.</param>
     /// <returns>A new flow with the warning appended if the condition is met; otherwise, this flow unchanged.</returns>
-    /// <seealso cref="Warn"/>
-    /// <seealso cref="ErrorIf"/>
+    /// <seealso cref="Warn" />
+    /// <seealso cref="ErrorIf" />
     public DiagnosticFlow<T> WarnIf(Func<T, bool> condition, DiagnosticInfo warning)
     {
         if (Value is not null && condition(Value))
@@ -146,20 +149,22 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Appends an error diagnostic and sets the value to <c>default</c>, causing the flow to fail.
     /// </summary>
     /// <param name="error">The error diagnostic to append.</param>
-    /// <returns>A new failed flow with the error appended to <see cref="Diagnostics"/>.</returns>
-    /// <seealso cref="ErrorIf"/>
-    /// <seealso cref="Warn"/>
-    public DiagnosticFlow<T> Error(DiagnosticInfo error) =>
-        new(default, DiagnosticFlowHelpers.AppendDiagnostic(Diagnostics, error));
+    /// <returns>A new failed flow with the error appended to <see cref="Diagnostics" />.</returns>
+    /// <seealso cref="ErrorIf" />
+    /// <seealso cref="Warn" />
+    public DiagnosticFlow<T> Error(DiagnosticInfo error)
+    {
+        return new DiagnosticFlow<T>(default, DiagnosticFlowHelpers.AppendDiagnostic(Diagnostics, error));
+    }
 
     /// <summary>
     ///     Conditionally appends an error diagnostic based on the current value.
     /// </summary>
     /// <param name="condition">A predicate evaluated against the current value.</param>
-    /// <param name="error">The error diagnostic to append if <paramref name="condition"/> returns <c>true</c>.</param>
+    /// <param name="error">The error diagnostic to append if <paramref name="condition" /> returns <c>true</c>.</param>
     /// <returns>A new failed flow with the error if the condition is met; otherwise, this flow unchanged.</returns>
-    /// <seealso cref="Error"/>
-    /// <seealso cref="WarnIf"/>
+    /// <seealso cref="Error" />
+    /// <seealso cref="WarnIf" />
     public DiagnosticFlow<T> ErrorIf(Func<T, bool> condition, DiagnosticInfo error)
     {
         if (Value is not null && condition(Value))
@@ -171,8 +176,8 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Filters the flow based on a predicate, failing with the specified diagnostic if not satisfied.
     /// </summary>
     /// <param name="predicate">A predicate that must return <c>true</c> for the flow to continue successfully.</param>
-    /// <param name="onFail">The error diagnostic to report if <paramref name="predicate"/> returns <c>false</c>.</param>
-    /// <returns>This flow unchanged if the predicate is satisfied; otherwise, a failed flow with <paramref name="onFail"/>.</returns>
+    /// <param name="onFail">The error diagnostic to report if <paramref name="predicate" /> returns <c>false</c>.</param>
+    /// <returns>This flow unchanged if the predicate is satisfied; otherwise, a failed flow with <paramref name="onFail" />.</returns>
     public DiagnosticFlow<T> Where(Func<T, bool> predicate, DiagnosticInfo onFail)
     {
         if (IsFailed || Value is null)
@@ -197,9 +202,11 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     ///     Returns the value if successful, or a default value if failed.
     /// </summary>
     /// <param name="defaultValue">The value to return if this flow has failed.</param>
-    /// <returns>The <see cref="Value"/> if successful; otherwise, <paramref name="defaultValue"/>.</returns>
-    public T? ValueOrDefault(T? defaultValue = default) =>
-        IsSuccess ? Value : defaultValue;
+    /// <returns>The <see cref="Value" /> if successful; otherwise, <paramref name="defaultValue" />.</returns>
+    public T? ValueOrDefault(T? defaultValue = default)
+    {
+        return IsSuccess ? Value : defaultValue;
+    }
 
     /// <summary>
     ///     Pattern matches on the flow state, invoking one of two functions.
@@ -218,96 +225,124 @@ readonly struct DiagnosticFlow<T> : IEquatable<DiagnosticFlow<T>>
     }
 
     /// <summary>
-    ///     Implicitly converts a value to a successful <see cref="DiagnosticFlow{T}"/>.
+    ///     Implicitly converts a value to a successful <see cref="DiagnosticFlow{T}" />.
     /// </summary>
     /// <param name="value">The value to wrap.</param>
-    /// <returns>A successful flow containing <paramref name="value"/> with no diagnostics.</returns>
-    public static implicit operator DiagnosticFlow<T>(T value) => DiagnosticFlow.Ok(value);
+    /// <returns>A successful flow containing <paramref name="value" /> with no diagnostics.</returns>
+    public static implicit operator DiagnosticFlow<T>(T value)
+    {
+        return DiagnosticFlow.Ok(value);
+    }
 
     /// <inheritdoc />
-    public bool Equals(DiagnosticFlow<T> other) =>
-        EqualityComparer<T?>.Default.Equals(Value, other.Value) &&
-        Diagnostics.Equals(other.Diagnostics);
+    public bool Equals(DiagnosticFlow<T> other)
+    {
+        return EqualityComparer<T?>.Default.Equals(Value, other.Value) &&
+               Diagnostics.Equals(other.Diagnostics);
+    }
 
     /// <inheritdoc />
-    public override bool Equals(object? obj) =>
-        obj is DiagnosticFlow<T> other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is DiagnosticFlow<T> other && Equals(other);
+    }
 
     /// <inheritdoc />
-    public override int GetHashCode() => HashCode.Combine(Value, Diagnostics);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Value, Diagnostics);
+    }
 
     /// <summary>Determines whether two flows are equal.</summary>
-    public static bool operator ==(DiagnosticFlow<T> left, DiagnosticFlow<T> right) => left.Equals(right);
+    public static bool operator ==(DiagnosticFlow<T> left, DiagnosticFlow<T> right)
+    {
+        return left.Equals(right);
+    }
 
     /// <summary>Determines whether two flows are not equal.</summary>
-    public static bool operator !=(DiagnosticFlow<T> left, DiagnosticFlow<T> right) => !left.Equals(right);
+    public static bool operator !=(DiagnosticFlow<T> left, DiagnosticFlow<T> right)
+    {
+        return !left.Equals(right);
+    }
 }
 
 /// <summary>
-///     Factory methods for creating <see cref="DiagnosticFlow{T}"/> instances.
+///     Factory methods for creating <see cref="DiagnosticFlow{T}" /> instances.
 /// </summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-static class DiagnosticFlow
+    static class DiagnosticFlow
 {
     /// <summary>
     ///     Creates a successful flow containing the specified value.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="value">The value to wrap.</param>
-    /// <returns>A successful <see cref="DiagnosticFlow{T}"/> with no diagnostics.</returns>
-    public static DiagnosticFlow<T> Ok<T>(T value) =>
-        new(value, default);
+    /// <returns>A successful <see cref="DiagnosticFlow{T}" /> with no diagnostics.</returns>
+    public static DiagnosticFlow<T> Ok<T>(T value)
+    {
+        return new DiagnosticFlow<T>(value, default);
+    }
 
     /// <summary>
     ///     Creates a failed flow with a single error diagnostic.
     /// </summary>
     /// <typeparam name="T">The expected value type.</typeparam>
     /// <param name="error">The error diagnostic.</param>
-    /// <returns>A failed <see cref="DiagnosticFlow{T}"/> containing the error.</returns>
-    public static DiagnosticFlow<T> Fail<T>(DiagnosticInfo error) =>
-        new(default, ImmutableArray.Create(error).AsEquatableArray());
+    /// <returns>A failed <see cref="DiagnosticFlow{T}" /> containing the error.</returns>
+    public static DiagnosticFlow<T> Fail<T>(DiagnosticInfo error)
+    {
+        return new DiagnosticFlow<T>(default, ImmutableArray.Create(error).AsEquatableArray());
+    }
 
     /// <summary>
     ///     Creates a failed flow with multiple error diagnostics.
     /// </summary>
     /// <typeparam name="T">The expected value type.</typeparam>
     /// <param name="errors">The error diagnostics.</param>
-    /// <returns>A failed <see cref="DiagnosticFlow{T}"/> containing all errors.</returns>
-    public static DiagnosticFlow<T> Fail<T>(params DiagnosticInfo[] errors) =>
-        new(default, errors.ToImmutableArray().AsEquatableArray());
+    /// <returns>A failed <see cref="DiagnosticFlow{T}" /> containing all errors.</returns>
+    public static DiagnosticFlow<T> Fail<T>(params DiagnosticInfo[] errors)
+    {
+        return new DiagnosticFlow<T>(default, errors.ToImmutableArray().AsEquatableArray());
+    }
 
     /// <summary>
     ///     Creates a failed flow with pre-collected error diagnostics.
     /// </summary>
     /// <typeparam name="T">The expected value type.</typeparam>
     /// <param name="errors">The error diagnostics array.</param>
-    /// <returns>A failed <see cref="DiagnosticFlow{T}"/> containing all errors.</returns>
-    public static DiagnosticFlow<T> Fail<T>(EquatableArray<DiagnosticInfo> errors) =>
-        new(default, errors);
+    /// <returns>A failed <see cref="DiagnosticFlow{T}" /> containing all errors.</returns>
+    public static DiagnosticFlow<T> Fail<T>(EquatableArray<DiagnosticInfo> errors)
+    {
+        return new DiagnosticFlow<T>(default, errors);
+    }
 
     /// <summary>
     ///     Creates a flow from a nullable reference, failing with the specified diagnostic if <c>null</c>.
     /// </summary>
     /// <typeparam name="T">The reference type.</typeparam>
     /// <param name="value">The nullable value to wrap.</param>
-    /// <param name="onNull">The error diagnostic to use if <paramref name="value"/> is <c>null</c>.</param>
-    /// <returns>A successful flow if not null; otherwise, a failed flow with <paramref name="onNull"/>.</returns>
-    public static DiagnosticFlow<T> FromNullable<T>(T? value, DiagnosticInfo onNull) where T : class =>
-        value is not null ? Ok(value) : Fail<T>(onNull);
+    /// <param name="onNull">The error diagnostic to use if <paramref name="value" /> is <c>null</c>.</param>
+    /// <returns>A successful flow if not null; otherwise, a failed flow with <paramref name="onNull" />.</returns>
+    public static DiagnosticFlow<T> FromNullable<T>(T? value, DiagnosticInfo onNull) where T : class
+    {
+        return value is not null ? Ok(value) : Fail<T>(onNull);
+    }
 
     /// <summary>
     ///     Creates a flow from a nullable value type, failing with the specified diagnostic if <c>null</c>.
     /// </summary>
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="value">The nullable value to wrap.</param>
-    /// <param name="onNull">The error diagnostic to use if <paramref name="value"/> has no value.</param>
-    /// <returns>A successful flow if has value; otherwise, a failed flow with <paramref name="onNull"/>.</returns>
-    public static DiagnosticFlow<T> FromNullable<T>(T? value, DiagnosticInfo onNull) where T : struct =>
-        value.HasValue ? Ok(value.Value) : Fail<T>(onNull);
+    /// <param name="onNull">The error diagnostic to use if <paramref name="value" /> has no value.</param>
+    /// <returns>A successful flow if has value; otherwise, a failed flow with <paramref name="onNull" />.</returns>
+    public static DiagnosticFlow<T> FromNullable<T>(T? value, DiagnosticInfo onNull) where T : struct
+    {
+        return value.HasValue ? Ok(value.Value) : Fail<T>(onNull);
+    }
 
     /// <summary>
     ///     Creates a flow by invoking a factory, converting exceptions to diagnostics.
@@ -393,7 +428,7 @@ static class DiagnosticFlow
     ///     A flow containing an array of all successful values if no errors occurred;
     ///     otherwise, a failed flow with all accumulated diagnostics.
     /// </returns>
-    /// <seealso cref="Sequence{T}"/>
+    /// <seealso cref="Sequence{T}" />
     public static DiagnosticFlow<ImmutableArray<TItem>> Collect<TItem>(
         IEnumerable<DiagnosticFlow<TItem>> flows)
     {
@@ -411,14 +446,12 @@ static class DiagnosticFlow
 
         var hasErrors = false;
         foreach (var d in diagnostics)
-        {
             // Defensive: guard against default(DiagnosticInfo) with null Descriptor
             if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
             {
                 hasErrors = true;
                 break;
             }
-        }
 
         var diagArray = diagnostics.Count > 0 ? diagnostics.ToImmutable().AsEquatableArray() : default;
 
@@ -429,18 +462,21 @@ static class DiagnosticFlow
     }
 
     /// <summary>
-    ///     Alias for <see cref="Collect{TItem}"/> as an extension method.
+    ///     Alias for <see cref="Collect{TItem}" /> as an extension method.
     /// </summary>
     /// <typeparam name="T">The type of items in each flow.</typeparam>
     /// <param name="flows">The flows to sequence.</param>
     /// <returns>A flow containing all successful values, or a failed flow if any had errors.</returns>
-    /// <seealso cref="Collect{TItem}"/>
+    /// <seealso cref="Collect{TItem}" />
     public static DiagnosticFlow<ImmutableArray<T>> Sequence<T>(
-        this IEnumerable<DiagnosticFlow<T>> flows) => Collect(flows);
+        this IEnumerable<DiagnosticFlow<T>> flows)
+    {
+        return Collect(flows);
+    }
 }
 
 /// <summary>
-///     Internal helper methods for <see cref="DiagnosticFlow{T}"/> operations.
+///     Internal helper methods for <see cref="DiagnosticFlow{T}" /> operations.
 /// </summary>
 file static class DiagnosticFlowHelpers
 {
@@ -479,17 +515,17 @@ file static class DiagnosticFlowHelpers
 }
 
 /// <summary>
-///     Extension methods for reporting diagnostics from <see cref="DiagnosticFlow{T}"/> in source generators.
+///     Extension methods for reporting diagnostics from <see cref="DiagnosticFlow{T}" /> in source generators.
 /// </summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-static class DiagnosticFlowReportingExtensions
+    static class DiagnosticFlowReportingExtensions
 {
     /// <summary>
-    ///     Reports all diagnostics in the flow to the <see cref="SourceProductionContext"/>.
+    ///     Reports all diagnostics in the flow to the <see cref="SourceProductionContext" />.
     /// </summary>
     /// <typeparam name="T">The flow's value type.</typeparam>
     /// <param name="flow">The flow containing diagnostics to report.</param>
@@ -506,7 +542,7 @@ static class DiagnosticFlowReportingExtensions
     /// <typeparam name="T">The flow's value type.</typeparam>
     /// <param name="flow">The flow to process.</param>
     /// <param name="context">The source production context to report to.</param>
-    /// <returns>The <see cref="DiagnosticFlow{T}.Value"/> if successful; otherwise, <c>default</c>.</returns>
+    /// <returns>The <see cref="DiagnosticFlow{T}.Value" /> if successful; otherwise, <c>default</c>.</returns>
     public static T? ReportAndGet<T>(this DiagnosticFlow<T> flow, SourceProductionContext context)
     {
         flow.Report(context);
@@ -533,7 +569,7 @@ static class DiagnosticFlowReportingExtensions
     /// <summary>
     ///     Reports all diagnostics and adds the generated file as source if successful.
     /// </summary>
-    /// <param name="flow">A flow containing a <see cref="FileWithName"/>.</param>
+    /// <param name="flow">A flow containing a <see cref="FileWithName" />.</param>
     /// <param name="context">The source production context to report to and add source to.</param>
     public static void ReportAndAddSource(
         this DiagnosticFlow<FileWithName> flow,
@@ -547,7 +583,7 @@ static class DiagnosticFlowReportingExtensions
     /// <summary>
     ///     Reports all diagnostics and adds all generated files as sources if successful.
     /// </summary>
-    /// <param name="flow">A flow containing multiple <see cref="FileWithName"/> instances.</param>
+    /// <param name="flow">A flow containing multiple <see cref="FileWithName" /> instances.</param>
     /// <param name="context">The source production context to report to and add sources to.</param>
     public static void ReportAndAddSources(
         this DiagnosticFlow<ImmutableArray<FileWithName>> flow,
@@ -555,9 +591,7 @@ static class DiagnosticFlowReportingExtensions
     {
         flow.Report(context);
         if (flow is { IsSuccess: true, Value: { } files })
-        {
             foreach (var file in files)
                 context.AddSource(file.Name, file.Text);
-        }
     }
 }

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Reflection;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
@@ -49,7 +48,7 @@ public
 #else
 internal
 #endif
-static class SyntaxValueProviderExtensions
+    static class SyntaxValueProviderExtensions
 {
     /// <summary>
     ///     Creates an <see cref="IncrementalValuesProvider{T}" /> for classes and records
@@ -81,8 +80,9 @@ static class SyntaxValueProviderExtensions
     public static IncrementalValuesProvider<GeneratorAttributeSyntaxContext>
         ForAttributeWithMetadataNameOfClassesAndRecords(
             this SyntaxValueProvider source,
-            string fullyQualifiedMetadataName) =>
-        source
+            string fullyQualifiedMetadataName)
+    {
+        return source
             .ForAttributeWithMetadataName(
                 fullyQualifiedMetadataName,
                 static (node, _) =>
@@ -94,6 +94,7 @@ static class SyntaxValueProviderExtensions
                         AttributeLists.Count: > 0
                     },
                 static (context, _) => context);
+    }
 
     /// <summary>
     ///     Transforms a provider of <see cref="GeneratorAttributeSyntaxContext" /> into a provider
@@ -121,13 +122,15 @@ static class SyntaxValueProviderExtensions
     /// <seealso cref="ClassWithAttributesContext" />
     public static IncrementalValuesProvider<ClassWithAttributesContext>
         SelectAllAttributes(
-            this IncrementalValuesProvider<GeneratorAttributeSyntaxContext> source) =>
-        source
+            this IncrementalValuesProvider<GeneratorAttributeSyntaxContext> source)
+    {
+        return source
             .Select(static (context, _) => new ClassWithAttributesContext(
                 context.SemanticModel,
                 context.Attributes,
                 (ClassDeclarationSyntax)context.TargetNode,
                 (INamedTypeSymbol)context.TargetSymbol));
+    }
 
     private static string RemoveNameof(this string value)
     {
@@ -189,9 +192,11 @@ static class SyntaxValueProviderExtensions
     /// <seealso cref="ClassWithAttributesContext" />
     public static IncrementalValuesProvider<ClassWithAttributesContext>
         SelectManyAllAttributesOfCurrentClassSyntax(
-            this IncrementalValuesProvider<GeneratorAttributeSyntaxContext> source) =>
-        source
+            this IncrementalValuesProvider<GeneratorAttributeSyntaxContext> source)
+    {
+        return source
             .SelectMany(static (context, _) => FilterAttributesOfCurrentClass(context));
+    }
 
     private static ImmutableArray<ClassWithAttributesContext> FilterAttributesOfCurrentClass(
         GeneratorAttributeSyntaxContext context)
@@ -204,13 +209,11 @@ static class SyntaxValueProviderExtensions
         {
             var attributeSyntax = classSyntax.TryFindAttributeSyntax(attribute);
             if (attributeSyntax is not null)
-            {
                 builder.Add(new ClassWithAttributesContext(
                     context.SemanticModel,
                     [attribute],
                     classSyntax,
                     targetSymbol));
-            }
         }
 
         return builder.ToImmutable();

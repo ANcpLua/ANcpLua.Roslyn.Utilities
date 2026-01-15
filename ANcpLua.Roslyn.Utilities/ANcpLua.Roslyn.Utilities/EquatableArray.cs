@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -37,7 +36,7 @@ public
 #else
 internal
 #endif
-static class EquatableArray
+    static class EquatableArray
 {
     /// <summary>
     ///     Creates an <see cref="EquatableArray{T}" /> from a given <see cref="ImmutableArray{T}" />.
@@ -56,8 +55,10 @@ static class EquatableArray
     /// <seealso cref="ToEquatableArray{T}" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EquatableArray<T> AsEquatableArray<T>(this ImmutableArray<T> array)
-        where T : IEquatable<T> =>
-        new(array);
+        where T : IEquatable<T>
+    {
+        return new EquatableArray<T>(array);
+    }
 
     /// <summary>
     ///     Creates an <see cref="EquatableArray{T}" /> from a given array.
@@ -85,8 +86,10 @@ static class EquatableArray
     /// <seealso cref="AsEquatableArray{T}" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EquatableArray<T> ToEquatableArray<T>(this T[] array)
-        where T : IEquatable<T> =>
-        new(array);
+        where T : IEquatable<T>
+    {
+        return new EquatableArray<T>(array);
+    }
 }
 
 /// <summary>
@@ -103,10 +106,24 @@ static class EquatableArray
 ///     <para>
 ///         Key behaviors:
 ///         <list type="bullet">
-///             <item><description><see cref="IsEmpty"/> returns <c>true</c> for both <c>default</c> and explicitly empty arrays</description></item>
-///             <item><description><see cref="AsSpan"/> returns an empty span for <c>null</c> backing (never throws)</description></item>
-///             <item><description><see cref="GetEnumerator"/> returns an empty enumerator for <c>null</c> backing (never throws)</description></item>
-///             <item><description>Equality: two empty arrays are always equal regardless of how they were created</description></item>
+///             <item>
+///                 <description>
+///                     <see cref="IsEmpty" /> returns <c>true</c> for both <c>default</c> and explicitly empty
+///                     arrays
+///                 </description>
+///             </item>
+///             <item>
+///                 <description><see cref="AsSpan" /> returns an empty span for <c>null</c> backing (never throws)</description>
+///             </item>
+///             <item>
+///                 <description>
+///                     <see cref="GetEnumerator" /> returns an empty enumerator for <c>null</c> backing (never
+///                     throws)
+///                 </description>
+///             </item>
+///             <item>
+///                 <description>Equality: two empty arrays are always equal regardless of how they were created</description>
+///             </item>
 ///         </list>
 ///     </para>
 ///     <para>
@@ -126,7 +143,7 @@ public
 #else
 internal
 #endif
-readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyCollection<T>
+    readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyCollection<T>
     where T : IEquatable<T>
 {
     /// <summary>
@@ -288,7 +305,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     <c>true</c> if <paramref name="obj" /> is an <see cref="EquatableArray{T}" /> and
     ///     is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object? obj) => obj is EquatableArray<T> other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is EquatableArray<T> other && Equals(other);
+    }
 
     /// <summary>
     ///     Returns a hash code for this <see cref="EquatableArray{T}" /> based on its elements.
@@ -318,7 +338,8 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     /// </summary>
     /// <returns>
     ///     An <see cref="ImmutableArray{T}" /> containing the same elements.
-    ///     Returns <see cref="ImmutableArray{T}.Empty" /> for empty arrays (never returns a default <see cref="ImmutableArray{T}" />).
+    ///     Returns <see cref="ImmutableArray{T}.Empty" /> for empty arrays (never returns a default
+    ///     <see cref="ImmutableArray{T}" />).
     /// </returns>
     /// <remarks>
     ///     The returned <see cref="ImmutableArray{T}" /> shares storage with this instance.
@@ -326,8 +347,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     /// </remarks>
     /// <seealso cref="Items" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ImmutableArray<T> AsImmutableArray() =>
-        _array is null ? ImmutableArray<T>.Empty : ImmutableCollectionsMarshal.AsImmutableArray(_array);
+    public ImmutableArray<T> AsImmutableArray()
+    {
+        return _array is null ? ImmutableArray<T>.Empty : ImmutableCollectionsMarshal.AsImmutableArray(_array);
+    }
 
     /// <summary>
     ///     Gets the underlying items as an <see cref="ImmutableArray{T}" />.
@@ -358,7 +381,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     The span provides efficient, bounds-checked access to the underlying elements.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> AsSpan() => new(_array);
+    public ReadOnlySpan<T> AsSpan()
+    {
+        return new ReadOnlySpan<T>(_array);
+    }
 
     /// <summary>
     ///     Copies the contents of this <see cref="EquatableArray{T}" /> to a new mutable array.
@@ -369,7 +395,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     /// <remarks>
     ///     The returned array is a copy and can be safely mutated without affecting this instance.
     /// </remarks>
-    public T[] ToArray() => _array is null ? [] : [.. _array];
+    public T[] ToArray()
+    {
+        return _array is null ? [] : [.. _array];
+    }
 
     /// <summary>
     ///     Gets an <see cref="ImmutableArray{T}.Enumerator" /> to traverse items in the current array.
@@ -382,26 +411,38 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     The enumerator provides efficient, struct-based iteration.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ImmutableArray<T>.Enumerator GetEnumerator() => AsImmutableArray().GetEnumerator();
+    public ImmutableArray<T>.Enumerator GetEnumerator()
+    {
+        return AsImmutableArray().GetEnumerator();
+    }
 
     /// <summary>
     ///     Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)AsImmutableArray()).GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    {
+        return ((IEnumerable<T>)AsImmutableArray()).GetEnumerator();
+    }
 
     /// <summary>
     ///     Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)AsImmutableArray()).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)AsImmutableArray()).GetEnumerator();
+    }
 
     /// <summary>
     ///     Implicitly converts an <see cref="EquatableArray{T}" /> to an <see cref="ImmutableArray{T}" />.
     /// </summary>
     /// <param name="array">The <see cref="EquatableArray{T}" /> to convert.</param>
     /// <returns>An <see cref="ImmutableArray{T}" /> containing the same elements.</returns>
-    public static implicit operator ImmutableArray<T>(EquatableArray<T> array) => array.AsImmutableArray();
+    public static implicit operator ImmutableArray<T>(EquatableArray<T> array)
+    {
+        return array.AsImmutableArray();
+    }
 
     /// <summary>
     ///     Determines whether two <see cref="EquatableArray{T}" /> instances are equal.
@@ -413,7 +454,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Equals(EquatableArray{T})" />
-    public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right) => left.Equals(right);
+    public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)
+    {
+        return left.Equals(right);
+    }
 
     /// <summary>
     ///     Determines whether two <see cref="EquatableArray{T}" /> instances are not equal.
@@ -425,7 +469,10 @@ readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IReadOnlyColl
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Equals(EquatableArray{T})" />
-    public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right) => !left.Equals(right);
+    public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)
+    {
+        return !left.Equals(right);
+    }
 }
 
 /// <summary>
@@ -468,7 +515,7 @@ public
 #else
 internal
 #endif
-static class EquatableArrayExtensions
+    static class EquatableArrayExtensions
 {
     /// <summary>
     ///     Appends a single item to the end of the array.
@@ -566,13 +613,11 @@ static class EquatableArrayExtensions
 
         var builder = ImmutableArray.CreateBuilder<T>();
         foreach (var item in array)
-        {
             if (predicate(item))
                 builder.Add(item);
-        }
 
         return builder.Count == array.Length
-            ? array  // No items filtered, return original
+            ? array // No items filtered, return original
             : builder.ToImmutable().AsEquatableArray();
     }
 
@@ -620,8 +665,10 @@ static class EquatableArrayExtensions
     /// </returns>
     /// <seealso cref="FirstOrDefault{T}(EquatableArray{T}, Func{T, bool})" />
     public static T? FirstOrDefault<T>(this EquatableArray<T> array)
-        where T : IEquatable<T> =>
-        array.IsEmpty ? default : array[0];
+        where T : IEquatable<T>
+    {
+        return array.IsEmpty ? default : array[0];
+    }
 
     /// <summary>
     ///     Returns the first element that matches the specified predicate, or a default value
@@ -641,10 +688,8 @@ static class EquatableArrayExtensions
         where T : IEquatable<T>
     {
         foreach (var item in array)
-        {
             if (predicate(item))
                 return item;
-        }
 
         return default;
     }
@@ -667,10 +712,8 @@ static class EquatableArrayExtensions
         where T : IEquatable<T>
     {
         foreach (var item in array)
-        {
             if (predicate(item))
                 return true;
-        }
 
         return false;
     }
@@ -692,10 +735,8 @@ static class EquatableArrayExtensions
         where T : IEquatable<T>
     {
         foreach (var item in array)
-        {
             if (!predicate(item))
                 return false;
-        }
 
         return true;
     }
@@ -720,10 +761,8 @@ static class EquatableArrayExtensions
         where T : IEquatable<T>
     {
         foreach (var element in array)
-        {
             if (element.Equals(item))
                 return true;
-        }
 
         return false;
     }
@@ -753,13 +792,11 @@ static class EquatableArrayExtensions
         var builder = ImmutableArray.CreateBuilder<T>();
 
         foreach (var item in array)
-        {
             if (seen.Add(item))
                 builder.Add(item);
-        }
 
         return builder.Count == array.Length
-            ? array  // No duplicates, return original
+            ? array // No duplicates, return original
             : builder.ToImmutable().AsEquatableArray();
     }
 }

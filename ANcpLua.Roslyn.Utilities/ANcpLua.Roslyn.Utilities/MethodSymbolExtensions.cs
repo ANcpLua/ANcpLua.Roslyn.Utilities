@@ -31,7 +31,7 @@ public
 #else
 internal
 #endif
-static class MethodSymbolExtensions
+    static class MethodSymbolExtensions
 {
     /// <summary>
     ///     Determines whether the specified method is an interface implementation.
@@ -51,7 +51,7 @@ static class MethodSymbolExtensions
     ///         <item>
     ///             <description>
     ///                 <b>Explicit implementation:</b> The method is declared as <c>void IInterface.Method()</c>.
-    ///                 Detected via <see cref="IMethodSymbol.ExplicitInterfaceImplementations"/>.
+    ///                 Detected via <see cref="IMethodSymbol.ExplicitInterfaceImplementations" />.
     ///             </description>
     ///         </item>
     ///         <item>
@@ -63,12 +63,12 @@ static class MethodSymbolExtensions
     ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // In an analyzer, check if a method implements an interface
     /// public void AnalyzeMethod(SymbolAnalysisContext context)
     /// {
     ///     var method = (IMethodSymbol)context.Symbol;
-    ///
+    /// 
     ///     if (method.IsInterfaceImplementation())
     ///     {
     ///         // Method implements an interface - may need special handling
@@ -164,13 +164,11 @@ static class MethodSymbolExtensions
             return null;
 
         foreach (var iface in symbol.ContainingType.AllInterfaces)
+        foreach (var interfaceMember in iface.GetMembers())
         {
-            foreach (var interfaceMember in iface.GetMembers())
-            {
-                var impl = symbol.ContainingType.FindImplementationForInterfaceMember(interfaceMember);
-                if (SymbolEqualityComparer.Default.Equals(symbol, impl))
-                    return interfaceMember;
-            }
+            var impl = symbol.ContainingType.FindImplementationForInterfaceMember(interfaceMember);
+            if (SymbolEqualityComparer.Default.Equals(symbol, impl))
+                return interfaceMember;
         }
 
         return null;

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -29,7 +27,7 @@ public
 #else
 internal
 #endif
-static class EnumerableExtensions
+    static class EnumerableExtensions
 {
     /// <summary>
     ///     Projects each element to an enumerable and flattens the resulting sequences into one sequence,
@@ -68,8 +66,10 @@ static class EnumerableExtensions
     /// </returns>
     /// <seealso cref="ToImmutableArrayOrEmpty{T}" />
     /// <seealso cref="IsNullOrEmpty{T}" />
-    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source) =>
-        source ?? [];
+    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source ?? [];
+    }
 
     /// <summary>
     ///     Converts the source sequence to an <see cref="ImmutableArray{T}" />,
@@ -82,8 +82,10 @@ static class EnumerableExtensions
     ///     or <see cref="ImmutableArray{T}.Empty" /> if <paramref name="source" /> is <c>null</c>.
     /// </returns>
     /// <seealso cref="OrEmpty{T}" />
-    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source) =>
-        source is null ? ImmutableArray<T>.Empty : [..source];
+    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source is null ? ImmutableArray<T>.Empty : [..source];
+    }
 
     /// <summary>
     ///     Determines whether the enumerable is <c>null</c> or contains no elements.
@@ -95,8 +97,10 @@ static class EnumerableExtensions
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="OrEmpty{T}" />
-    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? source) =>
-        source is null || !source.Any();
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source is null || !source.Any();
+    }
 
     /// <summary>
     ///     Determines whether the enumerable contains duplicate elements using the default equality comparer.
@@ -109,27 +113,33 @@ static class EnumerableExtensions
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         This method uses a <see cref="HashSet{T}"/> internally for O(1) lookup performance,
+    ///         This method uses a <see cref="HashSet{T}" /> internally for O(1) lookup performance,
     ///         resulting in O(n) time complexity where n is the number of elements.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Short-circuits on first duplicate found for optimal performance</description></item>
-    ///         <item><description>Memory usage is O(k) where k is the number of unique elements seen before the first duplicate</description></item>
-    ///         <item><description>Uses <see cref="EqualityComparer{T}.Default"/> for element comparison</description></item>
+    ///         <item>
+    ///             <description>Short-circuits on first duplicate found for optimal performance</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Memory usage is O(k) where k is the number of unique elements seen before the first duplicate</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Uses <see cref="EqualityComparer{T}.Default" /> for element comparison</description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Check for duplicate method names in a type
     /// var methodNames = typeSymbol.GetMembers()
     ///     .OfType&lt;IMethodSymbol&gt;()
     ///     .Select(m => m.Name);
-    ///
+    /// 
     /// if (methodNames.HasDuplicates())
     /// {
     ///     // Type has overloaded methods
     /// }
-    ///
+    /// 
     /// // Check for duplicate values in a collection
     /// var numbers = new[] { 1, 2, 3, 2, 4 };
     /// bool hasDupes = numbers.HasDuplicates(); // true
@@ -141,10 +151,8 @@ static class EnumerableExtensions
     {
         var seen = new HashSet<T>();
         foreach (var item in source)
-        {
             if (!seen.Add(item))
                 return true;
-        }
 
         return false;
     }
@@ -162,23 +170,32 @@ static class EnumerableExtensions
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         This method uses a <see cref="HashSet{T}"/> of keys internally for O(1) lookup,
+    ///         This method uses a <see cref="HashSet{T}" /> of keys internally for O(1) lookup,
     ///         resulting in O(n) time complexity. The key selector is called once per element.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Short-circuits on first duplicate key found</description></item>
-    ///         <item><description>Useful when comparing complex objects by a specific property</description></item>
-    ///         <item><description>Key comparison uses <see cref="EqualityComparer{T}.Default"/> for <typeparamref name="TKey"/></description></item>
+    ///         <item>
+    ///             <description>Short-circuits on first duplicate key found</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Useful when comparing complex objects by a specific property</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Key comparison uses <see cref="EqualityComparer{T}.Default" /> for
+    ///                 <typeparamref name="TKey" />
+    ///             </description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Check for duplicate parameter names in a method
     /// if (methodSymbol.Parameters.HasDuplicates(p => p.Name))
     /// {
     ///     // Report diagnostic: duplicate parameter names
     /// }
-    ///
+    /// 
     /// // Check for duplicate file paths (case-insensitive)
     /// var files = new[] { "File.txt", "file.TXT", "other.cs" };
     /// bool hasDupes = files.HasDuplicates(f => f.ToLowerInvariant()); // true
@@ -190,10 +207,8 @@ static class EnumerableExtensions
     {
         var seen = new HashSet<TKey>();
         foreach (var item in source)
-        {
             if (!seen.Add(keySelector(item)))
                 return true;
-        }
 
         return false;
     }
@@ -235,10 +250,8 @@ static class EnumerableExtensions
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : class
     {
         foreach (var item in source)
-        {
             if (item is not null)
                 yield return item;
-        }
     }
 
     /// <summary>
@@ -254,10 +267,8 @@ static class EnumerableExtensions
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : struct
     {
         foreach (var item in source)
-        {
             if (item.HasValue)
                 yield return item.Value;
-        }
     }
 
     /// <summary>
@@ -274,10 +285,8 @@ static class EnumerableExtensions
     public static IEnumerable<T> WhereNot<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         foreach (var item in source)
-        {
             if (!predicate(item))
                 yield return item;
-        }
     }
 
     /// <summary>
@@ -350,8 +359,10 @@ static class EnumerableExtensions
     ///     For a sequence of n elements, returns n-1 tuples.
     /// </returns>
     /// <seealso cref="ConsecutivePairs{TSource,TResult}(IEnumerable{TSource},Func{TSource,TSource,TResult})" />
-    public static IEnumerable<(T Previous, T Current)> ConsecutivePairs<T>(this IEnumerable<T> source) =>
-        source.ConsecutivePairs((prev, curr) => (prev, curr));
+    public static IEnumerable<(T Previous, T Current)> ConsecutivePairs<T>(this IEnumerable<T> source)
+    {
+        return source.ConsecutivePairs((prev, curr) => (prev, curr));
+    }
 
     /// <summary>
     ///     Finds the zero-based index of the first element in the list that matches the predicate.
@@ -367,10 +378,8 @@ static class EnumerableExtensions
     public static int IndexOf<T>(this IList<T> list, Func<T, bool> predicate)
     {
         for (var i = 0; i < list.Count; i++)
-        {
             if (predicate(list[i]))
                 return i;
-        }
 
         return -1;
     }
@@ -387,17 +396,16 @@ static class EnumerableExtensions
     ///     or <c>default</c> if no element matches.
     /// </returns>
     /// <remarks>
-    ///     This method is more efficient than <see cref="Enumerable.FirstOrDefault{TSource}(IEnumerable{TSource}, Func{TSource, bool})" />
+    ///     This method is more efficient than
+    ///     <see cref="Enumerable.FirstOrDefault{TSource}(IEnumerable{TSource}, Func{TSource, bool})" />
     ///     for <see cref="IList{T}" /> implementations as it uses indexed access instead of enumeration.
     /// </remarks>
     /// <seealso cref="IndexOf{T}" />
     public static T? FirstOrDefaultFast<T>(this IList<T> list, Func<T, bool> predicate)
     {
         for (var i = 0; i < list.Count; i++)
-        {
             if (predicate(list[i]))
                 return list[i];
-        }
 
         return default;
     }
@@ -421,12 +429,10 @@ static class EnumerableExtensions
         var notMatching = new List<T>();
 
         foreach (var item in source)
-        {
             if (predicate(item))
                 matching.Add(item);
             else
                 notMatching.Add(item);
-        }
 
         return (matching, notMatching);
     }
@@ -444,22 +450,31 @@ static class EnumerableExtensions
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         This method uses a <see cref="HashSet{T}"/> internally to track seen keys,
+    ///         This method uses a <see cref="HashSet{T}" /> internally to track seen keys,
     ///         providing O(n) time complexity with O(k) memory where k is distinct key count.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Returns the first element for each unique key (preserves order)</description></item>
-    ///         <item><description>Uses deferred execution - the sequence is enumerated lazily</description></item>
-    ///         <item><description>Key comparison uses <see cref="EqualityComparer{T}.Default"/> for <typeparamref name="TKey"/></description></item>
+    ///         <item>
+    ///             <description>Returns the first element for each unique key (preserves order)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Uses deferred execution - the sequence is enumerated lazily</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Key comparison uses <see cref="EqualityComparer{T}.Default" /> for
+    ///                 <typeparamref name="TKey" />
+    ///             </description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Get one method per unique name (first overload only)
     /// var uniqueMethods = typeSymbol.GetMembers()
     ///     .OfType&lt;IMethodSymbol&gt;()
     ///     .DistinctBy(m => m.Name);
-    ///
+    /// 
     /// // Remove duplicate diagnostics by location
     /// var uniqueDiagnostics = diagnostics.DistinctBy(d => d.Location);
     /// </code>
@@ -471,10 +486,8 @@ static class EnumerableExtensions
     {
         var seen = new HashSet<TKey>();
         foreach (var item in source)
-        {
             if (seen.Add(keySelector(item)))
                 yield return item;
-        }
     }
 
     /// <summary>
@@ -518,7 +531,10 @@ static class EnumerableExtensions
     ///     or a default value if the sequence is empty.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="selector" />, which must implement <see cref="IComparable{T}" />.</typeparam>
+    /// <typeparam name="TKey">
+    ///     The type of the key returned by <paramref name="selector" />, which must implement
+    ///     <see cref="IComparable{T}" />.
+    /// </typeparam>
     /// <param name="source">The source sequence.</param>
     /// <param name="selector">A function to extract the comparison key from each element.</param>
     /// <returns>
@@ -554,7 +570,10 @@ static class EnumerableExtensions
     ///     or a default value if the sequence is empty.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="selector" />, which must implement <see cref="IComparable{T}" />.</typeparam>
+    /// <typeparam name="TKey">
+    ///     The type of the key returned by <paramref name="selector" />, which must implement
+    ///     <see cref="IComparable{T}" />.
+    /// </typeparam>
     /// <param name="source">The source sequence.</param>
     /// <param name="selector">A function to extract the comparison key from each element.</param>
     /// <returns>
@@ -628,8 +647,10 @@ static class EnumerableExtensions
     ///     A string that consists of the elements of <paramref name="source" /> delimited by
     ///     <paramref name="separator" />.
     /// </returns>
-    public static string JoinToString<T>(this IEnumerable<T> source, string separator = ", ") =>
-        string.Join(separator, source);
+    public static string JoinToString<T>(this IEnumerable<T> source, string separator = ", ")
+    {
+        return string.Join(separator, source);
+    }
 
     /// <summary>
     ///     Returns all elements except the last <paramref name="count" /> elements.
@@ -695,10 +716,8 @@ static class EnumerableExtensions
     public static IEnumerable<TResult> SafeCast<TResult>(this IEnumerable<object?> source) where TResult : class
     {
         foreach (var item in source)
-        {
             if (item is TResult result)
                 yield return result;
-        }
     }
 }
 
@@ -725,13 +744,16 @@ public
 #else
 internal
 #endif
-static class SpanExtensions
+    static class SpanExtensions
 {
     /// <summary>
     ///     Returns the element with the minimum value according to a key selector.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the span.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="selector" />, which must implement <see cref="IComparable{T}" />.</typeparam>
+    /// <typeparam name="TKey">
+    ///     The type of the key returned by <paramref name="selector" />, which must implement
+    ///     <see cref="IComparable{T}" />.
+    /// </typeparam>
     /// <param name="span">The source span.</param>
     /// <param name="selector">A function to extract the comparison key from each element.</param>
     /// <returns>The element with the minimum key value.</returns>
@@ -763,7 +785,10 @@ static class SpanExtensions
     ///     Returns the element with the maximum value according to a key selector.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the span.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="selector" />, which must implement <see cref="IComparable{T}" />.</typeparam>
+    /// <typeparam name="TKey">
+    ///     The type of the key returned by <paramref name="selector" />, which must implement
+    ///     <see cref="IComparable{T}" />.
+    /// </typeparam>
     /// <param name="span">The source span.</param>
     /// <param name="selector">A function to extract the comparison key from each element.</param>
     /// <returns>The element with the maximum key value.</returns>
@@ -805,10 +830,8 @@ static class SpanExtensions
     public static int IndexOf<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (predicate(span[i]))
                 return i;
-        }
 
         return -1;
     }
@@ -827,10 +850,8 @@ static class SpanExtensions
     public static bool Any<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
     {
         foreach (var item in span)
-        {
             if (predicate(item))
                 return true;
-        }
 
         return false;
     }
@@ -849,10 +870,8 @@ static class SpanExtensions
     public static bool All<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
     {
         foreach (var item in span)
-        {
             if (!predicate(item))
                 return false;
-        }
 
         return true;
     }
@@ -871,10 +890,8 @@ static class SpanExtensions
     {
         var count = 0;
         foreach (var item in span)
-        {
             if (predicate(item))
                 count++;
-        }
 
         return count;
     }
@@ -894,10 +911,8 @@ static class SpanExtensions
     public static T? FirstOrDefault<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
     {
         foreach (var item in span)
-        {
             if (predicate(item))
                 return item;
-        }
 
         return default;
     }
@@ -926,7 +941,7 @@ public
 #else
 internal
 #endif
-static class ValueTupleExtensions
+    static class ValueTupleExtensions
 {
     /// <summary>
     ///     Determines whether any element in the 2-tuple is not <c>null</c>.
@@ -941,7 +956,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AllNull{T1,T2}" />
     /// <seealso cref="AllNotNull{T1,T2}" />
     public static bool AnyNotNull<T1, T2>(this (T1?, T2?) tuple)
-        => tuple.Item1 is not null || tuple.Item2 is not null;
+    {
+        return tuple.Item1 is not null || tuple.Item2 is not null;
+    }
 
     /// <summary>
     ///     Determines whether any element in the 3-tuple is not <c>null</c>.
@@ -957,7 +974,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AllNull{T1,T2,T3}" />
     /// <seealso cref="AllNotNull{T1,T2,T3}" />
     public static bool AnyNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
-        => tuple.Item1 is not null || tuple.Item2 is not null || tuple.Item3 is not null;
+    {
+        return tuple.Item1 is not null || tuple.Item2 is not null || tuple.Item3 is not null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 2-tuple are <c>null</c>.
@@ -972,7 +991,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AnyNotNull{T1,T2}" />
     /// <seealso cref="AllNotNull{T1,T2}" />
     public static bool AllNull<T1, T2>(this (T1?, T2?) tuple)
-        => tuple.Item1 is null && tuple.Item2 is null;
+    {
+        return tuple.Item1 is null && tuple.Item2 is null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 3-tuple are <c>null</c>.
@@ -988,7 +1009,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AnyNotNull{T1,T2,T3}" />
     /// <seealso cref="AllNotNull{T1,T2,T3}" />
     public static bool AllNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
-        => tuple.Item1 is null && tuple.Item2 is null && tuple.Item3 is null;
+    {
+        return tuple.Item1 is null && tuple.Item2 is null && tuple.Item3 is null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 2-tuple are not <c>null</c>.
@@ -1003,7 +1026,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AnyNotNull{T1,T2}" />
     /// <seealso cref="AllNull{T1,T2}" />
     public static bool AllNotNull<T1, T2>(this (T1?, T2?) tuple)
-        => tuple.Item1 is not null && tuple.Item2 is not null;
+    {
+        return tuple.Item1 is not null && tuple.Item2 is not null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 3-tuple are not <c>null</c>.
@@ -1019,7 +1044,9 @@ static class ValueTupleExtensions
     /// <seealso cref="AnyNotNull{T1,T2,T3}" />
     /// <seealso cref="AllNull{T1,T2,T3}" />
     public static bool AllNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
-        => tuple.Item1 is not null && tuple.Item2 is not null && tuple.Item3 is not null;
+    {
+        return tuple.Item1 is not null && tuple.Item2 is not null && tuple.Item3 is not null;
+    }
 
     /// <summary>
     ///     Enumerates the elements of a 2-tuple as an <see cref="IEnumerable{T}" />.

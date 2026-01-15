@@ -36,7 +36,7 @@ public
 #else
 internal
 #endif
-static class ListExtensions
+    static class ListExtensions
 {
     /// <summary>
     ///     Removes all elements that match the conditions defined by the specified predicate.
@@ -134,10 +134,8 @@ static class ListExtensions
         Func<TContext, T, bool> match)
     {
         for (var i = 0; i < list.Count; i++)
-        {
             if (match(context, list[i]))
                 return list[i];
-        }
 
         return default;
     }
@@ -173,10 +171,8 @@ static class ListExtensions
         Func<TContext, T, bool> match)
     {
         for (var i = 0; i < list.Count; i++)
-        {
             if (match(context, list[i]))
                 return i;
-        }
 
         return -1;
     }
@@ -212,10 +208,8 @@ static class ListExtensions
         Func<TContext, T, bool> match)
     {
         for (var i = 0; i < list.Count; i++)
-        {
             if (match(context, list[i]))
                 return true;
-        }
 
         return false;
     }

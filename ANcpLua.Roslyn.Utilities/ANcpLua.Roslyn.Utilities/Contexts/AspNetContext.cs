@@ -3,23 +3,31 @@ using Microsoft.CodeAnalysis;
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
 /// <summary>
-/// Provides cached type symbols and helper methods for analyzing ASP.NET Core and legacy Web API code patterns.
+///     Provides cached type symbols and helper methods for analyzing ASP.NET Core and legacy Web API code patterns.
 /// </summary>
 /// <remarks>
-/// <para>
-/// This context class caches commonly used ASP.NET type symbols from the compilation to enable
-/// efficient analysis of controller classes, action methods, and related ASP.NET patterns.
-/// </para>
-/// <list type="bullet">
-///   <item><description>Supports ASP.NET Core MVC controllers and actions</description></item>
-///   <item><description>Supports ASP.NET Core Minimal APIs (IResult)</description></item>
-///   <item><description>Supports legacy System.Web.Http API controllers</description></item>
-///   <item><description>Provides binding source attribute detection</description></item>
-/// </list>
+///     <para>
+///         This context class caches commonly used ASP.NET type symbols from the compilation to enable
+///         efficient analysis of controller classes, action methods, and related ASP.NET patterns.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>Supports ASP.NET Core MVC controllers and actions</description>
+///         </item>
+///         <item>
+///             <description>Supports ASP.NET Core Minimal APIs (IResult)</description>
+///         </item>
+///         <item>
+///             <description>Supports legacy System.Web.Http API controllers</description>
+///         </item>
+///         <item>
+///             <description>Provides binding source attribute detection</description>
+///         </item>
+///     </list>
 /// </remarks>
-/// <seealso cref="AwaitableContext"/>
-/// <seealso cref="DisposableContext"/>
-/// <seealso cref="CollectionContext"/>
+/// <seealso cref="AwaitableContext" />
+/// <seealso cref="DisposableContext" />
+/// <seealso cref="CollectionContext" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
@@ -58,15 +66,16 @@ internal
     private INamedTypeSymbol? HttpActionResultInterface { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AspNetContext"/> class by resolving ASP.NET type symbols from the compilation.
+    ///     Initializes a new instance of the <see cref="AspNetContext" /> class by resolving ASP.NET type symbols from the
+    ///     compilation.
     /// </summary>
     /// <param name="compilation">The compilation to resolve type symbols from.</param>
     /// <remarks>
-    /// <para>
-    /// This constructor attempts to resolve all known ASP.NET type symbols from the provided compilation.
-    /// If a type is not available in the compilation (e.g., the required NuGet package is not referenced),
-    /// the corresponding property will be <c>null</c>, and related checks will return <c>false</c>.
-    /// </para>
+    ///     <para>
+    ///         This constructor attempts to resolve all known ASP.NET type symbols from the provided compilation.
+    ///         If a type is not available in the compilation (e.g., the required NuGet package is not referenced),
+    ///         the corresponding property will be <c>null</c>, and related checks will return <c>false</c>.
+    ///     </para>
     /// </remarks>
     public AspNetContext(Compilation compilation)
     {
@@ -102,22 +111,31 @@ internal
     }
 
     /// <summary>
-    /// Determines whether the specified type is an ASP.NET controller.
+    ///     Determines whether the specified type is an ASP.NET controller.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is a controller; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// A type is considered a controller if it meets all of the following criteria:
-    /// </para>
-    /// <list type="bullet">
-    ///   <item><description>Is a non-abstract, public class</description></item>
-    ///   <item><description>Does not have the <c>[NonController]</c> attribute</description></item>
-    ///   <item><description>Has the <c>[Controller]</c> attribute, inherits from <c>ControllerBase</c>, or is a legacy Web API controller</description></item>
-    /// </list>
+    ///     <para>
+    ///         A type is considered a controller if it meets all of the following criteria:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Is a non-abstract, public class</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Does not have the <c>[NonController]</c> attribute</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Has the <c>[Controller]</c> attribute, inherits from <c>ControllerBase</c>, or is a legacy Web
+    ///                 API controller
+    ///             </description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
-    /// <seealso cref="IsApiController"/>
-    /// <seealso cref="IsAction"/>
+    /// <seealso cref="IsApiController" />
+    /// <seealso cref="IsAction" />
     public bool IsController(INamedTypeSymbol type)
     {
         if (!IsValidControllerCandidate(type))
@@ -130,17 +148,17 @@ internal
     }
 
     /// <summary>
-    /// Determines whether the specified type is an API controller (has <c>[ApiController]</c> attribute).
+    ///     Determines whether the specified type is an API controller (has <c>[ApiController]</c> attribute).
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is an API controller; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// A type is considered an API controller if it is a controller (as determined by <see cref="IsController"/>)
-    /// and either the type itself or one of its base types has the <c>[ApiController]</c> attribute.
-    /// </para>
+    ///     <para>
+    ///         A type is considered an API controller if it is a controller (as determined by <see cref="IsController" />)
+    ///         and either the type itself or one of its base types has the <c>[ApiController]</c> attribute.
+    ///     </para>
     /// </remarks>
-    /// <seealso cref="IsController"/>
+    /// <seealso cref="IsController" />
     public bool IsApiController(INamedTypeSymbol type)
     {
         if (!IsController(type))
@@ -150,24 +168,34 @@ internal
     }
 
     /// <summary>
-    /// Determines whether the specified method is a controller action.
+    ///     Determines whether the specified method is a controller action.
     /// </summary>
     /// <param name="method">The method symbol to check.</param>
     /// <returns><c>true</c> if the method is an action; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// A method is considered an action if it meets all of the following criteria:
-    /// </para>
-    /// <list type="bullet">
-    ///   <item><description>Is an ordinary method (not a constructor, property accessor, etc.)</description></item>
-    ///   <item><description>Is not static</description></item>
-    ///   <item><description>Has public accessibility</description></item>
-    ///   <item><description>Does not have the <c>[NonAction]</c> attribute</description></item>
-    ///   <item><description>Is declared in a controller type</description></item>
-    /// </list>
+    ///     <para>
+    ///         A method is considered an action if it meets all of the following criteria:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Is an ordinary method (not a constructor, property accessor, etc.)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Is not static</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Has public accessibility</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Does not have the <c>[NonAction]</c> attribute</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Is declared in a controller type</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
-    /// <seealso cref="IsController"/>
-    /// <seealso cref="HasHttpMethodAttribute"/>
+    /// <seealso cref="IsController" />
+    /// <seealso cref="HasHttpMethodAttribute" />
     public bool IsAction(IMethodSymbol method)
     {
         if (method.MethodKind is not MethodKind.Ordinary)
@@ -186,57 +214,65 @@ internal
     }
 
     /// <summary>
-    /// Determines whether the specified method has an HTTP method attribute (<c>[HttpGet]</c>, <c>[HttpPost]</c>, etc.).
+    ///     Determines whether the specified method has an HTTP method attribute (<c>[HttpGet]</c>, <c>[HttpPost]</c>, etc.).
     /// </summary>
     /// <param name="method">The method symbol to check.</param>
     /// <returns><c>true</c> if the method has an HTTP method attribute; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// This method checks if any attribute on the method inherits from <c>HttpMethodAttribute</c>,
-    /// which includes <c>[HttpGet]</c>, <c>[HttpPost]</c>, <c>[HttpPut]</c>, <c>[HttpDelete]</c>,
-    /// <c>[HttpPatch]</c>, <c>[HttpHead]</c>, and <c>[HttpOptions]</c>.
-    /// </para>
+    ///     <para>
+    ///         This method checks if any attribute on the method inherits from <c>HttpMethodAttribute</c>,
+    ///         which includes <c>[HttpGet]</c>, <c>[HttpPost]</c>, <c>[HttpPut]</c>, <c>[HttpDelete]</c>,
+    ///         <c>[HttpPatch]</c>, <c>[HttpHead]</c>, and <c>[HttpOptions]</c>.
+    ///     </para>
     /// </remarks>
-    /// <seealso cref="IsAction"/>
-    /// <seealso cref="HasRouteAttribute"/>
+    /// <seealso cref="IsAction" />
+    /// <seealso cref="HasRouteAttribute" />
     public bool HasHttpMethodAttribute(IMethodSymbol method)
     {
         if (HttpMethodAttribute is null)
             return false;
 
         foreach (var attr in method.GetAttributes())
-        {
             if (attr.AttributeClass is not null && attr.AttributeClass.InheritsFrom(HttpMethodAttribute))
                 return true;
-        }
 
         return false;
     }
 
     /// <summary>
-    /// Determines whether the specified symbol has a <c>[Route]</c> attribute.
+    ///     Determines whether the specified symbol has a <c>[Route]</c> attribute.
     /// </summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns><c>true</c> if the symbol has a route attribute; otherwise, <c>false</c>.</returns>
-    /// <seealso cref="HasHttpMethodAttribute"/>
-    public bool HasRouteAttribute(ISymbol symbol) =>
-        RouteAttribute is not null && symbol.HasAttribute(RouteAttribute);
+    /// <seealso cref="HasHttpMethodAttribute" />
+    public bool HasRouteAttribute(ISymbol symbol)
+    {
+        return RouteAttribute is not null && symbol.HasAttribute(RouteAttribute);
+    }
 
     /// <summary>
-    /// Determines whether the specified type is an action result type.
+    ///     Determines whether the specified type is an action result type.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is an action result; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// This method returns <c>true</c> if the type is any of the following:
-    /// </para>
-    /// <list type="bullet">
-    ///   <item><description>Implements <c>IActionResult</c> or inherits from <c>ActionResult</c></description></item>
-    ///   <item><description>Is <c>ActionResult&lt;T&gt;</c></description></item>
-    ///   <item><description>Implements <c>IResult</c> (Minimal APIs)</description></item>
-    ///   <item><description>Implements <c>IHttpActionResult</c> (legacy Web API)</description></item>
-    /// </list>
+    ///     <para>
+    ///         This method returns <c>true</c> if the type is any of the following:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Implements <c>IActionResult</c> or inherits from <c>ActionResult</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Is <c>ActionResult&lt;T&gt;</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Implements <c>IResult</c> (Minimal APIs)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Implements <c>IHttpActionResult</c> (legacy Web API)</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     public bool IsActionResult(ITypeSymbol? type)
     {
@@ -247,79 +283,93 @@ internal
     }
 
     /// <summary>
-    /// Determines whether the specified parameter has a binding source attribute.
+    ///     Determines whether the specified parameter has a binding source attribute.
     /// </summary>
     /// <param name="parameter">The parameter symbol to check.</param>
     /// <returns><c>true</c> if the parameter has a binding attribute; otherwise, <c>false</c>.</returns>
     /// <remarks>
-    /// <para>
-    /// Binding source attributes include <c>[FromBody]</c>, <c>[FromQuery]</c>, <c>[FromRoute]</c>,
-    /// <c>[FromServices]</c>, <c>[FromHeader]</c>, and <c>[FromForm]</c>.
-    /// </para>
+    ///     <para>
+    ///         Binding source attributes include <c>[FromBody]</c>, <c>[FromQuery]</c>, <c>[FromRoute]</c>,
+    ///         <c>[FromServices]</c>, <c>[FromHeader]</c>, and <c>[FromForm]</c>.
+    ///     </para>
     /// </remarks>
-    /// <seealso cref="IsFromBody"/>
-    /// <seealso cref="IsFromServices"/>
+    /// <seealso cref="IsFromBody" />
+    /// <seealso cref="IsFromServices" />
     public bool HasBindingAttribute(IParameterSymbol parameter)
     {
         foreach (var attr in parameter.GetAttributes())
-        {
             if (IsBindingSourceAttribute(attr.AttributeClass))
                 return true;
-        }
 
         return false;
     }
 
     /// <summary>
-    /// Determines whether the specified parameter has a <c>[FromBody]</c> attribute.
+    ///     Determines whether the specified parameter has a <c>[FromBody]</c> attribute.
     /// </summary>
     /// <param name="parameter">The parameter symbol to check.</param>
     /// <returns><c>true</c> if the parameter is bound from the request body; otherwise, <c>false</c>.</returns>
-    /// <seealso cref="HasBindingAttribute"/>
-    /// <seealso cref="IsFromServices"/>
-    public bool IsFromBody(IParameterSymbol parameter) =>
-        FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
+    /// <seealso cref="HasBindingAttribute" />
+    /// <seealso cref="IsFromServices" />
+    public bool IsFromBody(IParameterSymbol parameter)
+    {
+        return FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
+    }
 
     /// <summary>
-    /// Determines whether the specified parameter has a <c>[FromServices]</c> attribute.
+    ///     Determines whether the specified parameter has a <c>[FromServices]</c> attribute.
     /// </summary>
     /// <param name="parameter">The parameter symbol to check.</param>
     /// <returns><c>true</c> if the parameter is bound from dependency injection services; otherwise, <c>false</c>.</returns>
-    /// <seealso cref="HasBindingAttribute"/>
-    /// <seealso cref="IsFromBody"/>
-    public bool IsFromServices(IParameterSymbol parameter) =>
-        FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
+    /// <seealso cref="HasBindingAttribute" />
+    /// <seealso cref="IsFromBody" />
+    public bool IsFromServices(IParameterSymbol parameter)
+    {
+        return FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
+    }
 
     /// <summary>
-    /// Determines whether the specified type is the <c>HttpContext</c> type.
+    ///     Determines whether the specified type is the <c>HttpContext</c> type.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is <c>Microsoft.AspNetCore.Http.HttpContext</c>; otherwise, <c>false</c>.</returns>
-    public bool IsHttpContextType(ITypeSymbol? type) =>
-        HttpContext is not null && type.IsEqualTo(HttpContext);
+    public bool IsHttpContextType(ITypeSymbol? type)
+    {
+        return HttpContext is not null && type.IsEqualTo(HttpContext);
+    }
 
     /// <summary>
-    /// Determines whether the specified type is or implements <c>IFormFile</c>.
+    ///     Determines whether the specified type is or implements <c>IFormFile</c>.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type represents a form file upload; otherwise, <c>false</c>.</returns>
-    public bool IsFormFile(ITypeSymbol? type) =>
-        type is not null && FormFileInterface is not null && type.IsOrImplements(FormFileInterface);
+    public bool IsFormFile(ITypeSymbol? type)
+    {
+        return type is not null && FormFileInterface is not null && type.IsOrImplements(FormFileInterface);
+    }
 
     // Helper methods to reduce cognitive complexity
 
-    private static bool IsValidControllerCandidate(ITypeSymbol type) =>
-        type.TypeKind is TypeKind.Class &&
-        type is { IsAbstract: false, DeclaredAccessibility: Accessibility.Public };
+    private static bool IsValidControllerCandidate(ITypeSymbol type)
+    {
+        return type.TypeKind is TypeKind.Class &&
+               type is { IsAbstract: false, DeclaredAccessibility: Accessibility.Public };
+    }
 
-    private bool HasNonControllerAttribute(ISymbol type) =>
-        NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute);
+    private bool HasNonControllerAttribute(ISymbol type)
+    {
+        return NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute);
+    }
 
-    private bool HasControllerAttribute(ISymbol type) =>
-        ControllerAttribute is not null && type.HasAttribute(ControllerAttribute);
+    private bool HasControllerAttribute(ISymbol type)
+    {
+        return ControllerAttribute is not null && type.HasAttribute(ControllerAttribute);
+    }
 
-    private bool InheritsFromControllerBase(ITypeSymbol type) =>
-        ControllerBase is not null && type.InheritsFrom(ControllerBase);
+    private bool InheritsFromControllerBase(ITypeSymbol type)
+    {
+        return ControllerBase is not null && type.InheritsFrom(ControllerBase);
+    }
 
     private bool IsLegacyController(ITypeSymbol type)
     {
@@ -332,8 +382,10 @@ internal
         return false;
     }
 
-    private bool HasApiControllerAttribute(ISymbol type) =>
-        ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute);
+    private bool HasApiControllerAttribute(ISymbol type)
+    {
+        return ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute);
+    }
 
     private bool BaseTypeHasApiControllerAttribute(ITypeSymbol type)
     {
@@ -363,11 +415,15 @@ internal
         return false;
     }
 
-    private bool IsMinimalApiResult(ITypeSymbol type) =>
-        ResultInterface is not null && type.IsOrImplements(ResultInterface);
+    private bool IsMinimalApiResult(ITypeSymbol type)
+    {
+        return ResultInterface is not null && type.IsOrImplements(ResultInterface);
+    }
 
-    private bool IsLegacyActionResult(ITypeSymbol type) =>
-        HttpActionResultInterface is not null && type.IsOrImplements(HttpActionResultInterface);
+    private bool IsLegacyActionResult(ITypeSymbol type)
+    {
+        return HttpActionResultInterface is not null && type.IsOrImplements(HttpActionResultInterface);
+    }
 
     private bool IsBindingSourceAttribute(INamedTypeSymbol? attrType)
     {

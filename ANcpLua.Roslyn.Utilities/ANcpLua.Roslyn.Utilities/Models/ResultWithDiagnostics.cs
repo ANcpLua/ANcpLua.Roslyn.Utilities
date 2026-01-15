@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace ANcpLua.Roslyn.Utilities.Models;
 
 /// <summary>
@@ -48,10 +46,10 @@ public
 #else
 internal
 #endif
-readonly record struct ResultWithDiagnostics<T>(
-    T Result,
-    EquatableArray<DiagnosticInfo> Diagnostics
-)
+    readonly record struct ResultWithDiagnostics<T>(
+        T Result,
+        EquatableArray<DiagnosticInfo> Diagnostics
+    )
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="ResultWithDiagnostics{T}" /> struct with no diagnostics.
@@ -83,7 +81,7 @@ readonly record struct ResultWithDiagnostics<T>(
 ///     <code>
 ///         // Wrap a value with no diagnostics
 ///         var result = myModel.ToResultWithDiagnostics();
-///
+/// 
 ///         // Wrap a value with diagnostics
 ///         var resultWithWarnings = myModel.ToResultWithDiagnostics(diagnostics);
 ///     </code>
@@ -94,7 +92,7 @@ public
 #else
 internal
 #endif
-static class ResultWithDiagnosticsExtensions
+    static class ResultWithDiagnosticsExtensions
 {
     /// <summary>
     ///     Wraps the specified value in a <see cref="ResultWithDiagnostics{T}" /> with no associated diagnostics.
@@ -109,7 +107,10 @@ static class ResultWithDiagnosticsExtensions
     ///     Use this method when an operation completes successfully without any diagnostics to report.
     /// </remarks>
     /// <seealso cref="ToResultWithDiagnostics{T}(T, ImmutableArray{DiagnosticInfo})" />
-    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result) => new(result);
+    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result)
+    {
+        return new ResultWithDiagnostics<T>(result);
+    }
 
     /// <summary>
     ///     Wraps the specified value in a <see cref="ResultWithDiagnostics{T}" /> with the provided diagnostics.
@@ -131,6 +132,8 @@ static class ResultWithDiagnosticsExtensions
     /// <seealso cref="ToResultWithDiagnostics{T}(T)" />
     /// <seealso cref="DiagnosticInfo" />
     public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result,
-        ImmutableArray<DiagnosticInfo> diagnostics) =>
-        new(result, diagnostics.AsEquatableArray());
+        ImmutableArray<DiagnosticInfo> diagnostics)
+    {
+        return new ResultWithDiagnostics<T>(result, diagnostics.AsEquatableArray());
+    }
 }

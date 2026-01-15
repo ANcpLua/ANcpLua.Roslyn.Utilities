@@ -3,33 +3,41 @@ using Microsoft.CodeAnalysis;
 namespace ANcpLua.Roslyn.Utilities.Patterns;
 
 /// <summary>
-/// Provides a fluent builder for constructing property symbol patterns.
+///     Provides a fluent builder for constructing property symbol patterns.
 /// </summary>
 /// <remarks>
-/// <para>
-/// This builder enables declarative matching of <see cref="IPropertySymbol"/> instances
-/// by composing multiple predicates that must all be satisfied for a match.
-/// </para>
-/// <list type="bullet">
-///   <item><description>Supports filtering by name, type, accessibility, and modifiers.</description></item>
-///   <item><description>Can match properties based on getter/setter presence and characteristics.</description></item>
-///   <item><description>Supports attribute-based filtering and containing type matching.</description></item>
-///   <item><description>Implicitly converts to <see cref="SymbolPattern{T}"/> for seamless integration.</description></item>
-/// </list>
+///     <para>
+///         This builder enables declarative matching of <see cref="IPropertySymbol" /> instances
+///         by composing multiple predicates that must all be satisfied for a match.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>Supports filtering by name, type, accessibility, and modifiers.</description>
+///         </item>
+///         <item>
+///             <description>Can match properties based on getter/setter presence and characteristics.</description>
+///         </item>
+///         <item>
+///             <description>Supports attribute-based filtering and containing type matching.</description>
+///         </item>
+///         <item>
+///             <description>Implicitly converts to <see cref="SymbolPattern{T}" /> for seamless integration.</description>
+///         </item>
+///     </list>
 /// </remarks>
-/// <seealso cref="SymbolPattern{T}"/>
-/// <seealso cref="FieldPatternBuilder"/>
+/// <seealso cref="SymbolPattern{T}" />
+/// <seealso cref="FieldPatternBuilder" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-sealed class PropertyPatternBuilder
+    sealed class PropertyPatternBuilder
 {
     private readonly List<Func<IPropertySymbol, bool>> _predicates = [];
 
     /// <summary>
-    /// Adds a predicate requiring the property to have the specified name.
+    ///     Adds a predicate requiring the property to have the specified name.
     /// </summary>
     /// <param name="name">The exact name the property must have.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -40,11 +48,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property type to match the specified type symbol.
+    ///     Adds a predicate requiring the property type to match the specified type symbol.
     /// </summary>
     /// <param name="type">The type symbol that the property type must equal.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="SymbolExtensions.IsEqualTo"/>
+    /// <seealso cref="SymbolExtensions.IsEqualTo" />
     public PropertyPatternBuilder OfType(ITypeSymbol type)
     {
         _predicates.Add(p => p.Type.IsEqualTo(type));
@@ -52,7 +60,7 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property type to satisfy the specified condition.
+    ///     Adds a predicate requiring the property type to satisfy the specified condition.
     /// </summary>
     /// <param name="predicate">A function that evaluates the property type and returns <c>true</c> if it matches.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -63,10 +71,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have public accessibility.
+    ///     Adds a predicate requiring the property to have public accessibility.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Private"/>
+    /// <seealso cref="Private" />
     public PropertyPatternBuilder Public()
     {
         _predicates.Add(p => p.DeclaredAccessibility == Accessibility.Public);
@@ -74,10 +82,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have private accessibility.
+    ///     Adds a predicate requiring the property to have private accessibility.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Public"/>
+    /// <seealso cref="Public" />
     public PropertyPatternBuilder Private()
     {
         _predicates.Add(p => p.DeclaredAccessibility == Accessibility.Private);
@@ -85,10 +93,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be static.
+    ///     Adds a predicate requiring the property to be static.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Instance"/>
+    /// <seealso cref="Instance" />
     public PropertyPatternBuilder Static()
     {
         _predicates.Add(p => p.IsStatic);
@@ -96,10 +104,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be an instance member (not static).
+    ///     Adds a predicate requiring the property to be an instance member (not static).
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Static"/>
+    /// <seealso cref="Static" />
     public PropertyPatternBuilder Instance()
     {
         _predicates.Add(p => !p.IsStatic);
@@ -107,11 +115,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have a getter.
+    ///     Adds a predicate requiring the property to have a getter.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasSetter"/>
-    /// <seealso cref="IsReadOnly"/>
+    /// <seealso cref="HasSetter" />
+    /// <seealso cref="IsReadOnly" />
     public PropertyPatternBuilder HasGetter()
     {
         _predicates.Add(p => p.GetMethod is not null);
@@ -119,11 +127,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have a setter.
+    ///     Adds a predicate requiring the property to have a setter.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasGetter"/>
-    /// <seealso cref="IsWriteOnly"/>
+    /// <seealso cref="HasGetter" />
+    /// <seealso cref="IsWriteOnly" />
     public PropertyPatternBuilder HasSetter()
     {
         _predicates.Add(p => p.SetMethod is not null);
@@ -131,11 +139,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be read-only (has getter but no setter).
+    ///     Adds a predicate requiring the property to be read-only (has getter but no setter).
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsWriteOnly"/>
-    /// <seealso cref="HasGetter"/>
+    /// <seealso cref="IsWriteOnly" />
+    /// <seealso cref="HasGetter" />
     public PropertyPatternBuilder IsReadOnly()
     {
         _predicates.Add(p => p.IsReadOnly);
@@ -143,11 +151,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be write-only (has setter but no getter).
+    ///     Adds a predicate requiring the property to be write-only (has setter but no getter).
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsReadOnly"/>
-    /// <seealso cref="HasSetter"/>
+    /// <seealso cref="IsReadOnly" />
+    /// <seealso cref="HasSetter" />
     public PropertyPatternBuilder IsWriteOnly()
     {
         _predicates.Add(p => p.IsWriteOnly);
@@ -155,10 +163,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be an auto-implemented property.
+    ///     Adds a predicate requiring the property to be an auto-implemented property.
     /// </summary>
     /// <remarks>
-    /// An auto-property is detected by checking if either the getter or setter is implicitly declared.
+    ///     An auto-property is detected by checking if either the getter or setter is implicitly declared.
     /// </remarks>
     /// <returns>This builder instance for method chaining.</returns>
     public PropertyPatternBuilder IsAutoProperty()
@@ -170,7 +178,7 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be marked with the <c>required</c> modifier.
+    ///     Adds a predicate requiring the property to be marked with the <c>required</c> modifier.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
     public PropertyPatternBuilder IsRequired()
@@ -180,7 +188,7 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be an indexer.
+    ///     Adds a predicate requiring the property to be an indexer.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
     public PropertyPatternBuilder IsIndexer()
@@ -190,10 +198,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be virtual.
+    ///     Adds a predicate requiring the property to be virtual.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsOverride"/>
+    /// <seealso cref="IsOverride" />
     public PropertyPatternBuilder IsVirtual()
     {
         _predicates.Add(p => p.IsVirtual);
@@ -201,10 +209,10 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be an override.
+    ///     Adds a predicate requiring the property to be an override.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsVirtual"/>
+    /// <seealso cref="IsVirtual" />
     public PropertyPatternBuilder IsOverride()
     {
         _predicates.Add(p => p.IsOverride);
@@ -212,11 +220,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have the specified attribute.
+    ///     Adds a predicate requiring the property to have the specified attribute.
     /// </summary>
     /// <param name="attributeType">The type symbol of the attribute that must be present.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasAttribute(string)"/>
+    /// <seealso cref="HasAttribute(string)" />
     public PropertyPatternBuilder HasAttribute(ITypeSymbol attributeType)
     {
         _predicates.Add(p => p.HasAttribute(attributeType));
@@ -224,11 +232,11 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to have an attribute with the specified fully qualified name.
+    ///     Adds a predicate requiring the property to have an attribute with the specified fully qualified name.
     /// </summary>
     /// <param name="fullyQualifiedName">The fully qualified name of the attribute that must be present.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasAttribute(ITypeSymbol)"/>
+    /// <seealso cref="HasAttribute(ITypeSymbol)" />
     public PropertyPatternBuilder HasAttribute(string fullyQualifiedName)
     {
         _predicates.Add(p => p.HasAttribute(fullyQualifiedName));
@@ -236,7 +244,7 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the property to be declared in a type matching the specified pattern.
+    ///     Adds a predicate requiring the property to be declared in a type matching the specified pattern.
     /// </summary>
     /// <param name="pattern">The pattern that the containing type must match.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -247,7 +255,7 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Adds a custom predicate for matching properties.
+    ///     Adds a custom predicate for matching properties.
     /// </summary>
     /// <param name="predicate">A function that evaluates the property and returns <c>true</c> if it matches.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -258,59 +266,68 @@ sealed class PropertyPatternBuilder
     }
 
     /// <summary>
-    /// Builds the composed pattern from all added predicates.
+    ///     Builds the composed pattern from all added predicates.
     /// </summary>
-    /// <returns>A <see cref="SymbolPattern{T}"/> that matches properties satisfying all predicates.</returns>
+    /// <returns>A <see cref="SymbolPattern{T}" /> that matches properties satisfying all predicates.</returns>
     public SymbolPattern<IPropertySymbol> Build()
     {
         var predicates = _predicates.ToArray();
         return new PredicatePattern<IPropertySymbol>(p =>
         {
             foreach (var predicate in predicates)
-            {
                 if (!predicate(p))
                     return false;
-            }
             return true;
         });
     }
 
     /// <summary>
-    /// Implicitly converts a <see cref="PropertyPatternBuilder"/> to a <see cref="SymbolPattern{T}"/>.
+    ///     Implicitly converts a <see cref="PropertyPatternBuilder" /> to a <see cref="SymbolPattern{T}" />.
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>A symbol pattern built from the builder's predicates.</returns>
-    public static implicit operator SymbolPattern<IPropertySymbol>(PropertyPatternBuilder builder) => builder.Build();
+    public static implicit operator SymbolPattern<IPropertySymbol>(PropertyPatternBuilder builder)
+    {
+        return builder.Build();
+    }
 }
 
 /// <summary>
-/// Provides a fluent builder for constructing field symbol patterns.
+///     Provides a fluent builder for constructing field symbol patterns.
 /// </summary>
 /// <remarks>
-/// <para>
-/// This builder enables declarative matching of <see cref="IFieldSymbol"/> instances
-/// by composing multiple predicates that must all be satisfied for a match.
-/// </para>
-/// <list type="bullet">
-///   <item><description>Supports filtering by name, type, accessibility, and modifiers.</description></item>
-///   <item><description>Can match fields based on const, readonly, and volatile characteristics.</description></item>
-///   <item><description>Supports attribute-based filtering.</description></item>
-///   <item><description>Implicitly converts to <see cref="SymbolPattern{T}"/> for seamless integration.</description></item>
-/// </list>
+///     <para>
+///         This builder enables declarative matching of <see cref="IFieldSymbol" /> instances
+///         by composing multiple predicates that must all be satisfied for a match.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>Supports filtering by name, type, accessibility, and modifiers.</description>
+///         </item>
+///         <item>
+///             <description>Can match fields based on const, readonly, and volatile characteristics.</description>
+///         </item>
+///         <item>
+///             <description>Supports attribute-based filtering.</description>
+///         </item>
+///         <item>
+///             <description>Implicitly converts to <see cref="SymbolPattern{T}" /> for seamless integration.</description>
+///         </item>
+///     </list>
 /// </remarks>
-/// <seealso cref="SymbolPattern{T}"/>
-/// <seealso cref="PropertyPatternBuilder"/>
+/// <seealso cref="SymbolPattern{T}" />
+/// <seealso cref="PropertyPatternBuilder" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
 internal
 #endif
-sealed class FieldPatternBuilder
+    sealed class FieldPatternBuilder
 {
     private readonly List<Func<IFieldSymbol, bool>> _predicates = [];
 
     /// <summary>
-    /// Adds a predicate requiring the field to have the specified name.
+    ///     Adds a predicate requiring the field to have the specified name.
     /// </summary>
     /// <param name="name">The exact name the field must have.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -321,11 +338,11 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field type to match the specified type symbol.
+    ///     Adds a predicate requiring the field type to match the specified type symbol.
     /// </summary>
     /// <param name="type">The type symbol that the field type must equal.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="SymbolExtensions.IsEqualTo"/>
+    /// <seealso cref="SymbolExtensions.IsEqualTo" />
     public FieldPatternBuilder OfType(ITypeSymbol type)
     {
         _predicates.Add(f => f.Type.IsEqualTo(type));
@@ -333,10 +350,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to have public accessibility.
+    ///     Adds a predicate requiring the field to have public accessibility.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Private"/>
+    /// <seealso cref="Private" />
     public FieldPatternBuilder Public()
     {
         _predicates.Add(f => f.DeclaredAccessibility == Accessibility.Public);
@@ -344,10 +361,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to have private accessibility.
+    ///     Adds a predicate requiring the field to have private accessibility.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Public"/>
+    /// <seealso cref="Public" />
     public FieldPatternBuilder Private()
     {
         _predicates.Add(f => f.DeclaredAccessibility == Accessibility.Private);
@@ -355,10 +372,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to be static.
+    ///     Adds a predicate requiring the field to be static.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Instance"/>
+    /// <seealso cref="Instance" />
     public FieldPatternBuilder Static()
     {
         _predicates.Add(f => f.IsStatic);
@@ -366,10 +383,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to be an instance member (not static).
+    ///     Adds a predicate requiring the field to be an instance member (not static).
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="Static"/>
+    /// <seealso cref="Static" />
     public FieldPatternBuilder Instance()
     {
         _predicates.Add(f => !f.IsStatic);
@@ -377,10 +394,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to be a compile-time constant.
+    ///     Adds a predicate requiring the field to be a compile-time constant.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsReadOnly"/>
+    /// <seealso cref="IsReadOnly" />
     public FieldPatternBuilder IsConst()
     {
         _predicates.Add(f => f.IsConst);
@@ -388,10 +405,10 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to be read-only.
+    ///     Adds a predicate requiring the field to be read-only.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="IsConst"/>
+    /// <seealso cref="IsConst" />
     public FieldPatternBuilder IsReadOnly()
     {
         _predicates.Add(f => f.IsReadOnly);
@@ -399,7 +416,7 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to be volatile.
+    ///     Adds a predicate requiring the field to be volatile.
     /// </summary>
     /// <returns>This builder instance for method chaining.</returns>
     public FieldPatternBuilder IsVolatile()
@@ -409,11 +426,11 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to have the specified attribute.
+    ///     Adds a predicate requiring the field to have the specified attribute.
     /// </summary>
     /// <param name="attributeType">The type symbol of the attribute that must be present.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasAttribute(string)"/>
+    /// <seealso cref="HasAttribute(string)" />
     public FieldPatternBuilder HasAttribute(ITypeSymbol attributeType)
     {
         _predicates.Add(f => f.HasAttribute(attributeType));
@@ -421,11 +438,11 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a predicate requiring the field to have an attribute with the specified fully qualified name.
+    ///     Adds a predicate requiring the field to have an attribute with the specified fully qualified name.
     /// </summary>
     /// <param name="fullyQualifiedName">The fully qualified name of the attribute that must be present.</param>
     /// <returns>This builder instance for method chaining.</returns>
-    /// <seealso cref="HasAttribute(ITypeSymbol)"/>
+    /// <seealso cref="HasAttribute(ITypeSymbol)" />
     public FieldPatternBuilder HasAttribute(string fullyQualifiedName)
     {
         _predicates.Add(f => f.HasAttribute(fullyQualifiedName));
@@ -433,7 +450,7 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Adds a custom predicate for matching fields.
+    ///     Adds a custom predicate for matching fields.
     /// </summary>
     /// <param name="predicate">A function that evaluates the field and returns <c>true</c> if it matches.</param>
     /// <returns>This builder instance for method chaining.</returns>
@@ -444,27 +461,28 @@ sealed class FieldPatternBuilder
     }
 
     /// <summary>
-    /// Builds the composed pattern from all added predicates.
+    ///     Builds the composed pattern from all added predicates.
     /// </summary>
-    /// <returns>A <see cref="SymbolPattern{T}"/> that matches fields satisfying all predicates.</returns>
+    /// <returns>A <see cref="SymbolPattern{T}" /> that matches fields satisfying all predicates.</returns>
     public SymbolPattern<IFieldSymbol> Build()
     {
         var predicates = _predicates.ToArray();
         return new PredicatePattern<IFieldSymbol>(f =>
         {
             foreach (var predicate in predicates)
-            {
                 if (!predicate(f))
                     return false;
-            }
             return true;
         });
     }
 
     /// <summary>
-    /// Implicitly converts a <see cref="FieldPatternBuilder"/> to a <see cref="SymbolPattern{T}"/>.
+    ///     Implicitly converts a <see cref="FieldPatternBuilder" /> to a <see cref="SymbolPattern{T}" />.
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>A symbol pattern built from the builder's predicates.</returns>
-    public static implicit operator SymbolPattern<IFieldSymbol>(FieldPatternBuilder builder) => builder.Build();
+    public static implicit operator SymbolPattern<IFieldSymbol>(FieldPatternBuilder builder)
+    {
+        return builder.Build();
+    }
 }

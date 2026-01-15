@@ -11,9 +11,18 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         including recursive type enumeration and namespace matching.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description>Zero-allocation namespace matching with <see cref="IsNamespace" /></description></item>
-///         <item><description>Recursive type enumeration with <see cref="GetAllTypes" /></description></item>
-///         <item><description>Assembly-level type queries with <see cref="GetTypesRecursive" /> and <see cref="GetPublicTypes(IAssemblySymbol)" /></description></item>
+///         <item>
+///             <description>Zero-allocation namespace matching with <see cref="IsNamespace" /></description>
+///         </item>
+///         <item>
+///             <description>Recursive type enumeration with <see cref="GetAllTypes" /></description>
+///         </item>
+///         <item>
+///             <description>
+///                 Assembly-level type queries with <see cref="GetTypesRecursive" /> and
+///                 <see cref="GetPublicTypes(IAssemblySymbol)" />
+///             </description>
+///         </item>
 ///     </list>
 /// </remarks>
 /// <seealso cref="SymbolExtensions" />
@@ -23,7 +32,7 @@ public
 #else
 internal
 #endif
-static class NamespaceExtensions
+    static class NamespaceExtensions
 {
     /// <summary>
     ///     Checks if a namespace matches the given parts using zero-allocation comparison.
@@ -106,7 +115,6 @@ static class NamespaceExtensions
     public static IEnumerable<INamedTypeSymbol> GetAllTypes(this INamespaceSymbol ns)
     {
         foreach (var member in ns.GetMembers())
-        {
             switch (member)
             {
                 case INamedTypeSymbol type:
@@ -123,7 +131,6 @@ static class NamespaceExtensions
                     break;
                 }
             }
-        }
     }
 
     /// <summary>
@@ -157,13 +164,9 @@ static class NamespaceExtensions
     {
         yield return ns;
         foreach (var member in ns.GetMembers())
-        {
             if (member is INamespaceSymbol nestedNs)
-            {
                 foreach (var descendant in nestedNs.GetAllNamespaces())
                     yield return descendant;
-            }
-        }
     }
 
     /// <summary>
@@ -188,8 +191,10 @@ static class NamespaceExtensions
     /// </example>
     /// <seealso cref="GetPublicTypes(IAssemblySymbol)" />
     /// <seealso cref="GetAllTypes" />
-    public static IEnumerable<INamedTypeSymbol> GetTypesRecursive(this IAssemblySymbol assembly) =>
-        assembly.GlobalNamespace.GetAllTypes();
+    public static IEnumerable<INamedTypeSymbol> GetTypesRecursive(this IAssemblySymbol assembly)
+    {
+        return assembly.GlobalNamespace.GetAllTypes();
+    }
 
     /// <summary>
     ///     Gets all public types in the assembly that are visible outside the assembly.
@@ -218,8 +223,10 @@ static class NamespaceExtensions
     /// <seealso cref="GetTypesRecursive" />
     /// <seealso cref="GetPublicTypes(INamespaceSymbol)" />
     /// <seealso cref="SymbolExtensions.IsVisibleOutsideOfAssembly" />
-    public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this IAssemblySymbol assembly) =>
-        assembly.GlobalNamespace.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+    public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this IAssemblySymbol assembly)
+    {
+        return assembly.GlobalNamespace.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+    }
 
     /// <summary>
     ///     Gets all public types in the namespace that are visible outside the assembly.
@@ -251,8 +258,10 @@ static class NamespaceExtensions
     /// <seealso cref="GetAllTypes" />
     /// <seealso cref="GetPublicTypes(IAssemblySymbol)" />
     /// <seealso cref="SymbolExtensions.IsVisibleOutsideOfAssembly" />
-    public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this INamespaceSymbol ns) =>
-        ns.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+    public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this INamespaceSymbol ns)
+    {
+        return ns.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+    }
 
     private static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamedTypeSymbol type)
     {

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -13,9 +12,15 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         analyzer configuration sources in Roslyn analyzers and source generators.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description>Type-safe access to boolean, integer, string, and enum configuration values</description></item>
-///         <item><description>Automatic fallback to default values when configuration is missing or unparseable</description></item>
-///         <item><description>Syntax tree-scoped configuration lookup for file-specific settings</description></item>
+///         <item>
+///             <description>Type-safe access to boolean, integer, string, and enum configuration values</description>
+///         </item>
+///         <item>
+///             <description>Automatic fallback to default values when configuration is missing or unparseable</description>
+///         </item>
+///         <item>
+///             <description>Syntax tree-scoped configuration lookup for file-specific settings</description>
+///         </item>
 ///     </list>
 /// </remarks>
 /// <seealso cref="AnalyzerConfigOptionsProviderExtensions" />
@@ -24,7 +29,7 @@ public
 #else
 internal
 #endif
-static class AnalyzerOptionsExtensions
+    static class AnalyzerOptionsExtensions
 {
     /// <summary>
     ///     Tries to get a configuration value for a specific syntax tree.
@@ -71,10 +76,12 @@ static class AnalyzerOptionsExtensions
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        bool defaultValue) =>
-        !options.TryGetConfigurationValue(syntaxTree, key, out var value)
+        bool defaultValue)
+    {
+        return !options.TryGetConfigurationValue(syntaxTree, key, out var value)
             ? defaultValue
             : ParseBoolean(value, defaultValue);
+    }
 
     /// <summary>
     ///     Gets an integer configuration value, returning the default if not found or unparseable.
@@ -121,10 +128,12 @@ static class AnalyzerOptionsExtensions
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        string defaultValue) =>
-        options.TryGetConfigurationValue(syntaxTree, key, out var value)
+        string defaultValue)
+    {
+        return options.TryGetConfigurationValue(syntaxTree, key, out var value)
             ? value
             : defaultValue;
+    }
 
     /// <summary>
     ///     Gets an enum configuration value, returning the default if not found or unparseable.

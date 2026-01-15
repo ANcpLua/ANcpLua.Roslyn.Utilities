@@ -7,7 +7,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// </summary>
 /// <typeparam name="TGenerator">
 ///     The type of the incremental generator to test.
-///     Must implement <see cref="IIncrementalGenerator"/> and have a parameterless constructor.
+///     Must implement <see cref="IIncrementalGenerator" /> and have a parameterless constructor.
 /// </typeparam>
 /// <remarks>
 ///     <para>
@@ -20,7 +20,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///             <description>Automatically runs the generator twice to validate incremental caching behavior.</description>
 ///         </item>
 ///         <item>
-///             <description>Returns a <see cref="GeneratorResult"/> with fluent assertion methods.</description>
+///             <description>Returns a <see cref="GeneratorResult" /> with fluent assertion methods.</description>
 ///         </item>
 ///         <item>
 ///             <description>Supports both simple source-only tests and advanced configuration scenarios.</description>
@@ -54,9 +54,9 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         .HasNoForbiddenTypes();
 ///     </code>
 /// </example>
-/// <seealso cref="GeneratorResult"/>
-/// <seealso cref="GeneratorTestEngine{TGenerator}"/>
-/// <seealso cref="TestConfiguration"/>
+/// <seealso cref="GeneratorResult" />
+/// <seealso cref="GeneratorTestEngine{TGenerator}" />
+/// <seealso cref="TestConfiguration" />
 public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
     /// <summary>
@@ -64,13 +64,14 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     /// </summary>
     /// <param name="source">
     ///     The C# source code to compile and run the generator against.
-    ///     This source will be parsed using the language version specified in <see cref="TestConfiguration.LanguageVersion"/>.
+    ///     This source will be parsed using the language version specified in <see cref="TestConfiguration.LanguageVersion" />
+    ///     .
     /// </param>
     /// <param name="cancellationToken">
-    ///     An optional <see cref="CancellationToken"/> to cancel the operation.
+    ///     An optional <see cref="CancellationToken" /> to cancel the operation.
     /// </param>
     /// <returns>
-    ///     A <see cref="GeneratorResult"/> containing the generated outputs, diagnostics,
+    ///     A <see cref="GeneratorResult" /> containing the generated outputs, diagnostics,
     ///     and caching information for inspection and fluent assertions.
     /// </returns>
     /// <remarks>
@@ -83,13 +84,13 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Reference assemblies are resolved based on <see cref="TestConfiguration.ReferenceAssemblies"/>.
+    ///                 Reference assemblies are resolved based on <see cref="TestConfiguration.ReferenceAssemblies" />.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 The returned <see cref="GeneratorResult"/> implements <see cref="IDisposable"/>
-    ///                 and calls <see cref="GeneratorResult.Verify"/> on disposal to ensure all assertions pass.
+    ///                 The returned <see cref="GeneratorResult" /> implements <see cref="IDisposable" />
+    ///                 and calls <see cref="GeneratorResult.Verify" /> on disposal to ensure all assertions pass.
     ///             </description>
     ///         </item>
     ///     </list>
@@ -103,8 +104,8 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///     result.Produces("IMyService.g.cs").IsClean();
     ///     </code>
     /// </example>
-    /// <seealso cref="Run(Action{GeneratorTestEngine{TGenerator}}, CancellationToken)"/>
-    /// <seealso cref="GeneratorResult"/>
+    /// <seealso cref="Run(Action{GeneratorTestEngine{TGenerator}}, CancellationToken)" />
+    /// <seealso cref="GeneratorResult" />
     public static async Task<GeneratorResult> Run(string source, CancellationToken cancellationToken = default)
     {
         var engine = new GeneratorTestEngine<TGenerator>().WithSource(source);
@@ -116,14 +117,14 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///     Runs the generator with custom configuration and returns an assertable result.
     /// </summary>
     /// <param name="configure">
-    ///     An action that configures the <see cref="GeneratorTestEngine{TGenerator}"/>
+    ///     An action that configures the <see cref="GeneratorTestEngine{TGenerator}" />
     ///     with sources, references, additional texts, and other options.
     /// </param>
     /// <param name="cancellationToken">
-    ///     An optional <see cref="CancellationToken"/> to cancel the operation.
+    ///     An optional <see cref="CancellationToken" /> to cancel the operation.
     /// </param>
     /// <returns>
-    ///     A <see cref="GeneratorResult"/> containing the generated outputs, diagnostics,
+    ///     A <see cref="GeneratorResult" /> containing the generated outputs, diagnostics,
     ///     and caching information for inspection and fluent assertions.
     /// </returns>
     /// <remarks>
@@ -135,7 +136,7 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 The <see cref="GeneratorTestEngine{TGenerator}"/> supports fluent configuration
+    ///                 The <see cref="GeneratorTestEngine{TGenerator}" /> supports fluent configuration
     ///                 with methods like <c>WithSource</c>, <c>WithReference</c>, and <c>WithAdditionalText</c>.
     ///             </description>
     ///         </item>
@@ -159,7 +160,7 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///         .WithSource(@"public partial class Bar { }")
     ///         .WithAdditionalText("settings.json", "{\"enabled\": true}")
     ///         .WithReference(typeof(SomeExternalType).Assembly));
-    ///
+    /// 
     ///     result
     ///         .Produces("Foo.g.cs")
     ///         .Produces("Bar.g.cs")
@@ -167,9 +168,9 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     ///         .HasNoForbiddenTypes();
     ///     </code>
     /// </example>
-    /// <seealso cref="Run(string, CancellationToken)"/>
-    /// <seealso cref="GeneratorTestEngine{TGenerator}"/>
-    /// <seealso cref="GeneratorResult"/>
+    /// <seealso cref="Run(string, CancellationToken)" />
+    /// <seealso cref="GeneratorTestEngine{TGenerator}" />
+    /// <seealso cref="GeneratorResult" />
     public static async Task<GeneratorResult> Run(
         Action<GeneratorTestEngine<TGenerator>> configure,
         CancellationToken cancellationToken = default)

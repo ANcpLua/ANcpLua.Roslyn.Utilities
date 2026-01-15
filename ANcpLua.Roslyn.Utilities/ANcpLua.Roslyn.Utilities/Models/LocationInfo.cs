@@ -14,9 +14,15 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///         location data (file path, span, and line span) as primitive values.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description>File path from the mapped line span or syntax tree</description></item>
-///         <item><description>Source span for precise character positioning</description></item>
-///         <item><description>Line span for human-readable line/column information</description></item>
+///         <item>
+///             <description>File path from the mapped line span or syntax tree</description>
+///         </item>
+///         <item>
+///             <description>Source span for precise character positioning</description>
+///         </item>
+///         <item>
+///             <description>Line span for human-readable line/column information</description>
+///         </item>
 ///     </list>
 /// </remarks>
 /// <param name="Path">The file path of the source location.</param>
@@ -29,7 +35,7 @@ public
 #else
 internal
 #endif
-readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan LineSpan)
+    readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan LineSpan)
 {
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="Location" />.
@@ -61,7 +67,10 @@ readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan
     ///     <paramref name="node" />.
     /// </returns>
     /// <seealso cref="From(Location)" />
-    public static LocationInfo From(SyntaxNode node) => From(node.GetLocation());
+    public static LocationInfo From(SyntaxNode node)
+    {
+        return From(node.GetLocation());
+    }
 
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="SyntaxToken" />.
@@ -72,7 +81,10 @@ readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan
     ///     <paramref name="token" />.
     /// </returns>
     /// <seealso cref="From(Location)" />
-    public static LocationInfo From(SyntaxToken token) => From(token.GetLocation());
+    public static LocationInfo From(SyntaxToken token)
+    {
+        return From(token.GetLocation());
+    }
 
     /// <summary>
     ///     Converts this <see cref="LocationInfo" /> back to a <see cref="Location" />.
@@ -83,5 +95,8 @@ readonly record struct LocationInfo(string Path, TextSpan Span, LinePositionSpan
     /// <remarks>
     ///     The returned location is suitable for use in diagnostic reporting.
     /// </remarks>
-    public Location ToLocation() => Location.Create(Path, Span, LineSpan);
+    public Location ToLocation()
+    {
+        return Location.Create(Path, Span, LineSpan);
+    }
 }

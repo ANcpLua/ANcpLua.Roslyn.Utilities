@@ -184,7 +184,6 @@ public readonly struct GeneratorStepAnalysis
 
         int cached = 0, unchanged = 0, modified = 0, @new = 0, removed = 0;
         foreach (var output in secondRun.SelectMany(static step => step.Outputs))
-        {
             switch (output.Reason)
             {
                 case IncrementalStepRunReason.Cached: cached++; break;
@@ -194,7 +193,6 @@ public readonly struct GeneratorStepAnalysis
                 case IncrementalStepRunReason.Removed: removed++; break;
                 default: modified++; break;
             }
-        }
 
         Cached = cached;
         Unchanged = unchanged;
@@ -211,7 +209,10 @@ public readonly struct GeneratorStepAnalysis
     ///     suitable for display in test output or reports.
     /// </returns>
     /// <seealso cref="StepFormatter.FormatBreakdown" />
-    public string FormatBreakdown() => StepFormatter.FormatBreakdown(this);
+    public string FormatBreakdown()
+    {
+        return StepFormatter.FormatBreakdown(this);
+    }
 }
 
 /// <summary>
@@ -279,8 +280,11 @@ internal static class StepClassification
     ///         </item>
     ///     </list>
     /// </remarks>
-    public static bool IsSinkStep(string stepName) => SinkStepPatterns.Any(p =>
-        stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+    public static bool IsSinkStep(string stepName)
+    {
+        return SinkStepPatterns.Any(p =>
+            stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+    }
 
     /// <summary>
     ///     Determines if a step is an infrastructure step.
@@ -294,7 +298,10 @@ internal static class StepClassification
     ///     This method exists to allow future differentiation if needed.
     /// </remarks>
     /// <seealso cref="IsSinkStep" />
-    public static bool IsInfrastructureStep(string stepName) => IsSinkStep(stepName);
+    public static bool IsInfrastructureStep(string stepName)
+    {
+        return IsSinkStep(stepName);
+    }
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes, polyfills).
@@ -322,6 +329,9 @@ internal static class StepClassification
     ///         </item>
     ///     </list>
     /// </remarks>
-    public static bool IsInfrastructureFile(string fileName) => InfrastructureFilePatterns.Any(p =>
-        fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+    public static bool IsInfrastructureFile(string fileName)
+    {
+        return InfrastructureFilePatterns.Any(p =>
+            fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+    }
 }

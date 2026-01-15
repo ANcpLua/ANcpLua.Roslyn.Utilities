@@ -11,9 +11,15 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         providing a more ergonomic API for analyzer and generator authors.
 ///     </para>
 ///     <list type="bullet">
-///         <item><description>Check if expressions are compile-time constants</description></item>
-///         <item><description>Extract typed constant values with null-safety</description></item>
-///         <item><description>Detect null literal expressions</description></item>
+///         <item>
+///             <description>Check if expressions are compile-time constants</description>
+///         </item>
+///         <item>
+///             <description>Extract typed constant values with null-safety</description>
+///         </item>
+///         <item>
+///             <description>Detect null literal expressions</description>
+///         </item>
 ///     </list>
 /// </remarks>
 /// <seealso cref="SemanticModel.GetConstantValue(SyntaxNode, CancellationToken)" />
@@ -22,7 +28,7 @@ public
 #else
 internal
 #endif
-static class SemanticModelExtensions
+    static class SemanticModelExtensions
 {
     /// <summary>
     ///     Checks if a syntax node represents a compile-time constant value.
@@ -37,8 +43,10 @@ static class SemanticModelExtensions
     /// <seealso cref="AllConstant" />
     /// <seealso cref="GetConstantValueOrDefault{T}" />
     public static bool IsConstant(this SemanticModel model, SyntaxNode node,
-        CancellationToken cancellationToken = default) =>
-        model.GetConstantValue(node, cancellationToken).HasValue;
+        CancellationToken cancellationToken = default)
+    {
+        return model.GetConstantValue(node, cancellationToken).HasValue;
+    }
 
     /// <summary>
     ///     Checks if all syntax nodes in a collection represent compile-time constant values.
@@ -59,10 +67,8 @@ static class SemanticModelExtensions
         CancellationToken cancellationToken = default)
     {
         foreach (var node in nodes)
-        {
             if (!model.GetConstantValue(node, cancellationToken).HasValue)
                 return false;
-        }
 
         return true;
     }
@@ -81,8 +87,12 @@ static class SemanticModelExtensions
     /// <remarks>
     ///     Returns <c>default</c> if:
     ///     <list type="bullet">
-    ///         <item><description>The node is not a constant expression</description></item>
-    ///         <item><description>The constant value cannot be cast to <typeparamref name="T" /></description></item>
+    ///         <item>
+    ///             <description>The node is not a constant expression</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>The constant value cannot be cast to <typeparamref name="T" /></description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <seealso cref="IsConstant" />

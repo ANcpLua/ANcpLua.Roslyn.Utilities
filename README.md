@@ -25,9 +25,11 @@ Layer 2: Downstream repos             <- Consume the SDK
 ```
 
 **Why this matters:**
+
 - This package must be published to NuGet **before** ANcpLua.NET.Sdk can reference it
 - Uses `Microsoft.NET.Sdk` directly (not any custom SDK)
-- Uses [PolySharp](https://github.com/Sergio0694/PolySharp) for netstandard2.0 polyfills instead of SDK-provided polyfills
+- Uses [PolySharp](https://github.com/Sergio0694/PolySharp) for netstandard2.0 polyfills instead of SDK-provided
+  polyfills
 - CI enforcement: GitHub Actions checks fail if any ANcpLua.NET.Sdk dependency is detected
 
 ## Installation
@@ -39,10 +41,10 @@ dotnet add package ANcpLua.Roslyn.Utilities.Testing
 
 ## Packages
 
-| Package | Target | Description |
-|---------|--------|-------------|
-| **ANcpLua.Roslyn.Utilities** | netstandard2.0 | Core library with EquatableArray, symbol extensions, pipeline extensions, DiagnosticFlow |
-| **ANcpLua.Roslyn.Utilities.Testing** | net10.0 | Testing framework for incremental generators with caching validation |
+| Package                              | Target         | Description                                                                              |
+|--------------------------------------|----------------|------------------------------------------------------------------------------------------|
+| **ANcpLua.Roslyn.Utilities**         | netstandard2.0 | Core library with EquatableArray, symbol extensions, pipeline extensions, DiagnosticFlow |
+| **ANcpLua.Roslyn.Utilities.Testing** | net10.0        | Testing framework for incremental generators with caching validation                     |
 
 ## Building
 
@@ -102,15 +104,15 @@ SemanticGuard.ForMethod(method)
 
 ## API Overview
 
-| Category | Key APIs |
-|----------|----------|
-| **Flow Control** | `DiagnosticFlow<T>`, `ReportAndContinue()` |
-| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*` |
-| **Validation** | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()` |
-| **Domain Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Operations** | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder` |
-| **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers` |
-| **Pipeline** | `GroupBy()`, `Batch()`, `Distinct()`, `CollectFlows()` |
+| Category             | Key APIs                                                                      |
+|----------------------|-------------------------------------------------------------------------------|
+| **Flow Control**     | `DiagnosticFlow<T>`, `ReportAndContinue()`                                    |
+| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*`                                      |
+| **Validation**       | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()`                        |
+| **Domain Contexts**  | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| **Operations**       | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder`               |
+| **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`                               |
+| **Pipeline**         | `GroupBy()`, `Batch()`, `Distinct()`, `CollectFlows()`                        |
 
 ## Symbol Extensions
 
@@ -213,9 +215,9 @@ result
     .HasNoForbiddenTypes();
 ```
 
-## Full Documentation
+## Documentation
 
-See [ANcpLua.io/utilities](https://ancplua.github.io/ANcpLua.io/utilities/) for complete documentation and [API Reference](https://ancplua.github.io/ANcpLua.io/api/utilities/).
+See [ANcpLua.io](https://ancplua.github.io/ANcpLua.io/utilities/) for full API documentation.
 
 ## Related
 

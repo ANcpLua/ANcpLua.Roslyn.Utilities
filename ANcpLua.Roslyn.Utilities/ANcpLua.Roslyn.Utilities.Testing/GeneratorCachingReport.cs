@@ -14,7 +14,8 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
-///                 Analyzes the first run for forbidden type violations (e.g., <c>ISymbol</c> or <c>Compilation</c> cached in pipeline state).
+///                 Analyzes the first run for forbidden type violations (e.g., <c>ISymbol</c> or <c>Compilation</c> cached
+///                 in pipeline state).
 ///             </description>
 ///         </item>
 ///         <item>
@@ -29,10 +30,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="GeneratorStepAnalysis"/>
-/// <seealso cref="ForbiddenTypeViolation"/>
-/// <seealso cref="GeneratorStepAnalyzer"/>
-/// <seealso cref="ForbiddenTypeAnalyzer"/>
+/// <seealso cref="GeneratorStepAnalysis" />
+/// <seealso cref="ForbiddenTypeViolation" />
+/// <seealso cref="GeneratorStepAnalyzer" />
+/// <seealso cref="ForbiddenTypeAnalyzer" />
 public sealed class GeneratorCachingReport
 {
     private GeneratorCachingReport(string generatorName, IReadOnlyList<GeneratorStepAnalysis> observableSteps,
@@ -74,7 +75,7 @@ public sealed class GeneratorCachingReport
     ///         </item>
     ///     </list>
     /// </remarks>
-    /// <seealso cref="GeneratorStepAnalysis"/>
+    /// <seealso cref="GeneratorStepAnalysis" />
     public IReadOnlyList<GeneratorStepAnalysis> ObservableSteps { get; }
 
     /// <summary>
@@ -86,8 +87,8 @@ public sealed class GeneratorCachingReport
     ///         cached in incremental generator pipeline state, as they prevent proper caching behavior.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="ForbiddenTypeViolation"/>
-    /// <seealso cref="ForbiddenTypeAnalyzer"/>
+    /// <seealso cref="ForbiddenTypeViolation" />
+    /// <seealso cref="ForbiddenTypeAnalyzer" />
     public IReadOnlyList<ForbiddenTypeViolation> ForbiddenTypeViolations { get; }
 
     /// <summary>
@@ -100,8 +101,8 @@ public sealed class GeneratorCachingReport
     ///     </para>
     /// </remarks>
     /// <value>
-    ///     <see langword="true"/> if at least one non-infrastructure source file was generated;
-    ///     otherwise, <see langword="false"/>.
+    ///     <see langword="true" /> if at least one non-infrastructure source file was generated;
+    ///     otherwise, <see langword="false" />.
     /// </value>
     public bool ProducedOutput { get; }
 
@@ -115,10 +116,10 @@ public sealed class GeneratorCachingReport
     ///     The second generator run result, used to analyze caching effectiveness.
     /// </param>
     /// <param name="generatorType">
-    ///     The <see cref="Type"/> of the generator being tested.
+    ///     The <see cref="Type" /> of the generator being tested.
     /// </param>
     /// <returns>
-    ///     A <see cref="GeneratorCachingReport"/> containing comprehensive caching analysis.
+    ///     A <see cref="GeneratorCachingReport" /> containing comprehensive caching analysis.
     /// </returns>
     /// <remarks>
     ///     <para>
@@ -142,8 +143,8 @@ public sealed class GeneratorCachingReport
     ///         </item>
     ///     </list>
     /// </remarks>
-    /// <seealso cref="ForbiddenTypeAnalyzer.AnalyzeGeneratorRun"/>
-    /// <seealso cref="GeneratorStepAnalyzer.ExtractSteps"/>
+    /// <seealso cref="ForbiddenTypeAnalyzer.AnalyzeGeneratorRun" />
+    /// <seealso cref="GeneratorStepAnalyzer.ExtractSteps" />
     public static GeneratorCachingReport Create(GeneratorDriverRunResult firstRun, GeneratorDriverRunResult secondRun,
         Type generatorType)
     {

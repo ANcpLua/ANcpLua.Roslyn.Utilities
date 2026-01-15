@@ -33,7 +33,7 @@ public
 #else
 internal
 #endif
-static class CompilationExtensions
+    static class CompilationExtensions
 {
     /// <summary>
     ///     Checks whether the specified compilation is using at least the given C# language version.
@@ -55,8 +55,10 @@ static class CompilationExtensions
     /// <seealso cref="LanguageVersion" />
     /// <seealso cref="CSharpCompilation.LanguageVersion" />
     public static bool
-        HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion) =>
-        ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
+        HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion)
+    {
+        return ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
+    }
 
     /// <summary>
     ///     Checks whether a type with the specified metadata name is accessible from the given compilation.
@@ -92,10 +94,8 @@ static class CompilationExtensions
             return compilation.IsSymbolAccessibleWithin(typeSymbol, compilation.Assembly);
 
         foreach (var currentTypeSymbol in compilation.GetTypesByMetadataName(fullyQualifiedMetadataName))
-        {
             if (compilation.IsSymbolAccessibleWithin(currentTypeSymbol, compilation.Assembly))
                 return true;
-        }
 
         return false;
     }
@@ -128,7 +128,8 @@ static class CompilationExtensions
     ///     The compilation to search for the type.
     /// </param>
     /// <param name="fullyQualifiedMetadataName">
-    ///     The fully qualified metadata name of the type to find (e.g., "System.String" or "System.Collections.Generic.List`1").
+    ///     The fully qualified metadata name of the type to find (e.g., "System.String" or
+    ///     "System.Collections.Generic.List`1").
     /// </param>
     /// <returns>
     ///     The best matching <see cref="INamedTypeSymbol" /> if one can be determined unambiguously;

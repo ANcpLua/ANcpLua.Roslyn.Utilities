@@ -4,13 +4,13 @@ Comprehensive utilities for Roslyn analyzers and source generators. netstandard2
 
 ## Quick Reference
 
-| Category | Key Types |
-|----------|-----------|
-| **Flow Control** | `DiagnosticFlow<T>` |
-| **Pattern Matching** | `SymbolPattern`, `Match.*`, `Invoke.*` |
-| **Validation** | `SemanticGuard<T>` |
-| **Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers` |
+| Category             | Key Types                                                                     |
+|----------------------|-------------------------------------------------------------------------------|
+| **Flow Control**     | `DiagnosticFlow<T>`                                                           |
+| **Pattern Matching** | `SymbolPattern`, `Match.*`, `Invoke.*`                                        |
+| **Validation**       | `SemanticGuard<T>`                                                            |
+| **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`                               |
 
 ---
 

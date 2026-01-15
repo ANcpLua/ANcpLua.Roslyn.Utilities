@@ -7,139 +7,145 @@ using Xunit;
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
 /// <summary>
-/// NuGet package reference for project building.
+///     NuGet package reference for project building.
 /// </summary>
 /// <param name="Name">The package identifier (e.g., "Microsoft.CodeAnalysis.CSharp").</param>
 /// <param name="Version">The package version (e.g., "4.12.0").</param>
-/// <seealso cref="ProjectBuilder.WithPackage"/>
+/// <seealso cref="ProjectBuilder.WithPackage" />
 public readonly record struct NuGetReference(string Name, string Version);
 
 /// <summary>
-/// Fluent builder for creating and building isolated .NET projects for testing.
+///     Fluent builder for creating and building isolated .NET projects for testing.
 /// </summary>
 /// <remarks>
-/// <para>
-/// <see cref="ProjectBuilder"/> provides a complete solution for integration testing of MSBuild-based
-/// projects, source generators, and analyzers in an isolated environment. Each instance creates a
-/// temporary directory with its own global.json, NuGet configuration, and project files.
-/// </para>
-/// <list type="bullet">
-///     <item>
-///         <description>Creates isolated temporary directories with automatic cleanup via <see cref="IAsyncDisposable"/>.</description>
-///     </item>
-///     <item>
-///         <description>Downloads and caches .NET SDK versions automatically via <see cref="DotNetSdkHelpers"/>.</description>
-///     </item>
-///     <item>
-///         <description>Generates SARIF output and binary logs for comprehensive build analysis.</description>
-///     </item>
-///     <item>
-///         <description>Supports GitHub Actions CI simulation with step summary output.</description>
-///     </item>
-///     <item>
-///         <description>Provides fluent API for configuring MSBuild properties, packages, and source files.</description>
-///     </item>
-/// </list>
+///     <para>
+///         <see cref="ProjectBuilder" /> provides a complete solution for integration testing of MSBuild-based
+///         projects, source generators, and analyzers in an isolated environment. Each instance creates a
+///         temporary directory with its own global.json, NuGet configuration, and project files.
+///     </para>
+///     <list type="bullet">
+///         <item>
+///             <description>
+///                 Creates isolated temporary directories with automatic cleanup via
+///                 <see cref="IAsyncDisposable" />.
+///             </description>
+///         </item>
+///         <item>
+///             <description>Downloads and caches .NET SDK versions automatically via <see cref="DotNetSdkHelpers" />.</description>
+///         </item>
+///         <item>
+///             <description>Generates SARIF output and binary logs for comprehensive build analysis.</description>
+///         </item>
+///         <item>
+///             <description>Supports GitHub Actions CI simulation with step summary output.</description>
+///         </item>
+///         <item>
+///             <description>Provides fluent API for configuring MSBuild properties, packages, and source files.</description>
+///         </item>
+///     </list>
 /// </remarks>
 /// <example>
-/// <code>
+///     <code>
 /// await using var builder = new ProjectBuilder(testOutputHelper);
-///
+/// 
 /// var result = await builder
 ///     .WithTargetFramework(Tfm.Net100)
 ///     .WithOutputType(Val.Library)
 ///     .WithPackage("Microsoft.CodeAnalysis.CSharp", "4.12.0")
 ///     .AddSource("Program.cs", "namespace Test; public class Foo { }")
 ///     .BuildAsync();
-///
+/// 
 /// result.ShouldSucceed();
 /// </code>
 /// </example>
-/// <seealso cref="BuildResult"/>
-/// <seealso cref="BuildResultAssertions"/>
-/// <seealso cref="NetSdkVersion"/>
+/// <seealso cref="BuildResult" />
+/// <seealso cref="BuildResultAssertions" />
+/// <seealso cref="NetSdkVersion" />
 public class ProjectBuilder : IAsyncDisposable
 {
     /// <summary>
-    /// The SARIF output filename used for diagnostic output.
+    ///     The SARIF output filename used for diagnostic output.
     /// </summary>
     protected const string SarifFileName = "BuildOutput.sarif";
 
     /// <summary>
-    /// The temporary directory for the project files.
+    ///     The temporary directory for the project files.
     /// </summary>
     protected readonly TemporaryDirectory Directory;
 
     /// <summary>
-    /// Path to the GitHub step summary file for CI simulation.
+    ///     Path to the GitHub step summary file for CI simulation.
     /// </summary>
     protected readonly FullPath GithubStepSummaryFile;
 
     /// <summary>
-    /// The NuGet package references configured for this project.
+    ///     The NuGet package references configured for this project.
     /// </summary>
     protected readonly List<NuGetReference> NuGetPackages = [];
 
     /// <summary>
-    /// The MSBuild properties configured for this project.
+    ///     The MSBuild properties configured for this project.
     /// </summary>
     protected readonly List<(string Key, string Value)> Properties = [];
 
     /// <summary>
-    /// The source files to be added to the project.
+    ///     The source files to be added to the project.
     /// </summary>
     protected readonly List<(string Name, string Content)> SourceFiles = [];
 
     /// <summary>
-    /// The test output helper for logging, if provided.
+    ///     The test output helper for logging, if provided.
     /// </summary>
     protected readonly ITestOutputHelper? TestOutputHelper;
 
     /// <summary>
-    /// Counter for the number of build operations performed.
+    ///     Counter for the number of build operations performed.
     /// </summary>
     protected int BuildCount;
 
     /// <summary>
-    /// The .NET SDK version to use for builds.
-    /// </summary>
-    protected NetSdkVersion SdkVersion = NetSdkVersion.Net100;
-
-    /// <summary>
-    /// The project filename (defaults to "TestProject.csproj").
+    ///     The project filename (defaults to "TestProject.csproj").
     /// </summary>
     protected string? ProjectFilename = "TestProject.csproj";
 
     /// <summary>
-    /// The root SDK for the project (defaults to "Microsoft.NET.Sdk").
+    ///     The root SDK for the project (defaults to "Microsoft.NET.Sdk").
     /// </summary>
     protected string RootSdk = "Microsoft.NET.Sdk";
 
     /// <summary>
-    /// Creates a new <see cref="ProjectBuilder"/> with an isolated temporary directory.
+    ///     The .NET SDK version to use for builds.
+    /// </summary>
+    protected NetSdkVersion SdkVersion = NetSdkVersion.Net100;
+
+    /// <summary>
+    ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
     /// </summary>
     /// <param name="testOutputHelper">
-    /// Optional xUnit test output helper for logging build output and file contents during test execution.
-    /// When provided, enables verbose logging of all files and build commands.
+    ///     Optional xUnit test output helper for logging build output and file contents during test execution.
+    ///     When provided, enables verbose logging of all files and build commands.
     /// </param>
     /// <remarks>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>Creates a unique temporary directory for complete build isolation.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward policy.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Prepares a file for GitHub step summary simulation.</description>
-    ///     </item>
-    /// </list>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Creates a unique temporary directory for complete build isolation.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward
+    ///                 policy.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Prepares a file for GitHub step summary simulation.</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Without test output (silent mode)
     /// await using var builder = new ProjectBuilder();
-    ///
+    /// 
     /// // With xUnit test output for debugging
     /// await using var builder = new ProjectBuilder(testOutputHelper);
     /// </code>
@@ -162,39 +168,39 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Gets the root folder path of the temporary project directory.
+    ///     Gets the root folder path of the temporary project directory.
     /// </summary>
     /// <value>The full path to the temporary directory containing the project files.</value>
     /// <remarks>
-    /// Use this property to access generated files, add additional files, or inspect the project structure
-    /// after build operations complete.
+    ///     Use this property to access generated files, add additional files, or inspect the project structure
+    ///     after build operations complete.
     /// </remarks>
     public FullPath RootFolder => Directory.FullPath;
 
     /// <summary>
-    /// Gets environment variables that simulate a GitHub Actions CI environment.
+    ///     Gets environment variables that simulate a GitHub Actions CI environment.
     /// </summary>
     /// <value>An enumerable of name-value tuples for GitHub Actions environment variables.</value>
     /// <remarks>
-    /// <para>Returns the following environment variables:</para>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <term>GITHUB_ACTIONS</term>
-    ///         <description>Set to "true" to indicate GitHub Actions environment.</description>
-    ///     </item>
-    ///     <item>
-    ///         <term>GITHUB_STEP_SUMMARY</term>
-    ///         <description>Path to the step summary file for workflow annotations.</description>
-    ///     </item>
-    /// </list>
+    ///     <para>Returns the following environment variables:</para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <term>GITHUB_ACTIONS</term>
+    ///             <description>Set to "true" to indicate GitHub Actions environment.</description>
+    ///         </item>
+    ///         <item>
+    ///             <term>GITHUB_STEP_SUMMARY</term>
+    ///             <description>Path to the step summary file for workflow annotations.</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder.BuildAsync(
     ///     environmentVariables: builder.GitHubEnvironmentVariables.ToArray());
     /// </code>
     /// </example>
-    /// <seealso cref="GetGitHubStepSummaryContent"/>
+    /// <seealso cref="GetGitHubStepSummaryContent" />
     public IEnumerable<(string Name, string Value)> GitHubEnvironmentVariables
     {
         get
@@ -205,12 +211,12 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Disposes the builder and cleans up the temporary directory.
+    ///     Disposes the builder and cleans up the temporary directory.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous dispose operation.</returns>
+    /// <returns>A <see cref="ValueTask" /> representing the asynchronous dispose operation.</returns>
     /// <remarks>
-    /// This method removes all files and directories created during the build process.
-    /// Always use <c>await using</c> to ensure proper cleanup.
+    ///     This method removes all files and directories created during the build process.
+    ///     Always use <c>await using</c> to ensure proper cleanup.
     /// </remarks>
     public virtual async ValueTask DisposeAsync()
     {
@@ -219,33 +225,34 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Gets the content of the GitHub step summary file if it exists.
+    ///     Gets the content of the GitHub step summary file if it exists.
     /// </summary>
     /// <returns>
-    /// The content of the step summary file as a string, or <see langword="null"/> if the file does not exist or is empty.
+    ///     The content of the step summary file as a string, or <see langword="null" /> if the file does not exist or is
+    ///     empty.
     /// </returns>
     /// <remarks>
-    /// This is useful for testing analyzers or generators that write GitHub workflow annotations.
-    /// The step summary file is populated when builds are run with <see cref="GitHubEnvironmentVariables"/>.
+    ///     This is useful for testing analyzers or generators that write GitHub workflow annotations.
+    ///     The step summary file is populated when builds are run with <see cref="GitHubEnvironmentVariables" />.
     /// </remarks>
-    /// <seealso cref="GitHubEnvironmentVariables"/>
+    /// <seealso cref="GitHubEnvironmentVariables" />
     public string? GetGitHubStepSummaryContent()
     {
         return File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
     }
 
     /// <summary>
-    /// Adds a file with the specified content to the project directory.
+    ///     Adds a file with the specified content to the project directory.
     /// </summary>
     /// <param name="relativePath">The relative path from the project root where the file should be created.</param>
     /// <param name="content">The text content to write to the file.</param>
     /// <returns>The full path to the created file.</returns>
     /// <remarks>
-    /// Parent directories are created automatically if they do not exist.
-    /// This method can be used to add any type of file including source files, configuration files, or resources.
+    ///     Parent directories are created automatically if they do not exist.
+    ///     This method can be used to add any type of file including source files, configuration files, or resources.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.AddFile("src/Models/User.cs", "namespace Models; public record User(string Name);");
     /// builder.AddFile("appsettings.json", "{ \"key\": \"value\" }");
     /// </code>
@@ -259,16 +266,16 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Configures the NuGet.config file with custom content.
+    ///     Configures the NuGet.config file with custom content.
     /// </summary>
     /// <param name="nugetConfigContent">The complete XML content for the NuGet.config file.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// This method replaces any existing NuGet.config file in the project directory.
-    /// For simpler package source configuration, consider using <see cref="WithPackageSource"/> instead.
+    ///     This method replaces any existing NuGet.config file in the project directory.
+    ///     For simpler package source configuration, consider using <see cref="WithPackageSource" /> instead.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithNuGetConfig("""
     ///     &lt;configuration&gt;
     ///         &lt;packageSources&gt;
@@ -279,7 +286,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     """);
     /// </code>
     /// </example>
-    /// <seealso cref="WithPackageSource"/>
+    /// <seealso cref="WithPackageSource" />
     public ProjectBuilder WithNuGetConfig(string nugetConfigContent)
     {
         Directory.CreateTextFile("NuGet.config", nugetConfigContent);
@@ -287,38 +294,44 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Adds a package source to the NuGet configuration with optional package pattern mapping.
+    ///     Adds a package source to the NuGet configuration with optional package pattern mapping.
     /// </summary>
     /// <param name="name">The name of the package source (e.g., "local", "myFeed").</param>
     /// <param name="path">The path or URL to the package source.</param>
     /// <param name="packagePatterns">
-    /// Optional package patterns to restrict which packages come from this source.
-    /// When specified, package source mapping is enabled with nuget.org as fallback for unmatched patterns.
+    ///     Optional package patterns to restrict which packages come from this source.
+    ///     When specified, package source mapping is enabled with nuget.org as fallback for unmatched patterns.
     /// </param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>Configures an isolated global packages folder within the source path to prevent cache pollution.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Clears existing package sources and adds the specified source plus nuget.org.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>When package patterns are provided, enables package source mapping for security and reproducibility.</description>
-    ///     </item>
-    /// </list>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 Configures an isolated global packages folder within the source path to prevent cache
+    ///                 pollution.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Clears existing package sources and adds the specified source plus nuget.org.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 When package patterns are provided, enables package source mapping for security and
+    ///                 reproducibility.
+    ///             </description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Simple local source
     /// builder.WithPackageSource("local", "/path/to/packages");
-    ///
+    /// 
     /// // With package pattern mapping
     /// builder.WithPackageSource("myFeed", "/path/to/packages", "MyCompany.*", "MyOrg.*");
     /// </code>
     /// </example>
-    /// <seealso cref="WithNuGetConfig"/>
+    /// <seealso cref="WithNuGetConfig" />
     public ProjectBuilder WithPackageSource(string name, string path, params string[] packagePatterns)
     {
         var patternElements = packagePatterns.Length > 0
@@ -352,16 +365,16 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the .NET SDK version to use for building the project.
+    ///     Sets the .NET SDK version to use for building the project.
     /// </summary>
     /// <param name="dotnetSdkVersion">The SDK version to use.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers"/> if not already present.
-    /// The default SDK version is <see cref="NetSdkVersion.Net100"/>.
+    ///     The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers" /> if not already present.
+    ///     The default SDK version is <see cref="NetSdkVersion.Net100" />.
     /// </remarks>
-    /// <seealso cref="NetSdkVersion"/>
-    /// <seealso cref="DotNetSdkHelpers"/>
+    /// <seealso cref="NetSdkVersion" />
+    /// <seealso cref="DotNetSdkHelpers" />
     public ProjectBuilder WithDotnetSdkVersion(NetSdkVersion dotnetSdkVersion)
     {
         SdkVersion = dotnetSdkVersion;
@@ -369,15 +382,15 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Enables Microsoft Testing Platform (MTP) mode in the global.json configuration.
+    ///     Enables Microsoft Testing Platform (MTP) mode in the global.json configuration.
     /// </summary>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// This modifies the global.json to include the MTP test runner configuration,
-    /// which is required for using the new Microsoft.Testing.Platform-based test execution model.
+    ///     This modifies the global.json to include the MTP test runner configuration,
+    ///     which is required for using the new Microsoft.Testing.Platform-based test execution model.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder
     ///     .WithMtpMode()
     ///     .WithPackage("Microsoft.Testing.Platform", "1.0.0")
@@ -402,20 +415,20 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the target framework for the project.
+    ///     Sets the target framework for the project.
     /// </summary>
     /// <param name="tfm">The target framework moniker (e.g., "net10.0", "netstandard2.0").</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Use constants from <see cref="Tfm"/> for common target framework values.
+    ///     Use constants from <see cref="Tfm" /> for common target framework values.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithTargetFramework(Tfm.Net100);
     /// builder.WithTargetFramework("net8.0-windows");
     /// </code>
     /// </example>
-    /// <seealso cref="Tfm"/>
+    /// <seealso cref="Tfm" />
     public ProjectBuilder WithTargetFramework(string tfm)
     {
         Properties.Add((Prop.TargetFramework, tfm));
@@ -423,20 +436,20 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the output type of the project.
+    ///     Sets the output type of the project.
     /// </summary>
     /// <param name="type">The output type (e.g., "Library", "Exe", "WinExe").</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Use constants from <see cref="Val"/> for common output type values.
+    ///     Use constants from <see cref="Val" /> for common output type values.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithOutputType(Val.Library);
     /// builder.WithOutputType(Val.Exe);
     /// </code>
     /// </example>
-    /// <seealso cref="Val"/>
+    /// <seealso cref="Val" />
     public ProjectBuilder WithOutputType(string type)
     {
         Properties.Add((Prop.OutputType, type));
@@ -444,15 +457,15 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the C# language version for the project.
+    ///     Sets the C# language version for the project.
     /// </summary>
     /// <param name="version">
-    /// The language version (e.g., "12.0", "latest", "preview").
-    /// Defaults to <see cref="Val.Latest"/>.
+    ///     The language version (e.g., "12.0", "latest", "preview").
+    ///     Defaults to <see cref="Val.Latest" />.
     /// </param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
-    /// <seealso cref="Val.Latest"/>
-    /// <seealso cref="Val.Preview"/>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
+    /// <seealso cref="Val.Latest" />
+    /// <seealso cref="Val.Preview" />
     public ProjectBuilder WithLangVersion(string version = Val.Latest)
     {
         Properties.Add((Prop.LangVersion, version));
@@ -460,25 +473,25 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets an arbitrary MSBuild property on the project.
+    ///     Sets an arbitrary MSBuild property on the project.
     /// </summary>
     /// <param name="name">The property name (e.g., "Nullable", "ImplicitUsings").</param>
     /// <param name="value">The property value.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Use constants from <see cref="Prop"/> for common property names and <see cref="Val"/> for common values.
+    ///     Use constants from <see cref="Prop" /> for common property names and <see cref="Val" /> for common values.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder
     ///     .WithProperty(Prop.Nullable, Val.Enable)
     ///     .WithProperty(Prop.ImplicitUsings, Val.Enable)
     ///     .WithProperty("CustomProperty", "CustomValue");
     /// </code>
     /// </example>
-    /// <seealso cref="Prop"/>
-    /// <seealso cref="Val"/>
-    /// <seealso cref="WithProperties"/>
+    /// <seealso cref="Prop" />
+    /// <seealso cref="Val" />
+    /// <seealso cref="WithProperties" />
     public ProjectBuilder WithProperty(string name, string value)
     {
         Properties.Add((name, value));
@@ -486,19 +499,19 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets multiple MSBuild properties on the project.
+    ///     Sets multiple MSBuild properties on the project.
     /// </summary>
     /// <param name="properties">An array of key-value tuples representing property names and values.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithProperties(
     ///     (Prop.Nullable, Val.Enable),
     ///     (Prop.ImplicitUsings, Val.Enable),
     ///     (Prop.TreatWarningsAsErrors, Val.True));
     /// </code>
     /// </example>
-    /// <seealso cref="WithProperty"/>
+    /// <seealso cref="WithProperty" />
     public ProjectBuilder WithProperties(params (string Key, string Value)[] properties)
     {
         Properties.AddRange(properties);
@@ -506,17 +519,17 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Adds a source file to the project.
+    ///     Adds a source file to the project.
     /// </summary>
     /// <param name="filename">The filename for the source file (e.g., "Program.cs", "Models/User.cs").</param>
     /// <param name="content">The C# source code content.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Source files are written to the project directory when <see cref="BuildAsync"/>, <see cref="RunAsync"/>,
-    /// <see cref="TestAsync"/>, or <see cref="PackAsync"/> is called.
+    ///     Source files are written to the project directory when <see cref="BuildAsync" />, <see cref="RunAsync" />,
+    ///     <see cref="TestAsync" />, or <see cref="PackAsync" /> is called.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder
     ///     .AddSource("Program.cs", """
     ///         Console.WriteLine("Hello, World!");
@@ -527,7 +540,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///         """);
     /// </code>
     /// </example>
-    /// <seealso cref="AddFile"/>
+    /// <seealso cref="AddFile" />
     public ProjectBuilder AddSource(string filename, string content)
     {
         SourceFiles.Add((filename, content));
@@ -535,19 +548,19 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Adds a NuGet package reference to the project.
+    ///     Adds a NuGet package reference to the project.
     /// </summary>
     /// <param name="name">The package identifier (e.g., "Microsoft.CodeAnalysis.CSharp").</param>
     /// <param name="version">The package version (e.g., "4.12.0").</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder
     ///     .WithPackage("Microsoft.CodeAnalysis.CSharp", "4.12.0")
     ///     .WithPackage("xunit", "2.9.2");
     /// </code>
     /// </example>
-    /// <seealso cref="NuGetReference"/>
+    /// <seealso cref="NuGetReference" />
     public ProjectBuilder WithPackage(string name, string version)
     {
         NuGetPackages.Add(new NuGetReference(name, version));
@@ -555,12 +568,12 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the project filename.
+    ///     Sets the project filename.
     /// </summary>
     /// <param name="filename">The filename for the .csproj file (e.g., "MyProject.csproj").</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// The default filename is "TestProject.csproj".
+    ///     The default filename is "TestProject.csproj".
     /// </remarks>
     public ProjectBuilder WithFilename(string filename)
     {
@@ -569,15 +582,15 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets the root SDK for the project.
+    ///     Sets the root SDK for the project.
     /// </summary>
     /// <param name="sdk">The SDK identifier (e.g., "Microsoft.NET.Sdk", "Microsoft.NET.Sdk.Web", "Microsoft.NET.Sdk.Worker").</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// The default SDK is "Microsoft.NET.Sdk".
+    ///     The default SDK is "Microsoft.NET.Sdk".
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithRootSdk("Microsoft.NET.Sdk.Web");
     /// </code>
     /// </example>
@@ -588,16 +601,16 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Adds a Directory.Build.props file to the project directory.
+    ///     Adds a Directory.Build.props file to the project directory.
     /// </summary>
     /// <param name="content">The XML content for the Directory.Build.props file.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Directory.Build.props files are evaluated before the project file and are useful for
-    /// setting properties that should apply to all projects in a directory hierarchy.
+    ///     Directory.Build.props files are evaluated before the project file and are useful for
+    ///     setting properties that should apply to all projects in a directory hierarchy.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithDirectoryBuildProps("""
     ///     &lt;Project&gt;
     ///         &lt;PropertyGroup&gt;
@@ -607,7 +620,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     """);
     /// </code>
     /// </example>
-    /// <seealso cref="WithDirectoryPackagesProps"/>
+    /// <seealso cref="WithDirectoryPackagesProps" />
     public ProjectBuilder WithDirectoryBuildProps(string content)
     {
         AddFile("Directory.Build.props", content);
@@ -615,16 +628,16 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Adds a Directory.Packages.props file for Central Package Management (CPM).
+    ///     Adds a Directory.Packages.props file for Central Package Management (CPM).
     /// </summary>
     /// <param name="content">The XML content for the Directory.Packages.props file.</param>
-    /// <returns>The current <see cref="ProjectBuilder"/> instance for method chaining.</returns>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    /// Central Package Management allows you to manage package versions in a single location.
-    /// When using CPM, package references in project files should not specify versions.
+    ///     Central Package Management allows you to manage package versions in a single location.
+    ///     When using CPM, package references in project files should not specify versions.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.WithDirectoryPackagesProps("""
     ///     &lt;Project&gt;
     ///         &lt;PropertyGroup&gt;
@@ -637,7 +650,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     """);
     /// </code>
     /// </example>
-    /// <seealso cref="WithDirectoryBuildProps"/>
+    /// <seealso cref="WithDirectoryBuildProps" />
     public ProjectBuilder WithDirectoryPackagesProps(string content)
     {
         AddFile("Directory.Packages.props", content);
@@ -645,42 +658,42 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Builds the project and returns the result.
+    ///     Builds the project and returns the result.
     /// </summary>
     /// <param name="buildArguments">Optional additional arguments to pass to the dotnet build command.</param>
     /// <param name="environmentVariables">Optional environment variables to set during the build.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the build output, SARIF diagnostics, and binary log.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the build output, SARIF diagnostics, and binary log.</returns>
     /// <remarks>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>Generates the .csproj file from the configured properties and packages.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Writes all source files to the project directory.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Executes <c>dotnet build</c> with automatic binary log generation.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Parses SARIF output for structured diagnostic access.</description>
-    ///     </item>
-    /// </list>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Generates the .csproj file from the configured properties and packages.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Writes all source files to the project directory.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Executes <c>dotnet build</c> with automatic binary log generation.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Parses SARIF output for structured diagnostic access.</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder
     ///     .WithTargetFramework(Tfm.Net100)
     ///     .AddSource("Program.cs", code)
     ///     .BuildAsync();
-    ///
+    /// 
     /// result.ShouldSucceed();
     /// Assert.False(result.HasWarning("CS0618"));
     /// </code>
     /// </example>
-    /// <seealso cref="BuildResult"/>
-    /// <seealso cref="RunAsync"/>
-    /// <seealso cref="TestAsync"/>
-    /// <seealso cref="PackAsync"/>
+    /// <seealso cref="BuildResult" />
+    /// <seealso cref="RunAsync" />
+    /// <seealso cref="TestAsync" />
+    /// <seealso cref="PackAsync" />
     public async Task<BuildResult> BuildAsync(string[]? buildArguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
@@ -693,28 +706,28 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Builds and runs the project, returning the result.
+    ///     Builds and runs the project, returning the result.
     /// </summary>
     /// <param name="arguments">Optional arguments to pass to the application after the <c>--</c> separator.</param>
     /// <param name="environmentVariables">Optional environment variables to set during execution.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the run output and any diagnostics.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the run output and any diagnostics.</returns>
     /// <remarks>
-    /// This method is suitable for testing console applications. The project must have an executable output type.
-    /// Arguments are passed after <c>--</c> to separate them from dotnet CLI arguments.
+    ///     This method is suitable for testing console applications. The project must have an executable output type.
+    ///     Arguments are passed after <c>--</c> to separate them from dotnet CLI arguments.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder
     ///     .WithTargetFramework(Tfm.Net100)
     ///     .WithOutputType(Val.Exe)
     ///     .AddSource("Program.cs", "Console.WriteLine(args[0]);")
     ///     .RunAsync(["Hello"]);
-    ///
+    /// 
     /// result.ShouldSucceed();
     /// Assert.True(result.OutputContains("Hello"));
     /// </code>
     /// </example>
-    /// <seealso cref="BuildAsync"/>
+    /// <seealso cref="BuildAsync" />
     public async Task<BuildResult> RunAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
@@ -727,17 +740,17 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Builds and tests the project, returning the result.
+    ///     Builds and tests the project, returning the result.
     /// </summary>
     /// <param name="arguments">Optional additional arguments to pass to the dotnet test command.</param>
     /// <param name="environmentVariables">Optional environment variables to set during testing.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the test output and any diagnostics.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the test output and any diagnostics.</returns>
     /// <remarks>
-    /// The project should reference a test framework (xUnit, NUnit, MSTest) and contain test classes.
-    /// Consider using <see cref="WithMtpMode"/> for Microsoft Testing Platform-based test execution.
+    ///     The project should reference a test framework (xUnit, NUnit, MSTest) and contain test classes.
+    ///     Consider using <see cref="WithMtpMode" /> for Microsoft Testing Platform-based test execution.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder
     ///     .WithTargetFramework(Tfm.Net100)
     ///     .WithPackage("xunit", "2.9.2")
@@ -747,12 +760,12 @@ public class ProjectBuilder : IAsyncDisposable
     ///         public class Tests { [Fact] public void Test() => Assert.True(true); }
     ///         """)
     ///     .TestAsync();
-    ///
+    /// 
     /// result.ShouldSucceed();
     /// </code>
     /// </example>
-    /// <seealso cref="WithMtpMode"/>
-    /// <seealso cref="BuildAsync"/>
+    /// <seealso cref="WithMtpMode" />
+    /// <seealso cref="BuildAsync" />
     public async Task<BuildResult> TestAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
@@ -765,28 +778,28 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Packs the project into a NuGet package, returning the result.
+    ///     Packs the project into a NuGet package, returning the result.
     /// </summary>
     /// <param name="arguments">Optional additional arguments to pass to the dotnet pack command.</param>
     /// <param name="environmentVariables">Optional environment variables to set during packing.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the pack output and any diagnostics.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the pack output and any diagnostics.</returns>
     /// <remarks>
-    /// The project should be configured as packable (IsPackable=true or default for library projects).
-    /// The resulting .nupkg file will be in the bin/Release directory.
+    ///     The project should be configured as packable (IsPackable=true or default for library projects).
+    ///     The resulting .nupkg file will be in the bin/Release directory.
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var result = await builder
     ///     .WithTargetFramework(Tfm.NetStandard20)
     ///     .WithProperty(Prop.Version, "1.0.0")
     ///     .WithProperty(Prop.PackageId, "MyPackage")
     ///     .AddSource("Library.cs", "public class MyLib { }")
     ///     .PackAsync();
-    ///
+    /// 
     /// result.ShouldSucceed();
     /// </code>
     /// </example>
-    /// <seealso cref="BuildAsync"/>
+    /// <seealso cref="BuildAsync" />
     public async Task<BuildResult> PackAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
@@ -799,16 +812,16 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Restores NuGet packages for the project.
+    ///     Restores NuGet packages for the project.
     /// </summary>
     /// <param name="arguments">Optional additional arguments to pass to the dotnet restore command.</param>
     /// <param name="environmentVariables">Optional environment variables to set during restore.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the restore output and any diagnostics.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the restore output and any diagnostics.</returns>
     /// <remarks>
-    /// Restore is typically called automatically by build, run, test, and pack commands.
-    /// Use this method when you need to explicitly restore packages or diagnose restore issues.
+    ///     Restore is typically called automatically by build, run, test, and pack commands.
+    ///     Use this method when you need to explicitly restore packages or diagnose restore issues.
     /// </remarks>
-    /// <seealso cref="BuildAsync"/>
+    /// <seealso cref="BuildAsync" />
     public async Task<BuildResult> RestoreAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
@@ -818,11 +831,11 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Generates the .csproj file from the configured properties and packages.
+    ///     Generates the .csproj file from the configured properties and packages.
     /// </summary>
     /// <remarks>
-    /// Override this method in derived classes to customize the project file generation,
-    /// such as adding SDK import styles or additional project elements.
+    ///     Override this method in derived classes to customize the project file generation,
+    ///     such as adding SDK import styles or additional project elements.
     /// </remarks>
     protected virtual void GenerateCsprojFile()
     {
@@ -852,40 +865,43 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
-    /// Executes an arbitrary dotnet command and returns the result.
+    ///     Executes an arbitrary dotnet command and returns the result.
     /// </summary>
     /// <param name="command">The dotnet command to execute (e.g., "build", "run", "test", "pack", "restore", "new").</param>
     /// <param name="arguments">Optional additional arguments to pass to the command.</param>
     /// <param name="environmentVariables">Optional environment variables to set during execution.</param>
-    /// <returns>A <see cref="BuildResult"/> containing the command output, SARIF diagnostics (if available), and binary log.</returns>
+    /// <returns>A <see cref="BuildResult" /> containing the command output, SARIF diagnostics (if available), and binary log.</returns>
     /// <remarks>
-    /// <para>This method provides low-level access to the dotnet CLI for custom scenarios.</para>
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>Automatically adds <c>/bl</c> flag for binary log generation.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Isolates the build environment by removing interfering environment variables (CI, GITHUB_*, MSBuild*, RUNNER_*).</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Configures DOTNET_ROOT and related variables for proper SDK resolution.</description>
-    ///     </item>
-    ///     <item>
-    ///         <description>Logs all files and command output when a test output helper is configured.</description>
-    ///     </item>
-    /// </list>
+    ///     <para>This method provides low-level access to the dotnet CLI for custom scenarios.</para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Automatically adds <c>/bl</c> flag for binary log generation.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Isolates the build environment by removing interfering environment variables (CI, GITHUB_*,
+    ///                 MSBuild*, RUNNER_*).
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Configures DOTNET_ROOT and related variables for proper SDK resolution.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Logs all files and command output when a test output helper is configured.</description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// // Custom dotnet command
     /// var result = await builder.ExecuteDotnetCommandAsync("format", ["--verify-no-changes"]);
-    ///
+    /// 
     /// // dotnet new with template
     /// var result = await builder.ExecuteDotnetCommandAsync("new", ["console", "-n", "MyApp"]);
     /// </code>
     /// </example>
-    /// <seealso cref="BuildAsync"/>
-    /// <seealso cref="BuildResult"/>
+    /// <seealso cref="BuildAsync" />
+    /// <seealso cref="BuildResult" />
     public virtual async Task<BuildResult> ExecuteDotnetCommandAsync(string command, string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {

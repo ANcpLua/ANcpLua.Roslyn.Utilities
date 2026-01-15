@@ -5,6 +5,7 @@
 ### 1. Detect Console.WriteLine in Production Code
 
 **Before (verbose):**
+
 ```csharp
 if (operation is IInvocationOperation invocation &&
     invocation.TargetMethod.ContainingType?.Name == "Console" &&
@@ -15,6 +16,7 @@ if (operation is IInvocationOperation invocation &&
 ```
 
 **After (DSL):**
+
 ```csharp
 var consoleWrite = Invoke.Method("WriteLine", "Write").OnConsole();
 

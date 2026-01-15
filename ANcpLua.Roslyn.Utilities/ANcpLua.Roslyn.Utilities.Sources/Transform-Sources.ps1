@@ -5,10 +5,10 @@
 param(
     [Parameter(Mandatory)]
     [string]$SourceDir,
-    
+
     [Parameter(Mandatory)]
     [string]$OutputDir,
-    
+
     [switch]$ShowDetails
 )
 
@@ -16,13 +16,15 @@ $ErrorActionPreference = 'Stop'
 
 # Resolve paths
 $SourceDir = (Resolve-Path $SourceDir).Path
-if (-not (Test-Path $SourceDir)) {
+if (-not (Test-Path $SourceDir))
+{
     Write-Error "Source directory not found: $SourceDir"
     exit 1
 }
 
 # Clean and create output
-if (Test-Path $OutputDir) {
+if (Test-Path $OutputDir)
+{
     Remove-Item $OutputDir -Recurse -Force
 }
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
@@ -31,7 +33,8 @@ New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 $files = Get-ChildItem $SourceDir -Filter "*.cs" -Recurse
 
 $count = 0
-foreach ($file in $files) {
+foreach ($file in $files)
+{
     $relativePath = $file.FullName.Substring($SourceDir.Length + 1)
     $content = Get-Content $file.FullName -Raw
 
@@ -53,13 +56,15 @@ foreach ($file in $files) {
     # Preserve directory structure
     $outputPath = Join-Path $OutputDir $relativePath
     $outputDirPath = Split-Path $outputPath -Parent
-    if (-not (Test-Path $outputDirPath)) {
+    if (-not (Test-Path $outputDirPath))
+    {
         New-Item -ItemType Directory -Path $outputDirPath -Force | Out-Null
     }
 
     Set-Content $outputPath $content -NoNewline
     $count++
-    if ($ShowDetails) {
+    if ($ShowDetails)
+    {
         Write-Host "Transformed: $relativePath"
     }
 }

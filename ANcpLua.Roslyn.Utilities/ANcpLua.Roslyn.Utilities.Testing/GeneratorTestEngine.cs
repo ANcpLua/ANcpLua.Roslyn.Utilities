@@ -10,13 +10,13 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     A fluent builder and runner for executing Roslyn incremental generator tests.
 /// </summary>
 /// <typeparam name="TGenerator">
-///     The incremental generator type to test. Must implement <see cref="IIncrementalGenerator"/>
+///     The incremental generator type to test. Must implement <see cref="IIncrementalGenerator" />
 ///     and have a parameterless constructor.
 /// </typeparam>
 /// <remarks>
 ///     <para>
 ///         This class provides a fluent API for configuring and running generator tests,
-///         including support for caching validation through the <see cref="RunTwiceAsync"/> method.
+///         including support for caching validation through the <see cref="RunTwiceAsync" /> method.
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
@@ -43,20 +43,20 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         ")
 ///         .WithReference(MetadataReference.CreateFromFile(typeof(MyAttribute).Assembly.Location))
 ///         .WithLanguageVersion(LanguageVersion.CSharp12);
-///
+/// 
 ///     var (firstRun, secondRun) = await engine.RunTwiceAsync();
 ///     // Assert caching behavior by comparing firstRun and secondRun
 ///     </code>
 /// </example>
-/// <seealso cref="Test{TGenerator}"/>
-/// <seealso cref="GeneratorResult{TGenerator}"/>
-/// <seealso cref="TestConfiguration"/>
+/// <seealso cref="Test{TGenerator}" />
+/// <seealso cref="GeneratorResult{TGenerator}" />
+/// <seealso cref="TestConfiguration" />
 public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrementalGenerator, new()
 {
+    private const bool _trackSteps = true; // Default to true for safer defaults in tests
     private readonly List<AdditionalText> _additionalTexts = [];
     private readonly List<MetadataReference> _references = [];
     private readonly List<SyntaxTree> _sources = [];
-    private const bool _trackSteps = true; // Default to true for safer defaults in tests
     private AnalyzerConfigOptionsProvider? _analyzerConfigOptions;
     private LanguageVersion _languageVersion = TestConfiguration.LanguageVersion;
     private ReferenceAssemblies _referenceAssemblies = TestConfiguration.ReferenceAssemblies;
@@ -66,7 +66,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// </summary>
     /// <param name="source">
     ///     The C# source code to include in the test compilation.
-    ///     The source is parsed using the configured <see cref="LanguageVersion"/>.
+    ///     The source is parsed using the configured <see cref="LanguageVersion" />.
     /// </param>
     /// <returns>The current engine instance for method chaining.</returns>
     /// <remarks>
@@ -100,14 +100,14 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     Adds a metadata reference to the compilation.
     /// </summary>
     /// <param name="reference">
-    ///     The metadata reference to add. Use <see cref="MetadataReference.CreateFromFile"/>
+    ///     The metadata reference to add. Use <see cref="MetadataReference.CreateFromFile" />
     ///     to create references from assembly paths.
     /// </param>
     /// <returns>The current engine instance for method chaining.</returns>
     /// <remarks>
     ///     <para>
-    ///         References are combined with <see cref="TestConfiguration.AdditionalReferences"/>
-    ///         and the resolved <see cref="ReferenceAssemblies"/> when creating the compilation.
+    ///         References are combined with <see cref="TestConfiguration.AdditionalReferences" />
+    ///         and the resolved <see cref="ReferenceAssemblies" /> when creating the compilation.
     ///     </para>
     /// </remarks>
     /// <example>
@@ -116,7 +116,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///         .WithReference(MetadataReference.CreateFromFile(typeof(MyAttribute).Assembly.Location));
     ///     </code>
     /// </example>
-    /// <seealso cref="WithReferenceAssemblies"/>
+    /// <seealso cref="WithReferenceAssemblies" />
     public GeneratorTestEngine<TGenerator> WithReference(MetadataReference reference)
     {
         _references.Add(reference);
@@ -128,7 +128,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// </summary>
     /// <param name="path">
     ///     The virtual file path for the additional text. This path is visible to the generator
-    ///     via <see cref="AdditionalText.Path"/>.
+    ///     via <see cref="AdditionalText.Path" />.
     /// </param>
     /// <param name="text">The content of the additional file.</param>
     /// <returns>The current engine instance for method chaining.</returns>
@@ -185,13 +185,13 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     Sets the C# language version for parsing source code.
     /// </summary>
     /// <param name="version">
-    ///     The language version to use. Defaults to <see cref="TestConfiguration.LanguageVersion"/>.
+    ///     The language version to use. Defaults to <see cref="TestConfiguration.LanguageVersion" />.
     /// </param>
     /// <returns>The current engine instance for method chaining.</returns>
     /// <remarks>
     ///     <para>
     ///         This affects how source code is parsed and which language features are available.
-    ///         Call this method before <see cref="WithSource"/> to ensure sources are parsed
+    ///         Call this method before <see cref="WithSource" /> to ensure sources are parsed
     ///         with the correct language version.
     ///     </para>
     /// </remarks>
@@ -202,7 +202,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///         .WithSource("file-scoped namespace Test;");
     ///     </code>
     /// </example>
-    /// <seealso cref="TestConfiguration.WithLanguageVersion"/>
+    /// <seealso cref="TestConfiguration.WithLanguageVersion" />
     public GeneratorTestEngine<TGenerator> WithLanguageVersion(LanguageVersion version)
     {
         _languageVersion = version;
@@ -214,7 +214,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// </summary>
     /// <param name="assemblies">
     ///     The reference assemblies package to resolve. Defaults to .NET 10 via
-    ///     <see cref="TestConfiguration.ReferenceAssemblies"/>.
+    ///     <see cref="TestConfiguration.ReferenceAssemblies" />.
     /// </param>
     /// <returns>The current engine instance for method chaining.</returns>
     /// <remarks>
@@ -229,7 +229,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///         .WithReferenceAssemblies(ReferenceAssemblies.Net.Net80);
     ///     </code>
     /// </example>
-    /// <seealso cref="TestConfiguration.WithReferenceAssemblies"/>
+    /// <seealso cref="TestConfiguration.WithReferenceAssemblies" />
     public GeneratorTestEngine<TGenerator> WithReferenceAssemblies(ReferenceAssemblies assemblies)
     {
         _referenceAssemblies = assemblies;
@@ -242,12 +242,12 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// <param name="source">The C# source code to compile.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>
-    ///     A task that resolves to a <see cref="CSharpCompilation"/> containing the source
+    ///     A task that resolves to a <see cref="CSharpCompilation" /> containing the source
     ///     and all configured references.
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         This is a convenience overload that calls <see cref="WithSource"/> followed by
+    ///         This is a convenience overload that calls <see cref="WithSource" /> followed by
     ///         the internal <c>CreateCompilationAsync</c> method. Use this for simple single-source
     ///         test scenarios where you need direct access to the compilation.
     ///     </para>
@@ -260,7 +260,8 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     driver = driver.RunGenerators(compilation);
     ///     </code>
     /// </example>
-    public async Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default)
+    public async Task<CSharpCompilation> CreateCompilationAsync(string source,
+        CancellationToken cancellationToken = default)
     {
         return await WithSource(source).CreateCompilationAsync(cancellationToken);
     }
@@ -272,7 +273,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     Whether to enable step tracking for caching analysis. Defaults to <c>true</c>.
     /// </param>
     /// <returns>
-    ///     A <see cref="GeneratorDriver"/> configured with the generator and the specified
+    ///     A <see cref="GeneratorDriver" /> configured with the generator and the specified
     ///     tracking options.
     /// </returns>
     /// <remarks>
@@ -283,10 +284,10 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description>Uses <see cref="TestConfiguration.LanguageVersion"/> for parsing</description>
+    ///             <description>Uses <see cref="TestConfiguration.LanguageVersion" /> for parsing</description>
     ///         </item>
     ///         <item>
-    ///             <description>Step tracking enables <see cref="GeneratorDriverRunResult.TrackedSteps"/></description>
+    ///             <description>Step tracking enables <see cref="GeneratorDriverRunResult.TrackedSteps" /></description>
     ///         </item>
     ///     </list>
     /// </remarks>
@@ -301,7 +302,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     }
     ///     </code>
     /// </example>
-    /// <seealso cref="GeneratorDriverRunResult.TrackedSteps"/>
+    /// <seealso cref="GeneratorDriverRunResult.TrackedSteps" />
     public static GeneratorDriver CreateDriver(bool trackSteps = true)
     {
         var parseOptions = new CSharpParseOptions(TestConfiguration.LanguageVersion);
@@ -325,8 +326,8 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     <para>
     ///         This method is the core of caching validation. By running the generator twice
     ///         with an equivalent compilation, you can verify that pipeline steps correctly
-    ///         report <see cref="IncrementalStepRunReason.Cached"/> or
-    ///         <see cref="IncrementalStepRunReason.Unchanged"/> on the second run.
+    ///         report <see cref="IncrementalStepRunReason.Cached" /> or
+    ///         <see cref="IncrementalStepRunReason.Unchanged" /> on the second run.
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
@@ -336,7 +337,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///             <description>Second run uses a cloned compilation to simulate "next key press"</description>
     ///         </item>
     ///         <item>
-    ///             <description>Compare <see cref="GeneratorDriverRunResult.TrackedSteps"/> between runs</description>
+    ///             <description>Compare <see cref="GeneratorDriverRunResult.TrackedSteps" /> between runs</description>
     ///         </item>
     ///     </list>
     /// </remarks>
@@ -344,9 +345,9 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     <code>
     ///     var engine = new GeneratorTestEngine&lt;MyGenerator&gt;()
     ///         .WithSource("public class Foo { }");
-    ///
+    /// 
     ///     var (firstRun, secondRun) = await engine.RunTwiceAsync();
-    ///
+    /// 
     ///     // Verify caching: second run should have cached/unchanged steps
     ///     foreach (var step in secondRun.TrackedSteps)
     ///     {
@@ -357,8 +358,8 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     }
     ///     </code>
     /// </example>
-    /// <seealso cref="GeneratorResult{TGenerator}.IsCached"/>
-    /// <seealso cref="GeneratorCachingReport"/>
+    /// <seealso cref="GeneratorResult{TGenerator}.IsCached" />
+    /// <seealso cref="GeneratorCachingReport" />
     internal async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
         CancellationToken cancellationToken = default)
     {
@@ -387,7 +388,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>
-    ///     A task that resolves to a <see cref="CSharpCompilation"/> configured with
+    ///     A task that resolves to a <see cref="CSharpCompilation" /> configured with
     ///     all sources, references, and nullable context enabled.
     /// </returns>
     private async Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken)
@@ -414,7 +415,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     ///     Creates a generator driver with all configured options.
     /// </summary>
     /// <returns>
-    ///     A <see cref="GeneratorDriver"/> configured with additional texts,
+    ///     A <see cref="GeneratorDriver" /> configured with additional texts,
     ///     analyzer config options, and step tracking enabled.
     /// </returns>
     private GeneratorDriver CreateDriver()
@@ -431,7 +432,7 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
     }
 
     /// <summary>
-    ///     An in-memory implementation of <see cref="AdditionalText"/> for testing.
+    ///     An in-memory implementation of <see cref="AdditionalText" /> for testing.
     /// </summary>
     /// <param name="path">The virtual file path.</param>
     /// <param name="text">The file content.</param>
@@ -449,6 +450,9 @@ public sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncremen
         /// </summary>
         /// <param name="cancellationToken">A token to cancel the operation (unused).</param>
         /// <returns>The source text content.</returns>
-        public override SourceText GetText(CancellationToken cancellationToken = default) => _text;
+        public override SourceText GetText(CancellationToken cancellationToken = default)
+        {
+            return _text;
+        }
     }
 }

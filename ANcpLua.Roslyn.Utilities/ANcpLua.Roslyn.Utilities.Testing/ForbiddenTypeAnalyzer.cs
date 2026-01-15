@@ -22,19 +22,27 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///                 <description><see cref="ISymbol" /> and all derivatives</description>
 ///             </item>
 ///             <item>
-///                 <description><see cref="Compilation" /></description>
+///                 <description>
+///                     <see cref="Compilation" />
+///                 </description>
 ///             </item>
 ///             <item>
-///                 <description><see cref="SemanticModel" /></description>
+///                 <description>
+///                     <see cref="SemanticModel" />
+///                 </description>
 ///             </item>
 ///             <item>
 ///                 <description><see cref="SyntaxNode" /> and all derivatives</description>
 ///             </item>
 ///             <item>
-///                 <description><see cref="SyntaxTree" /></description>
+///                 <description>
+///                     <see cref="SyntaxTree" />
+///                 </description>
 ///             </item>
 ///             <item>
-///                 <description><see cref="IOperation" /></description>
+///                 <description>
+///                     <see cref="IOperation" />
+///                 </description>
 ///             </item>
 ///         </list>
 ///     </para>
@@ -48,6 +56,20 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="GeneratorCachingReport" />
 internal static class ForbiddenTypeAnalyzer
 {
+    /// <summary>
+    ///     Maximum depth to traverse into nested object structures.
+    /// </summary>
+    /// <remarks>
+    ///     Prevents pathological cases where generators produce extremely deep nested structures.
+    ///     Set to 100 levels which is sufficient for detecting forbidden types in typical scenarios.
+    /// </remarks>
+    private const int MaxTraversalDepth = 100;
+
+    /// <summary>
+    ///     Maximum number of violations to collect before stopping analysis.
+    /// </summary>
+    private const int MaxViolations = 256;
+
     /// <summary>
     ///     The set of Roslyn types that are forbidden in generator pipeline outputs.
     /// </summary>
@@ -84,20 +106,6 @@ internal static class ForbiddenTypeAnalyzer
     ///     when analyzing the same types across multiple generator runs.
     /// </remarks>
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldCache = new();
-
-    /// <summary>
-    ///     Maximum depth to traverse into nested object structures.
-    /// </summary>
-    /// <remarks>
-    ///     Prevents pathological cases where generators produce extremely deep nested structures.
-    ///     Set to 100 levels which is sufficient for detecting forbidden types in typical scenarios.
-    /// </remarks>
-    private const int MaxTraversalDepth = 100;
-
-    /// <summary>
-    ///     Maximum number of violations to collect before stopping analysis.
-    /// </summary>
-    private const int MaxViolations = 256;
 
     /// <summary>
     ///     Analyzes a generator run result for forbidden type violations.
@@ -239,11 +247,13 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///     </list>
     /// </remarks>
-    private static IEnumerable<FieldInfo> GetRelevantFields(Type type) =>
-        FieldCache.GetOrAdd(type,
+    private static IEnumerable<FieldInfo> GetRelevantFields(Type type)
+    {
+        return FieldCache.GetOrAdd(type,
             static t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
                                     BindingFlags.DeclaredOnly).Where(static f => !IsAllowedType(f.FieldType))
                 .ToArray());
+    }
 
     /// <summary>
     ///     Determines whether the specified type is a forbidden Roslyn type.
@@ -268,8 +278,11 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///     </list>
     /// </remarks>
-    private static bool IsForbiddenType(Type type) => ForbiddenTypes.Contains(type) ||
-                                                      ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
+    private static bool IsForbiddenType(Type type)
+    {
+        return ForbiddenTypes.Contains(type) ||
+               ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
+    }
 
     /// <summary>
     ///     Determines whether the specified type is an allowed type that should not be traversed.
@@ -300,8 +313,10 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///     </list>
     /// </remarks>
-    private static bool IsAllowedType(Type type) =>
-        type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
-        type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
-        (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
+    private static bool IsAllowedType(Type type)
+    {
+        return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
+               type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
+               (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
+    }
 }

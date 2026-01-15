@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 
@@ -37,7 +36,7 @@ public
 #else
 internal
 #endif
-static class IncrementalValuesProviderExtensions
+    static class IncrementalValuesProviderExtensions
 {
     /// <summary>
     ///     Registers a source output for a collection of files with names.
@@ -49,10 +48,12 @@ static class IncrementalValuesProviderExtensions
     /// <param name="source">The provider of files to register as source output.</param>
     /// <param name="context">The generator initialization context for registering the output.</param>
     /// <seealso cref="AddSource(IncrementalValueProvider{FileWithName}, IncrementalGeneratorInitializationContext)" />
-    /// <seealso cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
     public static void AddSource(
         this IncrementalValuesProvider<FileWithName> source,
-        IncrementalGeneratorInitializationContext context) =>
+        IncrementalGeneratorInitializationContext context)
+    {
         context.RegisterSourceOutput(source, static (context, file) =>
         {
             if (file.IsEmpty) return;
@@ -61,6 +62,7 @@ static class IncrementalValuesProviderExtensions
                 file.Name,
                 file.Text);
         });
+    }
 
     /// <summary>
     ///     Registers a source output for a single file with name.
@@ -72,10 +74,12 @@ static class IncrementalValuesProviderExtensions
     /// <param name="source">The provider of a single file to register as source output.</param>
     /// <param name="context">The generator initialization context for registering the output.</param>
     /// <seealso cref="AddSource(IncrementalValuesProvider{FileWithName}, IncrementalGeneratorInitializationContext)" />
-    /// <seealso cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
     public static void AddSource(
         this IncrementalValueProvider<FileWithName> source,
-        IncrementalGeneratorInitializationContext context) =>
+        IncrementalGeneratorInitializationContext context)
+    {
         context.RegisterSourceOutput(source, static (context, file) =>
         {
             if (file.IsEmpty) return;
@@ -84,6 +88,7 @@ static class IncrementalValuesProviderExtensions
                 file.Name,
                 file.Text);
         });
+    }
 
     /// <summary>
     ///     Registers a source output for a single collected array of files.
@@ -100,13 +105,16 @@ static class IncrementalValuesProviderExtensions
     /// provider.Collect().Select(Transform).AddSources(context);
     /// </code>
     /// </example>
-    /// <seealso cref="AddSources(IncrementalValuesProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="AddSources(IncrementalValuesProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
     public static void AddSources(
         this IncrementalValueProvider<EquatableArray<FileWithName>> source,
-        IncrementalGeneratorInitializationContext context) =>
+        IncrementalGeneratorInitializationContext context)
+    {
         source
             .SelectMany(static (x, _) => x)
             .AddSource(context);
+    }
 
     /// <summary>
     ///     Registers a source output for multiple arrays of files (one array per input).
@@ -123,13 +131,16 @@ static class IncrementalValuesProviderExtensions
     /// provider.Select(GenerateFilesForClass).AddSources(context);
     /// </code>
     /// </example>
-    /// <seealso cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="AddSources(IncrementalValueProvider{EquatableArray{FileWithName}}, IncrementalGeneratorInitializationContext)" />
     public static void AddSources(
         this IncrementalValuesProvider<EquatableArray<FileWithName>> source,
-        IncrementalGeneratorInitializationContext context) =>
+        IncrementalGeneratorInitializationContext context)
+    {
         source
             .SelectMany(static (x, _) => x)
             .AddSource(context);
+    }
 
     /// <summary>
     ///     Collects all values from a provider into an <see cref="EquatableArray{T}" />.
@@ -147,10 +158,12 @@ static class IncrementalValuesProviderExtensions
     /// <seealso cref="EquatableArray{T}" />
     public static IncrementalValueProvider<EquatableArray<TSource>> CollectAsEquatableArray<TSource>(
         this IncrementalValuesProvider<TSource> source)
-        where TSource : IEquatable<TSource> =>
-        source
+        where TSource : IEquatable<TSource>
+    {
+        return source
             .Collect()
             .Select(static (x, _) => x.AsEquatableArray());
+    }
 
     /// <summary>
     ///     Transforms values using a selector function and reports any exceptions as diagnostics.
@@ -174,7 +187,8 @@ static class IncrementalValuesProviderExtensions
     ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces the transformed value,
     ///     or throws if the transformation failed.
     /// </returns>
-    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValueProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -215,9 +229,15 @@ static class IncrementalValuesProviderExtensions
     ///     <para>
     ///         This method processes <see cref="ResultWithDiagnostics{T}" /> values by:
     ///         <list type="number">
-    ///             <item><description>Reporting all diagnostics from each result.</description></item>
-    ///             <item><description>Filtering out results where the value is <c>null</c>.</description></item>
-    ///             <item><description>Returning only non-null result values.</description></item>
+    ///             <item>
+    ///                 <description>Reporting all diagnostics from each result.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Filtering out results where the value is <c>null</c>.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Returning only non-null result values.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -227,7 +247,8 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only non-null result values.
     /// </returns>
-    /// <seealso cref="SelectAndReportDiagnostics{T}(IncrementalValueProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="SelectAndReportDiagnostics{T}(IncrementalValueProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="ResultWithDiagnostics{T}" />
     public static IncrementalValuesProvider<T> SelectAndReportDiagnostics<T>(
         this IncrementalValuesProvider<ResultWithDiagnostics<T?>> source,
@@ -251,8 +272,12 @@ static class IncrementalValuesProviderExtensions
     ///     <para>
     ///         This method processes a single <see cref="ResultWithDiagnostics{T}" /> value by:
     ///         <list type="number">
-    ///             <item><description>Reporting all diagnostics from the result.</description></item>
-    ///             <item><description>Returning the result value (which may be <c>null</c>).</description></item>
+    ///             <item>
+    ///                 <description>Reporting all diagnostics from the result.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Returning the result value (which may be <c>null</c>).</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -262,7 +287,8 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValueProvider{TValue}" /> containing the result value, which may be <c>null</c>.
     /// </returns>
-    /// <seealso cref="SelectAndReportDiagnostics{T}(IncrementalValuesProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="SelectAndReportDiagnostics{T}(IncrementalValuesProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="ResultWithDiagnostics{T}" />
     public static IncrementalValueProvider<T?> SelectAndReportDiagnostics<T>(
         this IncrementalValueProvider<ResultWithDiagnostics<T?>> source,
@@ -287,10 +313,12 @@ static class IncrementalValuesProviderExtensions
     /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{TSource})" />
     public static IncrementalValuesProvider<TSource> WhereNotNull<TSource>(
         this IncrementalValuesProvider<TSource?> source)
-        where TSource : struct =>
-        source
+        where TSource : struct
+    {
+        return source
             .Where(static x => x is not null)
             .Select(static (x, _) => x ?? throw new InvalidOperationException("Unexpected null value in WhereNotNull"));
+    }
 
     /// <summary>
     ///     Filters out <c>null</c> values from a provider of nullable reference types and returns non-null values.
@@ -303,10 +331,12 @@ static class IncrementalValuesProviderExtensions
     /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{Nullable{TSource}})" />
     public static IncrementalValuesProvider<TSource> WhereNotNull<TSource>(
         this IncrementalValuesProvider<TSource?> source)
-        where TSource : class =>
-        source
+        where TSource : class
+    {
+        return source
             .Where(static x => x is not null)
             .Select(static (x, _) => x ?? throw new InvalidOperationException("Unexpected null value in WhereNotNull"));
+    }
 
     /// <summary>
     ///     Transforms values using a selector function and reports any exceptions as diagnostics.
@@ -330,7 +360,8 @@ static class IncrementalValuesProviderExtensions
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing successfully transformed values.
     ///     Failed transformations are filtered out after their exceptions are reported.
     /// </returns>
-    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -392,8 +423,10 @@ static class IncrementalValuesProviderExtensions
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> of tuples, each containing a key
     ///     and an <see cref="EquatableArray{T}" /> of elements with that key.
     /// </returns>
-    /// <seealso cref="GroupBy{TSource, TKey}(IncrementalValuesProvider{TSource}, Func{TSource, TKey}, IEqualityComparer{TKey})" />
-    public static IncrementalValuesProvider<(TKey Key, EquatableArray<TElement> Elements)> GroupBy<TSource, TKey, TElement>(
+    /// <seealso
+    ///     cref="GroupBy{TSource, TKey}(IncrementalValuesProvider{TSource}, Func{TSource, TKey}, IEqualityComparer{TKey})" />
+    public static IncrementalValuesProvider<(TKey Key, EquatableArray<TElement> Elements)> GroupBy<TSource, TKey,
+        TElement>(
         this IncrementalValuesProvider<TSource> source,
         Func<TSource, TKey> keySelector,
         Func<TSource, TElement> elementSelector,
@@ -439,14 +472,17 @@ static class IncrementalValuesProviderExtensions
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> of tuples, each containing a key
     ///     and an <see cref="EquatableArray{T}" /> of source values with that key.
     /// </returns>
-    /// <seealso cref="GroupBy{TSource, TKey, TElement}(IncrementalValuesProvider{TSource}, Func{TSource, TKey}, Func{TSource, TElement}, IEqualityComparer{TKey})" />
+    /// <seealso
+    ///     cref="GroupBy{TSource, TKey, TElement}(IncrementalValuesProvider{TSource}, Func{TSource, TKey}, Func{TSource, TElement}, IEqualityComparer{TKey})" />
     public static IncrementalValuesProvider<(TKey Key, EquatableArray<TSource> Elements)> GroupBy<TSource, TKey>(
         this IncrementalValuesProvider<TSource> source,
         Func<TSource, TKey> keySelector,
         IEqualityComparer<TKey>? comparer = null)
         where TKey : IEquatable<TKey>
-        where TSource : IEquatable<TSource> =>
-        source.GroupBy(keySelector, static x => x, comparer);
+        where TSource : IEquatable<TSource>
+    {
+        return source.GroupBy(keySelector, static x => x, comparer);
+    }
 
     /// <summary>
     ///     Projects each value with its zero-based index in the collection.
@@ -462,14 +498,16 @@ static class IncrementalValuesProviderExtensions
     ///     paired with its zero-based index.
     /// </returns>
     public static IncrementalValuesProvider<(T Value, int Index)> WithIndex<T>(
-        this IncrementalValuesProvider<T> source) =>
-        source.Collect().SelectMany((values, _) =>
+        this IncrementalValuesProvider<T> source)
+    {
+        return source.Collect().SelectMany((values, _) =>
         {
             var result = ImmutableArray.CreateBuilder<(T, int)>(values.Length);
             for (var i = 0; i < values.Length; i++)
                 result.Add((values[i], i));
             return result.MoveToImmutable();
         });
+    }
 
     /// <summary>
     ///     Returns distinct values from the provider, removing duplicates.
@@ -494,10 +532,8 @@ static class IncrementalValuesProviderExtensions
             var seen = new HashSet<T>(comparer);
             var result = ImmutableArray.CreateBuilder<T>();
             foreach (var value in values)
-            {
                 if (seen.Add(value))
                     result.Add(value);
-            }
 
             return result.ToImmutable();
         });
@@ -517,11 +553,14 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValueProvider{TValue}" /> producing a tuple of the collected array and the right value.
     /// </returns>
-    public static IncrementalValueProvider<(EquatableArray<TLeft> Left, TRight Right)> CombineWithCollected<TLeft, TRight>(
+    public static IncrementalValueProvider<(EquatableArray<TLeft> Left, TRight Right)> CombineWithCollected<TLeft,
+        TRight>(
         this IncrementalValuesProvider<TLeft> left,
         IncrementalValueProvider<TRight> right)
-        where TLeft : IEquatable<TLeft> =>
-        left.CollectAsEquatableArray().Combine(right);
+        where TLeft : IEquatable<TLeft>
+    {
+        return left.CollectAsEquatableArray().Combine(right);
+    }
 
     /// <summary>
     ///     Splits values into batches of a specified size.
@@ -635,8 +674,10 @@ static class IncrementalValuesProviderExtensions
     /// </returns>
     /// <seealso cref="Any{T}(IncrementalValuesProvider{T})" />
     public static IncrementalValueProvider<int> Count<T>(
-        this IncrementalValuesProvider<T> source) =>
-        source.Collect().Select((values, _) => values.Length);
+        this IncrementalValuesProvider<T> source)
+    {
+        return source.Collect().Select((values, _) => values.Length);
+    }
 
     /// <summary>
     ///     Determines whether the provider contains any values.
@@ -650,8 +691,10 @@ static class IncrementalValuesProviderExtensions
     /// <seealso cref="Any{T}(IncrementalValuesProvider{T}, Func{T, bool})" />
     /// <seealso cref="Count{T}(IncrementalValuesProvider{T})" />
     public static IncrementalValueProvider<bool> Any<T>(
-        this IncrementalValuesProvider<T> source) =>
-        source.Collect().Select((values, _) => !values.IsEmpty);
+        this IncrementalValuesProvider<T> source)
+    {
+        return source.Collect().Select((values, _) => !values.IsEmpty);
+    }
 
     /// <summary>
     ///     Determines whether any value in the provider satisfies a condition.
@@ -666,17 +709,17 @@ static class IncrementalValuesProviderExtensions
     /// <seealso cref="Any{T}(IncrementalValuesProvider{T})" />
     public static IncrementalValueProvider<bool> Any<T>(
         this IncrementalValuesProvider<T> source,
-        Func<T, bool> predicate) =>
-        source.Collect().Select((values, _) =>
+        Func<T, bool> predicate)
+    {
+        return source.Collect().Select((values, _) =>
         {
             foreach (var value in values)
-            {
                 if (predicate(value))
                     return true;
-            }
 
             return false;
         });
+    }
 
     /// <summary>
     ///     Returns the first value in the provider, or a default value if the provider is empty.
@@ -688,8 +731,10 @@ static class IncrementalValuesProviderExtensions
     ///     or the default value of <typeparamref name="T" /> if the provider is empty.
     /// </returns>
     public static IncrementalValueProvider<T?> FirstOrDefault<T>(
-        this IncrementalValuesProvider<T> source) =>
-        source.Collect().Select((values, _) => values.IsEmpty ? default : values[0]);
+        this IncrementalValuesProvider<T> source)
+    {
+        return source.Collect().Select((values, _) => values.IsEmpty ? default : values[0]);
+    }
 
     // ========== DiagnosticFlow Pipeline Integration ==========
 
@@ -701,9 +746,15 @@ static class IncrementalValuesProviderExtensions
     ///         This method is part of the DiagnosticFlow pipeline integration for railway-oriented programming.
     ///         It processes each flow by:
     ///         <list type="number">
-    ///             <item><description>Reporting all diagnostics (errors and warnings) from each flow.</description></item>
-    ///             <item><description>Filtering to only flows where <see cref="DiagnosticFlow{T}.IsSuccess" /> is <c>true</c>.</description></item>
-    ///             <item><description>Extracting and returning the successful values.</description></item>
+    ///             <item>
+    ///                 <description>Reporting all diagnostics (errors and warnings) from each flow.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Filtering to only flows where <see cref="DiagnosticFlow{T}.IsSuccess" /> is <c>true</c>.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Extracting and returning the successful values.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -713,8 +764,10 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only successful values.
     /// </returns>
-    /// <seealso cref="ReportAndContinue{T}(IncrementalValueProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
-    /// <seealso cref="ReportAndStop{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="ReportAndContinue{T}(IncrementalValueProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="ReportAndStop{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="DiagnosticFlow{T}" />
     public static IncrementalValuesProvider<T> ReportAndContinue<T>(
         this IncrementalValuesProvider<DiagnosticFlow<T>> source,
@@ -741,8 +794,12 @@ static class IncrementalValuesProviderExtensions
     ///         This method is part of the DiagnosticFlow pipeline integration for railway-oriented programming.
     ///         It processes the flow by:
     ///         <list type="number">
-    ///             <item><description>Reporting all diagnostics from the flow.</description></item>
-    ///             <item><description>Returning the value if successful, or default if failed.</description></item>
+    ///             <item>
+    ///                 <description>Reporting all diagnostics from the flow.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Returning the value if successful, or default if failed.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -753,7 +810,8 @@ static class IncrementalValuesProviderExtensions
     ///     An <see cref="IncrementalValueProvider{TValue}" /> containing the value if successful,
     ///     or <c>null</c>/<c>default</c> if failed.
     /// </returns>
-    /// <seealso cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="DiagnosticFlow{T}" />
     public static IncrementalValueProvider<T?> ReportAndContinue<T>(
         this IncrementalValueProvider<DiagnosticFlow<T>> source,
@@ -775,7 +833,10 @@ static class IncrementalValuesProviderExtensions
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This method behaves similarly to <see cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />,
+    ///         This method behaves similarly to
+    ///         <see
+    ///             cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
+    ///         ,
     ///         reporting all diagnostics and returning only successful values. Use this when you want to
     ///         emphasize that processing stops for failed flows.
     ///     </para>
@@ -786,7 +847,8 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only values from flows without errors.
     /// </returns>
-    /// <seealso cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
+    /// <seealso
+    ///     cref="ReportAndContinue{T}(IncrementalValuesProvider{DiagnosticFlow{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="DiagnosticFlow{T}" />
     public static IncrementalValuesProvider<T> ReportAndStop<T>(
         this IncrementalValuesProvider<DiagnosticFlow<T>> source,
@@ -813,9 +875,15 @@ static class IncrementalValuesProviderExtensions
     ///         This method aggregates multiple flows into a single flow containing an array of all values.
     ///         The resulting flow:
     ///         <list type="bullet">
-    ///             <item><description>Succeeds only if all input flows succeed.</description></item>
-    ///             <item><description>Contains all diagnostics from all input flows.</description></item>
-    ///             <item><description>Contains an array of all successful values.</description></item>
+    ///             <item>
+    ///                 <description>Succeeds only if all input flows succeed.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Contains all diagnostics from all input flows.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Contains an array of all successful values.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -827,8 +895,11 @@ static class IncrementalValuesProviderExtensions
     /// </returns>
     /// <seealso cref="DiagnosticFlow.Collect{T}(IEnumerable{DiagnosticFlow{T}})" />
     public static IncrementalValueProvider<DiagnosticFlow<ImmutableArray<T>>> CollectFlows<T>(
-        this IncrementalValuesProvider<DiagnosticFlow<T>> source) =>
-        source.Collect().Select(static (flows, _) => DiagnosticFlow.Collect((IEnumerable<DiagnosticFlow<T>>)flows));
+        this IncrementalValuesProvider<DiagnosticFlow<T>> source)
+    {
+        return source.Collect()
+            .Select(static (flows, _) => DiagnosticFlow.Collect(flows));
+    }
 
     /// <summary>
     ///     Transforms values into flows using a selector that returns a <see cref="DiagnosticFlow{T}" />.
@@ -843,12 +914,16 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> of diagnostic flows.
     /// </returns>
-    /// <seealso cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, DiagnosticFlow{TResult}})" />
-    /// <seealso cref="ThenFlow{TSource, TResult}(IncrementalValuesProvider{DiagnosticFlow{TSource}}, Func{TSource, DiagnosticFlow{TResult}})" />
+    /// <seealso
+    ///     cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, DiagnosticFlow{TResult}})" />
+    /// <seealso
+    ///     cref="ThenFlow{TSource, TResult}(IncrementalValuesProvider{DiagnosticFlow{TSource}}, Func{TSource, DiagnosticFlow{TResult}})" />
     public static IncrementalValuesProvider<DiagnosticFlow<TResult>> SelectFlow<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source,
-        Func<TSource, CancellationToken, DiagnosticFlow<TResult>> selector) =>
-        source.Select((value, ct) => selector(value, ct));
+        Func<TSource, CancellationToken, DiagnosticFlow<TResult>> selector)
+    {
+        return source.Select((value, ct) => selector(value, ct));
+    }
 
     /// <summary>
     ///     Transforms values into flows using a simple selector that returns a <see cref="DiagnosticFlow{T}" />.
@@ -863,11 +938,14 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> of diagnostic flows.
     /// </returns>
-    /// <seealso cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, DiagnosticFlow{TResult}})" />
+    /// <seealso
+    ///     cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, DiagnosticFlow{TResult}})" />
     public static IncrementalValuesProvider<DiagnosticFlow<TResult>> SelectFlow<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source,
-        Func<TSource, DiagnosticFlow<TResult>> selector) =>
-        source.Select((value, _) => selector(value));
+        Func<TSource, DiagnosticFlow<TResult>> selector)
+    {
+        return source.Select((value, _) => selector(value));
+    }
 
     /// <summary>
     ///     Chains flow transformations, applying a selector to the value of each successful flow.
@@ -876,9 +954,15 @@ static class IncrementalValuesProviderExtensions
     ///     <para>
     ///         This method enables monadic composition of flows. For each input flow:
     ///         <list type="bullet">
-    ///             <item><description>If the flow has failed, it passes through unchanged.</description></item>
-    ///             <item><description>If the flow is successful, the selector is applied to its value.</description></item>
-    ///             <item><description>Diagnostics from both the original flow and the selector result are combined.</description></item>
+    ///             <item>
+    ///                 <description>If the flow has failed, it passes through unchanged.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>If the flow is successful, the selector is applied to its value.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>Diagnostics from both the original flow and the selector result are combined.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -889,12 +973,15 @@ static class IncrementalValuesProviderExtensions
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> of chained diagnostic flows.
     /// </returns>
-    /// <seealso cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, DiagnosticFlow{TResult}})" />
+    /// <seealso
+    ///     cref="SelectFlow{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, DiagnosticFlow{TResult}})" />
     /// <seealso cref="DiagnosticFlow{T}.Then{TResult}(Func{T, DiagnosticFlow{TResult}})" />
     public static IncrementalValuesProvider<DiagnosticFlow<TResult>> ThenFlow<TSource, TResult>(
         this IncrementalValuesProvider<DiagnosticFlow<TSource>> source,
-        Func<TSource, DiagnosticFlow<TResult>> selector) =>
-        source.Select((flow, _) => flow.Then(selector));
+        Func<TSource, DiagnosticFlow<TResult>> selector)
+    {
+        return source.Select((flow, _) => flow.Then(selector));
+    }
 
     /// <summary>
     ///     Adds a warning to all flows conditionally based on their values.
@@ -914,8 +1001,10 @@ static class IncrementalValuesProviderExtensions
     public static IncrementalValuesProvider<DiagnosticFlow<T>> WarnIf<T>(
         this IncrementalValuesProvider<DiagnosticFlow<T>> source,
         Func<T, bool> condition,
-        DiagnosticInfo warning) =>
-        source.Select((flow, _) => flow.WarnIf(condition, warning));
+        DiagnosticInfo warning)
+    {
+        return source.Select((flow, _) => flow.WarnIf(condition, warning));
+    }
 
     /// <summary>
     ///     Filters flows with a predicate, failing those that do not match.
@@ -924,9 +1013,15 @@ static class IncrementalValuesProviderExtensions
     ///     <para>
     ///         For each flow:
     ///         <list type="bullet">
-    ///             <item><description>If already failed, passes through unchanged.</description></item>
-    ///             <item><description>If the predicate returns <c>true</c>, the flow passes through unchanged.</description></item>
-    ///             <item><description>If the predicate returns <c>false</c>, the flow fails with the specified diagnostic.</description></item>
+    ///             <item>
+    ///                 <description>If already failed, passes through unchanged.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>If the predicate returns <c>true</c>, the flow passes through unchanged.</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>If the predicate returns <c>false</c>, the flow fails with the specified diagnostic.</description>
+    ///             </item>
     ///         </list>
     ///     </para>
     /// </remarks>
@@ -941,6 +1036,8 @@ static class IncrementalValuesProviderExtensions
     public static IncrementalValuesProvider<DiagnosticFlow<T>> WhereFlow<T>(
         this IncrementalValuesProvider<DiagnosticFlow<T>> source,
         Func<T, bool> predicate,
-        DiagnosticInfo onFail) =>
-        source.Select((flow, _) => flow.Where(predicate, onFail));
+        DiagnosticInfo onFail)
+    {
+        return source.Select((flow, _) => flow.Where(predicate, onFail));
+    }
 }
