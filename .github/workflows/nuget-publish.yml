@@ -67,7 +67,7 @@ jobs:
           dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
         env:
           CI: true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: packages
           path: artifacts/*.nupkg
