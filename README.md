@@ -217,7 +217,7 @@ result
 
 ## Documentation
 
-See [ANcpLua.io](https://ancplua.github.io/ANcpLua.io/utilities/) for full API documentation.
+Full reference: https://ancplua.mintlify.app/utilities/overview
 
 ## Related
 

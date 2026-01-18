@@ -11,7 +11,7 @@ All notable changes to ANcpLua.Roslyn.Utilities will be documented in this file.
 
 ### Changed
 
-- Documentation moved to [ANcpLua.io](https://ancplua.io)
+- Documentation moved to [ANcpLua Docs](https://ancplua.mintlify.app)
 - Updated ANcpLuaAnalyzersVersion to 1.6.1
 
 ## [1.10.0] - 2026-01-12
