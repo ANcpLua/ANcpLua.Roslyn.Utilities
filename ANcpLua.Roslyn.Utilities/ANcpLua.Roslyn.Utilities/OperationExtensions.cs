@@ -148,17 +148,24 @@ internal
     /// </summary>
     /// <param name="operation">The operation to check.</param>
     /// <param name="expressionSymbol">
-    ///     The <see cref="INamedTypeSymbol" /> for <c>System.Linq.Expressions.Expression</c>,
-    ///     or <c>null</c> if unavailable.
+    ///     The <see cref="INamedTypeSymbol" /> for <c>System.Linq.Expressions.Expression`1</c>
+    ///     (the open generic type), or <c>null</c> if unavailable.
     /// </param>
     /// <returns>
     ///     <c>true</c> if the operation is within an expression tree; otherwise, <c>false</c>.
     ///     Returns <c>false</c> if <paramref name="expressionSymbol" /> is <c>null</c>.
     /// </returns>
     /// <remarks>
-    ///     Expression trees have different runtime semantics than regular code, as they are
-    ///     compiled to data structures rather than executable code. Analyzers may need to
-    ///     skip or modify checks for operations within expression trees.
+    ///     <para>
+    ///         Expression trees have different runtime semantics than regular code, as they are
+    ///         compiled to data structures rather than executable code. Analyzers may need to
+    ///         skip or modify checks for operations within expression trees.
+    ///     </para>
+    ///     <para>
+    ///         This method handles both method argument scenarios (e.g., <c>SomeMethod(x => x == 0)</c>
+    ///         where <c>SomeMethod</c> takes <c>Expression&lt;T&gt;</c>) and variable declaration scenarios
+    ///         (e.g., <c>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x => x == 0;</c>).
+    ///     </para>
     /// </remarks>
     public static bool IsInExpressionTree(this IOperation operation, INamedTypeSymbol? expressionSymbol)
     {
@@ -167,11 +174,36 @@ internal
 
         foreach (var op in operation.Ancestors())
         {
-            if (op is IArgumentOperation { Parameter.Type: { } paramType } && paramType.InheritsFrom(expressionSymbol))
+            if (op is IArgumentOperation { Parameter.Type: { } paramType } &&
+                IsConstructedFromExpressionType(paramType, expressionSymbol))
                 return true;
 
-            if (op is IConversionOperation { Type: { } convType } && convType.InheritsFrom(expressionSymbol))
+            if (op is IConversionOperation { Type: { } convType } &&
+                IsConstructedFromExpressionType(convType, expressionSymbol))
                 return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Checks if a type is constructed from the <c>Expression&lt;T&gt;</c> open generic type
+    ///     or inherits from such a type.
+    /// </summary>
+    private static bool IsConstructedFromExpressionType(ITypeSymbol type, INamedTypeSymbol expressionSymbol)
+    {
+        // Check if the type itself is a constructed Expression<T>
+        if (type is INamedTypeSymbol namedType &&
+            SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, expressionSymbol))
+            return true;
+
+        // Check if any base type is a constructed Expression<T>
+        var baseType = type.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(baseType.OriginalDefinition, expressionSymbol))
+                return true;
+            baseType = baseType.BaseType;
         }
 
         return false;
