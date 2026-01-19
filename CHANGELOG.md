@@ -13,6 +13,7 @@ All notable changes to ANcpLua.Roslyn.Utilities will be documented in this file.
 
 - Documentation moved to [ANcpLua Docs](https://ancplua.mintlify.app)
 - Updated ANcpLuaAnalyzersVersion to 1.6.1
+- Updated metadata and docs to mention `ValueStringBuilder` and `TypedConstantExtensions`
 
 ## [1.10.0] - 2026-01-12
 

@@ -60,6 +60,7 @@ ANcpLua.Roslyn.Utilities/
 - Symbol extensions for attribute lookup, type hierarchy, accessibility
 - Pipeline extensions for filtered syntax providers
 - Configuration extensions for MSBuild property access
+- Code generation helpers: `IndentedStringBuilder`, `ValueStringBuilder`, `TypedConstantExtensions`
 
 ### Testing Library (ANcpLua.Roslyn.Utilities.Testing)
 

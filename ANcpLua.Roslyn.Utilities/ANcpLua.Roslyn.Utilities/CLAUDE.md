@@ -10,7 +10,7 @@ Comprehensive utilities for Roslyn analyzers and source generators. netstandard2
 | **Pattern Matching** | `SymbolPattern`, `Match.*`, `Invoke.*`                                        |
 | **Validation**       | `SemanticGuard<T>`                                                            |
 | **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`                               |
+| **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `TypedConstantExtensions` |
 
 ---
 
@@ -407,6 +407,13 @@ GeneratedCodeHelpers.GeneratedCodeAttribute("Tool", "1.0")
 GeneratedCodeHelpers.ExcludeFromCodeCoverage
 GeneratedCodeHelpers.EditorBrowsableNever
 GeneratedCodeHelpers.SuppressWarnings("CS1591", "CS0618")
+
+// ValueStringBuilder
+var vsb = new ValueStringBuilder(stackalloc char[256]);
+vsb.Append("prefix_");
+vsb.Append('x');
+var value = vsb.ToString();
+vsb.Dispose();
 ```
 
 ## Hash Combining
@@ -461,6 +468,9 @@ text.NormalizeLineEndings()
 
 // ConvertExtensions.cs
 typedConstant.ToBoolean(default)
+
+// TypedConstantExtensions.cs
+typedConstant.ToCSharpStringWithPostfix()
 
 // EnumerableExtensions.cs
 source.OrEmpty()

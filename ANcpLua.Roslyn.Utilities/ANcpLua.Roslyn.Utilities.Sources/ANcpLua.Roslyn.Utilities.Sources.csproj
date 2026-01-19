@@ -21,18 +21,6 @@
         <ContentTargetFolders>contentFiles</ContentTargetFolders>
     </PropertyGroup>
 
-    <!-- Source files as contentFiles with compile action -->
-    <ItemGroup>
-        <Content Include="../ANcpLua.Roslyn.Utilities/**/*.cs"
-                 Exclude="../ANcpLua.Roslyn.Utilities/obj/**;../ANcpLua.Roslyn.Utilities/bin/**"
-                 PackagePath="contentFiles/cs/any/ANcpLua.Roslyn.Utilities/"
-                 Pack="true"
-                 BuildAction="Compile"
-                 CopyToOutput="false"
-                 Flatten="false"
-                 Visible="false"/>
-    </ItemGroup>
-
     <!-- Build integration -->
     <ItemGroup>
         <None Include="build/*.props" Pack="true" PackagePath="build/"/>
@@ -50,7 +38,7 @@
         <Exec Command="pwsh -NoProfile -File Transform-Sources.ps1 -SourceDir ../ANcpLua.Roslyn.Utilities -OutputDir $(_TransformedDir)"
               WorkingDirectory="$(MSBuildProjectDirectory)"/>
 
-        <!-- Replace the source ItemGroup with transformed files -->
+        <!-- Add transformed files as contentFiles for packing -->
         <ItemGroup>
             <Content Remove="../ANcpLua.Roslyn.Utilities/**/*.cs"/>
             <Content Include="$(_TransformedDir)**/*.cs"
