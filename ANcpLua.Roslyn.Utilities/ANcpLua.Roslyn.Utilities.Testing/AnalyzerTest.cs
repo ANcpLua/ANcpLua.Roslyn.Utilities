@@ -160,4 +160,89 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
 
         return test.RunAsync();
     }
+
+    /// <summary>
+    ///     Verifies that the analyzer produces the expected diagnostics for the given source code
+    ///     with additional files included in the compilation.
+    /// </summary>
+    /// <param name="source">
+    ///     The C# source code to analyze. Line endings are automatically normalized
+    ///     for cross-platform compatibility.
+    /// </param>
+    /// <param name="additionalFiles">
+    ///     A collection of additional files to include in the compilation.
+    ///     Each tuple contains the file name and its content.
+    /// </param>
+    /// <param name="expectedDiagnostics">
+    ///     Optional collection of expected diagnostics. If null, diagnostics are expected
+    ///     to be marked in the source code using the standard markup format.
+    /// </param>
+    /// <param name="useNet10References">
+    ///     <see langword="true" /> to use .NET 10 reference assemblies (default);
+    ///     <see langword="false" /> to use .NET Standard 2.0 reference assemblies.
+    /// </param>
+    /// <returns>
+    ///     A <see cref="Task" /> that completes when the verification is finished.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This overload is useful for testing analyzers that inspect additional files
+    ///         such as <c>Directory.Build.props</c>, <c>Directory.Packages.props</c>, or
+    ///         other MSBuild files.
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <para>
+    ///         Test an analyzer that inspects Directory.Build.props:
+    ///     </para>
+    ///     <code>
+    /// [Fact]
+    /// public async Task Analyzer_ReportsWhenVersionPropsNotImported()
+    /// {
+    ///     const string source = "public class C { }";
+    ///     const string directoryBuildProps = """
+    ///         &lt;Project&gt;
+    ///             &lt;PropertyGroup&gt;
+    ///                 &lt;SomeProperty&gt;Value&lt;/SomeProperty&gt;
+    ///             &lt;/PropertyGroup&gt;
+    ///         &lt;/Project&gt;
+    ///         """;
+    ///
+    ///     var expected = new DiagnosticResult("AL0018", DiagnosticSeverity.Warning)
+    ///         .WithLocation("Directory.Build.props", 1, 1);
+    ///
+    ///     await VerifyAsync(
+    ///         source,
+    ///         [("Directory.Build.props", directoryBuildProps)],
+    ///         [expected]);
+    /// }
+    /// </code>
+    /// </example>
+    protected static Task VerifyAsync(
+        string source,
+        IEnumerable<(string fileName, string content)> additionalFiles,
+        IEnumerable<DiagnosticResult>? expectedDiagnostics = null,
+        bool useNet10References = true)
+    {
+        var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
+        {
+            TestCode = source.ReplaceLineEndings(),
+            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm
+        };
+
+        foreach (var (fileName, content) in additionalFiles)
+        {
+            test.TestState.AdditionalFiles.Add((fileName, content.ReplaceLineEndings()));
+        }
+
+        if (expectedDiagnostics is not null)
+        {
+            test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
+        }
+
+        test.TestState.AdditionalReferences.AddRange(
+            useNet10References ? Net100.References.All : NetStandard20.References.All);
+
+        return test.RunAsync();
+    }
 }
