@@ -11,14 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger ancplua-docs rebuild
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.DOCS_TRIGGER_PAT }}
         run: |
-          gh api \
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::DOCS_TRIGGER_PAT not configured, skipping docs trigger"
+            exit 0
+          fi
+          if ! gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/ANcpLua/ancplua-docs/dispatches \
             -f "event_type=docs-update" \
             -f "client_payload[source]=ANcpLua.Roslyn.Utilities" \
-            -f "client_payload[ref]=${{ github.ref }}"
+            -f "client_payload[ref]=${{ github.ref }}"; then
+            echo "::warning::Failed to trigger docs rebuild. Ensure DOCS_TRIGGER_PAT has 'repo' scope on ancplua-docs."
+          fi
