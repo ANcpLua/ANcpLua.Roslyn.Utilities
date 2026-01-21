@@ -218,8 +218,13 @@ Tfm.Net60, Tfm.Net70, Tfm.Net80, Tfm.Net90, Tfm.Net100
 // Property Names (Prop)
 Prop.TargetFramework, Prop.TargetFrameworks, Prop.OutputType
 Prop.Nullable, Prop.ImplicitUsings, Prop.LangVersion
-Prop.TreatWarningsAsErrors, Prop.IsPackable
-Prop.ManagePackageVersionsCentrally, Prop.Version, Prop.PackageId
+Prop.TreatWarningsAsErrors, Prop.IsPackable, Prop.GenerateDocumentationFile
+Prop.ManagePackageVersionsCentrally, Prop.CentralPackageTransitivePinningEnabled
+Prop.Version, Prop.PackageId, Prop.Authors, Prop.Description
+Prop.RepositoryUrl, Prop.RepositoryType, Prop.PublishRepositoryUrl
+Prop.EmbedUntrackedSources, Prop.IncludeSymbols, Prop.SymbolPackageFormat
+Prop.Deterministic, Prop.ContinuousIntegrationBuild
+Prop.EnableNETAnalyzers, Prop.AnalysisLevel, Prop.EnforceCodeStyleInBuild
 // ... and more
 
 // Property Values (Val)

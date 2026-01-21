@@ -34,6 +34,11 @@ All utilities from `ANcpLua.Roslyn.Utilities`:
 - **Syntax Extensions** - Syntax node helpers and transformations
 - **Pipeline Extensions** - Filtered syntax providers for incremental generators
 - **Diagnostic Helpers** - Cache-safe diagnostic info models
+- **DiagnosticFlow** - Railway-oriented programming for error handling
+- **Matching API** - Fluent DSL for symbol (`Match.*`) and operation (`Invoke.*`) matching
+- **SemanticGuard** - Declarative validation for symbols
+- **Domain Contexts** - Pre-cached symbol lookups (AwaitableContext, AspNetContext, etc.)
+- **Code Generation** - IndentedStringBuilder, ValueStringBuilder, GeneratedCodeHelpers
 
 ## Visibility
 

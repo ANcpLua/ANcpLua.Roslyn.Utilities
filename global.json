@@ -4,7 +4,7 @@
     "rollForward": "latestMinor"
   },
   "tools": {
-    "dotnet-test": {
+    "test": {
       "runner": "Microsoft.Testing.Platform"
     }
   }

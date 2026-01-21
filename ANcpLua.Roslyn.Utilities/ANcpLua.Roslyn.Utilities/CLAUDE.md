@@ -7,7 +7,7 @@ Comprehensive utilities for Roslyn analyzers and source generators. netstandard2
 | Category             | Key Types                                                                     |
 |----------------------|-------------------------------------------------------------------------------|
 | **Flow Control**     | `DiagnosticFlow<T>`                                                           |
-| **Pattern Matching** | `SymbolPattern`, `Match.*`, `Invoke.*`                                        |
+| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations)                                  |
 | **Validation**       | `SemanticGuard<T>`                                                            |
 | **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
 | **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `TypedConstantExtensions` |
@@ -63,7 +63,7 @@ var either = pattern1 | pattern2;    // OR
 var inverted = !pattern1;            // NOT
 ```
 
-### Match.* DSL (fluent matching)
+### Match.* DSL (fluent symbol matching)
 
 > **Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
 
@@ -76,7 +76,7 @@ Match.Method()
     .WithCancellationToken()
     .Matches(method);
 
-// Match multiple attributes (any match)
+// Match multiple attributes (any match) - varargs
 Match.Method()
     .WithAttribute("Xunit.FactAttribute", "Xunit.TheoryAttribute", "NUnit.Framework.TestAttribute")
     .Public()
@@ -93,9 +93,10 @@ Match.Type()
     .HasParameterlessConstructor()
     .Matches(type);
 
-// Property/Field matching
+// Property/Field/Parameter matching
 Match.Property().ReadOnly().Required().Matches(prop);
 Match.Field().Const().Public().Matches(field);
+Match.Parameter().CancellationToken().Matches(param);
 
 // Factory pattern for reusable base matchers (avoids mutation issues)
 static MethodMatcher PublicInstance() => Match.Method().Public().NotStatic();
@@ -116,13 +117,16 @@ Invoke.Method()
     .Named("Where")
     .Matches(invocation);
 
-// Match multiple method names (any match)
+// Match multiple method names (any match) - varargs
 Invoke.Method("WriteLine", "Write").OnConsole().Matches(invocation);
 
-// Match multiple receiver types (any match)
+// Match multiple receiver types (any match) - varargs
 Invoke.Method("Wait", "GetAwaiter")
     .OnType("Task", "ValueTask")
     .Matches(invocation);
+
+// Additional methods: Named(name, params additionalNames)
+Invoke.Method().Named("Add", "Remove", "Clear").Matches(invocation);
 ```
 
 ## SemanticGuard - Declarative Validation

@@ -9,7 +9,7 @@ conditions:
     pattern: dotnet\s+test
   - field: command
     operator: not_contains
-    pattern: --filter
+    pattern: --filter-
 ---
 
 ⚠️ **Full test suite detected - consider filtering**

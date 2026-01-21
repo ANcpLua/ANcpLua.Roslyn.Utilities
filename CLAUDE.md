@@ -61,6 +61,11 @@ ANcpLua.Roslyn.Utilities/
 - Pipeline extensions for filtered syntax providers
 - Configuration extensions for MSBuild property access
 - Code generation helpers: `IndentedStringBuilder`, `ValueStringBuilder`, `TypedConstantExtensions`
+- **Matching API** - Fluent DSL for symbol and invocation matching:
+  - `Match.Method()`, `Match.Type()`, `Match.Property()`, `Match.Field()`, `Match.Parameter()`
+  - `Invoke.Method()` for operation-level invocation matching
+  - Varargs support: `Invoke.Method(name, params additionalNames)`, `OnType(typeName, params additionalTypeNames)`, `WithAttribute(name, params additionalNames)`
+  - Finalizer matching: `Match.Method().Finalizer()`
 
 ### Testing Library (ANcpLua.Roslyn.Utilities.Testing)
 

@@ -82,14 +82,32 @@ provider
 Replace 50-line if-statements with composable patterns:
 
 ```csharp
-var asyncTask = SymbolPattern.Method()
+// Match.* DSL - fluent symbol matching
+Match.Method()
     .Async()
-    .ReturnsTask()
+    .ReturningTask()
     .WithCancellationToken()
     .Public()
-    .Build();
+    .Matches(method);
 
-if (asyncTask.Matches(method)) { ... }
+// Match multiple attributes (any match)
+Match.Method()
+    .WithAttribute("Xunit.FactAttribute", "Xunit.TheoryAttribute", "NUnit.Framework.TestAttribute")
+    .Public()
+    .Matches(method);
+
+// Finalizer matching
+Match.Method().Finalizer().Matches(method);
+
+// Invoke.* DSL - operation matching
+Invoke.Method("Dispose")
+    .OnTypeImplementing("IDisposable")
+    .WithNoArguments()
+    .Matches(invocation);
+
+// Match multiple method names or receiver types (any match)
+Invoke.Method("WriteLine", "Write").OnConsole().Matches(invocation);
+Invoke.Method("Wait", "GetAwaiter").OnType("Task", "ValueTask").Matches(invocation);
 ```
 
 ### SemanticGuard - Declarative Validation
@@ -107,7 +125,7 @@ SemanticGuard.ForMethod(method)
 | Category             | Key APIs                                                                                         |
 |----------------------|--------------------------------------------------------------------------------------------------|
 | **Flow Control**     | `DiagnosticFlow<T>`, `ReportAndContinue()`                                                       |
-| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*`                                                         |
+| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations)                                                     |
 | **Validation**       | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()`                                           |
 | **Domain Contexts**  | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext`                    |
 | **Operations**       | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder`                                  |
