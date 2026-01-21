@@ -205,17 +205,25 @@ foreach (var method in testClass.GetMembers().OfType<IMethodSymbol>())
 
 ## Pattern Composition
 
-Matchers are composable - build complex patterns from simple ones:
+> **Important:** Matchers mutate `this` when chaining. Each call modifies the same instance.
+> Create new matchers for each distinct pattern to avoid unintended side effects.
 
 ```csharp
-// Base patterns
+// WRONG - mutates the same instance!
 var publicApi = Match.Method().Public().NotStatic();
-var asyncApi = publicApi.Async().ReturningTask();
-var syncApi = publicApi.NotAsync().ReturningVoid();
+var asyncApi = publicApi.Async();  // This modifies publicApi!
 
-// Specific patterns built on base
-var disposableApi = syncApi.Named("Dispose");
-var asyncDisposableApi = asyncApi.Named("DisposeAsync");
+// CORRECT - create separate matchers for each pattern
+var asyncApi = Match.Method().Public().NotStatic().Async().ReturningTask();
+var syncApi = Match.Method().Public().NotStatic().NotAsync().ReturningVoid();
+var disposableApi = Match.Method().Public().NotStatic().NotAsync().ReturningVoid().Named("Dispose");
+var asyncDisposableApi = Match.Method().Public().NotStatic().Async().ReturningTask().Named("DisposeAsync");
+
+// Using factory methods for DRY patterns
+static MethodMatcher PublicInstanceMethod() => Match.Method().Public().NotStatic();
+
+var asyncApi = PublicInstanceMethod().Async().ReturningTask();
+var syncApi = PublicInstanceMethod().NotAsync().ReturningVoid();
 ```
 
 ## Performance Note

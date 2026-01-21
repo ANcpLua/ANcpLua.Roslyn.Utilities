@@ -65,6 +65,8 @@ var inverted = !pattern1;            // NOT
 
 ### Match.* DSL (fluent matching)
 
+> **Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
+
 ```csharp
 // Method matching
 Match.Method()
@@ -73,6 +75,15 @@ Match.Method()
     .WithParameters(2)
     .WithCancellationToken()
     .Matches(method);
+
+// Match multiple attributes (any match)
+Match.Method()
+    .WithAttribute("Xunit.FactAttribute", "Xunit.TheoryAttribute", "NUnit.Framework.TestAttribute")
+    .Public()
+    .Matches(method);
+
+// Finalizer matching
+Match.Method().Finalizer().Matches(method);
 
 // Type matching
 Match.Type()
@@ -85,6 +96,11 @@ Match.Type()
 // Property/Field matching
 Match.Property().ReadOnly().Required().Matches(prop);
 Match.Field().Const().Public().Matches(field);
+
+// Factory pattern for reusable base matchers (avoids mutation issues)
+static MethodMatcher PublicInstance() => Match.Method().Public().NotStatic();
+var asyncApi = PublicInstance().Async().ReturningTask();
+var syncApi = PublicInstance().NotAsync().ReturningVoid();
 ```
 
 ### Invoke.* (operation matching)
@@ -98,6 +114,14 @@ Invoke.Method("Dispose")
 Invoke.Method()
     .Linq()                           // System.Linq extensions
     .Named("Where")
+    .Matches(invocation);
+
+// Match multiple method names (any match)
+Invoke.Method("WriteLine", "Write").OnConsole().Matches(invocation);
+
+// Match multiple receiver types (any match)
+Invoke.Method("Wait", "GetAwaiter")
+    .OnType("Task", "ValueTask")
     .Matches(invocation);
 ```
 

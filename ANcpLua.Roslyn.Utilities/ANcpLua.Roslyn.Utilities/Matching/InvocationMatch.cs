@@ -38,6 +38,7 @@ internal
     ///     until additional predicates are applied.
     /// </returns>
     /// <seealso cref="Method(string)" />
+    /// <seealso cref="Method(string, string[])" />
     public static InvocationMatcher Method()
     {
         return new InvocationMatcher();
@@ -52,10 +53,28 @@ internal
     ///     of methods with the specified <paramref name="name" />.
     /// </returns>
     /// <seealso cref="Method()" />
+    /// <seealso cref="Method(string, string[])" />
     /// <seealso cref="InvocationMatcher.Named(string)" />
     public static InvocationMatcher Method(string name)
     {
         return new InvocationMatcher().Named(name);
+    }
+
+    /// <summary>
+    ///     Creates an invocation matcher for methods with any of the specified names.
+    /// </summary>
+    /// <param name="name">The first method name to match.</param>
+    /// <param name="additionalNames">Additional method names to match.</param>
+    /// <returns>
+    ///     A new <see cref="InvocationMatcher" /> instance configured to match invocations
+    ///     of methods with any of the specified names.
+    /// </returns>
+    /// <seealso cref="Method()" />
+    /// <seealso cref="Method(string)" />
+    /// <seealso cref="InvocationMatcher.Named(string, string[])" />
+    public static InvocationMatcher Method(string name, params string[] additionalNames)
+    {
+        return new InvocationMatcher().Named(name, additionalNames);
     }
 }
 
@@ -150,12 +169,36 @@ internal
     /// </summary>
     /// <param name="name">The exact method name to match.</param>
     /// <returns>This matcher for method chaining.</returns>
+    /// <seealso cref="Named(string, string[])" />
     /// <seealso cref="NameStartsWith(string)" />
     /// <seealso cref="NameEndsWith(string)" />
     /// <seealso cref="NameContains(string)" />
     public InvocationMatcher Named(string name)
     {
         return AddPredicate(i => i.TargetMethod.Name == name);
+    }
+
+    /// <summary>
+    ///     Matches invocations of methods with any of the specified names.
+    /// </summary>
+    /// <param name="name">The first method name to match.</param>
+    /// <param name="additionalNames">Additional method names to match.</param>
+    /// <returns>This matcher for method chaining.</returns>
+    /// <seealso cref="Named(string)" />
+    public InvocationMatcher Named(string name, params string[] additionalNames)
+    {
+        return AddPredicate(i =>
+        {
+            var methodName = i.TargetMethod.Name;
+            if (methodName == name)
+                return true;
+
+            foreach (var n in additionalNames)
+                if (methodName == n)
+                    return true;
+
+            return false;
+        });
     }
 
     /// <summary>
@@ -208,11 +251,39 @@ internal
     ///     For extension methods, the receiver is the first argument.
     ///     For static methods, the containing type is used.
     /// </remarks>
+    /// <seealso cref="OnType(string, string[])" />
     /// <seealso cref="OnTypeInheritingFrom(string)" />
     /// <seealso cref="OnTypeImplementing(string)" />
     public InvocationMatcher OnType(string typeName)
     {
         return AddPredicate(i => GetReceiverTypeName(i) == typeName);
+    }
+
+    /// <summary>
+    ///     Matches invocations on a receiver with any of the specified type names.
+    /// </summary>
+    /// <param name="typeName">The first type name to match.</param>
+    /// <param name="additionalTypeNames">Additional type names to match.</param>
+    /// <returns>This matcher for method chaining.</returns>
+    /// <remarks>
+    ///     For extension methods, the receiver is the first argument.
+    ///     For static methods, the containing type is used.
+    /// </remarks>
+    /// <seealso cref="OnType(string)" />
+    public InvocationMatcher OnType(string typeName, params string[] additionalTypeNames)
+    {
+        return AddPredicate(i =>
+        {
+            var receiverTypeName = GetReceiverTypeName(i);
+            if (receiverTypeName == typeName)
+                return true;
+
+            foreach (var t in additionalTypeNames)
+                if (receiverTypeName == t)
+                    return true;
+
+            return false;
+        });
     }
 
     /// <summary>

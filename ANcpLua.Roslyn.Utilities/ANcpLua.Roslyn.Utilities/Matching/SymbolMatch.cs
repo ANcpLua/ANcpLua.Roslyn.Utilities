@@ -426,10 +426,45 @@ internal
     ///     The fully qualified name of the attribute type (e.g., <c>"System.ObsoleteAttribute"</c>).
     /// </param>
     /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithAttribute(string, string[])" />
     /// <seealso cref="WithoutAttribute" />
     public TSelf WithAttribute(string fullyQualifiedName)
     {
         return AddPredicate(s => s.HasAttribute(fullyQualifiedName));
+    }
+
+    /// <summary>
+    ///     Matches symbols that have any of the specified attributes.
+    /// </summary>
+    /// <param name="fullyQualifiedName">
+    ///     The first fully qualified attribute name to match.
+    /// </param>
+    /// <param name="additionalNames">
+    ///     Additional fully qualified attribute names to match.
+    /// </param>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="WithAttribute(string)" />
+    /// <seealso cref="WithoutAttribute" />
+    public TSelf WithAttribute(string fullyQualifiedName, params string[] additionalNames)
+    {
+        return AddPredicate(s =>
+        {
+            foreach (var attribute in s.GetAttributes())
+            {
+                var attrName = attribute.AttributeClass?.ToDisplayString();
+                if (attrName is null)
+                    continue;
+
+                if (attrName == fullyQualifiedName)
+                    return true;
+
+                foreach (var name in additionalNames)
+                    if (attrName == name)
+                        return true;
+            }
+
+            return false;
+        });
     }
 
     /// <summary>
@@ -439,7 +474,7 @@ internal
     ///     The fully qualified name of the attribute type (e.g., <c>"System.ObsoleteAttribute"</c>).
     /// </param>
     /// <returns>The current matcher instance for fluent chaining.</returns>
-    /// <seealso cref="WithAttribute" />
+    /// <seealso cref="WithAttribute(string)" />
     public TSelf WithoutAttribute(string fullyQualifiedName)
     {
         return AddPredicate(s => !s.HasAttribute(fullyQualifiedName));
@@ -515,9 +550,20 @@ internal
     ///     Matches constructor methods.
     /// </summary>
     /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Finalizer" />
     public MethodMatcher Constructor()
     {
         return AddPredicate(m => m.MethodKind == MethodKind.Constructor);
+    }
+
+    /// <summary>
+    ///     Matches finalizer (destructor) methods.
+    /// </summary>
+    /// <returns>The current matcher instance for fluent chaining.</returns>
+    /// <seealso cref="Constructor" />
+    public MethodMatcher Finalizer()
+    {
+        return AddPredicate(m => m.MethodKind == MethodKind.Destructor);
     }
 
     /// <summary>
