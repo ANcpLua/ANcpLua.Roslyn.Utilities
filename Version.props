@@ -39,13 +39,13 @@
        MEZIANTOU PACKAGES
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Meziantou">
-    <MeziantouFrameworkVersion>5.0.10</MeziantouFrameworkVersion>
-    <MeziantouFullPathVersion>1.1.12</MeziantouFullPathVersion>
-    <MeziantouTemporaryDirectoryVersion>1.0.30</MeziantouTemporaryDirectoryVersion>
-    <MeziantouThreadingVersion>2.0.3</MeziantouThreadingVersion>
-    <MeziantouDependencyScanningVersion>2.0.5</MeziantouDependencyScanningVersion>
-    <MeziantouAnalyzerVersion>2.0.188</MeziantouAnalyzerVersion>
-    <MeziantouParallelTestFrameworkVersion>1.0.6</MeziantouParallelTestFrameworkVersion>
+    <MeziantouFrameworkVersion>5.0.11</MeziantouFrameworkVersion>
+    <MeziantouFullPathVersion>1.1.13</MeziantouFullPathVersion>
+    <MeziantouTemporaryDirectoryVersion>1.0.31</MeziantouTemporaryDirectoryVersion>
+    <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
+    <MeziantouDependencyScanningVersion>2.0.6</MeziantouDependencyScanningVersion>
+    <MeziantouAnalyzerVersion>2.0.284</MeziantouAnalyzerVersion>
+    <MeziantouParallelTestFrameworkVersion>2.3.0</MeziantouParallelTestFrameworkVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
