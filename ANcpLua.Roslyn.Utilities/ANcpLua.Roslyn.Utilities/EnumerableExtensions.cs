@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -72,7 +77,7 @@ internal
     }
 
     /// <summary>
-    ///     Converts the source sequence to an <see cref="ImmutableArray{T}" />,
+    ///     Converts the source sequence to an <see cref="ImmutableArray" />,
     ///     returning <see cref="ImmutableArray{T}.Empty" /> if the source is <c>null</c>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>

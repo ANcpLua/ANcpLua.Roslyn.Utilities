@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -429,7 +432,7 @@ internal
                 return false;
         }
 
-        return additionalTypesRemaining.Count == 0 && originalParams.Count == 0;
+        return additionalTypesRemaining.Count is 0 && originalParams.Count is 0;
     }
 
     private bool IsObsolete(IMethodSymbol method)

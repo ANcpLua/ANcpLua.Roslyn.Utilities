@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace ANcpLua.Roslyn.Utilities.Models;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This type wraps an <see cref="ImmutableArray{T}" /> of message arguments and provides
+///         This type wraps an <see cref="ImmutableArray" /> of message arguments and provides
 ///         proper value-based equality semantics required for incremental generator caching.
 ///         Without proper equality, generators may produce redundant outputs or miss necessary updates.
 ///     </para>

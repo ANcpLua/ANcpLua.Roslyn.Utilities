@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -83,8 +87,10 @@ internal
     /// </remarks>
     public static HashCombiner Create(int seed = unchecked((int)2166136261))
     {
-        var result = new HashCombiner();
-        result._hash = unchecked((uint)seed);
+        var result = new HashCombiner
+        {
+            _hash = unchecked((uint)seed)
+        };
         return result;
     }
 
@@ -242,7 +248,7 @@ internal
 
     private static uint RotateLeft(uint value, int bits)
     {
-        return (value << bits) | (value >> (32 - bits));
+        return value << bits | value >> 32 - bits;
     }
 }
 
@@ -252,7 +258,7 @@ internal
 /// <remarks>
 ///     <para>
 ///         This class contains helper methods for working with <see cref="EquatableArray{T}" /> and
-///         <see cref="ImmutableArray{T}" />, providing value-based equality semantics for collections.
+///         <see cref="ImmutableArray" />, providing value-based equality semantics for collections.
 ///     </para>
 ///     <list type="bullet">
 ///         <item>

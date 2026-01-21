@@ -1,3 +1,6 @@
+using System;
+using System.Text;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -156,7 +159,7 @@ internal
     /// <seealso cref="RestoreWarnings" />
     public static string SuppressWarnings(params string[] warningIds)
     {
-        if (warningIds.Length == 0)
+        if (warningIds.Length is 0)
             return string.Empty;
         return $"#pragma warning disable {string.Join(", ", warningIds)}";
     }
@@ -172,7 +175,7 @@ internal
     /// <seealso cref="SuppressWarnings" />
     public static string RestoreWarnings(params string[] warningIds)
     {
-        if (warningIds.Length == 0)
+        if (warningIds.Length is 0)
             return string.Empty;
         return $"#pragma warning restore {string.Join(", ", warningIds)}";
     }

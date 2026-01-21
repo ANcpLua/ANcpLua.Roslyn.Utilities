@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 
@@ -597,7 +600,7 @@ internal
     /// <seealso cref="WithMinParameters" />
     public MethodMatcher WithNoParameters()
     {
-        return AddPredicate(m => m.Parameters.Length == 0);
+        return AddPredicate(m => m.Parameters.Length is 0);
     }
 
     /// <summary>
@@ -940,7 +943,7 @@ internal
     private static bool HasParameterlessCtor(INamedTypeSymbol type)
     {
         foreach (var ctor in type.InstanceConstructors)
-            if (ctor.Parameters.Length == 0)
+            if (ctor.Parameters.Length is 0)
                 return true;
 
         return false;

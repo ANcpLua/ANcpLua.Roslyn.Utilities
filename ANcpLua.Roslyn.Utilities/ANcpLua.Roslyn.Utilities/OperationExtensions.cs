@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -162,9 +166,9 @@ internal
     ///         skip or modify checks for operations within expression trees.
     ///     </para>
     ///     <para>
-    ///         This method handles both method argument scenarios (e.g., <c>SomeMethod(x => x == 0)</c>
+    ///         This method handles both method argument scenarios (e.g., <c>SomeMethod(x => x is 0)</c>
     ///         where <c>SomeMethod</c> takes <c>Expression&lt;T&gt;</c>) and variable declaration scenarios
-    ///         (e.g., <c>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x => x == 0;</c>).
+    ///         (e.g., <c>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x => x is 0;</c>).
     ///     </para>
     /// </remarks>
     public static bool IsInExpressionTree(this IOperation operation, INamedTypeSymbol? expressionSymbol)
@@ -375,6 +379,24 @@ internal
     }
 
     /// <summary>
+    ///     Checks if the operation is of the specified kind.
+    /// </summary>
+    public static bool IsKind(this IOperation operation, OperationKind kind) => operation.Kind == kind;
+
+    /// <summary>
+    ///     Checks if the operation represents a constant null value.
+    /// </summary>
+    public static bool IsNull(this IOperation operation) => operation.IsConstantNull();
+
+    /// <summary>
+    ///     Checks if the operation represents a constant with the specified value.
+    /// </summary>
+    public static bool IsConstant<T>(this IOperation operation, T value)
+    {
+        return operation.TryGetConstantValue(out T actual) && EqualityComparer<T>.Default.Equals(actual, value);
+    }
+
+    /// <summary>
     ///     Determines whether the operation represents a compile-time constant.
     /// </summary>
     /// <param name="operation">The operation to check.</param>
@@ -414,7 +436,7 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsConstant" />
-    public static bool TryGetConstantValue<T>(this IOperation operation, out T value)
+    public static bool TryGetConstantValue<T>(this IOperation operation, [NotNullWhen(true)] out T value)
     {
         if (operation.ConstantValue is { HasValue: true, Value: T typedValue })
         {

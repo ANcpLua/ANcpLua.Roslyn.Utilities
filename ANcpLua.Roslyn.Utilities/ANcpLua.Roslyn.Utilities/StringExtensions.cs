@@ -1,4 +1,7 @@
+using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -37,7 +40,7 @@ public
 #else
 internal
 #endif
-    static class StringExtensions
+    static partial class StringExtensions
 {
     private static readonly char[] NewLineSeparator = ['\n'];
 
@@ -57,7 +60,7 @@ internal
     ///         The enumerator handles both <c>\n</c> and <c>\r\n</c> line endings correctly.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="SplitLines(ReadOnlySpan{char})" />
+    /// <seealso cref="SplitLines(ReadOnlySpan{T})" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
     public static LineSplitEnumerator SplitLines(this string str)
@@ -163,9 +166,7 @@ internal
     {
         input = input ?? throw new ArgumentNullException(nameof(input));
 
-#pragma warning disable CA1308
         return input.ToLowerInvariant() switch
-#pragma warning restore CA1308
         {
             "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
 
@@ -248,13 +249,11 @@ internal
             "volatile" => "@volatile",
             "while" => "@while",
 
-#pragma warning disable CA1308 // Normalize strings to uppercase
 #if NET6_0_OR_GREATER
             _ => string.Concat(input[0].ToString().ToLower(CultureInfo.InvariantCulture), input.AsSpan(1)),
 #else
             _ => input[0].ToString().ToLower(CultureInfo.InvariantCulture) + input[1..],
 #endif
-#pragma warning restore CA1308 // Normalize strings to uppercase
         };
     }
 
@@ -415,6 +414,60 @@ internal
     }
 
     /// <summary>
+    ///     Normalizes whitespace by collapsing all whitespace sequences (including newlines) into a single space.
+    /// </summary>
+    /// <param name="input">The string to normalize.</param>
+    /// <returns>
+    ///     A string with all whitespace collapsed to single spaces and trimmed.
+    ///     Returns <see cref="string.Empty" /> if input is null or whitespace.
+    /// </returns>
+    public static string NormalizeWhitespace(this string? input)
+    {
+        return string.IsNullOrWhiteSpace(input)
+            ? string.Empty
+            : WhitespaceRegex().Replace(input, " ").Trim();
+    }
+
+    /// <summary>
+    ///     Sanitizes a string for use as a C# identifier by replacing non-alphanumeric characters with underscores.
+    /// </summary>
+    /// <param name="name">The name to sanitize.</param>
+    /// <returns>A string containing only letters, digits, and underscores.</returns>
+    public static string SanitizeIdentifier(this string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "_";
+
+        var sb = new StringBuilder(name.Length);
+        foreach (var c in name)
+            if (char.IsLetterOrDigit(c) || c == '_')
+                sb.Append(c);
+            else
+                sb.Append('_');
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     Escapes a string for use as a C# string literal.
+    /// </summary>
+    /// <param name="s">The string to escape.</param>
+    /// <returns>The escaped string, suitable for placement inside double quotes.</returns>
+    public static string EscapeCSharpString(this string s)
+    {
+        if (string.IsNullOrEmpty(s)) return string.Empty;
+
+        return s
+            .Replace("\\", @"\\")
+            .Replace("\"", "\\\"")
+            .Replace("\r", "\\r")
+            .Replace("\n", "\\n");
+    }
+
+    private static readonly Regex WhitespaceRegexInstance = new Regex(@"\s+", RegexOptions.Compiled);
+
+    private static Regex WhitespaceRegex() => WhitespaceRegexInstance;
+
+    /// <summary>
     ///     A zero-allocation enumerator for splitting strings into lines.
     /// </summary>
     /// <remarks>
@@ -438,7 +491,6 @@ internal
     /// <seealso cref="SplitLines(ReadOnlySpan{char})" />
     /// <seealso cref="LineSplitEntry" />
     [StructLayout(LayoutKind.Auto)]
-#pragma warning disable CA1034 // Nested types should not be visible - ref structs require this pattern
     public ref struct LineSplitEnumerator
     {
         private ReadOnlySpan<char> _str;
@@ -532,7 +584,6 @@ internal
     /// <seealso cref="SplitLines(string)" />
     [StructLayout(LayoutKind.Auto)]
     public readonly ref struct LineSplitEntry
-#pragma warning restore CA1034
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="LineSplitEntry" /> struct.

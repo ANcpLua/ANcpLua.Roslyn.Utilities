@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
+using InvalidOperationException = System.InvalidOperationException;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -149,7 +155,7 @@ internal
     ///     This method is useful for scenarios where you need value equality semantics for caching
     ///     in the incremental generator pipeline.
     /// </remarks>
-    /// <typeparam name="TSource">The type of elements in the collection. Must implement <see cref="IEquatable{T}" />.</typeparam>
+    /// <typeparam name="TSource">The type of elements in the collection. Must implement <see cref="System.IEquatable{T}" />.</typeparam>
     /// <param name="source">The provider of values to collect.</param>
     /// <returns>
     ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces an <see cref="EquatableArray{T}" />
@@ -188,7 +194,7 @@ internal
     ///     or throws if the transformation failed.
     /// </returns>
     /// <seealso
-    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, System.Func{TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValueProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -328,7 +334,7 @@ internal
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only non-null values.
     /// </returns>
-    /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{Nullable{TSource}})" />
+    /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{System.Nullable})" />
     public static IncrementalValuesProvider<TSource> WhereNotNull<TSource>(
         this IncrementalValuesProvider<TSource?> source)
         where TSource : class
@@ -361,7 +367,7 @@ internal
     ///     Failed transformations are filtered out after their exceptions are reported.
     /// </returns>
     /// <seealso
-    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, System.Func{TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -560,6 +566,26 @@ internal
         where TLeft : IEquatable<TLeft>
     {
         return left.CollectAsEquatableArray().Combine(right);
+    }
+
+    /// <summary>
+    ///     Expressive alias for <see cref="IncrementalValuesProvider{TValues}.Combine{TOther}(IncrementalValueProvider{TOther})" />.
+    /// </summary>
+    public static IncrementalValueProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
+        this IncrementalValueProvider<TLeft> left,
+        IncrementalValueProvider<TRight> right)
+    {
+        return left.Combine(right);
+    }
+
+    /// <summary>
+    ///     Expressive alias for <see cref="IncrementalValuesProvider{TValues}.Combine{TOther}(IncrementalValueProvider{TOther})" />.
+    /// </summary>
+    public static IncrementalValuesProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
+        this IncrementalValuesProvider<TLeft> left,
+        IncrementalValueProvider<TRight> right)
+    {
+        return left.Combine(right);
     }
 
     /// <summary>

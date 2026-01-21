@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace ANcpLua.Roslyn.Utilities.Models;
 
 /// <summary>

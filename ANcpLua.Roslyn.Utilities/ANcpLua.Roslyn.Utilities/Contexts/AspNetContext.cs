@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
@@ -430,11 +431,11 @@ internal
         if (attrType is null)
             return false;
 
-        return (FromBodyAttribute is not null && attrType.IsEqualTo(FromBodyAttribute)) ||
-               (FromQueryAttribute is not null && attrType.IsEqualTo(FromQueryAttribute)) ||
-               (FromRouteAttribute is not null && attrType.IsEqualTo(FromRouteAttribute)) ||
-               (FromServicesAttribute is not null && attrType.IsEqualTo(FromServicesAttribute)) ||
-               (FromHeaderAttribute is not null && attrType.IsEqualTo(FromHeaderAttribute)) ||
-               (FromFormAttribute is not null && attrType.IsEqualTo(FromFormAttribute));
+        return FromBodyAttribute is not null && attrType.IsEqualTo(FromBodyAttribute) ||
+               FromQueryAttribute is not null && attrType.IsEqualTo(FromQueryAttribute) ||
+               FromRouteAttribute is not null && attrType.IsEqualTo(FromRouteAttribute) ||
+               FromServicesAttribute is not null && attrType.IsEqualTo(FromServicesAttribute) ||
+               FromHeaderAttribute is not null && attrType.IsEqualTo(FromHeaderAttribute) ||
+               FromFormAttribute is not null && attrType.IsEqualTo(FromFormAttribute);
     }
 }

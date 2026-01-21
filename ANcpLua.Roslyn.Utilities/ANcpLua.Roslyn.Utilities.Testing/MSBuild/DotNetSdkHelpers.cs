@@ -118,10 +118,11 @@ public static class DotNetSdkHelpers
             var product = products.Single(a => a.ProductName == ".NET" && a.ProductVersion == versionString);
             var releases = await product.GetReleasesAsync();
             var latestRelease = releases.Single(r => r.Version == product.LatestReleaseVersion);
-            var latestSdk = latestRelease.Sdks.MaxBy(static sdk => sdk.Version);
+            var latestSdk = latestRelease.Sdks.MaxBy(static sdk => sdk.Version)
+                ?? throw new InvalidOperationException($"No SDK found for .NET {versionString}");
 
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
-            var file = latestSdk!.Files.Single(file =>
+            var file = latestSdk.Files.Single(file =>
                 file.Rid == runtimeIdentifier && Path.GetExtension(file.Name) is ".zip" or ".gz");
             var finalFolderPath = FullPath.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) / "ANcpLua" /
                                   "dotnet" / latestSdk.Version.ToString();
@@ -156,7 +157,8 @@ public static class DotNetSdkHelpers
                             break;
                         case TarEntryType.RegularFile:
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                            if (Path.GetDirectoryName(destinationPath) is { } parentDir)
+                                Directory.CreateDirectory(parentDir);
                             var entryStream = entry.DataStream;
                             await using var outputStream = File.Create(destinationPath);
                             if (entryStream is not null) await entryStream.CopyToAsync(outputStream);

@@ -1,8 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -131,6 +137,38 @@ internal
             expandInheritdoc, cancellationToken);
     }
 
+    /// <summary>
+    ///     Gets the plain text summary from a symbol's documentation, with whitespace normalized.
+    /// </summary>
+    public static string? GetSummaryText(this ISymbol symbol, Compilation compilation, CancellationToken ct = default)
+    {
+        var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
+        if (string.IsNullOrEmpty(xml)) return null;
+
+        try
+        {
+            var element = XElement.Parse(xml);
+            return element.Element("summary")?.Value.NormalizeWhitespace();
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
+    ///     Gets the plain text remarks from a symbol's documentation, with whitespace normalized.
+    /// </summary>
+    public static string? GetRemarksText(this ISymbol symbol, Compilation compilation, CancellationToken ct = default)
+    {
+        var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
+        if (string.IsNullOrEmpty(xml)) return null;
+
+        try
+        {
+            var element = XElement.Parse(xml);
+            return element.Element("remarks")?.Value.NormalizeWhitespace();
+        }
+        catch { return null; }
+    }
+
     private static string GetDocumentationComment(
         ISymbol symbol,
         HashSet<ISymbol>? visitedSymbols,
@@ -232,21 +270,15 @@ internal
 
         var candidate = GetCandidateSymbol(memberSymbol);
 
-        if (crefAttribute is null && candidate is null)
-            return null;
+        ISymbol? symbol = crefAttribute switch
+        {
+            null when candidate is null => null,
+            null => candidate,
+            _ => DocumentationCommentId.GetFirstSymbolForDeclarationId(crefAttribute.Value, compilation)
+        };
 
-        ISymbol symbol;
-        if (crefAttribute is null)
-        {
-            symbol = candidate!; // candidate is guaranteed non-null here due to check above
-        }
-        else
-        {
-            var resolved = DocumentationCommentId.GetFirstSymbolForDeclarationId(crefAttribute.Value, compilation);
-            if (resolved is null)
-                return null;
-            symbol = resolved;
-        }
+        if (symbol is null)
+            return null;
 
         visitedSymbols ??= [];
         if (!visitedSymbols.Add(symbol))
@@ -261,9 +293,14 @@ internal
                 return [];
 
             var document = XDocument.Parse(inheritedDocumentation, LoadOptions.PreserveWhitespace);
-            var xpathValue = string.IsNullOrEmpty(pathAttribute?.Value)
-                ? BuildXPathForElement(element.Parent!)
-                : NormalizePath(pathAttribute!.Value);
+            var xpathValue = pathAttribute?.Value is { Length: > 0 } path
+                ? NormalizePath(path)
+                : element.Parent is { } parent
+                    ? BuildXPathForElement(parent)
+                    : null;
+
+            if (xpathValue is null)
+                return [];
 
             RewriteTypeParameterReferences(document, symbol);
 

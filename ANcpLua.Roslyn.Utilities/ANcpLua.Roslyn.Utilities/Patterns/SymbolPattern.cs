@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -237,7 +239,7 @@ internal
     /// <seealso cref="All{T}" />
     public static SymbolPattern<T> Any<T>(params SymbolPattern<T>[] patterns) where T : ISymbol
     {
-        return patterns.Length == 0
+        return patterns.Length is 0
             ? AlwaysTruePattern<T>.Instance
             : patterns.Aggregate((a, b) => a.Or(b));
     }
@@ -254,7 +256,7 @@ internal
     /// <seealso cref="Any{T}" />
     public static SymbolPattern<T> All<T>(params SymbolPattern<T>[] patterns) where T : ISymbol
     {
-        return patterns.Length == 0
+        return patterns.Length is 0
             ? AlwaysTruePattern<T>.Instance
             : patterns.Aggregate((a, b) => a.And(b));
     }

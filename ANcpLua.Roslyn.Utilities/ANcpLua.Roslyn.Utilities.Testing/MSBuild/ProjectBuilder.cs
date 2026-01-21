@@ -47,14 +47,14 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// <example>
 ///     <code>
 /// await using var builder = new ProjectBuilder(testOutputHelper);
-/// 
+///
 /// var result = await builder
 ///     .WithTargetFramework(Tfm.Net100)
 ///     .WithOutputType(Val.Library)
 ///     .WithPackage("Microsoft.CodeAnalysis.CSharp", "4.12.0")
 ///     .AddSource("Program.cs", "namespace Test; public class Foo { }")
 ///     .BuildAsync();
-/// 
+///
 /// result.ShouldSucceed();
 /// </code>
 /// </example>
@@ -145,7 +145,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     <code>
     /// // Without test output (silent mode)
     /// await using var builder = new ProjectBuilder();
-    /// 
+    ///
     /// // With xUnit test output for debugging
     /// await using var builder = new ProjectBuilder(testOutputHelper);
     /// </code>
@@ -326,7 +326,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     <code>
     /// // Simple local source
     /// builder.WithPackageSource("local", "/path/to/packages");
-    /// 
+    ///
     /// // With package pattern mapping
     /// builder.WithPackageSource("myFeed", "/path/to/packages", "MyCompany.*", "MyOrg.*");
     /// </code>
@@ -685,7 +685,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     .WithTargetFramework(Tfm.Net100)
     ///     .AddSource("Program.cs", code)
     ///     .BuildAsync();
-    /// 
+    ///
     /// result.ShouldSucceed();
     /// Assert.False(result.HasWarning("CS0618"));
     /// </code>
@@ -694,7 +694,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// <seealso cref="RunAsync" />
     /// <seealso cref="TestAsync" />
     /// <seealso cref="PackAsync" />
-    public async Task<BuildResult> BuildAsync(string[]? buildArguments = null,
+    public Task<BuildResult> BuildAsync(string[]? buildArguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
         GenerateCsprojFile();
@@ -702,7 +702,7 @@ public class ProjectBuilder : IAsyncDisposable
         foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
-        return await ExecuteDotnetCommandAsync("build", buildArguments, environmentVariables);
+        return ExecuteDotnetCommandAsync("build", buildArguments, environmentVariables);
     }
 
     /// <summary>
@@ -722,13 +722,13 @@ public class ProjectBuilder : IAsyncDisposable
     ///     .WithOutputType(Val.Exe)
     ///     .AddSource("Program.cs", "Console.WriteLine(args[0]);")
     ///     .RunAsync(["Hello"]);
-    /// 
+    ///
     /// result.ShouldSucceed();
     /// Assert.True(result.OutputContains("Hello"));
     /// </code>
     /// </example>
     /// <seealso cref="BuildAsync" />
-    public async Task<BuildResult> RunAsync(string[]? arguments = null,
+    public Task<BuildResult> RunAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
         GenerateCsprojFile();
@@ -736,7 +736,7 @@ public class ProjectBuilder : IAsyncDisposable
         foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
-        return await ExecuteDotnetCommandAsync("run", ["--", .. arguments ?? []], environmentVariables);
+        return ExecuteDotnetCommandAsync("run", ["--", .. arguments ?? []], environmentVariables);
     }
 
     /// <summary>
@@ -760,13 +760,13 @@ public class ProjectBuilder : IAsyncDisposable
     ///         public class Tests { [Fact] public void Test() => Assert.True(true); }
     ///         """)
     ///     .TestAsync();
-    /// 
+    ///
     /// result.ShouldSucceed();
     /// </code>
     /// </example>
     /// <seealso cref="WithMtpMode" />
     /// <seealso cref="BuildAsync" />
-    public async Task<BuildResult> TestAsync(string[]? arguments = null,
+    public Task<BuildResult> TestAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
         GenerateCsprojFile();
@@ -774,7 +774,7 @@ public class ProjectBuilder : IAsyncDisposable
         foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
-        return await ExecuteDotnetCommandAsync("test", arguments, environmentVariables);
+        return ExecuteDotnetCommandAsync("test", arguments, environmentVariables);
     }
 
     /// <summary>
@@ -795,12 +795,12 @@ public class ProjectBuilder : IAsyncDisposable
     ///     .WithProperty(Prop.PackageId, "MyPackage")
     ///     .AddSource("Library.cs", "public class MyLib { }")
     ///     .PackAsync();
-    /// 
+    ///
     /// result.ShouldSucceed();
     /// </code>
     /// </example>
     /// <seealso cref="BuildAsync" />
-    public async Task<BuildResult> PackAsync(string[]? arguments = null,
+    public Task<BuildResult> PackAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
         GenerateCsprojFile();
@@ -808,7 +808,7 @@ public class ProjectBuilder : IAsyncDisposable
         foreach (var (name, content) in SourceFiles)
             AddFile(name, content);
 
-        return await ExecuteDotnetCommandAsync("pack", arguments, environmentVariables);
+        return ExecuteDotnetCommandAsync("pack", arguments, environmentVariables);
     }
 
     /// <summary>
@@ -822,12 +822,12 @@ public class ProjectBuilder : IAsyncDisposable
     ///     Use this method when you need to explicitly restore packages or diagnose restore issues.
     /// </remarks>
     /// <seealso cref="BuildAsync" />
-    public async Task<BuildResult> RestoreAsync(string[]? arguments = null,
+    public Task<BuildResult> RestoreAsync(string[]? arguments = null,
         (string Name, string Value)[]? environmentVariables = null)
     {
         GenerateCsprojFile();
 
-        return await ExecuteDotnetCommandAsync("restore", arguments, environmentVariables);
+        return ExecuteDotnetCommandAsync("restore", arguments, environmentVariables);
     }
 
     /// <summary>
@@ -895,7 +895,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     <code>
     /// // Custom dotnet command
     /// var result = await builder.ExecuteDotnetCommandAsync("format", ["--verify-no-changes"]);
-    /// 
+    ///
     /// // dotnet new with template
     /// var result = await builder.ExecuteDotnetCommandAsync("new", ["console", "-n", "MyApp"]);
     /// </code>

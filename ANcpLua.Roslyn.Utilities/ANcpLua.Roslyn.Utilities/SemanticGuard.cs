@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using ANcpLua.Roslyn.Utilities.Models;
 using ANcpLua.Roslyn.Utilities.Patterns;
 using Microsoft.CodeAnalysis;
@@ -65,7 +68,7 @@ internal
     ///     Gets a value indicating whether all validation rules have passed.
     /// </summary>
     /// <returns><c>true</c> if no violations have been recorded; otherwise, <c>false</c>.</returns>
-    public bool IsValid => _violations.Count == 0;
+    public bool IsValid => _violations.Count is 0;
 
     /// <summary>
     ///     Gets the collection of diagnostic violations accumulated during validation.
@@ -75,7 +78,7 @@ internal
     ///     or <c>default</c> if no violations occurred.
     /// </returns>
     public EquatableArray<DiagnosticInfo> Violations =>
-        _violations.Count == 0
+        _violations.Count is 0
             ? default
             : _violations.ToImmutableArray().AsEquatableArray();
 
@@ -372,7 +375,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustHaveCancellationToken(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => HasCancellationToken(m), onFail);
+        return guard.Must(HasCancellationToken, onFail);
     }
 
     private static bool HasCancellationToken(IMethodSymbol method)
@@ -530,7 +533,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustBeDisposable(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => IsDisposable(t), onFail);
+        return guard.Must(IsDisposable, onFail);
     }
 
     private static bool IsDisposable(INamedTypeSymbol type)
@@ -610,7 +613,7 @@ internal
 ///     .MustBeAsync(asyncRequired)
 ///     .MustReturnTask(taskRequired)
 ///     .ToFlow();
-/// 
+///
 /// SemanticGuard.ForType(type)
 ///     .MustBeClass(classRequired)
 ///     .MustImplement(interfaceType, implRequired)

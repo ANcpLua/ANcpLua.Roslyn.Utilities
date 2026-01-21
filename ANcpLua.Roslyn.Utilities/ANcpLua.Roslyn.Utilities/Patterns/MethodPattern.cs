@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -40,7 +43,7 @@ namespace ANcpLua.Roslyn.Utilities.Patterns;
 ///         <item>
 ///             <description>
 ///                 Parameters: <see cref="NoParameters" />, <see cref="ParameterCount" />,
-///                 <see cref="WithParameter(Func{IParameterSymbol, bool})" />, <see cref="WithCancellationToken" />
+///                 <see cref="WithParameter(Func{TResult})" />, <see cref="WithCancellationToken" />
 ///             </description>
 ///         </item>
 ///         <item>

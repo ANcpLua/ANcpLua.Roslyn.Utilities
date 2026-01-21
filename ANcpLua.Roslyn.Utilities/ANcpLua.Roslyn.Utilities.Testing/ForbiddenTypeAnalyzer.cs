@@ -161,8 +161,7 @@ internal static class ForbiddenTypeAnalyzer
             if (step.Outputs.IsDefault)
                 continue;
             foreach (var (output, _) in step.Outputs)
-                if (output is not null)
-                    pending.Push((output, stepName, "Output", 0));
+                pending.Push((output, stepName, "Output", 0));
         }
 
         // Iterative depth-first traversal
@@ -197,7 +196,7 @@ internal static class ForbiddenTypeAnalyzer
                     type.GetGenericTypeDefinition().FullName == "System.Collections.Immutable.ImmutableArray`1")
                 {
                     var isDefaultProp = type.GetProperty("IsDefault");
-                    if (isDefaultProp is not null && (bool)isDefaultProp.GetValue(node)!)
+                    if (isDefaultProp is not null && isDefaultProp.GetValue(node) is true)
                         continue;
                 }
 
@@ -317,6 +316,6 @@ internal static class ForbiddenTypeAnalyzer
     {
         return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
                type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
-               (Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying));
+               Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying);
     }
 }

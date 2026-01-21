@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -74,7 +76,7 @@ internal
 ///             <description>Use <see cref="Matches(IInvocationOperation?)" /> to test invocations.</description>
 ///         </item>
 ///         <item>
-///             <description>Use <see cref="Where(Func{IInvocationOperation, bool})" /> for custom conditions.</description>
+///             <description>Use <see cref="Where(Func{TResult})" /> for custom conditions.</description>
 ///         </item>
 ///     </list>
 /// </remarks>
@@ -371,7 +373,7 @@ internal
     /// <seealso cref="WithMinArguments(int)" />
     public InvocationMatcher WithNoArguments()
     {
-        return AddPredicate(i => i.Arguments.Length == 0);
+        return AddPredicate(i => i.Arguments.Length is 0);
     }
 
     /// <summary>

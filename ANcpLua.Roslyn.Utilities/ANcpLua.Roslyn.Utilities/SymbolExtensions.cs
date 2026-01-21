@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -83,6 +89,26 @@ internal
     {
         return symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
     }
+
+    /// <summary>
+    ///     Checks if the symbol has public accessibility.
+    /// </summary>
+    public static bool IsPublic(this ISymbol symbol) => symbol.DeclaredAccessibility == Accessibility.Public;
+
+    /// <summary>
+    ///     Checks if the symbol has internal accessibility.
+    /// </summary>
+    public static bool IsInternal(this ISymbol symbol) => symbol.DeclaredAccessibility == Accessibility.Internal;
+
+    /// <summary>
+    ///     Checks if the symbol has private accessibility.
+    /// </summary>
+    public static bool IsPrivate(this ISymbol symbol) => symbol.DeclaredAccessibility == Accessibility.Private;
+
+    /// <summary>
+    ///     Checks if the symbol has protected accessibility.
+    /// </summary>
+    public static bool IsProtected(this ISymbol symbol) => symbol.DeclaredAccessibility == Accessibility.Protected;
 
     /// <summary>
     ///     Checks if a symbol has a specific attribute identified by its fully qualified name.

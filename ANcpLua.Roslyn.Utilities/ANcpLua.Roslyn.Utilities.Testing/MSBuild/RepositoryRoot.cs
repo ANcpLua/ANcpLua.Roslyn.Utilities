@@ -107,7 +107,7 @@ public readonly record struct RepositoryRoot
     /// <seealso cref="FullPath" />
     public static RepositoryRoot Locate(params string[] markerFiles)
     {
-        if (markerFiles.Length == 0)
+        if (markerFiles.Length is 0)
             markerFiles = ["*.sln", "*.slnx", ".git"];
 
         var directory = FullPath.CurrentDirectory();

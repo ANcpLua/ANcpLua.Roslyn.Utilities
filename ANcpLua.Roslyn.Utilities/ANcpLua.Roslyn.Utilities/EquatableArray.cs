@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -14,7 +17,7 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <remarks>
 ///     <para>
 ///         This static class contains extension methods that enable fluent creation of
-///         <see cref="EquatableArray{T}" /> from both <see cref="ImmutableArray{T}" /> and regular arrays.
+///         <see cref="EquatableArray{T}" /> from both <see cref="ImmutableArray" /> and regular arrays.
 ///     </para>
 ///     <list type="bullet">
 ///         <item>

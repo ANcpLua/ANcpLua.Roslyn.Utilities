@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -203,7 +207,7 @@ internal
             return false;
 
         return SymbolEqualityComparer.Default.Equals(symbol, expectedType) ||
-               (!expectedType.IsSealed && symbol.InheritsFrom(expectedType));
+               !expectedType.IsSealed && symbol.InheritsFrom(expectedType);
     }
 
     /// <summary>
@@ -374,7 +378,7 @@ internal
     /// <seealso cref="GetEnumerationType" />
     public static bool IsEnumeration([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
-        return (symbol?.GetEnumerationType()) is not null;
+        return symbol?.GetEnumerationType() is not null;
     }
 
     /// <summary>
@@ -453,6 +457,22 @@ internal
             if (namedTypeSymbol.ConstructedFrom.SpecialType is SpecialType.System_Nullable_T &&
                 namedTypeSymbol.TypeArguments.Length is 1)
                 return namedTypeSymbol.TypeArguments[0];
+
+        return typeSymbol;
+    }
+
+    /// <summary>
+    ///     Gets the underlying type if the symbol represents a nullable type (either <see cref="Nullable{T}" /> or a nullable reference type).
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to unwrap.</param>
+    /// <returns>The underlying type symbol.</returns>
+    public static ITypeSymbol UnwrapNullable(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol is INamedTypeSymbol { ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } namedType && namedType.TypeArguments.Length > 0)
+            return namedType.TypeArguments[0];
+
+        if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 
         return typeSymbol;
     }

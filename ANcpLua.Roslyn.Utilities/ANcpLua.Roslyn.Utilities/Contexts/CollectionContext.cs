@@ -353,13 +353,13 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return (ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray)) ||
-               (ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList)) ||
-               (ImmutableDictionary is not null &&
-                SymbolEqualityComparer.Default.Equals(original, ImmutableDictionary)) ||
-               (ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet)) ||
-               (FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet)) ||
-               (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
+        return ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray) ||
+               ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList) ||
+               ImmutableDictionary is not null &&
+               SymbolEqualityComparer.Default.Equals(original, ImmutableDictionary) ||
+               ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet) ||
+               FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
+               FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary);
     }
 
     /// <summary>
@@ -382,8 +382,8 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return (FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet)) ||
-               (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
+        return FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
+               FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary);
     }
 
     /// <summary>
@@ -405,8 +405,8 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return (Span is not null && SymbolEqualityComparer.Default.Equals(original, Span)) ||
-               (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan));
+        return Span is not null && SymbolEqualityComparer.Default.Equals(original, Span) ||
+               ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan);
     }
 
     /// <summary>
@@ -429,8 +429,8 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return (Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory)) ||
-               (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
+        return Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory) ||
+               ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory);
     }
 
     /// <summary>
@@ -480,12 +480,12 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return (IReadOnlyCollection is not null && type.Implements(IReadOnlyCollection.OriginalDefinition)) ||
-               (IReadOnlyList is not null && type.Implements(IReadOnlyList.OriginalDefinition)) ||
-               (IReadOnlyDictionary is not null && type.Implements(IReadOnlyDictionary.OriginalDefinition)) ||
-               (IReadOnlySet is not null && type.Implements(IReadOnlySet.OriginalDefinition)) ||
-               (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan)) ||
-               (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
+        return IReadOnlyCollection is not null && type.Implements(IReadOnlyCollection.OriginalDefinition) ||
+               IReadOnlyList is not null && type.Implements(IReadOnlyList.OriginalDefinition) ||
+               IReadOnlyDictionary is not null && type.Implements(IReadOnlyDictionary.OriginalDefinition) ||
+               IReadOnlySet is not null && type.Implements(IReadOnlySet.OriginalDefinition) ||
+               ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan) ||
+               ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory);
     }
 
     /// <summary>
@@ -517,28 +517,28 @@ internal
         if (named.TypeArguments.Length == 1)
         {
             var original = named.OriginalDefinition;
-            if ((IEnumerableOfT is not null && SymbolEqualityComparer.Default.Equals(original, IEnumerableOfT)) ||
-                (ICollectionOfT is not null && SymbolEqualityComparer.Default.Equals(original, ICollectionOfT)) ||
-                (IListOfT is not null && SymbolEqualityComparer.Default.Equals(original, IListOfT)) ||
-                (IReadOnlyCollection is not null &&
-                 SymbolEqualityComparer.Default.Equals(original, IReadOnlyCollection)) ||
-                (IReadOnlyList is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlyList)) ||
-                (ISet is not null && SymbolEqualityComparer.Default.Equals(original, ISet)) ||
-                (IReadOnlySet is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlySet)) ||
-                (List is not null && SymbolEqualityComparer.Default.Equals(original, List)) ||
-                (HashSet is not null && SymbolEqualityComparer.Default.Equals(original, HashSet)) ||
-                (Queue is not null && SymbolEqualityComparer.Default.Equals(original, Queue)) ||
-                (Stack is not null && SymbolEqualityComparer.Default.Equals(original, Stack)) ||
-                (LinkedList is not null && SymbolEqualityComparer.Default.Equals(original, LinkedList)) ||
-                (ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray)) ||
-                (ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList)) ||
-                (ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet)) ||
-                (FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet)) ||
-                (Span is not null && SymbolEqualityComparer.Default.Equals(original, Span)) ||
-                (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan)) ||
-                (Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory)) ||
-                (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory)) ||
-                (ArraySegment is not null && SymbolEqualityComparer.Default.Equals(original, ArraySegment)))
+            if (IEnumerableOfT is not null && SymbolEqualityComparer.Default.Equals(original, IEnumerableOfT) ||
+                ICollectionOfT is not null && SymbolEqualityComparer.Default.Equals(original, ICollectionOfT) ||
+                IListOfT is not null && SymbolEqualityComparer.Default.Equals(original, IListOfT) ||
+                IReadOnlyCollection is not null &&
+                SymbolEqualityComparer.Default.Equals(original, IReadOnlyCollection) ||
+                IReadOnlyList is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlyList) ||
+                ISet is not null && SymbolEqualityComparer.Default.Equals(original, ISet) ||
+                IReadOnlySet is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlySet) ||
+                List is not null && SymbolEqualityComparer.Default.Equals(original, List) ||
+                HashSet is not null && SymbolEqualityComparer.Default.Equals(original, HashSet) ||
+                Queue is not null && SymbolEqualityComparer.Default.Equals(original, Queue) ||
+                Stack is not null && SymbolEqualityComparer.Default.Equals(original, Stack) ||
+                LinkedList is not null && SymbolEqualityComparer.Default.Equals(original, LinkedList) ||
+                ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray) ||
+                ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList) ||
+                ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet) ||
+                FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
+                Span is not null && SymbolEqualityComparer.Default.Equals(original, Span) ||
+                ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan) ||
+                Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory) ||
+                ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory) ||
+                ArraySegment is not null && SymbolEqualityComparer.Default.Equals(original, ArraySegment))
                 return named.TypeArguments[0];
         }
 

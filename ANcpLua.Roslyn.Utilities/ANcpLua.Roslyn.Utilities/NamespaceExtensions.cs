@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -66,9 +69,7 @@ internal
     ///     </code>
     /// </example>
     /// <seealso cref="GetAllNamespaces" />
-#pragma warning disable MA0109 // Span overload not practical for netstandard2.0
     public static bool IsNamespace(this INamespaceSymbol? namespaceSymbol, string[] namespaceParts)
-#pragma warning restore MA0109
     {
         for (var i = namespaceParts.Length - 1; i >= 0; i--)
         {

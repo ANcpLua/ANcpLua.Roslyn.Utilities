@@ -321,8 +321,8 @@ internal
     public bool IsTextReaderOrWriter(ITypeSymbol? type)
     {
         return type is not null &&
-               ((TextReader is not null && type.IsOrInheritsFrom(TextReader)) ||
-                (TextWriter is not null && type.IsOrInheritsFrom(TextWriter)));
+               (TextReader is not null && type.IsOrInheritsFrom(TextReader) ||
+                TextWriter is not null && type.IsOrInheritsFrom(TextWriter));
     }
 
     /// <summary>
@@ -397,11 +397,11 @@ internal
         if (type is null)
             return false;
 
-        return (Semaphore is not null && type.IsOrInheritsFrom(Semaphore)) ||
-               (SemaphoreSlim is not null && type.IsOrInheritsFrom(SemaphoreSlim)) ||
-               (Mutex is not null && type.IsOrInheritsFrom(Mutex)) ||
-               (ReaderWriterLock is not null && type.IsOrInheritsFrom(ReaderWriterLock)) ||
-               (ReaderWriterLockSlim is not null && type.IsOrInheritsFrom(ReaderWriterLockSlim));
+        return Semaphore is not null && type.IsOrInheritsFrom(Semaphore) ||
+               SemaphoreSlim is not null && type.IsOrInheritsFrom(SemaphoreSlim) ||
+               Mutex is not null && type.IsOrInheritsFrom(Mutex) ||
+               ReaderWriterLock is not null && type.IsOrInheritsFrom(ReaderWriterLock) ||
+               ReaderWriterLockSlim is not null && type.IsOrInheritsFrom(ReaderWriterLockSlim);
     }
 
     /// <summary>

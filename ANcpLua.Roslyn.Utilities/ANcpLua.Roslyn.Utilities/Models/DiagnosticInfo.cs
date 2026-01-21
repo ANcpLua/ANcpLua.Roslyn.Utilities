@@ -1,6 +1,7 @@
 // Copyright (c) ANcpLua. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Models;

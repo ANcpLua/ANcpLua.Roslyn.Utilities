@@ -56,13 +56,7 @@ public sealed class GeneratorResult : IDisposable
     /// <param name="secondRun">The result of the second generator driver run, used for caching verification.</param>
     /// <param name="source">The original source code used for the test, if available.</param>
     /// <param name="generatorType">The type of the generator being tested.</param>
-    /// <remarks>
-    ///     <para>
-    ///         This constructor is internal. Use <see cref="Test{TGenerator}.Run(string, CancellationToken)" />
-    ///         or <see cref="GeneratorTestEngine{TGenerator}" /> to create instances.
-    ///     </para>
-    /// </remarks>
-    internal GeneratorResult(
+    public GeneratorResult(
         GeneratorDriverRunResult firstRun,
         GeneratorDriverRunResult secondRun,
         string? source,

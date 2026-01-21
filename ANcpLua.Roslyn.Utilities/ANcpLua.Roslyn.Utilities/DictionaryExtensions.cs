@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Extension methods for <see cref="Dictionary{TKey, TValue}" /> with allocation-free patterns.
+///     Extension methods for <see cref="Dictionary{TKey,TValue}" /> with allocation-free patterns.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -63,7 +66,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso
-    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
+    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TResult})" />
     /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
         this Dictionary<TKey, TValue> dictionary,

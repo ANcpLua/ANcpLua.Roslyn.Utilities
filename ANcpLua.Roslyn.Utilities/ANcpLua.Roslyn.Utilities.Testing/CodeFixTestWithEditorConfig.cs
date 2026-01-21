@@ -51,10 +51,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         const string fixedSource = @"
 ///             class C { void M() { string? x = null; } }
 ///         ";
-/// 
+///
 ///         await VerifyAsync(source, fixedSource);
 ///     }
-/// 
+///
 ///     [Fact]
 ///     public async Task FixesIssue_WithCustomEditorConfig()
 ///     {
@@ -63,7 +63,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///             ["dotnet_diagnostic.MY001.severity"] = "warning",
 ///             ["my_custom_option"] = "true"
 ///         };
-/// 
+///
 ///         await VerifyAsync(source, fixedSource, editorConfig);
 ///     }
 /// }
@@ -150,7 +150,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     /// await VerifyAsync(
     ///     source: "class C { void M() { var x = [|null|]; } }",
     ///     fixedSource: "class C { void M() { string? x = null; } }");
-    /// 
+    ///
     /// // With EditorConfig settings
     /// await VerifyAsync(
     ///     source: sourceCode,
@@ -159,13 +159,13 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     ///     {
     ///         ["dotnet_diagnostic.MY001.severity"] = "error"
     ///     });
-    /// 
+    ///
     /// // With additional source files
     /// await VerifyAsync(
     ///     source: mainSource,
     ///     fixedSource: fixedMainSource,
     ///     additionalSources: [("Helper.cs", helperSource)]);
-    /// 
+    ///
     /// // Targeting .NET Standard 2.0
     /// await VerifyAsync(
     ///     source: sourceCode,
@@ -231,7 +231,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         /// </param>
         public CustomCodeFixTest(
             Dictionary<string, string> editorConfig,
-            (string FileName, string Content)[] additionalSources,
+            IEnumerable<(string FileName, string Content)> additionalSources,
             bool useNet10References)
         {
             ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm;
@@ -271,7 +271,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         /// <param name="editorConfig">The EditorConfig settings to apply.</param>
         private void ApplyEditorConfig(Dictionary<string, string> editorConfig)
         {
-            if (editorConfig.Count == 0) return;
+            if (editorConfig.Count is 0) return;
 
             var globalLines = new List<string> { "is_global = true", "" };
             foreach (var kvp in editorConfig)
@@ -299,7 +299,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         /// <param name="additionalSources">
         ///     Array of source files as (filename, content) tuples to add.
         /// </param>
-        private void ApplyAdditionalSources((string FileName, string Content)[] additionalSources)
+        private void ApplyAdditionalSources(IEnumerable<(string FileName, string Content)> additionalSources)
         {
             foreach (var (fileName, content) in additionalSources)
             {

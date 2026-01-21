@@ -378,10 +378,10 @@ internal
             return false;
 
         var original = type is INamedTypeSymbol named ? named.OriginalDefinition : type;
-        return (ConfiguredTaskAwaitable is not null &&
-                SymbolEqualityComparer.Default.Equals(original, ConfiguredTaskAwaitable)) ||
-               (ConfiguredValueTaskAwaitable is not null &&
-                SymbolEqualityComparer.Default.Equals(original, ConfiguredValueTaskAwaitable));
+        return ConfiguredTaskAwaitable is not null &&
+               SymbolEqualityComparer.Default.Equals(original, ConfiguredTaskAwaitable) ||
+               ConfiguredValueTaskAwaitable is not null &&
+               SymbolEqualityComparer.Default.Equals(original, ConfiguredValueTaskAwaitable);
     }
 
     /// <summary>
@@ -405,8 +405,8 @@ internal
             return null;
 
         var original = named.OriginalDefinition;
-        if ((TaskOfT is not null && SymbolEqualityComparer.Default.Equals(original, TaskOfT)) ||
-            (ValueTaskOfT is not null && SymbolEqualityComparer.Default.Equals(original, ValueTaskOfT)))
+        if (TaskOfT is not null && SymbolEqualityComparer.Default.Equals(original, TaskOfT) ||
+            ValueTaskOfT is not null && SymbolEqualityComparer.Default.Equals(original, ValueTaskOfT))
             return named.TypeArguments[0];
 
         return null;
