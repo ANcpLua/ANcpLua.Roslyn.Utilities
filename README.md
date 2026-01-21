@@ -104,15 +104,15 @@ SemanticGuard.ForMethod(method)
 
 ## API Overview
 
-| Category             | Key APIs                                                                      |
-|----------------------|-------------------------------------------------------------------------------|
-| **Flow Control**     | `DiagnosticFlow<T>`, `ReportAndContinue()`                                    |
-| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*`                                      |
-| **Validation**       | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()`                        |
-| **Domain Contexts**  | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Operations**       | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder`               |
+| Category             | Key APIs                                                                                         |
+|----------------------|--------------------------------------------------------------------------------------------------|
+| **Flow Control**     | `DiagnosticFlow<T>`, `ReportAndContinue()`                                                       |
+| **Pattern Matching** | `SymbolPattern.*`, `Match.*`, `Invoke.*`                                                         |
+| **Validation**       | `SemanticGuard<T>`, `MustBeAsync()`, `MustBePartial()`                                           |
+| **Domain Contexts**  | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext`                    |
+| **Operations**       | `OperationExtensions`, `InvocationExtensions`, `OverloadFinder`                                  |
 | **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `TypedConstantExtensions` |
-| **Pipeline**         | `GroupBy()`, `Batch()`, `Distinct()`, `CollectFlows()`                        |
+| **Pipeline**         | `GroupBy()`, `Batch()`, `Distinct()`, `CollectFlows()`                                           |
 
 ## Symbol Extensions
 
@@ -226,4 +226,3 @@ Full reference: https://ancplua.mintlify.app/utilities/overview
 
 - [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers)
 - [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk)
-
