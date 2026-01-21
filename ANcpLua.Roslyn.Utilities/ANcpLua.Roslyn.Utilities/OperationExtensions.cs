@@ -436,7 +436,7 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsConstant" />
-    public static bool TryGetConstantValue<T>(this IOperation operation, [NotNullWhen(true)] out T value)
+    public static bool TryGetConstantValue<T>(this IOperation operation, [MaybeNullWhen(false)] out T value)
     {
         if (operation.ConstantValue is { HasValue: true, Value: T typedValue })
         {
@@ -444,7 +444,7 @@ internal
             return true;
         }
 
-        value = default!;
+        value = default;
         return false;
     }
 

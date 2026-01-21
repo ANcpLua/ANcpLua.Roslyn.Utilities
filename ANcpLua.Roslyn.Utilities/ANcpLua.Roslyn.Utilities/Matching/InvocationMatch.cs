@@ -85,7 +85,7 @@ internal
 ///     var matcher = Invoke.Method("Dispose")
 ///         .OnTypeImplementing("IDisposable")
 ///         .WithNoArguments();
-/// 
+///
 ///     if (matcher.Matches(invocation))
 ///     {
 ///         // Handle Dispose call
@@ -448,7 +448,7 @@ internal
     /// <seealso cref="WithConstantArg(int)" />
     public InvocationMatcher WithAllConstantArgs()
     {
-        return AddPredicate(i => AllArgumentsConstant(i));
+        return AddPredicate(AllArgumentsConstant);
     }
 
     // Namespace

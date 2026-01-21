@@ -181,13 +181,13 @@ internal
     /// </returns>
     /// <seealso cref="TryGetConstantArgument{T}(IInvocationOperation, int, out T)" />
     /// <seealso cref="OperationExtensions.TryGetConstantValue{T}" />
-    public static bool TryGetConstantArgument<T>(this IInvocationOperation operation, string paramName, [NotNullWhen(true)] out T value)
+    public static bool TryGetConstantArgument<T>(this IInvocationOperation operation, string paramName, [MaybeNullWhen(false)] out T value)
     {
         var arg = operation.GetArgument(paramName);
         if (arg is not null && arg.Value.TryGetConstantValue(out value))
             return true;
 
-        value = default!;
+        value = default;
         return false;
     }
 
@@ -207,26 +207,26 @@ internal
     /// </returns>
     /// <seealso cref="TryGetConstantArgument{T}(IInvocationOperation, string, out T)" />
     /// <seealso cref="OperationExtensions.TryGetConstantValue{T}" />
-    public static bool TryGetConstantArgument<T>(this IInvocationOperation operation, int index, [NotNullWhen(true)] out T value)
+    public static bool TryGetConstantArgument<T>(this IInvocationOperation operation, int index, [MaybeNullWhen(false)] out T value)
     {
         var arg = operation.GetArgument(index);
         if (arg is not null && arg.Value.TryGetConstantValue(out value))
             return true;
 
-        value = default!;
+        value = default;
         return false;
     }
 
     /// <summary>
     ///     Tries to get the constant value of an argument.
     /// </summary>
-    public static bool TryGetArgumentValue<T>(this IInvocationOperation operation, string paramName, [NotNullWhen(true)] out T value)
+    public static bool TryGetArgumentValue<T>(this IInvocationOperation operation, string paramName, [MaybeNullWhen(false)] out T value)
         => operation.TryGetConstantArgument(paramName, out value);
 
     /// <summary>
     ///     Tries to get the constant value of an argument.
     /// </summary>
-    public static bool TryGetArgumentValue<T>(this IInvocationOperation operation, int index, [NotNullWhen(true)] out T value)
+    public static bool TryGetArgumentValue<T>(this IInvocationOperation operation, int index, [MaybeNullWhen(false)] out T value)
         => operation.TryGetConstantArgument(index, out value);
 
     /// <summary>

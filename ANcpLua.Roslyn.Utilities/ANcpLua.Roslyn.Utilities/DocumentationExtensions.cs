@@ -418,7 +418,7 @@ internal
         {
             XContainer temp = new XElement("temp");
             temp.Add(node);
-            copy = temp.LastNode!;
+            copy = temp.LastNode ?? throw new InvalidOperationException("Failed to copy XML node - LastNode was null after Add");
             temp.RemoveNodes();
         }
 

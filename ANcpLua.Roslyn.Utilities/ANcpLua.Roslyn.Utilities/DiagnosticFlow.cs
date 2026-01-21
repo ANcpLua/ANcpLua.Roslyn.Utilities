@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 
@@ -64,6 +65,7 @@ internal
 
     /// <summary>Gets a value indicating whether this flow has a non-null value and no errors.</summary>
     /// <value><c>true</c> if <see cref="Value" /> is not <c>null</c> and <see cref="HasErrors" /> is <c>false</c>.</value>
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool IsSuccess => Value is not null && !HasErrors;
 
     /// <summary>Gets a value indicating whether this flow has failed (null value or errors).</summary>

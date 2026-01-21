@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -146,7 +147,8 @@ internal
     /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
     /// <seealso
     ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
-    public static TValue? GetOrInsertDefault<TKey, TValue>(
+    [return: MaybeNull]
+    public static TValue GetOrInsertDefault<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey key)
         where TKey : notnull
@@ -154,8 +156,7 @@ internal
         if (dictionary.TryGetValue(key, out var value))
             return value;
 
-        value = default;
-        dictionary.Add(key, value!);
-        return value;
+        dictionary[key] = default!;
+        return default;
     }
 }
