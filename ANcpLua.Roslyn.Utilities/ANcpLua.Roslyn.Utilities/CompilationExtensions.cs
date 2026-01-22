@@ -120,6 +120,27 @@ internal
     }
 
     /// <summary>
+    ///     Checks if the compilation targets .NET 10 or a later version.
+    /// </summary>
+    /// <param name="compilation">
+    ///     The compilation to check.
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the <paramref name="compilation" /> targets .NET 10 or greater;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     This method determines the target framework version by examining the version
+    ///     of the assembly containing <see cref="object" /> (typically mscorlib or System.Runtime).
+    /// </remarks>
+    public static bool IsNet10OrGreater(this Compilation compilation)
+    {
+        var type = compilation.GetSpecialType(SpecialType.System_Object);
+        var version = type.ContainingAssembly.Identity.Version;
+        return version.Major >= 10;
+    }
+
+    /// <summary>
     ///     Gets a type by its metadata name, selecting the best match for code analysis purposes.
     /// </summary>
     /// <param name="compilation">

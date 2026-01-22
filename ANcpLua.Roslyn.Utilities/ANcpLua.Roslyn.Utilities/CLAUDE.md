@@ -46,30 +46,6 @@ provider
 
 ## Symbol Pattern Matching
 
-Two complementary APIs for matching Roslyn symbols:
-
-| API | Style | Best For |
-|-----|-------|----------|
-| **SymbolPattern** | Immutable, composable | Reusable patterns, pattern algebra (`&`, `\|`, `!`) |
-| **Match.\*** DSL | Fluent, stateful | One-off checks, readable inline conditions |
-
-### SymbolPattern (composable patterns)
-
-```csharp
-// Build patterns
-var asyncTask = SymbolPattern.Method()
-    .Async()
-    .ReturnsTask()
-    .WithCancellationToken()
-    .Public()
-    .Build();
-
-// Compose with operators
-var combined = pattern1 & pattern2;  // AND
-var either = pattern1 | pattern2;    // OR
-var inverted = !pattern1;            // NOT
-```
-
 ### Match.* DSL (fluent symbol matching)
 
 > **Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
@@ -485,6 +461,7 @@ collection.GetSequenceHashCode()
 // CompilationExtensions.cs
 compilation.HasAccessibleTypeWithMetadataName(name)
 compilation.IsNet9OrGreater()
+compilation.IsNet10OrGreater()
 
 // SemanticModelExtensions.cs
 model.IsConstant(node, ct)
@@ -574,4 +551,75 @@ options.TryGetConfigurationValue(tree, key, out value)
 options.GetConfigurationValue(tree, key, defaultBool)
 options.GetConfigurationValue(tree, key, defaultInt)
 options.GetConfigurationValue(tree, key, defaultString)
+```
+
+---
+
+## Helper Extensions Philosophy
+
+Each helper file answers ONE question. Use this guide to pick the right tool:
+
+| File | Philosophy | When to Use |
+|------|------------|-------------|
+| **Guard.cs** | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions |
+| **NullableExtensions.cs** | "Functional transformation of nullable values" | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or` |
+| **ObjectExtensions.cs** | "What type is this? Cast it safely." | Safe casting (`As<T>`), type checking (`Is<T>`), reflection |
+| **TryExtensions.cs** | "Parse or lookup, get null on failure" | `TryParse*` methods, dictionary access, collection indexing |
+| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics" | `EqualsOrdinal`, `ContainsIgnoreCase`, `HasValue` for strings |
+
+### Guard vs NullableExtensions
+
+Both have `OrElse`-style fallback methods, but they serve different **semantic purposes**:
+
+```csharp
+// Guard: Defensive programming - "This parameter must not be null"
+var config = Guard.NotNullOrElse(optionalConfig, DefaultConfig);
+
+// Guard: Lazy evaluation for expensive defaults
+var service = Guard.NotNullOrElse(injectedService, () => new ExpensiveService());
+
+// NullableExtensions: Functional pipeline - "Transform this optional value"
+var result = GetValue().Or(fallback).Select(transform);
+
+// NullableExtensions: Lazy evaluation in pipelines
+var data = GetValue().OrElse(() => LoadFromDisk());
+```
+
+**Use Guard when:**
+- Validating method arguments at entry points
+- The fallback signals a defensive default
+- You want `CallerArgumentExpression` for debugging
+- Use `NotNullOrElse(value, factory)` for expensive fallbacks (lazy evaluation)
+
+**Use NullableExtensions when:**
+- Chaining transformations in a pipeline
+- Working with optional data (not parameters)
+- You want LINQ-style composition
+- Use `.OrElse(() => ...)` for lazy fallbacks in chains
+
+### Migration from ObjectExtensions
+
+The `IfNotNull` methods were removed (duplicated `NullableExtensions`):
+
+```csharp
+// BEFORE                                    // AFTER
+obj.IfNotNull(x => x.Length)                → obj.Select(x => x.Length)
+obj.IfNotNull(x => Process(x))              → obj.Do(x => Process(x))
+obj.IfNotNull(x => x.Name, "default")       → obj.Select(x => x.Name).Or("default")
+```
+
+### Migration from Guard (v1.17 → v1.18)
+
+The `NotNullOr*` methods were renamed to `NotNullOrElse*` for clarity, and lazy `Func<T>` overloads were added:
+
+```csharp
+// BEFORE                                    // AFTER
+Guard.NotNullOr(value, fallback)            → Guard.NotNullOrElse(value, fallback)
+Guard.NotNullOrEmptyOr(str, fallback)       → Guard.NotNullOrEmptyOrElse(str, fallback)
+Guard.NotNullOrWhiteSpaceOr(str, fallback)  → Guard.NotNullOrWhiteSpaceOrElse(str, fallback)
+
+// NEW: Lazy evaluation (Func<T> overloads)
+Guard.NotNullOrElse(value, () => ExpensiveDefault())
+Guard.NotNullOrEmptyOrElse(str, () => GenerateName())
+Guard.NotNullOrWhiteSpaceOrElse(str, () => GenerateTitle())
 ```

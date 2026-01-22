@@ -2,6 +2,73 @@
 
 All notable changes to ANcpLua.Roslyn.Utilities will be documented in this file.
 
+## [1.18.0] - 2026-01-22
+
+### Added
+
+- **Guard** - Lazy `Func<T>` overloads for all `OrElse` methods (performance optimization)
+  - `NotNullOrElse<T>(T?, Func<T>)` - Reference type lazy fallback
+  - `NotNullOrElse<T>(T?, Func<T>)` - Value type lazy fallback
+  - `NotNullOrEmptyOrElse(string?, Func<string>)` - String lazy fallback
+  - `NotNullOrWhiteSpaceOrElse(string?, Func<string>)` - Whitespace-aware lazy fallback
+
+- **CompilationExtensions** - Added `IsNet10OrGreater()` for .NET 10 target framework detection
+
+### Changed
+
+- **Guard** - Renamed `NotNullOr*` methods to `NotNullOrElse*` for clarity
+  - **BREAKING:** `NotNullOr<T>` → `NotNullOrElse<T>`
+  - **BREAKING:** `NotNullOrEmptyOr` → `NotNullOrEmptyOrElse`
+  - **BREAKING:** `NotNullOrWhiteSpaceOr` → `NotNullOrWhiteSpaceOrElse`
+
+- **ObjectExtensions** - Removed redundant methods that duplicated `NullableExtensions`
+  - **BREAKING:** Removed `IfNotNull<T>(Action<T>)` → Use `NullableExtensions.Do()`
+  - **BREAKING:** Removed `IfNotNull<T,TResult>(Func<T,TResult>)` → Use `NullableExtensions.Select()`
+  - **BREAKING:** Removed `IfNotNull<T,TResult>(Func<T,TResult>, TResult)` → Use `.Select().Or()`
+  - **BREAKING:** Removed `EqualsTo<T>()` → Use native `Equals()` or `==`
+
+### Migration Guide
+
+**Guard renames:**
+```csharp
+// BEFORE                                    // AFTER
+Guard.NotNullOr(value, fallback)            → Guard.NotNullOrElse(value, fallback)
+Guard.NotNullOrEmptyOr(str, fallback)       → Guard.NotNullOrEmptyOrElse(str, fallback)
+Guard.NotNullOrWhiteSpaceOr(str, fallback)  → Guard.NotNullOrWhiteSpaceOrElse(str, fallback)
+
+// NEW: Lazy evaluation for expensive defaults
+Guard.NotNullOrElse(value, () => ExpensiveDefault())
+```
+
+**ObjectExtensions removals:**
+```csharp
+// BEFORE                                    // AFTER
+obj.IfNotNull(x => x.Length)                → obj.Select(x => x.Length)
+obj.IfNotNull(x => Process(x))              → obj.Do(x => Process(x))
+obj.IfNotNull(x => x.Name, "default")       → obj.Select(x => x.Name).Or("default")
+obj.EqualsTo(other)                         → obj?.Equals(other) ?? false
+```
+
+---
+
+## [1.17.0] - 2026-01-22
+
+### Added
+
+- **StringExtensions** - Type name manipulation utilities
+  - `StripGlobalPrefix()` - Remove `global::` prefix from type names
+  - `NormalizeTypeName()` - Remove all `global::` prefixes and trailing nullable marker
+  - `UnwrapNullable()` - Unwrap `Nullable<T>` or `T?` to underlying type
+  - `ExtractShortTypeName()` - Get short name from FQN (e.g., "List" from "System.Collections.Generic.List")
+  - `GetCSharpKeyword()` - Map BCL types to C# keywords (System.Int32 → int)
+  - `TypeNamesEqual()` - Compare type names handling aliases and prefixes
+  - `IsStringType()`, `IsPrimitiveJsonType()` - Type classification helpers
+  - `StripSuffix()`, `StripPrefix()` - Suffix/prefix removal utilities
+
+### Changed
+
+- Updated Version.props SDK reference to 1.6.25
+
 ## [1.11.0] - 2026-01-14
 
 ### Fixed

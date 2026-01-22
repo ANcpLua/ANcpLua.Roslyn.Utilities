@@ -1,5 +1,4 @@
 using ANcpLua.Roslyn.Utilities.Models;
-using ANcpLua.Roslyn.Utilities.Patterns;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -72,34 +71,6 @@ internal
         _violations.Count is 0
             ? default
             : _violations.ToImmutableArray().AsEquatableArray();
-
-    /// <summary>
-    ///     Validates that the symbol matches the specified pattern.
-    /// </summary>
-    /// <param name="pattern">The <see cref="SymbolPattern{T}" /> to match against.</param>
-    /// <param name="onFail">The diagnostic to record if the pattern does not match.</param>
-    /// <returns>The current <see cref="SemanticGuard{T}" /> instance for method chaining.</returns>
-    /// <seealso cref="SymbolPattern{T}" />
-    public SemanticGuard<T> MustMatch(SymbolPattern<T> pattern, DiagnosticInfo onFail)
-    {
-        if (!pattern.Matches(Symbol))
-            _violations.Add(onFail);
-        return this;
-    }
-
-    /// <summary>
-    ///     Validates that the symbol matches the specified pattern, with a dynamic diagnostic.
-    /// </summary>
-    /// <param name="pattern">The <see cref="SymbolPattern{T}" /> to match against.</param>
-    /// <param name="onFail">A function that creates the diagnostic based on the symbol if the pattern does not match.</param>
-    /// <returns>The current <see cref="SemanticGuard{T}" /> instance for method chaining.</returns>
-    /// <seealso cref="SymbolPattern{T}" />
-    public SemanticGuard<T> MustMatch(SymbolPattern<T> pattern, Func<T, DiagnosticInfo> onFail)
-    {
-        if (!pattern.Matches(Symbol))
-            _violations.Add(onFail(Symbol));
-        return this;
-    }
 
     /// <summary>
     ///     Validates that the symbol satisfies the specified predicate.
