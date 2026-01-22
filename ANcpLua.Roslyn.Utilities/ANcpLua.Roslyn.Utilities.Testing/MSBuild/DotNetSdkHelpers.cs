@@ -119,7 +119,7 @@ public static class DotNetSdkHelpers
             var releases = await product.GetReleasesAsync();
             var latestRelease = releases.Single(r => r.Version == product.LatestReleaseVersion);
             var latestSdk = latestRelease.Sdks.MaxBy(static sdk => sdk.Version)
-                ?? throw new InvalidOperationException($"No SDK found for .NET {versionString}");
+                            ?? throw new InvalidOperationException($"No SDK found for .NET {versionString}");
 
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var file = latestSdk.Files.Single(file =>

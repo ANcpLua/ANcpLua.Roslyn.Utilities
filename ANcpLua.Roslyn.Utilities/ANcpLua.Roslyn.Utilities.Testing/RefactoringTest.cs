@@ -149,14 +149,14 @@ public abstract class RefactoringTest<TRefactoring>
     ///         {
     ///             Func&lt;int, int&gt; f = [|x => x * 2|];
     ///         }";
-    ///
+    /// 
     ///     const string fixedSource = @"
     ///         using System;
     ///         public class Example
     ///         {
     ///             Func&lt;int, int&gt; f = static x => x * 2;
     ///         }";
-    ///
+    /// 
     ///     await VerifyAsync(source, fixedSource);
     /// }
     /// </code>
@@ -218,7 +218,7 @@ public abstract class RefactoringTest<TRefactoring>
     ///         {
     ///             Func&lt;int, int&gt; f = [|static x => x * 2|];
     ///         }";
-    ///
+    /// 
     ///     await VerifyNoRefactoringAsync(source);
     /// }
     /// </code>

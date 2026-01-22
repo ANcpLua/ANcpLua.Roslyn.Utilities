@@ -181,10 +181,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="IsPartial" />
-    public static bool HasModifier(this MemberDeclarationSyntax member, SyntaxKind kind)
-    {
-        return member.Modifiers.Any(kind);
-    }
+    public static bool HasModifier(this MemberDeclarationSyntax member, SyntaxKind kind) => member.Modifiers.Any(kind);
 
     /// <summary>
     ///     Checks if a type declaration has the partial modifier.
@@ -201,10 +198,7 @@ internal
     /// </remarks>
     /// <seealso cref="HasModifier" />
     /// <seealso cref="IsPrimaryConstructorType" />
-    public static bool IsPartial(this TypeDeclarationSyntax type)
-    {
-        return type.Modifiers.Any(SyntaxKind.PartialKeyword);
-    }
+    public static bool IsPartial(this TypeDeclarationSyntax type) => type.Modifiers.Any(SyntaxKind.PartialKeyword);
 
     /// <summary>
     ///     Checks if a type declaration is a primary constructor type.
@@ -239,11 +233,9 @@ internal
     ///     </list>
     /// </remarks>
     /// <seealso cref="IsPartial" />
-    public static bool IsPrimaryConstructorType(this TypeDeclarationSyntax type)
-    {
-        return type is ClassDeclarationSyntax or StructDeclarationSyntax or RecordDeclarationSyntax
-               && type.ParameterList is not null;
-    }
+    public static bool IsPrimaryConstructorType(this TypeDeclarationSyntax type) =>
+        type is ClassDeclarationSyntax or StructDeclarationSyntax or RecordDeclarationSyntax
+        && type.ParameterList is not null;
 
     /// <summary>
     ///     Gets the name token location for a type declaration.
@@ -259,10 +251,7 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetNameLocation(MethodDeclarationSyntax)" />
-    public static Location GetNameLocation(this TypeDeclarationSyntax type)
-    {
-        return type.Identifier.GetLocation();
-    }
+    public static Location GetNameLocation(this TypeDeclarationSyntax type) => type.Identifier.GetLocation();
 
     /// <summary>
     ///     Gets the name token location for a method declaration.
@@ -278,8 +267,5 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetNameLocation(TypeDeclarationSyntax)" />
-    public static Location GetNameLocation(this MethodDeclarationSyntax method)
-    {
-        return method.Identifier.GetLocation();
-    }
+    public static Location GetNameLocation(this MethodDeclarationSyntax method) => method.Identifier.GetLocation();
 }

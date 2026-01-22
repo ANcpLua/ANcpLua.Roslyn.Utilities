@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -61,13 +57,13 @@ internal
     ///     <code>
     /// // Without context (causes closure allocation):
     /// var value = dict.GetValueOrDefault(key) ?? (dict[key] = CreateValue(expensiveData));
-    /// 
+    ///
     /// // With context (allocation-free):
     /// var value = dict.GetOrInsert(key, expensiveData, static ctx => CreateValue(ctx));
     /// </code>
     /// </example>
     /// <seealso
-    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TResult})" />
+    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
     /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
         this Dictionary<TKey, TValue> dictionary,
@@ -127,10 +123,10 @@ internal
     }
 
     /// <summary>
-    ///     Gets the value for the specified key, or inserts a default value if the key doesn't exist.
+    ///     Gets the value for the specified key, or inserts <c>default</c> if the key doesn't exist.
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of values in the dictionary. Must be a value type.</typeparam>
     /// <param name="dictionary">The dictionary to operate on.</param>
     /// <param name="key">The key to look up or insert.</param>
     /// <returns>
@@ -139,24 +135,54 @@ internal
     /// </returns>
     /// <remarks>
     ///     <para>
-    ///         This is a convenience method for cases where the default value of <typeparamref name="TValue" />
-    ///         is an appropriate initial value (e.g., <c>0</c> for numeric types, <c>null</c> for reference types,
-    ///         or a new instance for value types with parameterless constructors).
+    ///         For value types, <c>default</c> is always a valid non-null value
+    ///         (e.g., <c>0</c> for numeric types, <c>false</c> for <see cref="bool" />).
     ///     </para>
     /// </remarks>
+    /// <seealso cref="GetOrInsertNull{TKey, TValue}" />
     /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
-    /// <seealso
-    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
-    [return: MaybeNull]
     public static TValue GetOrInsertDefault<TKey, TValue>(
         this Dictionary<TKey, TValue> dictionary,
         TKey key)
         where TKey : notnull
+        where TValue : struct
     {
         if (dictionary.TryGetValue(key, out var value))
             return value;
 
-        dictionary[key] = default!;
+        dictionary[key] = default;
         return default;
+    }
+
+    /// <summary>
+    ///     Gets the value for the specified key, or inserts <c>null</c> if the key doesn't exist.
+    /// </summary>
+    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of values in the dictionary. Must be a reference type.</typeparam>
+    /// <param name="dictionary">The dictionary to operate on. Must be typed to allow null values.</param>
+    /// <param name="key">The key to look up or insert.</param>
+    /// <returns>
+    ///     The existing value if <paramref name="key" /> is found in the dictionary;
+    ///     otherwise, <c>null</c>, which is also inserted into the dictionary.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method requires the dictionary to be declared as <c>Dictionary&lt;TKey, TValue?&gt;</c>
+    ///         to explicitly indicate that null values are allowed.
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="GetOrInsertDefault{TKey, TValue}(Dictionary{TKey, TValue}, TKey)" />
+    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
+    public static TValue? GetOrInsertNull<TKey, TValue>(
+        this Dictionary<TKey, TValue?> dictionary,
+        TKey key)
+        where TKey : notnull
+        where TValue : class
+    {
+        if (dictionary.TryGetValue(key, out var value))
+            return value;
+
+        dictionary[key] = null;
+        return null;
     }
 }

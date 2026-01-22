@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -47,10 +45,7 @@ internal
     /// <param name="other">The pattern to combine with this pattern using logical AND.</param>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when both patterns match.</returns>
     /// <seealso cref="op_BitwiseAnd" />
-    public SymbolPattern<T> And(SymbolPattern<T> other)
-    {
-        return new AndPattern<T>(this, other);
-    }
+    public SymbolPattern<T> And(SymbolPattern<T> other) => new AndPattern<T>(this, other);
 
     /// <summary>
     ///     Creates a new pattern that matches when either this pattern or the specified pattern matches.
@@ -58,20 +53,14 @@ internal
     /// <param name="other">The pattern to combine with this pattern using logical OR.</param>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when either pattern matches.</returns>
     /// <seealso cref="op_BitwiseOr" />
-    public SymbolPattern<T> Or(SymbolPattern<T> other)
-    {
-        return new OrPattern<T>(this, other);
-    }
+    public SymbolPattern<T> Or(SymbolPattern<T> other) => new OrPattern<T>(this, other);
 
     /// <summary>
     ///     Creates a new pattern that matches when this pattern does not match.
     /// </summary>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when this pattern does not match.</returns>
     /// <seealso cref="op_LogicalNot" />
-    public SymbolPattern<T> Not()
-    {
-        return new NotPattern<T>(this);
-    }
+    public SymbolPattern<T> Not() => new NotPattern<T>(this);
 
     /// <summary>
     ///     Combines two patterns using logical AND. Equivalent to calling <see cref="And" />.
@@ -79,10 +68,7 @@ internal
     /// <param name="left">The first pattern to combine.</param>
     /// <param name="right">The second pattern to combine.</param>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when both patterns match.</returns>
-    public static SymbolPattern<T> operator &(SymbolPattern<T> left, SymbolPattern<T> right)
-    {
-        return left.And(right);
-    }
+    public static SymbolPattern<T> operator &(SymbolPattern<T> left, SymbolPattern<T> right) => left.And(right);
 
     /// <summary>
     ///     Combines two patterns using logical OR. Equivalent to calling <see cref="Or" />.
@@ -90,62 +76,41 @@ internal
     /// <param name="left">The first pattern to combine.</param>
     /// <param name="right">The second pattern to combine.</param>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when either pattern matches.</returns>
-    public static SymbolPattern<T> operator |(SymbolPattern<T> left, SymbolPattern<T> right)
-    {
-        return left.Or(right);
-    }
+    public static SymbolPattern<T> operator |(SymbolPattern<T> left, SymbolPattern<T> right) => left.Or(right);
 
     /// <summary>
     ///     Negates a pattern. Equivalent to calling <see cref="Not" />.
     /// </summary>
     /// <param name="pattern">The pattern to negate.</param>
     /// <returns>A new <see cref="SymbolPattern{T}" /> that matches when the original pattern does not match.</returns>
-    public static SymbolPattern<T> operator !(SymbolPattern<T> pattern)
-    {
-        return pattern.Not();
-    }
+    public static SymbolPattern<T> operator !(SymbolPattern<T> pattern) => pattern.Not();
 }
 
 internal sealed class AndPattern<T>(SymbolPattern<T> left, SymbolPattern<T> right) : SymbolPattern<T> where T : ISymbol
 {
-    public override bool Matches(T symbol)
-    {
-        return left.Matches(symbol) && right.Matches(symbol);
-    }
+    public override bool Matches(T symbol) => left.Matches(symbol) && right.Matches(symbol);
 }
 
 internal sealed class OrPattern<T>(SymbolPattern<T> left, SymbolPattern<T> right) : SymbolPattern<T> where T : ISymbol
 {
-    public override bool Matches(T symbol)
-    {
-        return left.Matches(symbol) || right.Matches(symbol);
-    }
+    public override bool Matches(T symbol) => left.Matches(symbol) || right.Matches(symbol);
 }
 
 internal sealed class NotPattern<T>(SymbolPattern<T> inner) : SymbolPattern<T> where T : ISymbol
 {
-    public override bool Matches(T symbol)
-    {
-        return !inner.Matches(symbol);
-    }
+    public override bool Matches(T symbol) => !inner.Matches(symbol);
 }
 
 internal sealed class PredicatePattern<T>(Func<T, bool> predicate) : SymbolPattern<T> where T : ISymbol
 {
-    public override bool Matches(T symbol)
-    {
-        return predicate(symbol);
-    }
+    public override bool Matches(T symbol) => predicate(symbol);
 }
 
 internal sealed class AlwaysTruePattern<T> : SymbolPattern<T> where T : ISymbol
 {
     public static AlwaysTruePattern<T> Instance { get; } = new();
 
-    public override bool Matches(T symbol)
-    {
-        return true;
-    }
+    public override bool Matches(T symbol) => true;
 }
 
 /// <summary>
@@ -186,46 +151,31 @@ internal
     ///     Creates a new pattern builder for matching method symbols.
     /// </summary>
     /// <returns>A new <see cref="MethodPatternBuilder" /> for configuring method matching criteria.</returns>
-    public static MethodPatternBuilder Method()
-    {
-        return new MethodPatternBuilder();
-    }
+    public static MethodPatternBuilder Method() => new();
 
     /// <summary>
     ///     Creates a new pattern builder for matching type symbols.
     /// </summary>
     /// <returns>A new <see cref="TypePatternBuilder" /> for configuring type matching criteria.</returns>
-    public static TypePatternBuilder Type()
-    {
-        return new TypePatternBuilder();
-    }
+    public static TypePatternBuilder Type() => new();
 
     /// <summary>
     ///     Creates a new pattern builder for matching parameter symbols.
     /// </summary>
     /// <returns>A new <see cref="ParameterPatternBuilder" /> for configuring parameter matching criteria.</returns>
-    public static ParameterPatternBuilder Parameter()
-    {
-        return new ParameterPatternBuilder();
-    }
+    public static ParameterPatternBuilder Parameter() => new();
 
     /// <summary>
     ///     Creates a new pattern builder for matching property symbols.
     /// </summary>
     /// <returns>A new <see cref="PropertyPatternBuilder" /> for configuring property matching criteria.</returns>
-    public static PropertyPatternBuilder Property()
-    {
-        return new PropertyPatternBuilder();
-    }
+    public static PropertyPatternBuilder Property() => new();
 
     /// <summary>
     ///     Creates a new pattern builder for matching field symbols.
     /// </summary>
     /// <returns>A new <see cref="FieldPatternBuilder" /> for configuring field matching criteria.</returns>
-    public static FieldPatternBuilder Field()
-    {
-        return new FieldPatternBuilder();
-    }
+    public static FieldPatternBuilder Field() => new();
 
     /// <summary>
     ///     Creates a pattern that matches if any of the specified patterns match.
@@ -267,8 +217,5 @@ internal
     /// <typeparam name="T">The type of symbol the pattern matches, constrained to <see cref="ISymbol" />.</typeparam>
     /// <param name="predicate">A function that returns <c>true</c> if a symbol matches the desired criteria.</param>
     /// <returns>A <see cref="SymbolPattern{T}" /> that uses the specified predicate for matching.</returns>
-    public static SymbolPattern<T> Where<T>(Func<T, bool> predicate) where T : ISymbol
-    {
-        return new PredicatePattern<T>(predicate);
-    }
+    public static SymbolPattern<T> Where<T>(Func<T, bool> predicate) where T : ISymbol => new PredicatePattern<T>(predicate);
 }

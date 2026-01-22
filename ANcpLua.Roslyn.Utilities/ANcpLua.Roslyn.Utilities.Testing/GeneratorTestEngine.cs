@@ -12,9 +12,9 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 internal sealed class GeneratorTestEngine
 {
     private readonly List<AdditionalText> _additionalTexts = [];
+    private readonly List<IIncrementalGenerator> _generators = [];
     private readonly List<MetadataReference> _references = [];
     private readonly List<SyntaxTree> _sources = [];
-    private readonly List<IIncrementalGenerator> _generators = [];
     private AnalyzerConfigOptionsProvider? _analyzerConfigOptions;
     private LanguageVersion _languageVersion = TestConfiguration.LanguageVersion;
     private ReferenceAssemblies _referenceAssemblies = TestConfiguration.ReferenceAssemblies;
@@ -248,15 +248,9 @@ internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrem
         return this;
     }
 
-    public Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken = default)
-    {
-        return _engine.CreateCompilationAsync(cancellationToken);
-    }
+    public Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken = default) => _engine.CreateCompilationAsync(cancellationToken);
 
-    public Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default)
-    {
-        return WithSource(source).CreateCompilationAsync(cancellationToken);
-    }
+    public Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default) => WithSource(source).CreateCompilationAsync(cancellationToken);
 
     public static GeneratorDriver CreateDriver(InClassName inClassName)
     {
@@ -273,8 +267,6 @@ internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrem
     public GeneratorDriver CreateDriver() => _engine.CreateDriver();
 
     internal Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
-        CancellationToken cancellationToken = default)
-    {
-        return _engine.RunTwiceAsync(cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        _engine.RunTwiceAsync(cancellationToken);
 }

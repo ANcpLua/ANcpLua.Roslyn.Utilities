@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -131,11 +125,9 @@ internal
         CultureInfo? preferredCulture = null,
         bool expandIncludes = false,
         bool expandInheritdoc = false,
-        CancellationToken cancellationToken = default)
-    {
-        return GetDocumentationComment(symbol, null, compilation, preferredCulture, expandIncludes,
+        CancellationToken cancellationToken = default) =>
+        GetDocumentationComment(symbol, null, compilation, preferredCulture, expandIncludes,
             expandInheritdoc, cancellationToken);
-    }
 
     /// <summary>
     ///     Gets the plain text summary from a symbol's documentation, with whitespace normalized.
@@ -270,7 +262,7 @@ internal
 
         var candidate = GetCandidateSymbol(memberSymbol);
 
-        ISymbol? symbol = crefAttribute switch
+        var symbol = crefAttribute switch
         {
             null when candidate is null => null,
             null => candidate,
@@ -351,10 +343,7 @@ internal
             return true;
         }
 
-        static string NormalizePath(string path)
-        {
-            return path.StartsWith("/", StringComparison.Ordinal) ? "/*" + path : path;
-        }
+        static string NormalizePath(string path) => path.StartsWith("/", StringComparison.Ordinal) ? "/*" + path : path;
 
         static string BuildXPathForElement(XElement element)
         {
@@ -411,9 +400,7 @@ internal
         XNode copy;
 
         if (node.NodeType is XmlNodeType.Document)
-        {
             copy = new XDocument((XDocument)(object)node);
-        }
         else
         {
             XContainer temp = new XElement("temp");
@@ -468,11 +455,9 @@ internal
         }
     }
 
-    private static bool ElementNameIs(XElement element, string name)
-    {
-        return string.IsNullOrEmpty(element.Name.NamespaceName) &&
-               DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
-    }
+    private static bool ElementNameIs(XElement element, string name) =>
+        string.IsNullOrEmpty(element.Name.NamespaceName) &&
+        DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
 }
 
 /// <summary>
@@ -536,8 +521,5 @@ file static class DocumentationXmlNames
     /// <returns>
     ///     <c>true</c> if the element names are equal (ignoring case); otherwise, <c>false</c>.
     /// </returns>
-    public static bool ElementEquals(string name1, string name2)
-    {
-        return string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool ElementEquals(string name1, string name2) => string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
 }

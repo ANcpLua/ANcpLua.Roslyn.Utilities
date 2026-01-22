@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -57,10 +54,8 @@ internal
     /// </returns>
     /// <seealso cref="FindOverloadWithParameter" />
     public bool HasOverloadWithParameter(IMethodSymbol method, ITypeSymbol additionalParamType,
-        bool includeObsolete = false)
-    {
-        return FindOverloadWithParameter(method, additionalParamType, includeObsolete) is not null;
-    }
+        bool includeObsolete = false) =>
+        FindOverloadWithParameter(method, additionalParamType, includeObsolete) is not null;
 
     /// <summary>
     ///     Determines whether an overload of the target method of the specified invocation exists that includes an additional
@@ -77,10 +72,8 @@ internal
     /// </returns>
     /// <seealso cref="FindOverloadWithParameter" />
     public bool HasOverloadWithParameter(IInvocationOperation operation, ITypeSymbol additionalParamType,
-        bool includeObsolete = false)
-    {
-        return FindOverloadWithParameter(operation.TargetMethod, additionalParamType, includeObsolete) is not null;
-    }
+        bool includeObsolete = false) =>
+        FindOverloadWithParameter(operation.TargetMethod, additionalParamType, includeObsolete) is not null;
 
     /// <summary>
     ///     Determines whether an overload of the specified method exists that includes all of the specified additional
@@ -97,10 +90,8 @@ internal
     /// </returns>
     /// <seealso cref="FindOverloadWithParameters" />
     public bool HasOverloadWithParameters(IMethodSymbol method, ReadOnlySpan<ITypeSymbol> additionalParamTypes,
-        bool includeObsolete = false)
-    {
-        return FindOverloadWithParameters(method, additionalParamTypes, includeObsolete) is not null;
-    }
+        bool includeObsolete = false) =>
+        FindOverloadWithParameters(method, additionalParamTypes, includeObsolete) is not null;
 
     /// <summary>
     ///     Determines whether an overload of the target method of the specified invocation exists that includes all of the
@@ -117,10 +108,8 @@ internal
     /// </returns>
     /// <seealso cref="FindOverloadWithParameters" />
     public bool HasOverloadWithParameters(IInvocationOperation operation,
-        ReadOnlySpan<ITypeSymbol> additionalParamTypes, bool includeObsolete = false)
-    {
-        return FindOverloadWithParameters(operation.TargetMethod, additionalParamTypes, includeObsolete) is not null;
-    }
+        ReadOnlySpan<ITypeSymbol> additionalParamTypes, bool includeObsolete = false) =>
+        FindOverloadWithParameters(operation.TargetMethod, additionalParamTypes, includeObsolete) is not null;
 
     /// <summary>
     ///     Finds an overload of the specified method that includes an additional parameter of the given type.
@@ -435,8 +424,5 @@ internal
         return additionalTypesRemaining.Count is 0 && originalParams.Count is 0;
     }
 
-    private bool IsObsolete(IMethodSymbol method)
-    {
-        return _obsoleteAttribute is not null && method.HasAttribute(_obsoleteAttribute);
-    }
+    private bool IsObsolete(IMethodSymbol method) => _obsoleteAttribute is not null && method.HasAttribute(_obsoleteAttribute);
 }

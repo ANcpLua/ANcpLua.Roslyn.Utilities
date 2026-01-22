@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 
@@ -61,10 +58,7 @@ internal
     /// </summary>
     /// <returns>A new <see cref="MethodMatcher" /> instance.</returns>
     /// <seealso cref="Method(string)" />
-    public static MethodMatcher Method()
-    {
-        return new MethodMatcher();
-    }
+    public static MethodMatcher Method() => new();
 
     /// <summary>
     ///     Creates a new method matcher that matches methods with the specified name.
@@ -72,20 +66,14 @@ internal
     /// <param name="name">The exact name to match against the method's <see cref="ISymbol.Name" />.</param>
     /// <returns>A new <see cref="MethodMatcher" /> instance configured to match methods with the specified name.</returns>
     /// <seealso cref="Method()" />
-    public static MethodMatcher Method(string name)
-    {
-        return new MethodMatcher().Named(name);
-    }
+    public static MethodMatcher Method(string name) => new MethodMatcher().Named(name);
 
     /// <summary>
     ///     Creates a new type matcher with no initial constraints.
     /// </summary>
     /// <returns>A new <see cref="TypeMatcher" /> instance.</returns>
     /// <seealso cref="Type(string)" />
-    public static TypeMatcher Type()
-    {
-        return new TypeMatcher();
-    }
+    public static TypeMatcher Type() => new();
 
     /// <summary>
     ///     Creates a new type matcher that matches types with the specified name.
@@ -93,20 +81,14 @@ internal
     /// <param name="name">The exact name to match against the type's <see cref="ISymbol.Name" />.</param>
     /// <returns>A new <see cref="TypeMatcher" /> instance configured to match types with the specified name.</returns>
     /// <seealso cref="Type()" />
-    public static TypeMatcher Type(string name)
-    {
-        return new TypeMatcher().Named(name);
-    }
+    public static TypeMatcher Type(string name) => new TypeMatcher().Named(name);
 
     /// <summary>
     ///     Creates a new property matcher with no initial constraints.
     /// </summary>
     /// <returns>A new <see cref="PropertyMatcher" /> instance.</returns>
     /// <seealso cref="Property(string)" />
-    public static PropertyMatcher Property()
-    {
-        return new PropertyMatcher();
-    }
+    public static PropertyMatcher Property() => new();
 
     /// <summary>
     ///     Creates a new property matcher that matches properties with the specified name.
@@ -114,20 +96,14 @@ internal
     /// <param name="name">The exact name to match against the property's <see cref="ISymbol.Name" />.</param>
     /// <returns>A new <see cref="PropertyMatcher" /> instance configured to match properties with the specified name.</returns>
     /// <seealso cref="Property()" />
-    public static PropertyMatcher Property(string name)
-    {
-        return new PropertyMatcher().Named(name);
-    }
+    public static PropertyMatcher Property(string name) => new PropertyMatcher().Named(name);
 
     /// <summary>
     ///     Creates a new field matcher with no initial constraints.
     /// </summary>
     /// <returns>A new <see cref="FieldMatcher" /> instance.</returns>
     /// <seealso cref="Field(string)" />
-    public static FieldMatcher Field()
-    {
-        return new FieldMatcher();
-    }
+    public static FieldMatcher Field() => new();
 
     /// <summary>
     ///     Creates a new field matcher that matches fields with the specified name.
@@ -135,19 +111,13 @@ internal
     /// <param name="name">The exact name to match against the field's <see cref="ISymbol.Name" />.</param>
     /// <returns>A new <see cref="FieldMatcher" /> instance configured to match fields with the specified name.</returns>
     /// <seealso cref="Field()" />
-    public static FieldMatcher Field(string name)
-    {
-        return new FieldMatcher().Named(name);
-    }
+    public static FieldMatcher Field(string name) => new FieldMatcher().Named(name);
 
     /// <summary>
     ///     Creates a new parameter matcher with no initial constraints.
     /// </summary>
     /// <returns>A new <see cref="ParameterMatcher" /> instance.</returns>
-    public static ParameterMatcher Parameter()
-    {
-        return new ParameterMatcher();
-    }
+    public static ParameterMatcher Parameter() => new();
 }
 
 /// <summary>
@@ -203,10 +173,7 @@ internal
     ///     and matches all predicates; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Matches(TSymbol?)" />
-    public bool Matches(ISymbol? symbol)
-    {
-        return symbol is TSymbol typed && MatchesAll(typed);
-    }
+    public bool Matches(ISymbol? symbol) => symbol is TSymbol typed && MatchesAll(typed);
 
     /// <summary>
     ///     Tests if the specified strongly-typed symbol matches all configured predicates.
@@ -217,10 +184,7 @@ internal
     ///     and matches all predicates; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Matches(ISymbol?)" />
-    public bool Matches(TSymbol? symbol)
-    {
-        return symbol is not null && MatchesAll(symbol);
-    }
+    public bool Matches(TSymbol? symbol) => symbol is not null && MatchesAll(symbol);
 
     private bool MatchesAll(TSymbol symbol)
     {
@@ -511,10 +475,7 @@ internal
     ///     A function that returns <c>true</c> if the symbol should be considered a match.
     /// </param>
     /// <returns>The current matcher instance for fluent chaining.</returns>
-    public TSelf Where(Func<TSymbol, bool> predicate)
-    {
-        return AddPredicate(predicate);
-    }
+    public TSelf Where(Func<TSymbol, bool> predicate) => AddPredicate(predicate);
 }
 
 /// <summary>
@@ -908,10 +869,7 @@ internal
     /// </summary>
     /// <returns>The current matcher instance for fluent chaining.</returns>
     /// <seealso cref="Implements" />
-    public TypeMatcher Disposable()
-    {
-        return Implements("System.IDisposable");
-    }
+    public TypeMatcher Disposable() => Implements("System.IDisposable");
 
     /// <summary>
     ///     Matches nested types (types declared within another type).
@@ -1283,8 +1241,5 @@ internal
     /// </summary>
     /// <returns>The current matcher instance for fluent chaining.</returns>
     /// <seealso cref="OfType" />
-    public ParameterMatcher CancellationToken()
-    {
-        return OfType("CancellationToken");
-    }
+    public ParameterMatcher CancellationToken() => OfType("CancellationToken");
 }

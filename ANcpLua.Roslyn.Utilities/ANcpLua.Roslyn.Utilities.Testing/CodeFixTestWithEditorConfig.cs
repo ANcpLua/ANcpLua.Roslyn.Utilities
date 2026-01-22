@@ -273,13 +273,22 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         {
             if (editorConfig.Count is 0) return;
 
-            var globalLines = new List<string> { "is_global = true", "" };
+            var globalLines = new List<string>
+            {
+                "is_global = true",
+                ""
+            };
             foreach (var kvp in editorConfig)
                 globalLines.Add($"{kvp.Key} = {kvp.Value}");
 
             TestState.AnalyzerConfigFiles.Add(("/.globalconfig", string.Join("\n", globalLines)));
 
-            var editorConfigLines = new List<string> { "root = true", "", "[*.cs]" };
+            var editorConfigLines = new List<string>
+            {
+                "root = true",
+                "",
+                "[*.cs]"
+            };
             foreach (var kvp in editorConfig)
             {
                 var value = kvp.Value.Contains(';') ? $"\"{kvp.Value}\"" : kvp.Value;

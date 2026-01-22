@@ -55,10 +55,8 @@ internal
     /// <seealso cref="LanguageVersion" />
     /// <seealso cref="CSharpCompilation.LanguageVersion" />
     public static bool
-        HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion)
-    {
-        return ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
-    }
+        HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion) =>
+        ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
 
     /// <summary>
     ///     Checks whether a type with the specified metadata name is accessible from the given compilation.

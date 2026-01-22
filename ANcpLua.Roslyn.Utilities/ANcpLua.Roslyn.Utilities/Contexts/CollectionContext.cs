@@ -434,27 +434,6 @@ internal
     }
 
     /// <summary>
-    ///     Determines whether the specified type has a <c>Count</c> or <c>Length</c> property with a getter.
-    /// </summary>
-    /// <param name="type">The type symbol to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="type" /> has a readable <c>Count</c> or <c>Length</c> property;
-    ///     otherwise, <c>false</c>.
-    /// </returns>
-    public static bool HasCountProperty(ITypeSymbol type)
-    {
-        foreach (var member in type.GetAllMembers("Count"))
-            if (member is IPropertySymbol { GetMethod: not null })
-                return true;
-
-        foreach (var member in type.GetAllMembers("Length"))
-            if (member is IPropertySymbol { GetMethod: not null })
-                return true;
-
-        return false;
-    }
-
-    /// <summary>
     ///     Determines whether the specified type is a read-only collection type.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
@@ -514,33 +493,8 @@ internal
         if (type is not INamedTypeSymbol named)
             return null;
 
-        if (named.TypeArguments.Length == 1)
-        {
-            var original = named.OriginalDefinition;
-            if (IEnumerableOfT is not null && SymbolEqualityComparer.Default.Equals(original, IEnumerableOfT) ||
-                ICollectionOfT is not null && SymbolEqualityComparer.Default.Equals(original, ICollectionOfT) ||
-                IListOfT is not null && SymbolEqualityComparer.Default.Equals(original, IListOfT) ||
-                IReadOnlyCollection is not null &&
-                SymbolEqualityComparer.Default.Equals(original, IReadOnlyCollection) ||
-                IReadOnlyList is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlyList) ||
-                ISet is not null && SymbolEqualityComparer.Default.Equals(original, ISet) ||
-                IReadOnlySet is not null && SymbolEqualityComparer.Default.Equals(original, IReadOnlySet) ||
-                List is not null && SymbolEqualityComparer.Default.Equals(original, List) ||
-                HashSet is not null && SymbolEqualityComparer.Default.Equals(original, HashSet) ||
-                Queue is not null && SymbolEqualityComparer.Default.Equals(original, Queue) ||
-                Stack is not null && SymbolEqualityComparer.Default.Equals(original, Stack) ||
-                LinkedList is not null && SymbolEqualityComparer.Default.Equals(original, LinkedList) ||
-                ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray) ||
-                ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList) ||
-                ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet) ||
-                FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
-                Span is not null && SymbolEqualityComparer.Default.Equals(original, Span) ||
-                ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan) ||
-                Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory) ||
-                ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory) ||
-                ArraySegment is not null && SymbolEqualityComparer.Default.Equals(original, ArraySegment))
-                return named.TypeArguments[0];
-        }
+        if (named.TypeArguments.Length == 1 && IsSingleElementCollectionType(named.OriginalDefinition))
+            return named.TypeArguments[0];
 
         // For types implementing IEnumerable<T>, find the element type from the interface
         if (IEnumerableOfT is not null)
@@ -550,5 +504,27 @@ internal
                     return iface.TypeArguments[0];
 
         return null;
+    }
+
+    /// <summary>
+    ///     Determines whether the specified type definition is a known single-element collection type.
+    /// </summary>
+    private bool IsSingleElementCollectionType(INamedTypeSymbol original) =>
+        MatchesAny(original,
+            IEnumerableOfT, ICollectionOfT, IListOfT, IReadOnlyCollection, IReadOnlyList,
+            ISet, IReadOnlySet, List, HashSet, Queue, Stack, LinkedList,
+            ImmutableArray, ImmutableList, ImmutableHashSet, FrozenSet,
+            Span, ReadOnlySpan, Memory, ReadOnlyMemory, ArraySegment);
+
+    /// <summary>
+    ///     Checks if the specified type matches any of the provided candidate types.
+    /// </summary>
+    private static bool MatchesAny(INamedTypeSymbol type, params INamedTypeSymbol?[] candidates)
+    {
+        foreach (var candidate in candidates)
+            if (candidate is not null && SymbolEqualityComparer.Default.Equals(type, candidate))
+                return true;
+
+        return false;
     }
 }

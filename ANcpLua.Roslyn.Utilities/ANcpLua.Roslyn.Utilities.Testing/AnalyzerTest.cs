@@ -207,10 +207,10 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     ///             &lt;/PropertyGroup&gt;
     ///         &lt;/Project&gt;
     ///         """;
-    ///
+    /// 
     ///     var expected = new DiagnosticResult("AL0018", DiagnosticSeverity.Warning)
     ///         .WithLocation("Directory.Build.props", 1, 1);
-    ///
+    /// 
     ///     await VerifyAsync(
     ///         source,
     ///         [("Directory.Build.props", directoryBuildProps)],
@@ -231,14 +231,10 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
         };
 
         foreach (var (fileName, content) in additionalFiles)
-        {
             test.TestState.AdditionalFiles.Add((fileName, content.ReplaceLineEndings()));
-        }
 
         if (expectedDiagnostics is not null)
-        {
             test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-        }
 
         test.TestState.AdditionalReferences.AddRange(
             useNet10References ? Net100.References.All : NetStandard20.References.All);

@@ -14,12 +14,10 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
         <!-- Suppress warnings: NU1701 (version compat), CA1822 (static members), CA1510 (throw helpers), CA1307 (string comparison), CS1591 (missing XML docs - add incrementally) -->
-        <NoWarn>$(NoWarn);NU1701;CA1822;CA1510;CA1307;CS1591</NoWarn>
 
         <!-- Resolve assembly version conflicts by preferring newer versions -->
         <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
         <!-- Suppress CS1705 assembly version conflict warnings -->
-        <NoWarn>$(NoWarn);CS1705</NoWarn>
 
         <!-- Define ANCPLUA_ROSLYN_PUBLIC so types are public in the compiled DLL -->
         <!-- When consumed as source-only package, this is not defined, so types become internal -->

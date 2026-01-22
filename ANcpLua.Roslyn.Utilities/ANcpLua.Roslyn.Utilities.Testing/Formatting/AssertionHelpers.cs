@@ -43,10 +43,7 @@ internal static class AssertionHelpers
     ///     </list>
     /// </remarks>
     /// <seealso cref="FormatList(IEnumerable{string})" />
-    public static string FormatList<T>(IEnumerable<T> items, Func<T, string> selector)
-    {
-        return FormatList(items.Select(selector));
-    }
+    public static string FormatList<T>(IEnumerable<T> items, Func<T, string> selector) => FormatList(items.Select(selector));
 
     /// <summary>
     ///     Formats a collection of strings as a bracketed, comma-separated list.
@@ -168,10 +165,7 @@ internal static class AssertionHelpers
     /// </remarks>
     /// <seealso cref="FormatDiagnosticLine" />
     /// <seealso cref="FormatErrorList" />
-    public static string FormatDiagnosticList(IEnumerable<Diagnostic> diagnostics)
-    {
-        return string.Join("\n", diagnostics.Select(FormatDiagnosticLine));
-    }
+    public static string FormatDiagnosticList(IEnumerable<Diagnostic> diagnostics) => string.Join("\n", diagnostics.Select(FormatDiagnosticLine));
 
     /// <summary>
     ///     Formats only error-severity diagnostics as a newline-separated list.
@@ -274,10 +268,7 @@ internal static class StepFormatter
     ///     </list>
     /// </remarks>
     /// <seealso cref="GeneratorStepAnalysis" />
-    public static string FormatBreakdown(GeneratorStepAnalysis step)
-    {
-        return $"C:{step.Cached} U:{step.Unchanged} | M:{step.Modified} N:{step.New} R:{step.Removed}";
-    }
+    public static string FormatBreakdown(GeneratorStepAnalysis step) => $"C:{step.Cached} U:{step.Unchanged} | M:{step.Modified} N:{step.New} R:{step.Removed}";
 
     /// <summary>
     ///     Formats a single step as a detailed status line with annotations.

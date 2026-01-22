@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -39,10 +37,7 @@ internal
     /// </returns>
     /// <seealso cref="Method(string)" />
     /// <seealso cref="Method(string, string[])" />
-    public static InvocationMatcher Method()
-    {
-        return new InvocationMatcher();
-    }
+    public static InvocationMatcher Method() => new();
 
     /// <summary>
     ///     Creates an invocation matcher for a method with the specified name.
@@ -55,10 +50,7 @@ internal
     /// <seealso cref="Method()" />
     /// <seealso cref="Method(string, string[])" />
     /// <seealso cref="InvocationMatcher.Named(string)" />
-    public static InvocationMatcher Method(string name)
-    {
-        return new InvocationMatcher().Named(name);
-    }
+    public static InvocationMatcher Method(string name) => new InvocationMatcher().Named(name);
 
     /// <summary>
     ///     Creates an invocation matcher for methods with any of the specified names.
@@ -72,10 +64,7 @@ internal
     /// <seealso cref="Method()" />
     /// <seealso cref="Method(string)" />
     /// <seealso cref="InvocationMatcher.Named(string, string[])" />
-    public static InvocationMatcher Method(string name, params string[] additionalNames)
-    {
-        return new InvocationMatcher().Named(name, additionalNames);
-    }
+    public static InvocationMatcher Method(string name, params string[] additionalNames) => new InvocationMatcher().Named(name, additionalNames);
 }
 
 /// <summary>
@@ -95,7 +84,7 @@ internal
 ///             <description>Use <see cref="Matches(IInvocationOperation?)" /> to test invocations.</description>
 ///         </item>
 ///         <item>
-///             <description>Use <see cref="Where(Func{TResult})" /> for custom conditions.</description>
+///             <description>Use <see cref="InvocationMatcher.Where" /> for custom conditions.</description>
 ///         </item>
 ///     </list>
 /// </remarks>
@@ -157,10 +146,7 @@ internal
     ///     that satisfies all configured predicates; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Matches(IInvocationOperation?)" />
-    public bool Matches(IOperation? operation)
-    {
-        return operation is IInvocationOperation invocation && Matches(invocation);
-    }
+    public bool Matches(IOperation? operation) => operation is IInvocationOperation invocation && Matches(invocation);
 
     // Method name matching
 
@@ -517,10 +503,7 @@ internal
     /// </summary>
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="WithConstantArg(int)" />
-    public InvocationMatcher WithAllConstantArgs()
-    {
-        return AddPredicate(AllArgumentsConstant);
-    }
+    public InvocationMatcher WithAllConstantArgs() => AddPredicate(AllArgumentsConstant);
 
     // Namespace
 
@@ -555,20 +538,14 @@ internal
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="Extension" />
     /// <seealso cref="InNamespace(string)" />
-    public InvocationMatcher Linq()
-    {
-        return InNamespace("System.Linq").Extension();
-    }
+    public InvocationMatcher Linq() => InNamespace("System.Linq").Extension();
 
     /// <summary>
     ///     Matches method invocations on <see cref="string" /> instances.
     /// </summary>
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="OnType(string)" />
-    public InvocationMatcher OnString()
-    {
-        return OnType("String");
-    }
+    public InvocationMatcher OnString() => OnType("String");
 
     /// <summary>
     ///     Matches method invocations on <see cref="System.Threading.Tasks.Task" /> instances.
@@ -576,20 +553,14 @@ internal
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="OnType(string)" />
     /// <seealso cref="ReturningTask" />
-    public InvocationMatcher OnTask()
-    {
-        return OnType("Task");
-    }
+    public InvocationMatcher OnTask() => OnType("Task");
 
     /// <summary>
     ///     Matches method invocations on <see cref="Console" /> instances.
     /// </summary>
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="OnType(string)" />
-    public InvocationMatcher OnConsole()
-    {
-        return OnType("Console");
-    }
+    public InvocationMatcher OnConsole() => OnType("Console");
 
     /// <summary>
     ///     Adds a custom matching condition to this matcher.
@@ -602,10 +573,7 @@ internal
     ///     Use this method when the built-in matching methods are insufficient
     ///     for your use case.
     /// </remarks>
-    public InvocationMatcher Where(Func<IInvocationOperation, bool> predicate)
-    {
-        return AddPredicate(predicate);
-    }
+    public InvocationMatcher Where(Func<IInvocationOperation, bool> predicate) => AddPredicate(predicate);
 
     // Helper methods
     private static string? GetReceiverTypeName(IInvocationOperation invocation)

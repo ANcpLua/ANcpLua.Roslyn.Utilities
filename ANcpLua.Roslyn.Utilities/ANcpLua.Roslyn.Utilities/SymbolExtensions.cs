@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -73,10 +67,7 @@ internal
     /// <returns>The fully qualified name including the <c>global::</c> prefix.</returns>
     /// <seealso cref="GetMetadataName" />
     /// <seealso cref="SymbolDisplayFormat.FullyQualifiedFormat" />
-    public static string GetFullyQualifiedName(this ITypeSymbol symbol)
-    {
-        return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-    }
+    public static string GetFullyQualifiedName(this ITypeSymbol symbol) => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     /// <summary>
     ///     Gets the metadata name of a type symbol in the <c>Namespace.Type</c> format.
@@ -85,10 +76,7 @@ internal
     /// <returns>The metadata name without the <c>global::</c> prefix.</returns>
     /// <seealso cref="GetFullyQualifiedName" />
     /// <seealso cref="SymbolDisplayFormat.CSharpErrorMessageFormat" />
-    public static string GetMetadataName(this ITypeSymbol symbol)
-    {
-        return symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
-    }
+    public static string GetMetadataName(this ITypeSymbol symbol) => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 
     /// <summary>
     ///     Checks if the symbol has public accessibility.
@@ -252,10 +240,7 @@ internal
     /// </returns>
     /// <seealso cref="GetAttributes(ISymbol, ITypeSymbol?, bool)" />
     /// <seealso cref="HasAttribute(ISymbol, ITypeSymbol?, bool)" />
-    public static AttributeData? GetAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true)
-    {
-        return symbol.GetAttributes(attributeType, inherits).FirstOrDefault();
-    }
+    public static AttributeData? GetAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) => symbol.GetAttributes(attributeType, inherits).FirstOrDefault();
 
     /// <summary>
     ///     Checks if a symbol has an attribute of a specific type.
@@ -269,10 +254,7 @@ internal
     /// <returns><c>true</c> if the symbol has the specified attribute; otherwise, <c>false</c>.</returns>
     /// <seealso cref="HasAttribute(ISymbol, string)" />
     /// <seealso cref="GetAttribute(ISymbol, ITypeSymbol?, bool)" />
-    public static bool HasAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true)
-    {
-        return symbol.GetAttribute(attributeType, inherits) is not null;
-    }
+    public static bool HasAttribute(this ISymbol symbol, ITypeSymbol? attributeType, bool inherits = true) => symbol.GetAttribute(attributeType, inherits) is not null;
 
     /// <summary>
     ///     Checks if a symbol is visible outside its containing assembly.
@@ -309,13 +291,11 @@ internal
     ///     <see cref="MethodKind.UserDefinedOperator" /> or <see cref="MethodKind.Conversion" />;
     ///     otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsOperator(this ISymbol? symbol)
-    {
-        return symbol is IMethodSymbol
+    public static bool IsOperator(this ISymbol? symbol) =>
+        symbol is IMethodSymbol
         {
             MethodKind: MethodKind.UserDefinedOperator or MethodKind.Conversion
         };
-    }
 
     /// <summary>
     ///     Checks if a symbol is a const field.
@@ -325,10 +305,7 @@ internal
     ///     <c>true</c> if the symbol is an <see cref="IFieldSymbol" /> with <see cref="IFieldSymbol.IsConst" />
     ///     set to <c>true</c>; otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsConst(this ISymbol? symbol)
-    {
-        return symbol is IFieldSymbol { IsConst: true };
-    }
+    public static bool IsConst(this ISymbol? symbol) => symbol is IFieldSymbol { IsConst: true };
 
     /// <summary>
     ///     Gets all members of a type including members inherited from base types.

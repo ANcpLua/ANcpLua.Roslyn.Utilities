@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -157,9 +154,7 @@ internal
                     return true;
             }
             else if (argType.IsEqualTo(type))
-            {
                 return true;
-            }
         }
 
         return false;
@@ -314,11 +309,9 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsMethodNamed(IInvocationOperation, ITypeSymbol?, string)" />
-    public static bool IsMethodNamed(this IInvocationOperation operation, string containingTypeName, string methodName)
-    {
-        return operation.TargetMethod.Name == methodName &&
-               operation.TargetMethod.ContainingType?.ToDisplayString() == containingTypeName;
-    }
+    public static bool IsMethodNamed(this IInvocationOperation operation, string containingTypeName, string methodName) =>
+        operation.TargetMethod.Name == methodName &&
+        operation.TargetMethod.ContainingType?.ToDisplayString() == containingTypeName;
 
     /// <summary>
     ///     Determines whether the invocation targets a method with the specified containing type and name.
@@ -332,12 +325,10 @@ internal
     /// </returns>
     /// <seealso cref="IsMethodNamed(IInvocationOperation, string, string)" />
     public static bool IsMethodNamed(this IInvocationOperation operation, ITypeSymbol? containingType,
-        string methodName)
-    {
-        return containingType is not null &&
-               operation.TargetMethod.Name == methodName &&
-               operation.TargetMethod.ContainingType.IsEqualTo(containingType);
-    }
+        string methodName) =>
+        containingType is not null &&
+        operation.TargetMethod.Name == methodName &&
+        operation.TargetMethod.ContainingType.IsEqualTo(containingType);
 
     /// <summary>
     ///     Determines whether the invocation is an extension method call on the specified receiver type.
@@ -404,10 +395,7 @@ internal
     /// </summary>
     /// <param name="operation">The invocation operation to examine.</param>
     /// <returns><c>true</c> if the target method returns void; otherwise, <c>false</c>.</returns>
-    public static bool ReturnsVoid(this IInvocationOperation operation)
-    {
-        return operation.TargetMethod.ReturnsVoid;
-    }
+    public static bool ReturnsVoid(this IInvocationOperation operation) => operation.TargetMethod.ReturnsVoid;
 
     /// <summary>
     ///     Determines whether the invoked method is marked with the async modifier.
@@ -416,10 +404,7 @@ internal
     /// <returns><c>true</c> if the target method is async; otherwise, <c>false</c>.</returns>
     /// <seealso cref="HasCancellationTokenParameter" />
     /// <seealso cref="IsCancellationTokenPassed" />
-    public static bool IsAsyncMethod(this IInvocationOperation operation)
-    {
-        return operation.TargetMethod.IsAsync;
-    }
+    public static bool IsAsyncMethod(this IInvocationOperation operation) => operation.TargetMethod.IsAsync;
 
     /// <summary>
     ///     Determines whether the invoked method has a <see cref="System.Threading.CancellationToken" /> parameter.
@@ -485,10 +470,7 @@ internal
     /// </returns>
     /// <seealso cref="IsLinqMethod" />
     /// <seealso cref="IsObjectMethod" />
-    public static bool IsStringMethod(this IInvocationOperation operation)
-    {
-        return operation.TargetMethod.ContainingType?.SpecialType is SpecialType.System_String;
-    }
+    public static bool IsStringMethod(this IInvocationOperation operation) => operation.TargetMethod.ContainingType?.SpecialType is SpecialType.System_String;
 
     /// <summary>
     ///     Determines whether the invocation is a method on <see cref="object" />.
@@ -499,10 +481,7 @@ internal
     /// </returns>
     /// <seealso cref="IsLinqMethod" />
     /// <seealso cref="IsStringMethod" />
-    public static bool IsObjectMethod(this IInvocationOperation operation)
-    {
-        return operation.TargetMethod.ContainingType?.SpecialType is SpecialType.System_Object;
-    }
+    public static bool IsObjectMethod(this IInvocationOperation operation) => operation.TargetMethod.ContainingType?.SpecialType is SpecialType.System_Object;
 
     /// <summary>
     ///     Gets the number of arguments in the invocation.
@@ -511,10 +490,7 @@ internal
     /// <returns>The total number of arguments, including both explicit and implicit arguments.</returns>
     /// <seealso cref="GetExplicitArguments" />
     /// <seealso cref="HasOptionalArgumentsNotProvided" />
-    public static int GetArgumentCount(this IInvocationOperation operation)
-    {
-        return operation.Arguments.Length;
-    }
+    public static int GetArgumentCount(this IInvocationOperation operation) => operation.Arguments.Length;
 
     /// <summary>
     ///     Determines whether there are optional parameters that were not explicitly provided.
@@ -575,8 +551,5 @@ internal
     ///     <c>true</c> if the invocation syntax is within a <c>?.</c> or <c>?[]</c> access;
     ///     otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsNullConditionalAccess(this IInvocationOperation operation)
-    {
-        return operation.Syntax.Parent is ConditionalAccessExpressionSyntax;
-    }
+    public static bool IsNullConditionalAccess(this IInvocationOperation operation) => operation.Syntax.Parent is ConditionalAccessExpressionSyntax;
 }

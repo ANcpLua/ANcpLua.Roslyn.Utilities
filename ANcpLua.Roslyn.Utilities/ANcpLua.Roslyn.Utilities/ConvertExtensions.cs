@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -85,10 +84,7 @@ internal
     ///     or <paramref name="defaultValue" /> if the value is <c>null</c>.
     /// </returns>
     /// <seealso cref="ToEnum{T}(TypedConstant)" />
-    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum
-    {
-        return (T)(typedConstant.Value ?? defaultValue);
-    }
+    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum => (T)(typedConstant.Value ?? defaultValue);
 
     /// <summary>
     ///     Converts the <see cref="TypedConstant" /> to a nullable enum value of type <typeparamref name="T" />.

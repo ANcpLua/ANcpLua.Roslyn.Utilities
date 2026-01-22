@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -118,10 +114,7 @@ internal
     ///     <c>true</c> if an ancestor of type <typeparamref name="T" /> exists; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="FindAncestor{T}" />
-    public static bool IsDescendantOf<T>(this IOperation operation) where T : class, IOperation
-    {
-        return operation.FindAncestor<T>() is not null;
-    }
+    public static bool IsDescendantOf<T>(this IOperation operation) where T : class, IOperation => operation.FindAncestor<T>() is not null;
 
     /// <summary>
     ///     Determines whether the operation is inside a <c>nameof</c> expression.
@@ -259,10 +252,8 @@ internal
                 return symbol is { IsStatic: true };
             }
             else if (member is FieldDeclarationSyntax)
-            {
                 return
                     true; // Field initializers are in static context if the field is static, but default to true for safety
-            }
 
         return false;
     }
@@ -341,10 +332,7 @@ internal
     ///     or <c>null</c> if the operation has no type.
     /// </returns>
     /// <seealso cref="UnwrapAllConversions" />
-    public static ITypeSymbol? GetActualType(this IOperation operation)
-    {
-        return operation.UnwrapAllConversions().Type;
-    }
+    public static ITypeSymbol? GetActualType(this IOperation operation) => operation.UnwrapAllConversions().Type;
 
     /// <summary>
     ///     Determines whether the operation represents a constant zero value.
@@ -358,10 +346,7 @@ internal
     /// </returns>
     /// <seealso cref="IsConstantNull" />
     /// <seealso cref="IsConstant" />
-    public static bool IsConstantZero(this IOperation operation)
-    {
-        return operation is { ConstantValue: { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m } };
-    }
+    public static bool IsConstantZero(this IOperation operation) => operation is { ConstantValue: { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m } };
 
     /// <summary>
     ///     Determines whether the operation represents a constant <c>null</c> value.
@@ -373,10 +358,7 @@ internal
     /// </returns>
     /// <seealso cref="IsConstantZero" />
     /// <seealso cref="IsConstant" />
-    public static bool IsConstantNull(this IOperation operation)
-    {
-        return operation is { ConstantValue: { HasValue: true, Value: null } };
-    }
+    public static bool IsConstantNull(this IOperation operation) => operation is { ConstantValue: { HasValue: true, Value: null } };
 
     /// <summary>
     ///     Checks if the operation is of the specified kind.
@@ -393,7 +375,9 @@ internal
     /// </summary>
     public static bool IsConstant<T>(this IOperation operation, T value)
     {
-        return operation.TryGetConstantValue(out T actual) && EqualityComparer<T>.Default.Equals(actual, value);
+        if (!operation.TryGetConstantValue<T>(out var actual))
+            return false;
+        return EqualityComparer<T>.Default.Equals(actual, value);
     }
 
     /// <summary>
@@ -577,10 +561,7 @@ internal
     ///     <c>true</c> if any descendant of type <typeparamref name="T" /> exists; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="DescendantsOfType{T}" />
-    public static bool ContainsOperation<T>(this IOperation operation) where T : IOperation
-    {
-        return operation.DescendantsOfType<T>().Any();
-    }
+    public static bool ContainsOperation<T>(this IOperation operation) where T : IOperation => operation.DescendantsOfType<T>().Any();
 
     /// <summary>
     ///     Determines whether the operation is inside a loop construct.
@@ -699,6 +680,17 @@ internal
     }
 
     /// <summary>
+    ///     Determines whether the specified operation is a <c>using</c> statement or <c>using</c> declaration.
+    /// </summary>
+    /// <param name="operation">The operation to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="operation" /> is an <see cref="IUsingOperation" /> or
+    ///     <see cref="IUsingDeclarationOperation" />; otherwise, <c>false</c>.
+    /// </returns>
+    /// <seealso cref="IsInsideUsingStatement" />
+    public static bool IsUsingStatement(this IOperation operation) => operation is IUsingOperation or IUsingDeclarationOperation;
+
+    /// <summary>
     ///     Determines whether the operation is inside a using statement or declaration.
     /// </summary>
     /// <param name="operation">The operation to check.</param>
@@ -706,6 +698,7 @@ internal
     ///     <c>true</c> if the operation is within a <c>using</c> statement or <c>using</c> declaration;
     ///     otherwise, <c>false</c>.
     /// </returns>
+    /// <seealso cref="IsUsingStatement" />
     /// <seealso cref="IsInsideLockStatement" />
     public static bool IsInsideUsingStatement(this IOperation operation)
     {
@@ -730,10 +723,7 @@ internal
     /// </returns>
     /// <seealso cref="GetContainingMethod" />
     /// <seealso cref="FindAncestor{T}" />
-    public static IBlockOperation? GetContainingBlock(this IOperation operation)
-    {
-        return operation.FindAncestor<IBlockOperation>();
-    }
+    public static IBlockOperation? GetContainingBlock(this IOperation operation) => operation.FindAncestor<IBlockOperation>();
 
     /// <summary>
     ///     Determines whether the operation is the target of an assignment.

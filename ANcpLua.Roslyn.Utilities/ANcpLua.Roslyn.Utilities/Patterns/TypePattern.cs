@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -558,8 +556,5 @@ internal
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>The built pattern.</returns>
-    public static implicit operator SymbolPattern<INamedTypeSymbol>(TypePatternBuilder builder)
-    {
-        return builder.Build();
-    }
+    public static implicit operator SymbolPattern<INamedTypeSymbol>(TypePatternBuilder builder) => builder.Build();
 }

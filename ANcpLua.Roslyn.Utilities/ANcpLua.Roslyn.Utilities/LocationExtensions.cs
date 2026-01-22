@@ -1,4 +1,3 @@
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -49,10 +48,8 @@ internal
     /// <seealso cref="GetLine(SyntaxToken, CancellationToken)" />
     /// <seealso cref="GetEndLine(SyntaxToken, CancellationToken)" />
     public static FileLinePositionSpan? GetLineSpan(this SyntaxToken token,
-        CancellationToken cancellationToken = default)
-    {
-        return token.SyntaxTree?.GetLineSpan(token.Span, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        token.SyntaxTree?.GetLineSpan(token.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the file line position span for the specified syntax node.
@@ -67,10 +64,8 @@ internal
     /// <seealso cref="GetEndLine(SyntaxNode, CancellationToken)" />
     /// <seealso cref="SpansMultipleLines(SyntaxNode, CancellationToken)" />
     public static FileLinePositionSpan?
-        GetLineSpan(this SyntaxNode node, CancellationToken cancellationToken = default)
-    {
-        return node.SyntaxTree.GetLineSpan(node.Span, cancellationToken);
-    }
+        GetLineSpan(this SyntaxNode node, CancellationToken cancellationToken = default) =>
+        node.SyntaxTree.GetLineSpan(node.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the file line position span for the specified syntax trivia.
@@ -85,10 +80,8 @@ internal
     /// <seealso cref="GetEndLine(SyntaxTrivia, CancellationToken)" />
     /// <seealso cref="SpansMultipleLines(SyntaxTrivia, CancellationToken)" />
     public static FileLinePositionSpan? GetLineSpan(this SyntaxTrivia trivia,
-        CancellationToken cancellationToken = default)
-    {
-        return trivia.SyntaxTree?.GetLineSpan(trivia.Span, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        trivia.SyntaxTree?.GetLineSpan(trivia.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the file line position span for the specified syntax node or token.
@@ -100,10 +93,8 @@ internal
     ///     for the <paramref name="nodeOrToken" />; or <c>null</c> if there is no associated syntax tree.
     /// </returns>
     public static FileLinePositionSpan? GetLineSpan(this SyntaxNodeOrToken nodeOrToken,
-        CancellationToken cancellationToken = default)
-    {
-        return nodeOrToken.SyntaxTree?.GetLineSpan(nodeOrToken.Span, cancellationToken);
-    }
+        CancellationToken cancellationToken = default) =>
+        nodeOrToken.SyntaxTree?.GetLineSpan(nodeOrToken.Span, cancellationToken);
 
     /// <summary>
     ///     Gets the zero-based starting line number where the specified token occurs.
@@ -116,10 +107,7 @@ internal
     /// </returns>
     /// <seealso cref="GetEndLine(SyntaxToken, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxToken, CancellationToken)" />
-    public static int? GetLine(this SyntaxToken token, CancellationToken cancellationToken = default)
-    {
-        return token.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
-    }
+    public static int? GetLine(this SyntaxToken token, CancellationToken cancellationToken = default) => token.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
 
     /// <summary>
     ///     Gets the zero-based starting line number where the specified node occurs.
@@ -132,10 +120,7 @@ internal
     /// </returns>
     /// <seealso cref="GetEndLine(SyntaxNode, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxNode, CancellationToken)" />
-    public static int? GetLine(this SyntaxNode node, CancellationToken cancellationToken = default)
-    {
-        return node.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
-    }
+    public static int? GetLine(this SyntaxNode node, CancellationToken cancellationToken = default) => node.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
 
     /// <summary>
     ///     Gets the zero-based starting line number where the specified trivia occurs.
@@ -148,10 +133,7 @@ internal
     /// </returns>
     /// <seealso cref="GetEndLine(SyntaxTrivia, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxTrivia, CancellationToken)" />
-    public static int? GetLine(this SyntaxTrivia trivia, CancellationToken cancellationToken = default)
-    {
-        return trivia.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
-    }
+    public static int? GetLine(this SyntaxTrivia trivia, CancellationToken cancellationToken = default) => trivia.GetLineSpan(cancellationToken)?.StartLinePosition.Line;
 
     /// <summary>
     ///     Gets the zero-based ending line number where the specified token ends.
@@ -164,10 +146,7 @@ internal
     /// </returns>
     /// <seealso cref="GetLine(SyntaxToken, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxToken, CancellationToken)" />
-    public static int? GetEndLine(this SyntaxToken token, CancellationToken cancellationToken = default)
-    {
-        return token.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
-    }
+    public static int? GetEndLine(this SyntaxToken token, CancellationToken cancellationToken = default) => token.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
 
     /// <summary>
     ///     Gets the zero-based ending line number where the specified node ends.
@@ -180,10 +159,7 @@ internal
     /// </returns>
     /// <seealso cref="GetLine(SyntaxNode, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxNode, CancellationToken)" />
-    public static int? GetEndLine(this SyntaxNode node, CancellationToken cancellationToken = default)
-    {
-        return node.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
-    }
+    public static int? GetEndLine(this SyntaxNode node, CancellationToken cancellationToken = default) => node.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
 
     /// <summary>
     ///     Gets the zero-based ending line number where the specified trivia ends.
@@ -196,10 +172,7 @@ internal
     /// </returns>
     /// <seealso cref="GetLine(SyntaxTrivia, CancellationToken)" />
     /// <seealso cref="GetLineSpan(SyntaxTrivia, CancellationToken)" />
-    public static int? GetEndLine(this SyntaxTrivia trivia, CancellationToken cancellationToken = default)
-    {
-        return trivia.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
-    }
+    public static int? GetEndLine(this SyntaxTrivia trivia, CancellationToken cancellationToken = default) => trivia.GetLineSpan(cancellationToken)?.EndLinePosition.Line;
 
     /// <summary>
     ///     Determines whether the specified syntax node spans multiple source text lines.

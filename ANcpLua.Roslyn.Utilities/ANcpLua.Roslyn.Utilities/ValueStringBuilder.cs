@@ -1,6 +1,5 @@
 // Licensed under the MIT License.
 
-using System;
 using System.Buffers;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -48,12 +47,10 @@ internal
     /// <summary>
     ///     Returns any rented buffers to the shared pool.
     /// </summary>
-    public void Dispose()
+    public readonly void Dispose()
     {
         if (_arrayFromPool is not null)
-        {
             ArrayPool<char>.Shared.Return(_arrayFromPool);
-        }
     }
 
     /// <summary>
@@ -63,9 +60,8 @@ internal
     public void Append(string str)
     {
         if (str.Length > _span.Length - _pos)
-        {
             Grow(str.Length);
-        }
+
         str.AsSpan().CopyTo(_span[_pos..]);
         _pos += str.Length;
     }
@@ -77,9 +73,8 @@ internal
     public void Append(ReadOnlySpan<char> str)
     {
         if (str.Length > _span.Length - _pos)
-        {
             Grow(str.Length);
-        }
+
         str.CopyTo(_span[_pos..]);
         _pos += str.Length;
     }
@@ -91,9 +86,8 @@ internal
     public void Append(char c)
     {
         if (_pos >= _span.Length)
-        {
             Grow(1);
-        }
+
         _span[_pos++] = c;
     }
 
@@ -104,9 +98,7 @@ internal
         _span.CopyTo(newArray);
 
         if (_arrayFromPool is not null)
-        {
             ArrayPool<char>.Shared.Return(_arrayFromPool);
-        }
 
         _arrayFromPool = newArray;
         _span = _arrayFromPool.AsSpan(0, newSize);
@@ -116,17 +108,11 @@ internal
     ///     Returns the current contents as a trimmed string.
     /// </summary>
     /// <returns>The trimmed string representation.</returns>
-    public string ToTrimString()
-    {
-        return new string(_span[.._pos].Trim().ToArray());
-    }
+    public string ToTrimString() => new(_span[.._pos].Trim().ToArray());
 
     /// <summary>
     ///     Returns the current contents as a string.
     /// </summary>
     /// <returns>The string representation.</returns>
-    public override string ToString()
-    {
-        return new string(_span[.._pos].ToArray());
-    }
+    public override string ToString() => new(_span[.._pos].ToArray());
 }

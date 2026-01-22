@@ -4,12 +4,12 @@ Comprehensive utilities for Roslyn analyzers and source generators. netstandard2
 
 ## Quick Reference
 
-| Category             | Key Types                                                                     |
-|----------------------|-------------------------------------------------------------------------------|
-| **Flow Control**     | `DiagnosticFlow<T>`                                                           |
-| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations)                                  |
-| **Validation**       | `SemanticGuard<T>`                                                            |
-| **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| Category             | Key Types                                                                                        |
+|----------------------|--------------------------------------------------------------------------------------------------|
+| **Flow Control**     | `DiagnosticFlow<T>`                                                                              |
+| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations)                                                     |
+| **Validation**       | `SemanticGuard<T>`                                                                               |
+| **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext`                    |
 | **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `TypedConstantExtensions` |
 
 ---
@@ -45,6 +45,13 @@ provider
 ```
 
 ## Symbol Pattern Matching
+
+Two complementary APIs for matching Roslyn symbols:
+
+| API | Style | Best For |
+|-----|-------|----------|
+| **SymbolPattern** | Immutable, composable | Reusable patterns, pattern algebra (`&`, `\|`, `!`) |
+| **Match.\*** DSL | Fluent, stateful | One-off checks, readable inline conditions |
 
 ### SymbolPattern (composable patterns)
 
@@ -271,6 +278,9 @@ invocation.IsNullConditionalAccess()
 
 ## Domain Contexts
 
+> **Note:** Context classes cache well-known type symbols from a `Compilation` for efficient repeated lookups.
+> Create one context per compilation and reuse it for multiple checks.
+
 ### AwaitableContext
 
 ```csharp
@@ -311,13 +321,21 @@ var ctx = new DisposableContext(compilation);
 ctx.IsDisposable(type)
 ctx.IsSyncDisposable(type)
 ctx.IsAsyncDisposable(type)
-ctx.HasDisposeMethod(type)
-ctx.HasDisposeAsyncMethod(type)
 ctx.IsStream(type)
+ctx.IsTextReaderOrWriter(type)
 ctx.IsDbConnection(type)
+ctx.IsDbCommand(type)
+ctx.IsDbDataReader(type)
 ctx.IsHttpClient(type)
 ctx.IsSynchronizationPrimitive(type)
-// Properties: IDisposable, IAsyncDisposable, Stream, DbConnection...
+ctx.IsCancellationTokenSource(type)
+ctx.IsSafeHandle(type)
+ctx.ShouldBeDisposed(type)            // opinionated - excludes DI-managed types
+// Properties: IDisposable, IAsyncDisposable, SafeHandle, Stream, DbConnection...
+
+// For Dispose method detection, use extension methods (no context needed):
+type.HasDisposeMethod()               // TypeSymbolExtensions
+type.HasDisposeAsyncMethod()          // TypeSymbolExtensions
 ```
 
 ### CollectionContext
@@ -333,10 +351,12 @@ ctx.IsImmutable(type)
 ctx.IsFrozen(type)
 ctx.IsSpanLike(type)
 ctx.IsMemoryLike(type)
-ctx.HasCountProperty(type)
 ctx.IsReadOnly(type)
 ctx.GetElementType(type)
 // Properties: IEnumerable, ICollection, IList, IDictionary, ImmutableArray...
+
+// For Count/Length property detection, use extension method (no context needed):
+type.HasCountProperty()               // TypeSymbolExtensions
 ```
 
 ## Overload Analysis

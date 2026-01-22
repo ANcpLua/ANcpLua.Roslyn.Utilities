@@ -312,10 +312,8 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///     </list>
     /// </remarks>
-    private static bool IsAllowedType(Type type)
-    {
-        return type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
-               type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
-               Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying);
-    }
+    private static bool IsAllowedType(Type type) =>
+        type.IsPrimitive || type.IsEnum || type == typeof(string) || type == typeof(decimal) ||
+        type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan) ||
+        Nullable.GetUnderlyingType(type) is { } underlying && IsAllowedType(underlying);
 }

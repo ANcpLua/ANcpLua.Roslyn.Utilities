@@ -28,7 +28,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
 /// <seealso cref="AssertionHelpers" />
 internal static class ReportFormatter
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
 
     /// <summary>
     ///     Formats a generator execution context for test failures.
@@ -216,7 +219,12 @@ internal static class ReportFormatter
             producedOutput = report.ProducedOutput,
             forbidden =
                 report.ForbiddenTypeViolations.Select(static v =>
-                    new { v.StepName, Type = v.ForbiddenType.Name, v.Path }),
+                    new
+                    {
+                        v.StepName,
+                        Type = v.ForbiddenType.Name,
+                        v.Path
+                    }),
             failed = failedCaching.Select(static s => new
             {
                 s.StepName,
@@ -257,10 +265,7 @@ internal static class ReportFormatter
     /// <param name="s">The string to truncate.</param>
     /// <param name="max">The maximum length before truncation.</param>
     /// <returns>The original string if within limit, otherwise truncated with "..." appended.</returns>
-    private static string Truncate(string s, int max)
-    {
-        return s.Length <= max ? s : s[..max] + "...";
-    }
+    private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
 }
 
 /// <summary>

@@ -121,10 +121,7 @@ internal static class GeneratorStepAnalyzer
     /// </remarks>
     /// <seealso cref="StepClassification.IsInfrastructureStep" />
     /// <seealso cref="StepClassification.IsSinkStep" />
-    public static bool IsInfrastructureStep(string stepName)
-    {
-        return StepClassification.IsInfrastructureStep(stepName);
-    }
+    public static bool IsInfrastructureStep(string stepName) => StepClassification.IsInfrastructureStep(stepName);
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes).
@@ -156,8 +153,5 @@ internal static class GeneratorStepAnalyzer
     ///     </para>
     /// </remarks>
     /// <seealso cref="StepClassification.IsInfrastructureFile" />
-    public static bool IsInfrastructureFile(string fileName)
-    {
-        return StepClassification.IsInfrastructureFile(fileName);
-    }
+    public static bool IsInfrastructureFile(string fileName) => StepClassification.IsInfrastructureFile(fileName);
 }

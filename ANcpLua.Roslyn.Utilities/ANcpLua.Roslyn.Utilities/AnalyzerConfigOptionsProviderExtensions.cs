@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -160,11 +158,9 @@ internal
     /// </exception>
     /// <seealso cref="GetGlobalProperty" />
     public static string GetRequiredGlobalProperty(this AnalyzerConfigOptionsProvider provider, string name,
-        string? prefix = null)
-    {
-        return provider.GetGlobalProperty(name, prefix)
-               ?? throw new InvalidOperationException($"{CompositeName(name, prefix)} MSBuild property is required.");
-    }
+        string? prefix = null) =>
+        provider.GetGlobalProperty(name, prefix)
+        ?? throw new InvalidOperationException($"{CompositeName(name, prefix)} MSBuild property is required.");
 
     /// <summary>
     ///     Reads <see cref="AdditionalText" /> metadata or throws when missing or unset.
@@ -188,12 +184,10 @@ internal
         AdditionalText text,
         string name,
         string? group = null,
-        string? prefix = null)
-    {
-        return provider.GetAdditionalTextMetadata(text, name, group, prefix)
-               ?? throw new InvalidOperationException(
-                   $"{CompositeName(name, prefix)} metadata for AdditionalText is required.");
-    }
+        string? prefix = null) =>
+        provider.GetAdditionalTextMetadata(text, name, group, prefix)
+        ?? throw new InvalidOperationException(
+            $"{CompositeName(name, prefix)} metadata for AdditionalText is required.");
 
     /// <summary>
     ///     Tries to read and parse an MSBuild property as a boolean.
@@ -223,10 +217,8 @@ internal
     /// </remarks>
     /// <seealso cref="GetGlobalBoolOrDefault" />
     public static bool TryGetGlobalBool(this AnalyzerConfigOptionsProvider provider, string name, out bool value,
-        string? prefix = null)
-    {
-        return TryParseMsBuildBoolean(provider.GetGlobalProperty(name, prefix), out value);
-    }
+        string? prefix = null) =>
+        TryParseMsBuildBoolean(provider.GetGlobalProperty(name, prefix), out value);
 
     /// <summary>
     ///     Reads a boolean MSBuild property or returns a default value when missing or invalid.
@@ -242,10 +234,8 @@ internal
     /// </returns>
     /// <seealso cref="TryGetGlobalBool" />
     public static bool GetGlobalBoolOrDefault(this AnalyzerConfigOptionsProvider provider, string name,
-        bool defaultValue, string? prefix = null)
-    {
-        return provider.TryGetGlobalBool(name, out var value, prefix) ? value : defaultValue;
-    }
+        bool defaultValue, string? prefix = null) =>
+        provider.TryGetGlobalBool(name, out var value, prefix) ? value : defaultValue;
 
     /// <summary>
     ///     Tries to read and parse an MSBuild property as an integer.
@@ -287,10 +277,8 @@ internal
     /// </returns>
     /// <seealso cref="TryGetGlobalInt" />
     public static int GetGlobalIntOrDefault(this AnalyzerConfigOptionsProvider provider, string name, int defaultValue,
-        string? prefix = null)
-    {
-        return provider.TryGetGlobalInt(name, out var value, prefix) ? value : defaultValue;
-    }
+        string? prefix = null) =>
+        provider.TryGetGlobalInt(name, out var value, prefix) ? value : defaultValue;
 
     /// <summary>
     ///     Determines whether the current build is an IDE design-time build.
@@ -334,20 +322,11 @@ internal
         return false;
     }
 
-    private static string BuildPropertyKey(string name, string? prefix)
-    {
-        return BuildPropertyPrefix + CompositeName(name, prefix);
-    }
+    private static string BuildPropertyKey(string name, string? prefix) => BuildPropertyPrefix + CompositeName(name, prefix);
 
-    private static string BuildMetadataKey(string group, string name, string? prefix)
-    {
-        return BuildMetadataPrefix + group + "." + CompositeName(name, prefix);
-    }
+    private static string BuildMetadataKey(string group, string name, string? prefix) => BuildMetadataPrefix + group + "." + CompositeName(name, prefix);
 
-    private static string CompositeName(string name, string? prefix)
-    {
-        return prefix is null ? name : prefix + "_" + name;
-    }
+    private static string CompositeName(string name, string? prefix) => prefix is null ? name : prefix + "_" + name;
 
     private static bool TryParseMsBuildBoolean(string? text, out bool value)
     {

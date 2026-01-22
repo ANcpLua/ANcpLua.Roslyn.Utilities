@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -215,160 +211,112 @@ internal
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="object" />; otherwise, <c>false</c>.</returns>
-    public static bool IsObject(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Object;
-    }
+    public static bool IsObject(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Object;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="string" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="string" />; otherwise, <c>false</c>.</returns>
-    public static bool IsString(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_String;
-    }
+    public static bool IsString(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_String;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="char" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="char" />; otherwise, <c>false</c>.</returns>
-    public static bool IsChar(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Char;
-    }
+    public static bool IsChar(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Char;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="int" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="int" />; otherwise, <c>false</c>.</returns>
-    public static bool IsInt32(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Int32;
-    }
+    public static bool IsInt32(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int32;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="long" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="long" />; otherwise, <c>false</c>.</returns>
-    public static bool IsInt64(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Int64;
-    }
+    public static bool IsInt64(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int64;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="bool" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="bool" />; otherwise, <c>false</c>.</returns>
-    public static bool IsBoolean(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Boolean;
-    }
+    public static bool IsBoolean(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Boolean;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="DateTime" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="DateTime" />; otherwise, <c>false</c>.</returns>
-    public static bool IsDateTime(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_DateTime;
-    }
+    public static bool IsDateTime(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_DateTime;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="byte" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="byte" />; otherwise, <c>false</c>.</returns>
-    public static bool IsByte(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Byte;
-    }
+    public static bool IsByte(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Byte;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="sbyte" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="sbyte" />; otherwise, <c>false</c>.</returns>
-    public static bool IsSByte(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_SByte;
-    }
+    public static bool IsSByte(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_SByte;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="short" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="short" />; otherwise, <c>false</c>.</returns>
-    public static bool IsInt16(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Int16;
-    }
+    public static bool IsInt16(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Int16;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="ushort" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="ushort" />; otherwise, <c>false</c>.</returns>
-    public static bool IsUInt16(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_UInt16;
-    }
+    public static bool IsUInt16(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt16;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="uint" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="uint" />; otherwise, <c>false</c>.</returns>
-    public static bool IsUInt32(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_UInt32;
-    }
+    public static bool IsUInt32(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt32;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="ulong" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="ulong" />; otherwise, <c>false</c>.</returns>
-    public static bool IsUInt64(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_UInt64;
-    }
+    public static bool IsUInt64(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_UInt64;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="float" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="float" />; otherwise, <c>false</c>.</returns>
-    public static bool IsSingle(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Single;
-    }
+    public static bool IsSingle(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Single;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="double" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="double" />; otherwise, <c>false</c>.</returns>
-    public static bool IsDouble(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Double;
-    }
+    public static bool IsDouble(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Double;
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="decimal" />.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is <see cref="decimal" />; otherwise, <c>false</c>.</returns>
-    public static bool IsDecimal(this ITypeSymbol? symbol)
-    {
-        return symbol?.SpecialType is SpecialType.System_Decimal;
-    }
+    public static bool IsDecimal(this ITypeSymbol? symbol) => symbol?.SpecialType is SpecialType.System_Decimal;
 
     /// <summary>
     ///     Determines whether the type symbol represents an enumeration type.
@@ -376,10 +324,7 @@ internal
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is an enumeration type; otherwise, <c>false</c>.</returns>
     /// <seealso cref="GetEnumerationType" />
-    public static bool IsEnumeration([NotNullWhen(true)] this ITypeSymbol? symbol)
-    {
-        return symbol?.GetEnumerationType() is not null;
-    }
+    public static bool IsEnumeration([NotNullWhen(true)] this ITypeSymbol? symbol) => symbol?.GetEnumerationType() is not null;
 
     /// <summary>
     ///     Gets the underlying type of an enumeration.
@@ -390,10 +335,7 @@ internal
     ///     if <paramref name="symbol" /> is not an enumeration.
     /// </returns>
     /// <seealso cref="IsEnumeration" />
-    public static INamedTypeSymbol? GetEnumerationType(this ITypeSymbol? symbol)
-    {
-        return (symbol as INamedTypeSymbol)?.EnumUnderlyingType;
-    }
+    public static INamedTypeSymbol? GetEnumerationType(this ITypeSymbol? symbol) => (symbol as INamedTypeSymbol)?.EnumUnderlyingType;
 
     /// <summary>
     ///     Determines whether the type symbol represents a numeric type.
@@ -462,7 +404,8 @@ internal
     }
 
     /// <summary>
-    ///     Gets the underlying type if the symbol represents a nullable type (either <see cref="Nullable{T}" /> or a nullable reference type).
+    ///     Gets the underlying type if the symbol represents a nullable type (either <see cref="Nullable{T}" /> or a nullable
+    ///     reference type).
     /// </summary>
     /// <param name="typeSymbol">The type symbol to unwrap.</param>
     /// <returns>The underlying type symbol.</returns>
@@ -782,5 +725,62 @@ internal
         }
 
         return null;
+    }
+
+    /// <summary>
+    ///     Determines whether the specified type has a parameterless <c>Dispose()</c> method that returns <c>void</c>.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="type" /> has a <c>void Dispose()</c> method with no parameters; otherwise,
+    ///     <c>false</c>.
+    /// </returns>
+    /// <seealso cref="HasDisposeAsyncMethod" />
+    public static bool HasDisposeMethod(this ITypeSymbol type)
+    {
+        foreach (var member in type.GetAllMembers("Dispose"))
+            if (member is IMethodSymbol { Parameters.IsEmpty: true, ReturnsVoid: true })
+                return true;
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Determines whether the specified type has a parameterless <c>DisposeAsync()</c> method.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="type" /> has a <c>DisposeAsync()</c> method with no parameters; otherwise,
+    ///     <c>false</c>.
+    /// </returns>
+    /// <seealso cref="HasDisposeMethod" />
+    public static bool HasDisposeAsyncMethod(this ITypeSymbol type)
+    {
+        foreach (var member in type.GetAllMembers("DisposeAsync"))
+            if (member is IMethodSymbol { Parameters.IsEmpty: true })
+                return true;
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Determines whether the specified type has a <c>Count</c> or <c>Length</c> property with a getter.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="type" /> has a readable <c>Count</c> or <c>Length</c> property;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    public static bool HasCountProperty(this ITypeSymbol type)
+    {
+        foreach (var member in type.GetAllMembers("Count"))
+            if (member is IPropertySymbol { GetMethod: not null })
+                return true;
+
+        foreach (var member in type.GetAllMembers("Length"))
+            if (member is IPropertySymbol { GetMethod: not null })
+                return true;
+
+        return false;
     }
 }

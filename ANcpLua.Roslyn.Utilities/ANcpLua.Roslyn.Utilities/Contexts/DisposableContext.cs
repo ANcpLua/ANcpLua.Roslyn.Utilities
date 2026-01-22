@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
@@ -23,9 +22,6 @@ namespace ANcpLua.Roslyn.Utilities.Contexts;
 ///                 Provides type classification methods for streams, database types, synchronization primitives,
 ///                 and more.
 ///             </description>
-///         </item>
-///         <item>
-///             <description>Includes static helpers for detecting <c>using</c> statements and dispose methods.</description>
 ///         </item>
 ///         <item>
 ///             <description>Properties may be <c>null</c> if the corresponding type is not available in the compilation.</description>
@@ -204,10 +200,7 @@ internal
     /// </returns>
     /// <seealso cref="IsDisposable" />
     /// <seealso cref="IsAsyncDisposable" />
-    public bool IsSyncDisposable(ITypeSymbol? type)
-    {
-        return type is not null && IDisposable is not null && type.Implements(IDisposable);
-    }
+    public bool IsSyncDisposable(ITypeSymbol? type) => type is not null && IDisposable is not null && type.Implements(IDisposable);
 
     /// <summary>
     ///     Determines whether the specified type implements <c>IAsyncDisposable</c>.
@@ -218,83 +211,7 @@ internal
     /// </returns>
     /// <seealso cref="IsDisposable" />
     /// <seealso cref="IsSyncDisposable" />
-    public bool IsAsyncDisposable(ITypeSymbol? type)
-    {
-        return type is not null && IAsyncDisposable is not null && type.Implements(IAsyncDisposable);
-    }
-
-    /// <summary>
-    ///     Determines whether the specified type has a parameterless <c>Dispose()</c> method that returns <c>void</c>.
-    /// </summary>
-    /// <param name="type">The type symbol to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="type" /> has a <c>void Dispose()</c> method with no parameters; otherwise,
-    ///     <c>false</c>.
-    /// </returns>
-    /// <seealso cref="HasDisposeAsyncMethod" />
-    public static bool HasDisposeMethod(ITypeSymbol type)
-    {
-        foreach (var member in type.GetAllMembers("Dispose"))
-            if (member is IMethodSymbol { Parameters.IsEmpty: true, ReturnsVoid: true })
-                return true;
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Determines whether the specified type has a parameterless <c>DisposeAsync()</c> method.
-    /// </summary>
-    /// <param name="type">The type symbol to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="type" /> has a <c>DisposeAsync()</c> method with no parameters; otherwise,
-    ///     <c>false</c>.
-    /// </returns>
-    /// <seealso cref="HasDisposeMethod" />
-    public static bool HasDisposeAsyncMethod(ITypeSymbol type)
-    {
-        foreach (var member in type.GetAllMembers("DisposeAsync"))
-            if (member is IMethodSymbol { Parameters.IsEmpty: true })
-                return true;
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Determines whether the specified operation is a <c>using</c> statement or <c>using</c> declaration.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="operation" /> is an <see cref="IUsingOperation" /> or
-    ///     <see cref="IUsingDeclarationOperation" />; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideUsing" />
-    public static bool IsUsingStatement(IOperation operation)
-    {
-        return operation is IUsingOperation or IUsingDeclarationOperation;
-    }
-
-    /// <summary>
-    ///     Determines whether the specified operation is contained within a <c>using</c> statement or <c>using</c>
-    ///     declaration.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="operation" /> has an ancestor that is a <c>using</c> statement
-    ///     or <c>using</c> declaration; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsUsingStatement" />
-    public static bool IsInsideUsing(IOperation operation)
-    {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is IUsingOperation or IUsingDeclarationOperation)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
-    }
+    public bool IsAsyncDisposable(ITypeSymbol? type) => type is not null && IAsyncDisposable is not null && type.Implements(IAsyncDisposable);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.IO.Stream" />.
@@ -304,10 +221,7 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.IO.Stream" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsStream(ITypeSymbol? type)
-    {
-        return type is not null && Stream is not null && type.IsOrInheritsFrom(Stream);
-    }
+    public bool IsStream(ITypeSymbol? type) => type is not null && Stream is not null && type.IsOrInheritsFrom(Stream);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.IO.TextReader" /> or
@@ -318,12 +232,10 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.IO.TextReader" /> or
     ///     <see cref="System.IO.TextWriter" />; otherwise, <c>false</c>.
     /// </returns>
-    public bool IsTextReaderOrWriter(ITypeSymbol? type)
-    {
-        return type is not null &&
-               (TextReader is not null && type.IsOrInheritsFrom(TextReader) ||
-                TextWriter is not null && type.IsOrInheritsFrom(TextWriter));
-    }
+    public bool IsTextReaderOrWriter(ITypeSymbol? type) =>
+        type is not null &&
+        (TextReader is not null && type.IsOrInheritsFrom(TextReader) ||
+         TextWriter is not null && type.IsOrInheritsFrom(TextWriter));
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbConnection" />.
@@ -335,10 +247,7 @@ internal
     /// </returns>
     /// <seealso cref="IsDbCommand" />
     /// <seealso cref="IsDbDataReader" />
-    public bool IsDbConnection(ITypeSymbol? type)
-    {
-        return type is not null && DbConnection is not null && type.IsOrInheritsFrom(DbConnection);
-    }
+    public bool IsDbConnection(ITypeSymbol? type) => type is not null && DbConnection is not null && type.IsOrInheritsFrom(DbConnection);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbCommand" />.
@@ -350,10 +259,7 @@ internal
     /// </returns>
     /// <seealso cref="IsDbConnection" />
     /// <seealso cref="IsDbDataReader" />
-    public bool IsDbCommand(ITypeSymbol? type)
-    {
-        return type is not null && DbCommand is not null && type.IsOrInheritsFrom(DbCommand);
-    }
+    public bool IsDbCommand(ITypeSymbol? type) => type is not null && DbCommand is not null && type.IsOrInheritsFrom(DbCommand);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbDataReader" />.
@@ -365,10 +271,7 @@ internal
     /// </returns>
     /// <seealso cref="IsDbConnection" />
     /// <seealso cref="IsDbCommand" />
-    public bool IsDbDataReader(ITypeSymbol? type)
-    {
-        return type is not null && DbDataReader is not null && type.IsOrInheritsFrom(DbDataReader);
-    }
+    public bool IsDbDataReader(ITypeSymbol? type) => type is not null && DbDataReader is not null && type.IsOrInheritsFrom(DbDataReader);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Net.Http.HttpClient" />.
@@ -378,10 +281,7 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.Net.Http.HttpClient" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsHttpClient(ITypeSymbol? type)
-    {
-        return type is not null && HttpClient is not null && type.IsOrInheritsFrom(HttpClient);
-    }
+    public bool IsHttpClient(ITypeSymbol? type) => type is not null && HttpClient is not null && type.IsOrInheritsFrom(HttpClient);
 
     /// <summary>
     ///     Determines whether the specified type is a synchronization primitive
@@ -412,10 +312,7 @@ internal
     ///     <c>true</c> if <paramref name="type" /> equals <see cref="System.Threading.CancellationTokenSource" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsCancellationTokenSource(ITypeSymbol? type)
-    {
-        return CancellationTokenSource is not null && type.IsEqualTo(CancellationTokenSource);
-    }
+    public bool IsCancellationTokenSource(ITypeSymbol? type) => CancellationTokenSource is not null && type.IsEqualTo(CancellationTokenSource);
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Runtime.InteropServices.SafeHandle" />.
@@ -425,18 +322,28 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from
     ///     <see cref="System.Runtime.InteropServices.SafeHandle" />; otherwise, <c>false</c>.
     /// </returns>
-    public bool IsSafeHandle(ITypeSymbol? type)
-    {
-        return type is not null && SafeHandle is not null && type.IsOrInheritsFrom(SafeHandle);
-    }
+    public bool IsSafeHandle(ITypeSymbol? type) => type is not null && SafeHandle is not null && type.IsOrInheritsFrom(SafeHandle);
 
     /// <summary>
     ///     Determines whether the specified type is disposable and should typically be disposed by the caller.
-    ///     <para>
-    ///         This method returns <c>false</c> for types that are commonly managed by dependency injection
-    ///         or pooling mechanisms (such as <see cref="System.Net.Http.HttpClient" />).
-    ///     </para>
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This method provides opinionated guidance based on common patterns.</strong>
+    ///         It returns <c>false</c> for types typically managed by dependency injection or pooling:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <see cref="System.Net.Http.HttpClient" /> - Usually injected via <c>IHttpClientFactory</c>
+    ///                 and managed by the DI container's lifetime.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    ///     <para>
+    ///         Override this logic in your analyzer if your codebase has different conventions.
+    ///     </para>
+    /// </remarks>
     /// <param name="type">The type symbol to check, or <c>null</c>.</param>
     /// <returns>
     ///     <c>true</c> if <paramref name="type" /> is disposable and should typically be disposed;

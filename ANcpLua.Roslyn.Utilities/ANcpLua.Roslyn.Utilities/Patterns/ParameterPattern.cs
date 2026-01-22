@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -354,8 +352,5 @@ internal
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>The built <see cref="SymbolPattern{T}" /> for <see cref="IParameterSymbol" />.</returns>
-    public static implicit operator SymbolPattern<IParameterSymbol>(ParameterPatternBuilder builder)
-    {
-        return builder.Build();
-    }
+    public static implicit operator SymbolPattern<IParameterSymbol>(ParameterPatternBuilder builder) => builder.Build();
 }

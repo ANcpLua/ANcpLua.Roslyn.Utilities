@@ -10,20 +10,15 @@ internal static partial class TextUtilities
     /// <summary>
     ///     Normalizes a file path by converting backslashes to forward slashes.
     /// </summary>
-    public static string NormalizePath(string? path)
-    {
-        return (path ?? string.Empty).Replace('\\', '/').Trim();
-    }
+    public static string NormalizePath(string? path) => (path ?? string.Empty).Replace('\\', '/').Trim();
 
     /// <summary>
     ///     Normalizes whitespace by collapsing multiple spaces into one.
     /// </summary>
-    public static string NormalizeWhitespace(string? input)
-    {
-        return string.IsNullOrWhiteSpace(input)
+    public static string NormalizeWhitespace(string? input) =>
+        string.IsNullOrWhiteSpace(input)
             ? string.Empty
             : WhitespaceRegex().Replace(input, " ").Trim();
-    }
 
     /// <summary>
     ///     Finds the first index where two strings differ.

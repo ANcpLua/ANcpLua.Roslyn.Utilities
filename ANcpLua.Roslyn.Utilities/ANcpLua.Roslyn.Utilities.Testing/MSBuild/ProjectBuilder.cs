@@ -47,14 +47,14 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// <example>
 ///     <code>
 /// await using var builder = new ProjectBuilder(testOutputHelper);
-///
+/// 
 /// var result = await builder
 ///     .WithTargetFramework(Tfm.Net100)
 ///     .WithOutputType(Val.Library)
 ///     .WithPackage("Microsoft.CodeAnalysis.CSharp", "4.12.0")
 ///     .AddSource("Program.cs", "namespace Test; public class Foo { }")
 ///     .BuildAsync();
-///
+/// 
 /// result.ShouldSucceed();
 /// </code>
 /// </example>
@@ -236,10 +236,7 @@ public class ProjectBuilder : IAsyncDisposable
     ///     The step summary file is populated when builds are run with <see cref="GitHubEnvironmentVariables" />.
     /// </remarks>
     /// <seealso cref="GitHubEnvironmentVariables" />
-    public string? GetGitHubStepSummaryContent()
-    {
-        return File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
-    }
+    public string? GetGitHubStepSummaryContent() => File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
 
     /// <summary>
     ///     Adds a file with the specified content to the project directory.

@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -79,12 +76,10 @@ internal
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        bool defaultValue)
-    {
-        return !options.TryGetConfigurationValue(syntaxTree, key, out var value)
+        bool defaultValue) =>
+        !options.TryGetConfigurationValue(syntaxTree, key, out var value)
             ? defaultValue
             : ParseBoolean(value, defaultValue);
-    }
 
     /// <summary>
     ///     Gets an integer configuration value, returning the default if not found or unparseable.
@@ -131,12 +126,10 @@ internal
         this AnalyzerOptions options,
         SyntaxTree syntaxTree,
         string key,
-        string defaultValue)
-    {
-        return options.TryGetConfigurationValue(syntaxTree, key, out var value)
+        string defaultValue) =>
+        options.TryGetConfigurationValue(syntaxTree, key, out var value)
             ? value
             : defaultValue;
-    }
 
     /// <summary>
     ///     Gets an enum configuration value, returning the default if not found or unparseable.

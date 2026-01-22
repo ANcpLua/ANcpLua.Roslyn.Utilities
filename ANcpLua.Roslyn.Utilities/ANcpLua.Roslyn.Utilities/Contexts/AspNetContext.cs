@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
@@ -246,10 +245,7 @@ internal
     /// <param name="symbol">The symbol to check.</param>
     /// <returns><c>true</c> if the symbol has a route attribute; otherwise, <c>false</c>.</returns>
     /// <seealso cref="HasHttpMethodAttribute" />
-    public bool HasRouteAttribute(ISymbol symbol)
-    {
-        return RouteAttribute is not null && symbol.HasAttribute(RouteAttribute);
-    }
+    public bool HasRouteAttribute(ISymbol symbol) => RouteAttribute is not null && symbol.HasAttribute(RouteAttribute);
 
     /// <summary>
     ///     Determines whether the specified type is an action result type.
@@ -312,10 +308,7 @@ internal
     /// <returns><c>true</c> if the parameter is bound from the request body; otherwise, <c>false</c>.</returns>
     /// <seealso cref="HasBindingAttribute" />
     /// <seealso cref="IsFromServices" />
-    public bool IsFromBody(IParameterSymbol parameter)
-    {
-        return FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
-    }
+    public bool IsFromBody(IParameterSymbol parameter) => FromBodyAttribute is not null && parameter.HasAttribute(FromBodyAttribute);
 
     /// <summary>
     ///     Determines whether the specified parameter has a <c>[FromServices]</c> attribute.
@@ -324,53 +317,33 @@ internal
     /// <returns><c>true</c> if the parameter is bound from dependency injection services; otherwise, <c>false</c>.</returns>
     /// <seealso cref="HasBindingAttribute" />
     /// <seealso cref="IsFromBody" />
-    public bool IsFromServices(IParameterSymbol parameter)
-    {
-        return FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
-    }
+    public bool IsFromServices(IParameterSymbol parameter) => FromServicesAttribute is not null && parameter.HasAttribute(FromServicesAttribute);
 
     /// <summary>
     ///     Determines whether the specified type is the <c>HttpContext</c> type.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is <c>Microsoft.AspNetCore.Http.HttpContext</c>; otherwise, <c>false</c>.</returns>
-    public bool IsHttpContextType(ITypeSymbol? type)
-    {
-        return HttpContext is not null && type.IsEqualTo(HttpContext);
-    }
+    public bool IsHttpContextType(ITypeSymbol? type) => HttpContext is not null && type.IsEqualTo(HttpContext);
 
     /// <summary>
     ///     Determines whether the specified type is or implements <c>IFormFile</c>.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type represents a form file upload; otherwise, <c>false</c>.</returns>
-    public bool IsFormFile(ITypeSymbol? type)
-    {
-        return type is not null && FormFileInterface is not null && type.IsOrImplements(FormFileInterface);
-    }
+    public bool IsFormFile(ITypeSymbol? type) => type is not null && FormFileInterface is not null && type.IsOrImplements(FormFileInterface);
 
     // Helper methods to reduce cognitive complexity
 
-    private static bool IsValidControllerCandidate(ITypeSymbol type)
-    {
-        return type.TypeKind is TypeKind.Class &&
-               type is { IsAbstract: false, DeclaredAccessibility: Accessibility.Public };
-    }
+    private static bool IsValidControllerCandidate(ITypeSymbol type) =>
+        type.TypeKind is TypeKind.Class &&
+        type is { IsAbstract: false, DeclaredAccessibility: Accessibility.Public };
 
-    private bool HasNonControllerAttribute(ISymbol type)
-    {
-        return NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute);
-    }
+    private bool HasNonControllerAttribute(ISymbol type) => NonControllerAttribute is not null && type.HasAttribute(NonControllerAttribute);
 
-    private bool HasControllerAttribute(ISymbol type)
-    {
-        return ControllerAttribute is not null && type.HasAttribute(ControllerAttribute);
-    }
+    private bool HasControllerAttribute(ISymbol type) => ControllerAttribute is not null && type.HasAttribute(ControllerAttribute);
 
-    private bool InheritsFromControllerBase(ITypeSymbol type)
-    {
-        return ControllerBase is not null && type.InheritsFrom(ControllerBase);
-    }
+    private bool InheritsFromControllerBase(ITypeSymbol type) => ControllerBase is not null && type.InheritsFrom(ControllerBase);
 
     private bool IsLegacyController(ITypeSymbol type)
     {
@@ -383,10 +356,7 @@ internal
         return false;
     }
 
-    private bool HasApiControllerAttribute(ISymbol type)
-    {
-        return ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute);
-    }
+    private bool HasApiControllerAttribute(ISymbol type) => ApiControllerAttribute is not null && type.HasAttribute(ApiControllerAttribute);
 
     private bool BaseTypeHasApiControllerAttribute(ITypeSymbol type)
     {
@@ -416,15 +386,9 @@ internal
         return false;
     }
 
-    private bool IsMinimalApiResult(ITypeSymbol type)
-    {
-        return ResultInterface is not null && type.IsOrImplements(ResultInterface);
-    }
+    private bool IsMinimalApiResult(ITypeSymbol type) => ResultInterface is not null && type.IsOrImplements(ResultInterface);
 
-    private bool IsLegacyActionResult(ITypeSymbol type)
-    {
-        return HttpActionResultInterface is not null && type.IsOrImplements(HttpActionResultInterface);
-    }
+    private bool IsLegacyActionResult(ITypeSymbol type) => HttpActionResultInterface is not null && type.IsOrImplements(HttpActionResultInterface);
 
     private bool IsBindingSourceAttribute(INamedTypeSymbol? attrType)
     {

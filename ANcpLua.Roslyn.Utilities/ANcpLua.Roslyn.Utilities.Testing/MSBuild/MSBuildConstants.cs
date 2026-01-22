@@ -684,10 +684,7 @@ public static class XmlSnippetBuilder
     /// <param name="tfm">The target framework moniker value.</param>
     /// <returns>An XML element string like <c>&lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;</c>.</returns>
     /// <seealso cref="Tfm" />
-    public static string TargetFramework(string tfm)
-    {
-        return $"<{Prop.TargetFramework}>{tfm}</{Prop.TargetFramework}>";
-    }
+    public static string TargetFramework(string tfm) => $"<{Prop.TargetFramework}>{tfm}</{Prop.TargetFramework}>";
 
     /// <summary>
     ///     Generates a <c>&lt;LangVersion&gt;</c> XML element.
@@ -696,10 +693,7 @@ public static class XmlSnippetBuilder
     /// <returns>An XML element string like <c>&lt;LangVersion&gt;14&lt;/LangVersion&gt;</c>.</returns>
     /// <seealso cref="Val.Latest" />
     /// <seealso cref="Val.Preview" />
-    public static string LangVersion(string version)
-    {
-        return $"<{Prop.LangVersion}>{version}</{Prop.LangVersion}>";
-    }
+    public static string LangVersion(string version) => $"<{Prop.LangVersion}>{version}</{Prop.LangVersion}>";
 
     /// <summary>
     ///     Generates an <c>&lt;OutputType&gt;</c> XML element.
@@ -708,10 +702,7 @@ public static class XmlSnippetBuilder
     /// <returns>An XML element string like <c>&lt;OutputType&gt;Library&lt;/OutputType&gt;</c>.</returns>
     /// <seealso cref="Val.Library" />
     /// <seealso cref="Val.Exe" />
-    public static string OutputType(string type)
-    {
-        return $"<{Prop.OutputType}>{type}</{Prop.OutputType}>";
-    }
+    public static string OutputType(string type) => $"<{Prop.OutputType}>{type}</{Prop.OutputType}>";
 
     /// <summary>
     ///     Generates an XML element for any MSBuild property.
@@ -720,8 +711,5 @@ public static class XmlSnippetBuilder
     /// <param name="value">The property value.</param>
     /// <returns>An XML element string like <c>&lt;PropertyName&gt;value&lt;/PropertyName&gt;</c>.</returns>
     /// <seealso cref="Prop" />
-    public static string Property(string name, string value)
-    {
-        return $"<{name}>{value}</{name}>";
-    }
+    public static string Property(string name, string value) => $"<{name}>{value}</{name}>";
 }

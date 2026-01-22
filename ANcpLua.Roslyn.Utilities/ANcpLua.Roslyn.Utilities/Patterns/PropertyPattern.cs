@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Patterns;
@@ -288,10 +286,7 @@ internal
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>A symbol pattern built from the builder's predicates.</returns>
-    public static implicit operator SymbolPattern<IPropertySymbol>(PropertyPatternBuilder builder)
-    {
-        return builder.Build();
-    }
+    public static implicit operator SymbolPattern<IPropertySymbol>(PropertyPatternBuilder builder) => builder.Build();
 }
 
 /// <summary>
@@ -483,8 +478,5 @@ internal
     /// </summary>
     /// <param name="builder">The builder to convert.</param>
     /// <returns>A symbol pattern built from the builder's predicates.</returns>
-    public static implicit operator SymbolPattern<IFieldSymbol>(FieldPatternBuilder builder)
-    {
-        return builder.Build();
-    }
+    public static implicit operator SymbolPattern<IFieldSymbol>(FieldPatternBuilder builder) => builder.Build();
 }

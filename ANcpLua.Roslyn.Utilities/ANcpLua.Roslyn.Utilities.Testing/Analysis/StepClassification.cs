@@ -209,10 +209,7 @@ public readonly struct GeneratorStepAnalysis
     ///     suitable for display in test output or reports.
     /// </returns>
     /// <seealso cref="StepFormatter.FormatBreakdown" />
-    public string FormatBreakdown()
-    {
-        return StepFormatter.FormatBreakdown(this);
-    }
+    public string FormatBreakdown() => StepFormatter.FormatBreakdown(this);
 }
 
 /// <summary>
@@ -298,10 +295,7 @@ internal static class StepClassification
     ///     This method exists to allow future differentiation if needed.
     /// </remarks>
     /// <seealso cref="IsSinkStep" />
-    public static bool IsInfrastructureStep(string stepName)
-    {
-        return IsSinkStep(stepName);
-    }
+    public static bool IsInfrastructureStep(string stepName) => IsSinkStep(stepName);
 
     /// <summary>
     ///     Determines if a file is an infrastructure file (e.g., embedded attributes, polyfills).

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using ANcpLua.Roslyn.Utilities.Models;
 using ANcpLua.Roslyn.Utilities.Patterns;
 using Microsoft.CodeAnalysis;
@@ -49,15 +46,9 @@ internal
 {
     private readonly List<DiagnosticInfo> _violations = [];
 
-    private SemanticGuard(T symbol)
-    {
-        Symbol = symbol;
-    }
+    private SemanticGuard(T symbol) => Symbol = symbol;
 
-    internal static SemanticGuard<T> Create(T symbol)
-    {
-        return new SemanticGuard<T>(symbol);
-    }
+    internal static SemanticGuard<T> Create(T symbol) => new(symbol);
 
     /// <summary>
     ///     Gets the symbol being validated.
@@ -245,12 +236,10 @@ internal
     ///     otherwise, a failed flow containing all accumulated <see cref="Violations" />.
     /// </returns>
     /// <seealso cref="DiagnosticFlow{T}" />
-    public DiagnosticFlow<T> ToFlow()
-    {
-        return IsValid
+    public DiagnosticFlow<T> ToFlow() =>
+        IsValid
             ? DiagnosticFlow.Ok(Symbol)
             : DiagnosticFlow.Fail<T>(Violations);
-    }
 }
 
 /// <summary>
@@ -373,10 +362,8 @@ internal
     /// <param name="onFail">The diagnostic to record if no CancellationToken parameter is present.</param>
     /// <returns>The current <see cref="SemanticGuard{T}" /> instance for method chaining.</returns>
     public static SemanticGuard<IMethodSymbol> MustHaveCancellationToken(this SemanticGuard<IMethodSymbol> guard,
-        DiagnosticInfo onFail)
-    {
-        return guard.Must(HasCancellationToken, onFail);
-    }
+        DiagnosticInfo onFail) =>
+        guard.Must(HasCancellationToken, onFail);
 
     private static bool HasCancellationToken(IMethodSymbol method)
     {
@@ -531,10 +518,8 @@ internal
     /// <param name="onFail">The diagnostic to record if the type is not disposable.</param>
     /// <returns>The current <see cref="SemanticGuard{T}" /> instance for method chaining.</returns>
     public static SemanticGuard<INamedTypeSymbol> MustBeDisposable(this SemanticGuard<INamedTypeSymbol> guard,
-        DiagnosticInfo onFail)
-    {
-        return guard.Must(IsDisposable, onFail);
-    }
+        DiagnosticInfo onFail) =>
+        guard.Must(IsDisposable, onFail);
 
     private static bool IsDisposable(INamedTypeSymbol type)
     {
@@ -635,10 +620,7 @@ internal
     /// <typeparam name="T">The type of symbol to validate. Must implement <see cref="ISymbol" />.</typeparam>
     /// <param name="symbol">The symbol to validate.</param>
     /// <returns>A new <see cref="SemanticGuard{T}" /> instance for the specified symbol.</returns>
-    public static SemanticGuard<T> For<T>(T symbol) where T : ISymbol
-    {
-        return SemanticGuard<T>.Create(symbol);
-    }
+    public static SemanticGuard<T> For<T>(T symbol) where T : ISymbol => SemanticGuard<T>.Create(symbol);
 
     /// <summary>
     ///     Creates a new <see cref="SemanticGuard{T}" /> for the specified method symbol.
@@ -648,10 +630,7 @@ internal
     /// <seealso cref="SemanticGuardExtensions.MustBeAsync" />
     /// <seealso cref="SemanticGuardExtensions.MustReturnTask" />
     /// <seealso cref="SemanticGuardExtensions.MustHaveCancellationToken" />
-    public static SemanticGuard<IMethodSymbol> ForMethod(IMethodSymbol method)
-    {
-        return SemanticGuard<IMethodSymbol>.Create(method);
-    }
+    public static SemanticGuard<IMethodSymbol> ForMethod(IMethodSymbol method) => SemanticGuard<IMethodSymbol>.Create(method);
 
     /// <summary>
     ///     Creates a new <see cref="SemanticGuard{T}" /> for the specified named type symbol.
@@ -661,10 +640,7 @@ internal
     /// <seealso cref="SemanticGuardExtensions.MustBeClass" />
     /// <seealso cref="SemanticGuardExtensions.MustImplement" />
     /// <seealso cref="SemanticGuardExtensions.MustInheritFrom" />
-    public static SemanticGuard<INamedTypeSymbol> ForType(INamedTypeSymbol type)
-    {
-        return SemanticGuard<INamedTypeSymbol>.Create(type);
-    }
+    public static SemanticGuard<INamedTypeSymbol> ForType(INamedTypeSymbol type) => SemanticGuard<INamedTypeSymbol>.Create(type);
 
     /// <summary>
     ///     Creates a new <see cref="SemanticGuard{T}" /> for the specified property symbol.
@@ -674,28 +650,19 @@ internal
     /// <seealso cref="SemanticGuardExtensions.MustHaveGetter" />
     /// <seealso cref="SemanticGuardExtensions.MustHaveSetter" />
     /// <seealso cref="SemanticGuardExtensions.MustBeReadOnly" />
-    public static SemanticGuard<IPropertySymbol> ForProperty(IPropertySymbol property)
-    {
-        return SemanticGuard<IPropertySymbol>.Create(property);
-    }
+    public static SemanticGuard<IPropertySymbol> ForProperty(IPropertySymbol property) => SemanticGuard<IPropertySymbol>.Create(property);
 
     /// <summary>
     ///     Creates a new <see cref="SemanticGuard{T}" /> for the specified field symbol.
     /// </summary>
     /// <param name="field">The field symbol to validate.</param>
     /// <returns>A new <see cref="SemanticGuard{T}" /> instance for the field.</returns>
-    public static SemanticGuard<IFieldSymbol> ForField(IFieldSymbol field)
-    {
-        return SemanticGuard<IFieldSymbol>.Create(field);
-    }
+    public static SemanticGuard<IFieldSymbol> ForField(IFieldSymbol field) => SemanticGuard<IFieldSymbol>.Create(field);
 
     /// <summary>
     ///     Creates a new <see cref="SemanticGuard{T}" /> for the specified parameter symbol.
     /// </summary>
     /// <param name="parameter">The parameter symbol to validate.</param>
     /// <returns>A new <see cref="SemanticGuard{T}" /> instance for the parameter.</returns>
-    public static SemanticGuard<IParameterSymbol> ForParameter(IParameterSymbol parameter)
-    {
-        return SemanticGuard<IParameterSymbol>.Create(parameter);
-    }
+    public static SemanticGuard<IParameterSymbol> ForParameter(IParameterSymbol parameter) => SemanticGuard<IParameterSymbol>.Create(parameter);
 }

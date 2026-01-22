@@ -1,7 +1,4 @@
-using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -40,7 +37,7 @@ public
 #else
 internal
 #endif
-    static partial class StringExtensions
+    static class StringExtensions
 {
     private static readonly char[] NewLineSeparator = ['\n'];
 
@@ -60,13 +57,10 @@ internal
     ///         The enumerator handles both <c>\n</c> and <c>\r\n</c> line endings correctly.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="SplitLines(ReadOnlySpan{T})" />
+    /// <seealso cref="SplitLines(ReadOnlySpan{char})" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this string str)
-    {
-        return new LineSplitEnumerator(str.AsSpan());
-    }
+    public static LineSplitEnumerator SplitLines(this string str) => new(str.AsSpan());
 
     /// <summary>
     ///     Splits a character span into lines without allocating intermediate string arrays.
@@ -87,10 +81,7 @@ internal
     /// <seealso cref="SplitLines(string)" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str)
-    {
-        return new LineSplitEnumerator(str);
-    }
+    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str) => new(str);
 
     /// <summary>
     ///     Converts a string to PascalCase by making the first character uppercase.
@@ -421,12 +412,10 @@ internal
     ///     A string with all whitespace collapsed to single spaces and trimmed.
     ///     Returns <see cref="string.Empty" /> if input is null or whitespace.
     /// </returns>
-    public static string NormalizeWhitespace(this string? input)
-    {
-        return string.IsNullOrWhiteSpace(input)
+    public static string NormalizeWhitespace(this string? input) =>
+        string.IsNullOrWhiteSpace(input)
             ? string.Empty
             : WhitespaceRegex().Replace(input, " ").Trim();
-    }
 
     /// <summary>
     ///     Sanitizes a string for use as a C# identifier by replacing non-alphanumeric characters with underscores.
@@ -463,7 +452,191 @@ internal
             .Replace("\n", "\\n");
     }
 
-    private static readonly Regex WhitespaceRegexInstance = new Regex(@"\s+", RegexOptions.Compiled);
+    // ========== Type Name Utilities ==========
+
+    private const string GlobalPrefix = "global::";
+
+    /// <summary>
+    ///     Removes the <c>global::</c> prefix from a fully-qualified type name.
+    /// </summary>
+    /// <param name="typeFqn">The fully-qualified type name.</param>
+    /// <returns>The type name without the global:: prefix.</returns>
+    public static string StripGlobalPrefix(this string typeFqn) =>
+        typeFqn.StartsWith(GlobalPrefix, StringComparison.Ordinal)
+            ? typeFqn[GlobalPrefix.Length..]
+            : typeFqn;
+
+    /// <summary>
+    ///     Normalizes a type name by removing all <c>global::</c> prefixes (including inside generics)
+    ///     and trailing nullable marker.
+    /// </summary>
+    /// <param name="typeFqn">The fully-qualified type name.</param>
+    /// <returns>The normalized type name.</returns>
+    public static string NormalizeTypeName(this string typeFqn)
+    {
+        var result = typeFqn.Replace(GlobalPrefix, string.Empty);
+
+        if (result.EndsWith("?", StringComparison.Ordinal))
+            result = result[..^1];
+
+        return result;
+    }
+
+    /// <summary>
+    ///     Unwraps <c>Nullable&lt;T&gt;</c> or nullable reference type annotation to get the underlying type.
+    /// </summary>
+    /// <param name="typeFqn">The fully-qualified type name.</param>
+    /// <param name="unwrap">If <c>false</c>, returns the type name unchanged.</param>
+    /// <returns>The unwrapped type name, or the original if not nullable.</returns>
+    public static string UnwrapNullable(this string typeFqn, bool unwrap = true)
+    {
+        if (!unwrap)
+            return typeFqn;
+
+        if (typeFqn.EndsWith("?", StringComparison.Ordinal))
+            return typeFqn[..^1];
+
+        var normalized = typeFqn.NormalizeTypeName();
+        if (normalized.StartsWith("System.Nullable<", StringComparison.Ordinal) &&
+            normalized.EndsWith(">", StringComparison.Ordinal))
+            return normalized["System.Nullable<".Length..^1];
+
+        return typeFqn;
+    }
+
+    /// <summary>
+    ///     Extracts the short type name from a fully-qualified name.
+    /// </summary>
+    /// <param name="typeFqn">The fully-qualified type name.</param>
+    /// <returns>The short type name (e.g., "List" from "System.Collections.Generic.List").</returns>
+    /// <example>
+    ///     <code>
+    /// "global::System.Collections.Generic.List".ExtractShortTypeName() // returns "List"
+    /// "int[]".ExtractShortTypeName() // returns "int[]"
+    /// </code>
+    /// </example>
+    public static string ExtractShortTypeName(this string typeFqn)
+    {
+        var normalized = typeFqn.StripGlobalPrefix();
+
+        var isArray = normalized.EndsWith("[]", StringComparison.Ordinal);
+        var baseName = isArray ? normalized[..^2] : normalized;
+
+        if (baseName.StartsWith("::", StringComparison.Ordinal))
+            baseName = baseName[2..];
+
+        var lastDot = baseName.LastIndexOf('.');
+        var shortName = lastDot >= 0 ? baseName[(lastDot + 1)..] : baseName;
+
+        return isArray ? shortName + "[]" : shortName;
+    }
+
+    /// <summary>
+    ///     Gets the C# keyword alias for a BCL type name, or <c>null</c> if none exists.
+    /// </summary>
+    /// <param name="typeName">The type name (e.g., "System.Int32" or "Int32").</param>
+    /// <returns>The C# keyword (e.g., "int"), or <c>null</c> if no keyword exists.</returns>
+    public static string? GetCSharpKeyword(this string typeName)
+    {
+        var normalized = typeName.NormalizeTypeName();
+        return normalized switch
+        {
+            "System.Int32" or "Int32" => "int",
+            "System.Int64" or "Int64" => "long",
+            "System.Int16" or "Int16" => "short",
+            "System.Byte" or "Byte" => "byte",
+            "System.SByte" or "SByte" => "sbyte",
+            "System.UInt32" or "UInt32" => "uint",
+            "System.UInt64" or "UInt64" => "ulong",
+            "System.UInt16" or "UInt16" => "ushort",
+            "System.Single" or "Single" => "float",
+            "System.Double" or "Double" => "double",
+            "System.Decimal" or "Decimal" => "decimal",
+            "System.Boolean" or "Boolean" => "bool",
+            "System.String" or "String" => "string",
+            "System.Char" or "Char" => "char",
+            "System.Object" or "Object" => "object",
+            "System.Void" or "Void" => "void",
+            _ => null
+        };
+    }
+
+    /// <summary>
+    ///     Compares two type names for equality, handling <c>global::</c> prefixes and C# keyword aliases.
+    /// </summary>
+    /// <param name="type1">The first type name.</param>
+    /// <param name="type2">The second type name.</param>
+    /// <returns><c>true</c> if the type names are equivalent; otherwise, <c>false</c>.</returns>
+    public static bool TypeNamesEqual(this string type1, string type2)
+    {
+        var normalized1 = type1.NormalizeTypeName();
+        var normalized2 = type2.NormalizeTypeName();
+
+        if (normalized1 == normalized2)
+            return true;
+
+        var alias1 = normalized1.GetCSharpKeyword();
+        var alias2 = normalized2.GetCSharpKeyword();
+
+        if (alias1 is not null && alias1 == normalized2)
+            return true;
+        if (alias2 is not null && alias2 == normalized1)
+            return true;
+
+        return alias1 is not null && alias2 is not null && alias1 == alias2;
+    }
+
+    /// <summary>
+    ///     Checks if the type name represents <see cref="string" />.
+    /// </summary>
+    /// <param name="typeFqn">The type name to check.</param>
+    /// <returns><c>true</c> if the type is string; otherwise, <c>false</c>.</returns>
+    public static bool IsStringType(this string typeFqn)
+    {
+        var normalized = typeFqn.NormalizeTypeName();
+        return normalized is "string" or "String" or "System.String";
+    }
+
+    /// <summary>
+    ///     Checks if the type name represents a primitive JSON type that doesn't need explicit registration.
+    /// </summary>
+    /// <param name="typeFqn">The type name to check.</param>
+    /// <returns><c>true</c> if the type is a primitive JSON type; otherwise, <c>false</c>.</returns>
+    public static bool IsPrimitiveJsonType(this string typeFqn)
+    {
+        var normalized = typeFqn.NormalizeTypeName();
+        return normalized is
+            "System.String" or "string" or
+            "System.Int32" or "int" or
+            "System.Int64" or "long" or
+            "System.Boolean" or "bool" or
+            "System.Double" or "double" or
+            "System.Decimal" or "decimal";
+    }
+
+    /// <summary>
+    ///     Strips a suffix from the end of a string if present.
+    /// </summary>
+    /// <param name="value">The string to process.</param>
+    /// <param name="suffix">The suffix to remove.</param>
+    /// <returns>The string without the suffix if it was present; otherwise, the original string.</returns>
+    public static string StripSuffix(this string value, string suffix) =>
+        value.EndsWith(suffix, StringComparison.Ordinal)
+            ? value[..^suffix.Length]
+            : value;
+
+    /// <summary>
+    ///     Strips a prefix from the start of a string if present.
+    /// </summary>
+    /// <param name="value">The string to process.</param>
+    /// <param name="prefix">The prefix to remove.</param>
+    /// <returns>The string without the prefix if it was present; otherwise, the original string.</returns>
+    public static string StripPrefix(this string value, string prefix) =>
+        value.StartsWith(prefix, StringComparison.Ordinal)
+            ? value[prefix.Length..]
+            : value;
+
+    private static readonly Regex WhitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
 
     private static Regex WhitespaceRegex() => WhitespaceRegexInstance;
 
@@ -512,10 +685,7 @@ internal
         /// <remarks>
         ///     This method enables the use of this enumerator directly in a foreach statement.
         /// </remarks>
-        public readonly LineSplitEnumerator GetEnumerator()
-        {
-            return this;
-        }
+        public readonly LineSplitEnumerator GetEnumerator() => this;
 
         /// <summary>
         ///     Advances the enumerator to the next line in the span.
@@ -631,9 +801,6 @@ internal
         /// <returns>
         ///     A <see cref="ReadOnlySpan{T}" /> of <see cref="char" /> containing the line content.
         /// </returns>
-        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry)
-        {
-            return entry.Line;
-        }
+        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry) => entry.Line;
     }
 }

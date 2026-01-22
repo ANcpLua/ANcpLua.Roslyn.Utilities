@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 using InvalidOperationException = System.InvalidOperationException;
@@ -193,8 +188,7 @@ internal
     ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces the transformed value,
     ///     or throws if the transformation failed.
     /// </returns>
-    /// <seealso
-    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, System.Func{TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValueProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -334,7 +328,7 @@ internal
     /// <returns>
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only non-null values.
     /// </returns>
-    /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{System.Nullable})" />
+    /// <seealso cref="WhereNotNull{TSource}(IncrementalValuesProvider{TSource?})" />
     public static IncrementalValuesProvider<TSource> WhereNotNull<TSource>(
         this IncrementalValuesProvider<TSource?> source)
         where TSource : class
@@ -366,8 +360,7 @@ internal
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing successfully transformed values.
     ///     Failed transformations are filtered out after their exceptions are reported.
     /// </returns>
-    /// <seealso
-    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, System.Func{TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -563,30 +556,24 @@ internal
         TRight>(
         this IncrementalValuesProvider<TLeft> left,
         IncrementalValueProvider<TRight> right)
-        where TLeft : IEquatable<TLeft>
-    {
-        return left.CollectAsEquatableArray().Combine(right);
-    }
+        where TLeft : IEquatable<TLeft> =>
+        left.CollectAsEquatableArray().Combine(right);
 
     /// <summary>
-    ///     Expressive alias for <see cref="IncrementalValuesProvider{TValues}.Combine{TOther}(IncrementalValueProvider{TOther})" />.
+    ///     Expressive alias for <c>IncrementalValueProvider.Combine</c>.
     /// </summary>
     public static IncrementalValueProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
         this IncrementalValueProvider<TLeft> left,
-        IncrementalValueProvider<TRight> right)
-    {
-        return left.Combine(right);
-    }
+        IncrementalValueProvider<TRight> right) =>
+        left.Combine(right);
 
     /// <summary>
-    ///     Expressive alias for <see cref="IncrementalValuesProvider{TValues}.Combine{TOther}(IncrementalValueProvider{TOther})" />.
+    ///     Expressive alias for <c>IncrementalValuesProvider.Combine</c>.
     /// </summary>
     public static IncrementalValuesProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
         this IncrementalValuesProvider<TLeft> left,
-        IncrementalValueProvider<TRight> right)
-    {
-        return left.Combine(right);
-    }
+        IncrementalValueProvider<TRight> right) =>
+        left.Combine(right);
 
     /// <summary>
     ///     Splits values into batches of a specified size.
@@ -806,10 +793,11 @@ internal
                 : flow.Diagnostics.AsImmutableArray()),
             static (ctx, diagnostic) => ctx.ReportDiagnostic(diagnostic));
 
-        // Return only successful values
+        // Return only successful values using pattern matching to avoid null-forgiving operator
         return source
-            .Where(static flow => flow.IsSuccess)
-            .Select(static (flow, _) => flow.Value!);
+            .SelectMany(static (flow, _) => flow is { IsSuccess: true, Value: { } value }
+                ? ImmutableArray.Create(value)
+                : ImmutableArray<T>.Empty);
     }
 
     /// <summary>
@@ -887,10 +875,11 @@ internal
                 : flow.Diagnostics.AsImmutableArray()),
             static (ctx, diagnostic) => ctx.ReportDiagnostic(diagnostic));
 
-        // Only continue with values that have no errors
+        // Only continue with values that have no errors using pattern matching to avoid null-forgiving operator
         return source
-            .Where(static flow => flow.IsSuccess)
-            .Select(static (flow, _) => flow.Value!);
+            .SelectMany(static (flow, _) => flow is { IsSuccess: true, Value: { } value }
+                ? ImmutableArray.Create(value)
+                : ImmutableArray<T>.Empty);
     }
 
     /// <summary>

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace ANcpLua.Roslyn.Utilities.Models;
 
 /// <summary>
@@ -109,10 +107,7 @@ internal
     ///     Use this method when an operation completes successfully without any diagnostics to report.
     /// </remarks>
     /// <seealso cref="ToResultWithDiagnostics{T}(T, ImmutableArray{DiagnosticInfo})" />
-    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result)
-    {
-        return new ResultWithDiagnostics<T>(result);
-    }
+    public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result) => new(result);
 
     /// <summary>
     ///     Wraps the specified value in a <see cref="ResultWithDiagnostics{T}" /> with the provided diagnostics.
@@ -134,8 +129,6 @@ internal
     /// <seealso cref="ToResultWithDiagnostics{T}(T)" />
     /// <seealso cref="DiagnosticInfo" />
     public static ResultWithDiagnostics<T> ToResultWithDiagnostics<T>(this T result,
-        ImmutableArray<DiagnosticInfo> diagnostics)
-    {
-        return new ResultWithDiagnostics<T>(result, diagnostics.AsEquatableArray());
-    }
+        ImmutableArray<DiagnosticInfo> diagnostics) =>
+        new(result, diagnostics.AsEquatableArray());
 }

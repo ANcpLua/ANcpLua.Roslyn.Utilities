@@ -37,10 +37,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 /// <seealso cref="FullPath" />
 public readonly record struct RepositoryRoot
 {
-    private RepositoryRoot(FullPath path)
-    {
-        FullPath = path;
-    }
+    private RepositoryRoot(FullPath path) => FullPath = path;
 
     /// <summary>
     ///     Gets the full path to the repository root directory.
@@ -139,18 +136,12 @@ public readonly record struct RepositoryRoot
     /// </summary>
     /// <param name="root">The repository root to convert.</param>
     /// <returns>The <see cref="FullPath" /> of the repository root.</returns>
-    public static implicit operator FullPath(RepositoryRoot root)
-    {
-        return root.FullPath;
-    }
+    public static implicit operator FullPath(RepositoryRoot root) => root.FullPath;
 
     /// <summary>
     ///     Implicitly converts a <see cref="RepositoryRoot" /> to a <see cref="string" />.
     /// </summary>
     /// <param name="root">The repository root to convert.</param>
     /// <returns>The string representation of the repository root path.</returns>
-    public static implicit operator string(RepositoryRoot root)
-    {
-        return root.FullPath;
-    }
+    public static implicit operator string(RepositoryRoot root) => root.FullPath;
 }
