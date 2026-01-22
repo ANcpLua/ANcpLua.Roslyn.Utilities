@@ -176,8 +176,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="OrElse{T}(T?, Func{T})" />
-    [return: NotNull]
-    public static T Or<T>(this T? value, [NotNull] T defaultValue) where T : class
+    public static T Or<T>(this T? value, T defaultValue) where T : class
         => value ?? defaultValue;
 
     /// <summary>
@@ -201,8 +200,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="Or{T}(T?, T)" />
-    [return: NotNull]
-    public static T OrElse<T>(this T? value, [NotNull] Func<T> factory) where T : class
+    public static T OrElse<T>(this T? value, Func<T> factory) where T : class
         => value ?? factory();
 
     /// <summary>

@@ -115,8 +115,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, Func{T})" />
-    [return: NotNull]
-    public static T NotNullOrElse<T>(T? value, [NotNull] T defaultValue) where T : class
+    public static T NotNullOrElse<T>(T? value, T defaultValue) where T : class
         => value ?? defaultValue;
 
     /// <summary>
@@ -139,8 +138,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, T)" />
-    [return: NotNull]
-    public static T NotNullOrElse<T>(T? value, [NotNull] Func<T> factory) where T : class
+    public static T NotNullOrElse<T>(T? value, Func<T> factory) where T : class
         => value ?? factory();
 
     /// <summary>
@@ -257,9 +255,8 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrEmptyOrElse(string?, Func{string})" />
-    [return: NotNull]
-    public static string NotNullOrEmptyOrElse(string? value, [NotNull] string defaultValue)
-        => string.IsNullOrEmpty(value) ? defaultValue : value!;
+    public static string NotNullOrEmptyOrElse(string? value, string defaultValue)
+        => value is { Length: > 0 } ? value : defaultValue;
 
     /// <summary>
     ///     Returns the string if not <c>null</c> or empty, otherwise computes a default using the factory.
@@ -273,9 +270,8 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrEmptyOrElse(string?, string)" />
-    [return: NotNull]
-    public static string NotNullOrEmptyOrElse(string? value, [NotNull] Func<string> factory)
-        => string.IsNullOrEmpty(value) ? factory() : value!;
+    public static string NotNullOrEmptyOrElse(string? value, Func<string> factory)
+        => value is { Length: > 0 } ? value : factory();
 
     /// <summary>
     ///     Returns the string if not <c>null</c>, empty, or whitespace, otherwise returns the specified default value.
@@ -294,9 +290,8 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrWhiteSpaceOrElse(string?, Func{string})" />
-    [return: NotNull]
-    public static string NotNullOrWhiteSpaceOrElse(string? value, [NotNull] string defaultValue)
-        => string.IsNullOrWhiteSpace(value) ? defaultValue : value!;
+    public static string NotNullOrWhiteSpaceOrElse(string? value, string defaultValue)
+        => value is not null && !string.IsNullOrWhiteSpace(value) ? value : defaultValue;
 
     /// <summary>
     ///     Returns the string if not <c>null</c>, empty, or whitespace, otherwise computes a default using the factory.
@@ -315,9 +310,8 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrWhiteSpaceOrElse(string?, string)" />
-    [return: NotNull]
-    public static string NotNullOrWhiteSpaceOrElse(string? value, [NotNull] Func<string> factory)
-        => string.IsNullOrWhiteSpace(value) ? factory() : value!;
+    public static string NotNullOrWhiteSpaceOrElse(string? value, Func<string> factory)
+        => value is not null && !string.IsNullOrWhiteSpace(value) ? value : factory();
 
     /// <summary>
     ///     Validates that a collection is not <c>null</c> or empty and returns it.

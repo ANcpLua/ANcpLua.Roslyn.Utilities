@@ -463,8 +463,8 @@ internal
         if (displayAttributeType is not null)
         {
             var displayName = symbol.GetAttributeNamedArgument<string>(displayAttributeType, "Name");
-            if (!string.IsNullOrEmpty(displayName))
-                return displayName!;
+            if (displayName is { Length: > 0 })
+                return displayName;
         }
 
         return symbol.Name;
@@ -481,7 +481,7 @@ internal
     {
         var displayName = symbol.GetAttributeNamedArgument<string>(
             "System.ComponentModel.DataAnnotations.DisplayAttribute", "Name");
-        return !string.IsNullOrEmpty(displayName) ? displayName! : symbol.Name;
+        return displayName is { Length: > 0 } ? displayName : symbol.Name;
     }
 
     /// <summary>
