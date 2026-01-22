@@ -73,16 +73,6 @@ public abstract class RefactoringTest<TRefactoring>
     where TRefactoring : CodeRefactoringProvider, new()
 {
     /// <summary>
-    ///     Reference assemblies configuration for .NET 10.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies Net100Tfm = new("net10.0");
-
-    /// <summary>
-    ///     Reference assemblies configuration for .NET Standard 2.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies NetStandard20Tfm = new("netstandard2.0");
-
-    /// <summary>
     ///     Verifies that the code refactoring transforms the source code as expected.
     /// </summary>
     /// <param name="source">
@@ -180,7 +170,7 @@ public abstract class RefactoringTest<TRefactoring>
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = fixedSource.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm
+            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
@@ -229,7 +219,7 @@ public abstract class RefactoringTest<TRefactoring>
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm
+            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(

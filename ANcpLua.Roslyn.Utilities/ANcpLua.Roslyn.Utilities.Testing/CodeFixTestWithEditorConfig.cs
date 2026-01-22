@@ -77,16 +77,6 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     where TCodeFix : CodeFixProvider, new()
 {
     /// <summary>
-    ///     Reference assemblies for .NET 10.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies Net100Tfm = new("net10.0");
-
-    /// <summary>
-    ///     Reference assemblies for .NET Standard 2.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies NetStandard20Tfm = new("netstandard2.0");
-
-    /// <summary>
     ///     Verifies that the analyzer produces expected diagnostics and the code fix
     ///     correctly transforms the source code.
     /// </summary>
@@ -234,7 +224,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
             IEnumerable<(string FileName, string Content)> additionalSources,
             bool useNet10References)
         {
-            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm;
+            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm;
             TestState.AdditionalReferences.AddRange(
                 useNet10References ? Net100.References.All : NetStandard20.References.All);
 

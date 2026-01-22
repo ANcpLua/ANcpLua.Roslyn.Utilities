@@ -67,6 +67,20 @@ public static class TestConfiguration
         new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
         Path.Combine("ref", "net10.0"));
 
+    private static readonly ReferenceAssemblies NetStandard20Assemblies = new("netstandard2.0");
+
+    /// <summary>
+    ///     Gets the shared .NET 10.0 reference assemblies instance.
+    ///     Use this instead of creating new instances in generic test classes.
+    /// </summary>
+    internal static ReferenceAssemblies Net100Tfm => Net100Assemblies;
+
+    /// <summary>
+    ///     Gets the shared .NET Standard 2.0 reference assemblies instance.
+    ///     Use this instead of creating new instances in generic test classes.
+    /// </summary>
+    internal static ReferenceAssemblies NetStandard20Tfm => NetStandard20Assemblies;
+
     private static readonly AsyncLocal<LanguageVersion?> LanguageVersionOverride = new();
     private static readonly AsyncLocal<ReferenceAssemblies?> ReferenceAssembliesOverride = new();
 

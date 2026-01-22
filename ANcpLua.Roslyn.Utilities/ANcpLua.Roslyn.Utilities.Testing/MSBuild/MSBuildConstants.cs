@@ -299,6 +299,7 @@ public static class Prop
     /// </summary>
     /// <seealso cref="AnalysisLevel" />
     /// <seealso cref="EnforceCodeStyleInBuild" />
+    // ReSharper disable once InconsistentNaming - Must match MSBuild property name exactly
     public const string EnableNETAnalyzers = "EnableNETAnalyzers";
 
     /// <summary>

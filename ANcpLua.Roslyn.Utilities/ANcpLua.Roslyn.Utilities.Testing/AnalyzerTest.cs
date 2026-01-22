@@ -55,15 +55,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="CSharpAnalyzerTest{TAnalyzer,TVerifier}" />
 public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new()
 {
-    /// <summary>
-    ///     Reference assemblies configuration for .NET 10.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies Net100Tfm = new("net10.0");
-
-    /// <summary>
-    ///     Reference assemblies configuration for .NET Standard 2.0 target framework.
-    /// </summary>
-    private static readonly ReferenceAssemblies NetStandard20Tfm = new("netstandard2.0");
 
     /// <summary>
     ///     Verifies that the analyzer produces the expected diagnostics for the given source code.
@@ -152,7 +143,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
         var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm
+            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
@@ -227,7 +218,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
         var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? Net100Tfm : NetStandard20Tfm
+            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         foreach (var (fileName, content) in additionalFiles)
