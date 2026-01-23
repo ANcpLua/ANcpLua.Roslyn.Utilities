@@ -91,7 +91,6 @@ internal
     /// ProcessItem(Guard.NotNull(item));
     /// </code>
     /// </example>
-    [return: NotNull]
     public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
         => value ?? throw new ArgumentNullException(paramName);
 
@@ -205,7 +204,6 @@ internal
     /// }
     /// </code>
     /// </example>
-    [return: NotNull]
     public static string NotNullOrEmpty([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (value is null)
@@ -233,7 +231,6 @@ internal
     /// }
     /// </code>
     /// </example>
-    [return: NotNull]
     public static string NotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (value is null)
@@ -333,7 +330,6 @@ internal
     /// }
     /// </code>
     /// </example>
-    [return: NotNull]
     public static IReadOnlyCollection<T> NotNullOrEmpty<T>(
         [NotNull] IReadOnlyCollection<T>? value,
         [CallerArgumentExpression(nameof(value))] string? paramName = null)

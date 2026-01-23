@@ -286,27 +286,12 @@ internal
         return this;
     }
 
-    /// <summary>
-    ///     Increases the current indentation level by one.
-    /// </summary>
-    /// <returns>This instance for method chaining.</returns>
-    /// <seealso cref="Outdent" />
-    public IndentedStringBuilder Indent()
-    {
-        _indentLevel++;
-        return this;
-    }
+    private void Indent() => _indentLevel++;
 
-    /// <summary>
-    ///     Decreases the current indentation level by one, if greater than zero.
-    /// </summary>
-    /// <returns>This instance for method chaining.</returns>
-    /// <seealso cref="Indent" />
-    public IndentedStringBuilder Outdent()
+    private void Outdent()
     {
         if (_indentLevel > 0)
             _indentLevel--;
-        return this;
     }
 
     /// <summary>

@@ -53,7 +53,7 @@ internal
         {
             foreach (var d in Diagnostics.AsImmutableArray())
                 // Defensive: guard against default(DiagnosticInfo) with null Descriptor
-                if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
+                if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
                     return true;
             return false;
         }
@@ -403,6 +403,7 @@ internal
 
         var hasErrors = false;
         foreach (var d in diagnostics)
+            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             // Defensive: guard against default(DiagnosticInfo) with null Descriptor
             if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
             {
@@ -412,10 +413,7 @@ internal
 
         var diagArray = diagnostics.Count > 0 ? diagnostics.ToImmutable().AsEquatableArray() : default;
 
-        if (hasErrors)
-            return new DiagnosticFlow<ImmutableArray<TItem>>(default, diagArray);
-
-        return new DiagnosticFlow<ImmutableArray<TItem>>(values.ToImmutable(), diagArray);
+        return hasErrors ? new DiagnosticFlow<ImmutableArray<TItem>>(default, diagArray) : new DiagnosticFlow<ImmutableArray<TItem>>(values.ToImmutable(), diagArray);
     }
 
     /// <summary>
@@ -430,9 +428,6 @@ internal
         Collect(flows);
 }
 
-/// <summary>
-///     Internal helper methods for <see cref="DiagnosticFlow{T}" /> operations.
-/// </summary>
 file static class DiagnosticFlowHelpers
 {
     public static EquatableArray<DiagnosticInfo> MergeDiagnostics(

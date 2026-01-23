@@ -578,7 +578,7 @@ internal
         if (symbol is not INamedTypeSymbol namedType)
             return false;
 
-        var name = namedType.OriginalDefinition?.ToDisplayString();
+        var name = namedType.OriginalDefinition.ToDisplayString();
         return name is "System.Span<T>" or "System.ReadOnlySpan<T>";
     }
 
@@ -596,7 +596,7 @@ internal
         if (symbol is not INamedTypeSymbol namedType)
             return false;
 
-        var name = namedType.OriginalDefinition?.ToDisplayString();
+        var name = namedType.OriginalDefinition.ToDisplayString();
         return name is "System.Memory<T>" or "System.ReadOnlyMemory<T>";
     }
 
@@ -638,7 +638,7 @@ internal
             return false;
 
         var name = symbol is INamedTypeSymbol namedType
-            ? namedType.OriginalDefinition?.ToDisplayString()
+            ? namedType.OriginalDefinition.ToDisplayString()
             : symbol.ToDisplayString();
 
         return name is "System.Threading.Tasks.Task"
@@ -667,7 +667,7 @@ internal
         if (symbol is not INamedTypeSymbol namedType)
             return false;
 
-        return namedType.OriginalDefinition?.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T;
+        return namedType.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T;
     }
 
     /// <summary>
@@ -717,7 +717,7 @@ internal
         // Span<T>, ReadOnlySpan<T>, Memory<T>, ReadOnlyMemory<T>, IEnumerable<T>
         if (namedType.TypeArguments.Length is 1)
         {
-            var name = namedType.OriginalDefinition?.ToDisplayString();
+            var name = namedType.OriginalDefinition.ToDisplayString();
             if (name is "System.Span<T>" or "System.ReadOnlySpan<T>"
                 or "System.Memory<T>" or "System.ReadOnlyMemory<T>"
                 or "System.Collections.Generic.IEnumerable<T>")

@@ -399,7 +399,7 @@ internal
             var syntax = syntaxReference.GetSyntax(cancellationToken);
             if (!syntax.IsKind(SyntaxKind.CompilationUnit))
             {
-                if (syntax.SyntaxTree.FilePath?.EndsWith(".g.cs", StringComparison.Ordinal) is true)
+                if (syntax.SyntaxTree.FilePath.EndsWith(".g.cs", StringComparison.Ordinal))
                     continue;
 
                 return false;

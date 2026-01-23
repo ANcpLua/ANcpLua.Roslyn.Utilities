@@ -133,9 +133,9 @@ internal
         TContext context,
         Func<TContext, T, bool> match)
     {
-        for (var i = 0; i < list.Count; i++)
-            if (match(context, list[i]))
-                return list[i];
+        foreach (var t in list)
+            if (match(context, t))
+                return t;
 
         return default;
     }
@@ -207,8 +207,8 @@ internal
         TContext context,
         Func<TContext, T, bool> match)
     {
-        for (var i = 0; i < list.Count; i++)
-            if (match(context, list[i]))
+        foreach (var t in list)
+            if (match(context, t))
                 return true;
 
         return false;

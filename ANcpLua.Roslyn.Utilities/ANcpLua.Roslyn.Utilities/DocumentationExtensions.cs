@@ -424,8 +424,11 @@ internal
 
             while (sourceAttributes.MoveNext() && targetAttributes.MoveNext())
             {
-                Debug.Assert(sourceAttributes.Current.Name == targetAttributes.Current.Name);
+                // ReSharper disable NullableWarningSuppressionIsUsed
+                // After MoveNext() returns true, Current is guaranteed to be valid
+                Debug.Assert(sourceAttributes.Current!.Name == targetAttributes.Current!.Name);
                 CopyAnnotations(sourceAttributes.Current, targetAttributes.Current);
+                // ReSharper restore NullableWarningSuppressionIsUsed
             }
         }
 
@@ -442,8 +445,10 @@ internal
     {
         try
         {
+            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+            // XPathEvaluate can return null for certain expressions
             var xpathResult = (IEnumerable)node.XPathEvaluate(xpath);
-            return xpathResult?.Cast<XNode>().ToArray();
+            return xpathResult.Cast<XNode>().ToArray();
         }
         catch (InvalidOperationException)
         {

@@ -54,7 +54,6 @@ internal
     /// <param name="token">The syntax token whose location will be used for the diagnostic.</param>
     /// <param name="arg0">The single argument to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, SyntaxNode, object?)" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0) => new(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
 
     /// <summary>
@@ -64,7 +63,6 @@ internal
     /// <param name="node">The syntax node whose location will be used for the diagnostic.</param>
     /// <param name="arg0">The single argument to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, SyntaxToken, object?)" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0) => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
 
     /// <summary>
@@ -74,7 +72,6 @@ internal
     /// <param name="node">The syntax node whose location will be used for the diagnostic.</param>
     /// <param name="args">The arguments to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, Location, object?[])" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args) => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([..args]));
 
     /// <summary>
@@ -83,7 +80,6 @@ internal
     /// <param name="descriptor">The diagnostic descriptor defining the diagnostic metadata.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance with empty message arguments.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, Location, object?[])" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location) => new(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
 
     /// <summary>
@@ -93,7 +89,6 @@ internal
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="args">The arguments to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, SyntaxNode, object?[])" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location, params object?[] args) => new(descriptor, LocationInfo.From(location), new EquatableMessageArgs([..args]));
 
     /// <summary>
@@ -107,7 +102,6 @@ internal
     /// <param name="symbol">The symbol whose first location will be used for the diagnostic.</param>
     /// <param name="args">The arguments to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    /// <seealso cref="Create(DiagnosticDescriptor, Location, object?[])" />
     public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, ISymbol symbol, params object?[] args)
     {
         var location = symbol.Locations.FirstOrDefault() ?? Microsoft.CodeAnalysis.Location.None;

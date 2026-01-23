@@ -527,7 +527,7 @@ internal
     public InvocationMatcher InNamespaceStartingWith(string prefix)
     {
         return AddPredicate(i => i.TargetMethod.ContainingNamespace?.ToDisplayString()
-            ?.StartsWith(prefix, StringComparison.Ordinal) == true);
+            .StartsWith(prefix, StringComparison.Ordinal) == true);
     }
 
     // Common patterns
