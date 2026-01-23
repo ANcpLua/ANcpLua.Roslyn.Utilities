@@ -5,54 +5,14 @@
 
 # ANcpLua.Roslyn.Utilities
 
-Utilities for Roslyn analyzers and source generators. Less boilerplate, proper caching, no lost diagnostics.
+Utilities for Roslyn analyzers and source generators.
 
 ## Installation
 
 ```bash
 dotnet add package ANcpLua.Roslyn.Utilities
-dotnet add package ANcpLua.Roslyn.Utilities.Testing  # for tests
+dotnet add package ANcpLua.Roslyn.Utilities.Testing
 ```
-
-## Quick Start
-
-```csharp
-// Railway-oriented pipeline - diagnostics flow through, never lost
-provider
-    .SelectFlow(ExtractModel)
-    .ThenFlow(Validate)
-    .ReportAndContinue(context)
-    .AddSource(context);
-
-// Fluent symbol matching
-Match.Method().Async().ReturningTask().Public().Matches(method);
-Invoke.Method("Dispose").OnTypeImplementing("IDisposable").Matches(invocation);
-
-// Declarative validation
-SemanticGuard.ForMethod(method)
-    .MustBeAsync(asyncRequired)
-    .MustHaveCancellationToken(ctRequired)
-    .ToFlow();
-```
-
-## Features
-
-| Category | Key APIs |
-|----------|----------|
-| **Flow Control** | `DiagnosticFlow<T>`, `ReportAndContinue()`, `CollectFlows()` |
-| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations) |
-| **Validation** | `SemanticGuard<T>` |
-| **Domain Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Extensions** | `SymbolExtensions`, `TypeSymbolExtensions`, `OperationExtensions`, `InvocationExtensions` |
-| **Code Generation** | `IndentedStringBuilder`, `ValueStringBuilder`, `GeneratedCodeHelpers` |
-| **Pipeline** | `GroupBy()`, `Batch()`, `Distinct()`, `CollectAsEquatableArray()` |
-
-## Packages
-
-| Package | Target | Description |
-|---------|--------|-------------|
-| `ANcpLua.Roslyn.Utilities` | netstandard2.0 | Core library |
-| `ANcpLua.Roslyn.Utilities.Testing` | net10.0 | Generator test framework with caching validation |
 
 ## Documentation
 
@@ -60,9 +20,5 @@ SemanticGuard.ForMethod(method)
 
 ## Related
 
-- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk) — MSBuild SDK
-- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers) — Custom analyzers
-
-## License
-
-[MIT](LICENSE)
+- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk)
+- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers)
