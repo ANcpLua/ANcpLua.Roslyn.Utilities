@@ -50,7 +50,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     _name = name ?? throw new ArgumentNullException(nameof(name));
 ///     _service = service ?? throw new ArgumentNullException(nameof(service));
 /// }
-///
+/// 
 /// // After: Clean, expressive guards
 /// public void Process(string? name, IService? service)
 /// {
@@ -122,8 +122,14 @@ internal
     /// </summary>
     /// <typeparam name="T">The type of the value (must be a reference type).</typeparam>
     /// <param name="value">The value to check.</param>
-    /// <param name="factory">A factory function to compute the default value (only called if <paramref name="value" /> is <c>null</c>).</param>
-    /// <returns>The original <paramref name="value" /> if not <c>null</c>; otherwise, the result of <paramref name="factory" />.</returns>
+    /// <param name="factory">
+    ///     A factory function to compute the default value (only called if <paramref name="value" /> is
+    ///     <c>null</c>).
+    /// </param>
+    /// <returns>
+    ///     The original <paramref name="value" /> if not <c>null</c>; otherwise, the result of
+    ///     <paramref name="factory" />.
+    /// </returns>
     /// <remarks>
     ///     <para>
     ///         Use this when the default value is expensive to compute and should only
@@ -168,7 +174,10 @@ internal
     /// </summary>
     /// <typeparam name="T">The underlying value type.</typeparam>
     /// <param name="value">The nullable value to check.</param>
-    /// <param name="factory">A factory function to compute the default value (only called if <paramref name="value" /> has no value).</param>
+    /// <param name="factory">
+    ///     A factory function to compute the default value (only called if <paramref name="value" /> has no
+    ///     value).
+    /// </param>
     /// <returns>The <paramref name="value" /> if it has a value; otherwise, the result of <paramref name="factory" />.</returns>
     /// <remarks>
     ///     <para>
@@ -245,7 +254,10 @@ internal
     /// </summary>
     /// <param name="value">The string to check.</param>
     /// <param name="defaultValue">The default value to return if <paramref name="value" /> is <c>null</c> or empty.</param>
-    /// <returns>The original <paramref name="value" /> if not <c>null</c> or empty; otherwise, <paramref name="defaultValue" />.</returns>
+    /// <returns>
+    ///     The original <paramref name="value" /> if not <c>null</c> or empty; otherwise,
+    ///     <paramref name="defaultValue" />.
+    /// </returns>
     /// <example>
     ///     <code>
     /// var displayName = Guard.NotNullOrEmptyOrElse(user.DisplayName, user.Username);
@@ -259,8 +271,14 @@ internal
     ///     Returns the string if not <c>null</c> or empty, otherwise computes a default using the factory.
     /// </summary>
     /// <param name="value">The string to check.</param>
-    /// <param name="factory">A factory function to compute the default value (only called if <paramref name="value" /> is <c>null</c> or empty).</param>
-    /// <returns>The original <paramref name="value" /> if not <c>null</c> or empty; otherwise, the result of <paramref name="factory" />.</returns>
+    /// <param name="factory">
+    ///     A factory function to compute the default value (only called if <paramref name="value" /> is
+    ///     <c>null</c> or empty).
+    /// </param>
+    /// <returns>
+    ///     The original <paramref name="value" /> if not <c>null</c> or empty; otherwise, the result of
+    ///     <paramref name="factory" />.
+    /// </returns>
     /// <example>
     ///     <code>
     /// var displayName = Guard.NotNullOrEmptyOrElse(user.DisplayName, () => GenerateDisplayName(user));
@@ -295,7 +313,8 @@ internal
     /// </summary>
     /// <param name="value">The string to check.</param>
     /// <param name="factory">
-    ///     A factory function to compute the default value (only called if <paramref name="value" /> is <c>null</c>, empty, or whitespace).
+    ///     A factory function to compute the default value (only called if <paramref name="value" /> is <c>null</c>, empty, or
+    ///     whitespace).
     /// </param>
     /// <returns>
     ///     The original <paramref name="value" /> if it contains meaningful content;
@@ -332,7 +351,8 @@ internal
     /// </example>
     public static IReadOnlyCollection<T> NotNullOrEmpty<T>(
         [NotNull] IReadOnlyCollection<T>? value,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         if (value is null)
             throw new ArgumentNullException(paramName);
@@ -420,7 +440,8 @@ internal
     public static void That(
         [DoesNotReturnIf(false)] bool condition,
         string message,
-        [CallerArgumentExpression(nameof(condition))] string? paramName = null)
+        [CallerArgumentExpression(nameof(condition))]
+        string? paramName = null)
     {
         if (!condition)
             throw new ArgumentException(message, paramName);
@@ -450,7 +471,8 @@ internal
         T value,
         Func<T, bool> predicate,
         string message,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         if (!predicate(value))
             throw new ArgumentException(message, paramName);

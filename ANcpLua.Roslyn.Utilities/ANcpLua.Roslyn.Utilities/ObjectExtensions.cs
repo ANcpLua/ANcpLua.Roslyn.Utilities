@@ -212,10 +212,7 @@ internal
     /// <seealso cref="TryGetPropertyValue{T}(object?, string, T)" />
     public static bool HasProperty(this object? obj, string propertyName)
     {
-        if (obj is null)
-            return false;
-
-        return obj.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) is not null;
+        return obj?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) != null;
     }
 
     /// <summary>
@@ -309,10 +306,7 @@ internal
     {
         value = default;
 
-        if (obj is null)
-            return false;
-
-        var property = obj.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = obj?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
         if (property is null)
             return false;
 
@@ -379,7 +373,10 @@ internal
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <param name="obj">The object to check.</param>
     /// <param name="values">The values to compare against.</param>
-    /// <returns><c>true</c> if <paramref name="obj" /> does not equal any of <paramref name="values" />; otherwise, <c>false</c>.</returns>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="obj" /> does not equal any of <paramref name="values" />; otherwise,
+    ///     <c>false</c>.
+    /// </returns>
     /// <example>
     ///     <code>
     /// if (status.IsNotOneOf(Status.Deleted, Status.Archived))

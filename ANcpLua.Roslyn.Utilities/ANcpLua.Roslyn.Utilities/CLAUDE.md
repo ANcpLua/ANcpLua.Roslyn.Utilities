@@ -559,13 +559,13 @@ options.GetConfigurationValue(tree, key, defaultString)
 
 Each helper file answers ONE question. Use this guide to pick the right tool:
 
-| File | Philosophy | When to Use |
-|------|------------|-------------|
-| **Guard.cs** | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions |
-| **NullableExtensions.cs** | "Functional transformation of nullable values" | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or` |
-| **ObjectExtensions.cs** | "What type is this? Cast it safely." | Safe casting (`As<T>`), type checking (`Is<T>`), reflection |
-| **TryExtensions.cs** | "Parse or lookup, get null on failure" | `TryParse*` methods, dictionary access, collection indexing |
-| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics" | `EqualsOrdinal`, `ContainsIgnoreCase`, `HasValue` for strings |
+| File                              | Philosophy                                        | When to Use                                                   |
+|-----------------------------------|---------------------------------------------------|---------------------------------------------------------------|
+| **Guard.cs**                      | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions                  |
+| **NullableExtensions.cs**         | "Functional transformation of nullable values"    | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or`    |
+| **ObjectExtensions.cs**           | "What type is this? Cast it safely."              | Safe casting (`As<T>`), type checking (`Is<T>`), reflection   |
+| **TryExtensions.cs**              | "Parse or lookup, get null on failure"            | `TryParse*` methods, dictionary access, collection indexing   |
+| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics"         | `EqualsOrdinal`, `ContainsIgnoreCase`, `HasValue` for strings |
 
 ### Guard vs NullableExtensions
 
@@ -586,12 +586,14 @@ var data = GetValue().OrElse(() => LoadFromDisk());
 ```
 
 **Use Guard when:**
+
 - Validating method arguments at entry points
 - The fallback signals a defensive default
 - You want `CallerArgumentExpression` for debugging
 - Use `NotNullOrElse(value, factory)` for expensive fallbacks (lazy evaluation)
 
 **Use NullableExtensions when:**
+
 - Chaining transformations in a pipeline
 - Working with optional data (not parameters)
 - You want LINQ-style composition

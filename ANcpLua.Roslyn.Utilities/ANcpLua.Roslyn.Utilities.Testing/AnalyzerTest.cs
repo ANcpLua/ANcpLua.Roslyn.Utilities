@@ -55,7 +55,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="CSharpAnalyzerTest{TAnalyzer,TVerifier}" />
 public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new()
 {
-
     /// <summary>
     ///     Verifies that the analyzer produces the expected diagnostics for the given source code.
     /// </summary>

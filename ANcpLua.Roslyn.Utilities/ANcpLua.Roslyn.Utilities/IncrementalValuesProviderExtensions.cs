@@ -188,7 +188,8 @@ internal
     ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces the transformed value,
     ///     or throws if the transformation failed.
     /// </returns>
-    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValueProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,
@@ -360,7 +361,8 @@ internal
     ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing successfully transformed values.
     ///     Failed transformations are filtered out after their exceptions are reported.
     /// </returns>
-    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    /// <seealso
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
     public static IncrementalValuesProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
         this IncrementalValuesProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
         IncrementalGeneratorInitializationContext initializationContext,

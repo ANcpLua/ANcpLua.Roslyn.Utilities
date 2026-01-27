@@ -57,7 +57,7 @@ internal
     ///     <code>
     /// // Without context (causes closure allocation):
     /// var value = dict.GetValueOrDefault(key) ?? (dict[key] = CreateValue(expensiveData));
-    ///
+    /// 
     /// // With context (allocation-free):
     /// var value = dict.GetOrInsert(key, expensiveData, static ctx => CreateValue(ctx));
     /// </code>

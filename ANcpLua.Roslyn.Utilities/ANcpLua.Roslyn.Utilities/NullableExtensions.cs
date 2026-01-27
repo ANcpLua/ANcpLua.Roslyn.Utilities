@@ -12,7 +12,8 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
-///                 <b>Transformation:</b> <see cref="Select{T,TResult}(T?, Func{T,TResult})" /> for mapping nullable values.
+///                 <b>Transformation:</b> <see cref="Select{T,TResult}(T?, Func{T,TResult})" /> for mapping nullable
+///                 values.
 ///             </description>
 ///         </item>
 ///         <item>
@@ -27,7 +28,8 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         </item>
 ///         <item>
 ///             <description>
-///                 <b>Coalescing:</b> <see cref="Or{T}(T?, T)" /> and <see cref="OrElse{T}(T?, Func{T})" /> for default values.
+///                 <b>Coalescing:</b> <see cref="Or{T}(T?, T)" /> and <see cref="OrElse{T}(T?, Func{T})" /> for default
+///                 values.
 ///             </description>
 ///         </item>
 ///     </list>

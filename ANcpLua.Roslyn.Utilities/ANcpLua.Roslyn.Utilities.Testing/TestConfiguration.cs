@@ -62,30 +62,26 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="Test{TGenerator}" />
 public static class TestConfiguration
 {
-    private static readonly ReferenceAssemblies Net100Assemblies = new(
-        "net10.0",
-        new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
-        Path.Combine("ref", "net10.0"));
-
-    private static readonly ReferenceAssemblies NetStandard20Assemblies = new("netstandard2.0");
-
-    /// <summary>
-    ///     Gets the shared .NET 10.0 reference assemblies instance.
-    ///     Use this instead of creating new instances in generic test classes.
-    /// </summary>
-    internal static ReferenceAssemblies Net100Tfm => Net100Assemblies;
-
-    /// <summary>
-    ///     Gets the shared .NET Standard 2.0 reference assemblies instance.
-    ///     Use this instead of creating new instances in generic test classes.
-    /// </summary>
-    internal static ReferenceAssemblies NetStandard20Tfm => NetStandard20Assemblies;
-
     private static readonly AsyncLocal<LanguageVersion?> LanguageVersionOverride = new();
     private static readonly AsyncLocal<ReferenceAssemblies?> ReferenceAssembliesOverride = new();
 
     private static readonly AsyncLocal<ImmutableArray<PortableExecutableReference>?> AdditionalReferencesOverride =
         new();
+
+    /// <summary>
+    ///     Gets the shared .NET 10.0 reference assemblies instance.
+    ///     Use this instead of creating new instances in generic test classes.
+    /// </summary>
+    internal static ReferenceAssemblies Net100Tfm { get; } = new(
+        "net10.0",
+        new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
+        Path.Combine("ref", "net10.0"));
+
+    /// <summary>
+    ///     Gets the shared .NET Standard 2.0 reference assemblies instance.
+    ///     Use this instead of creating new instances in generic test classes.
+    /// </summary>
+    internal static ReferenceAssemblies NetStandard20Tfm { get; } = new("netstandard2.0");
 
     /// <summary>
     ///     Gets the C# language version to use for test compilations.
@@ -136,7 +132,7 @@ public static class TestConfiguration
     /// </remarks>
     /// <seealso cref="WithReferenceAssemblies" />
     public static ReferenceAssemblies ReferenceAssemblies =>
-        ReferenceAssembliesOverride.Value ?? Net100Assemblies;
+        ReferenceAssembliesOverride.Value ?? Net100Tfm;
 
     /// <summary>
     ///     Gets additional metadata references to include in test compilations.

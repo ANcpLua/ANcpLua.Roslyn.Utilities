@@ -102,7 +102,7 @@ internal
     /// {
     ///     // Type is a custom exception (but not System.Exception itself)
     /// }
-    /// 
+    ///
     /// // Walk inheritance chain manually for analysis
     /// ITypeSymbol? current = typeSymbol.BaseType;
     /// while (current is not null)

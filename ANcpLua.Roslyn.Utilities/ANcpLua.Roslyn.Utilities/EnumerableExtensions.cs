@@ -55,7 +55,7 @@ internal
             yield return result;
     }
 
-    /// <summary>
+     /// <summary>
     ///     Returns the source enumerable, or an empty sequence if the source is <c>null</c>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
@@ -125,12 +125,12 @@ internal
     /// var methodNames = typeSymbol.GetMembers()
     ///     .OfType&lt;IMethodSymbol&gt;()
     ///     .Select(m => m.Name);
-    /// 
+    ///
     /// if (methodNames.HasDuplicates())
     /// {
     ///     // Type has overloaded methods
     /// }
-    /// 
+    ///
     /// // Check for duplicate values in a collection
     /// var numbers = new[] { 1, 2, 3, 2, 4 };
     /// bool hasDupes = numbers.HasDuplicates(); // true
@@ -186,7 +186,7 @@ internal
     /// {
     ///     // Report diagnostic: duplicate parameter names
     /// }
-    /// 
+    ///
     /// // Check for duplicate file paths (case-insensitive)
     /// var files = new[] { "File.txt", "file.TXT", "other.cs" };
     /// bool hasDupes = files.HasDuplicates(f => f.ToLowerInvariant()); // true
@@ -465,7 +465,7 @@ internal
     /// var uniqueMethods = typeSymbol.GetMembers()
     ///     .OfType&lt;IMethodSymbol&gt;()
     ///     .DistinctBy(m => m.Name);
-    /// 
+    ///
     /// // Remove duplicate diagnostics by location
     /// var uniqueDiagnostics = diagnostics.DistinctBy(d => d.Location);
     /// </code>

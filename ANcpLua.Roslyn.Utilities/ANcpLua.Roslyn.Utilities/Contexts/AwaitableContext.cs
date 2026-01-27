@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming - Interface-prefixed properties (INotifyCompletion, IAsyncEnumerable, etc.)
 // are intentional: each property returns the corresponding interface type symbol.
 // This naming provides API clarity for Roslyn analyzer authors.
+
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;

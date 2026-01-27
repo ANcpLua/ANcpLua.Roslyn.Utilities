@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming - Interface-prefixed properties (IDisposable, IAsyncDisposable)
 // are intentional: each property returns the corresponding interface type symbol.
 // This naming provides API clarity for Roslyn analyzer authors.
+
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
@@ -188,10 +189,7 @@ internal
         if (IDisposable is not null && type.Implements(IDisposable))
             return true;
 
-        if (IAsyncDisposable is not null && type.Implements(IAsyncDisposable))
-            return true;
-
-        return false;
+        return IAsyncDisposable is not null && type.Implements(IAsyncDisposable);
     }
 
     /// <summary>
@@ -237,8 +235,8 @@ internal
     /// </returns>
     public bool IsTextReaderOrWriter(ITypeSymbol? type) =>
         type is not null &&
-        (TextReader is not null && type.IsOrInheritsFrom(TextReader) ||
-         TextWriter is not null && type.IsOrInheritsFrom(TextWriter));
+        ((TextReader is not null && type.IsOrInheritsFrom(TextReader)) ||
+         (TextWriter is not null && type.IsOrInheritsFrom(TextWriter)));
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbConnection" />.
@@ -300,11 +298,11 @@ internal
         if (type is null)
             return false;
 
-        return Semaphore is not null && type.IsOrInheritsFrom(Semaphore) ||
-               SemaphoreSlim is not null && type.IsOrInheritsFrom(SemaphoreSlim) ||
-               Mutex is not null && type.IsOrInheritsFrom(Mutex) ||
-               ReaderWriterLock is not null && type.IsOrInheritsFrom(ReaderWriterLock) ||
-               ReaderWriterLockSlim is not null && type.IsOrInheritsFrom(ReaderWriterLockSlim);
+        return (Semaphore is not null && type.IsOrInheritsFrom(Semaphore)) ||
+               (SemaphoreSlim is not null && type.IsOrInheritsFrom(SemaphoreSlim)) ||
+               (Mutex is not null && type.IsOrInheritsFrom(Mutex)) ||
+               (ReaderWriterLock is not null && type.IsOrInheritsFrom(ReaderWriterLock)) ||
+               (ReaderWriterLockSlim is not null && type.IsOrInheritsFrom(ReaderWriterLockSlim));
     }
 
     /// <summary>
@@ -359,10 +357,6 @@ internal
         if (!IsDisposable(type))
             return false;
 
-        // These are typically managed by DI or pooling
-        if (IsHttpClient(type))
-            return false; // Usually injected via IHttpClientFactory
-
-        return true;
+        return !IsHttpClient(type);
     }
 }

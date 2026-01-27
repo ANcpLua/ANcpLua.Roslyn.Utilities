@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming - Interface-prefixed properties (IEnumerable, IList, etc.)
 // are intentional: each property returns the corresponding interface type symbol.
 // This naming provides API clarity for Roslyn analyzer authors.
+
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
@@ -348,21 +349,18 @@ internal
     /// <seealso cref="IsReadOnly" />
     public bool IsImmutable(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
         if (type is not INamedTypeSymbol named)
             return false;
 
         var original = named.OriginalDefinition;
 
-        return ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray) ||
-               ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList) ||
-               ImmutableDictionary is not null &&
-               SymbolEqualityComparer.Default.Equals(original, ImmutableDictionary) ||
-               ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet) ||
-               FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
-               FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary);
+        return (ImmutableArray is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableArray)) ||
+               (ImmutableList is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableList)) ||
+               (ImmutableDictionary is not null &&
+                SymbolEqualityComparer.Default.Equals(original, ImmutableDictionary)) ||
+               (ImmutableHashSet is not null && SymbolEqualityComparer.Default.Equals(original, ImmutableHashSet)) ||
+               (FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet)) ||
+               (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
     }
 
     /// <summary>
@@ -377,16 +375,13 @@ internal
     /// <seealso cref="IsImmutable" />
     public bool IsFrozen(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
         if (type is not INamedTypeSymbol named)
             return false;
 
         var original = named.OriginalDefinition;
 
-        return FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet) ||
-               FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary);
+        return (FrozenSet is not null && SymbolEqualityComparer.Default.Equals(original, FrozenSet)) ||
+               (FrozenDictionary is not null && SymbolEqualityComparer.Default.Equals(original, FrozenDictionary));
     }
 
     /// <summary>
@@ -400,16 +395,13 @@ internal
     /// <seealso cref="IsMemoryLike" />
     public bool IsSpanLike(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
         if (type is not INamedTypeSymbol named)
             return false;
 
         var original = named.OriginalDefinition;
 
-        return Span is not null && SymbolEqualityComparer.Default.Equals(original, Span) ||
-               ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan);
+        return (Span is not null && SymbolEqualityComparer.Default.Equals(original, Span)) ||
+               (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan));
     }
 
     /// <summary>
@@ -424,16 +416,13 @@ internal
     /// <seealso cref="IsSpanLike" />
     public bool IsMemoryLike(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
         if (type is not INamedTypeSymbol named)
             return false;
 
         var original = named.OriginalDefinition;
 
-        return Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory) ||
-               ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory);
+        return (Memory is not null && SymbolEqualityComparer.Default.Equals(original, Memory)) ||
+               (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
     }
 
     /// <summary>
@@ -462,12 +451,12 @@ internal
 
         var original = named.OriginalDefinition;
 
-        return IReadOnlyCollection is not null && type.Implements(IReadOnlyCollection.OriginalDefinition) ||
-               IReadOnlyList is not null && type.Implements(IReadOnlyList.OriginalDefinition) ||
-               IReadOnlyDictionary is not null && type.Implements(IReadOnlyDictionary.OriginalDefinition) ||
-               IReadOnlySet is not null && type.Implements(IReadOnlySet.OriginalDefinition) ||
-               ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan) ||
-               ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory);
+        return (IReadOnlyCollection is not null && type.Implements(IReadOnlyCollection.OriginalDefinition)) ||
+               (IReadOnlyList is not null && type.Implements(IReadOnlyList.OriginalDefinition)) ||
+               (IReadOnlyDictionary is not null && type.Implements(IReadOnlyDictionary.OriginalDefinition)) ||
+               (IReadOnlySet is not null && type.Implements(IReadOnlySet.OriginalDefinition)) ||
+               (ReadOnlySpan is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlySpan)) ||
+               (ReadOnlyMemory is not null && SymbolEqualityComparer.Default.Equals(original, ReadOnlyMemory));
     }
 
     /// <summary>
@@ -487,11 +476,13 @@ internal
     /// </remarks>
     public ITypeSymbol? GetElementType(ITypeSymbol? type)
     {
-        if (type is null)
-            return null;
-
-        if (type is IArrayTypeSymbol array)
-            return array.ElementType;
+        switch (type)
+        {
+            case null:
+                return null;
+            case IArrayTypeSymbol array:
+                return array.ElementType;
+        }
 
         if (type is not INamedTypeSymbol named)
             return null;

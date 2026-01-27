@@ -154,10 +154,8 @@ internal
             return default;
 
         foreach (var namedArg in attribute.NamedArguments)
-        {
             if (string.Equals(namedArg.Key, name, StringComparison.Ordinal))
                 return GetTypedConstantValue<T>(namedArg.Value);
-        }
 
         return default;
     }
@@ -184,7 +182,6 @@ internal
             return false;
 
         foreach (var namedArg in attribute.NamedArguments)
-        {
             if (string.Equals(namedArg.Key, name, StringComparison.Ordinal))
             {
                 if (namedArg.Value.Kind == TypedConstantKind.Error)
@@ -197,7 +194,6 @@ internal
                 value = result;
                 return true;
             }
-        }
 
         return false;
     }
@@ -214,10 +210,8 @@ internal
             return false;
 
         foreach (var namedArg in attribute.NamedArguments)
-        {
             if (string.Equals(namedArg.Key, name, StringComparison.Ordinal))
                 return true;
-        }
 
         return false;
     }
@@ -259,9 +253,7 @@ internal
     public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName, int index)
     {
         var attribute = symbol.GetAttribute(fullyQualifiedAttributeName);
-        if (attribute is null)
-            return default;
-        return attribute.GetConstructorArgument<T>(index);
+        return attribute is null ? default : attribute.GetConstructorArgument<T>(index);
     }
 
     /// <summary>
@@ -279,9 +271,7 @@ internal
     public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, ITypeSymbol? attributeType, int index, bool inherits = true)
     {
         var attribute = symbol.GetAttribute(attributeType, inherits);
-        if (attribute is null)
-            return default;
-        return attribute.GetConstructorArgument<T>(index);
+        return attribute is null ? default : attribute.GetConstructorArgument<T>(index);
     }
 
     /// <summary>
@@ -331,9 +321,7 @@ internal
     public static T? GetAttributeNamedArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName, string argumentName)
     {
         var attribute = symbol.GetAttribute(fullyQualifiedAttributeName);
-        if (attribute is null)
-            return default;
-        return attribute.GetNamedArgument<T>(argumentName);
+        return attribute is null ? default : attribute.GetNamedArgument<T>(argumentName);
     }
 
     /// <summary>
@@ -355,9 +343,7 @@ internal
         bool inherits = true)
     {
         var attribute = symbol.GetAttribute(attributeType, inherits);
-        if (attribute is null)
-            return default;
-        return attribute.GetNamedArgument<T>(argumentName);
+        return attribute is null ? default : attribute.GetNamedArgument<T>(argumentName);
     }
 
     /// <summary>
@@ -406,10 +392,7 @@ internal
     /// </example>
     public static ImmutableArray<T> GetConstructorArgumentArray<T>(this AttributeData attribute, int index)
     {
-        if (attribute.ConstructorArguments.IsDefaultOrEmpty)
-            return ImmutableArray<T>.Empty;
-
-        if (index < 0 || index >= attribute.ConstructorArguments.Length)
+        if (attribute.ConstructorArguments.IsDefaultOrEmpty || index < 0 || index >= attribute.ConstructorArguments.Length)
             return ImmutableArray<T>.Empty;
 
         var typedConstant = attribute.ConstructorArguments[index];
@@ -432,10 +415,8 @@ internal
             return ImmutableArray<T>.Empty;
 
         foreach (var namedArg in attribute.NamedArguments)
-        {
             if (string.Equals(namedArg.Key, name, StringComparison.Ordinal))
                 return GetTypedConstantArrayValue<T>(namedArg.Value);
-        }
 
         return ImmutableArray<T>.Empty;
     }
@@ -539,7 +520,6 @@ internal
 
         // Try conversion for compatible types
         if (typedConstant.Value is not null)
-        {
             try
             {
                 return (T)Convert.ChangeType(typedConstant.Value, typeof(T));
@@ -548,17 +528,13 @@ internal
             {
                 // Conversion failed
             }
-        }
 
         return default;
     }
 
     private static ImmutableArray<T> GetTypedConstantArrayValue<T>(TypedConstant typedConstant)
     {
-        if (typedConstant.Kind != TypedConstantKind.Array)
-            return ImmutableArray<T>.Empty;
-
-        if (typedConstant.Values.IsDefaultOrEmpty)
+        if (typedConstant.Kind != TypedConstantKind.Array || typedConstant.Values.IsDefaultOrEmpty)
             return ImmutableArray<T>.Empty;
 
         var builder = ImmutableArray.CreateBuilder<T>(typedConstant.Values.Length);
