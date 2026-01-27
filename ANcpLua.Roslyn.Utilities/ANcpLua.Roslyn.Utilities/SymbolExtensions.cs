@@ -692,4 +692,143 @@ internal
 
         return results.ToImmutable();
     }
+
+    // ========== Short Name Attribute Matching ==========
+
+    /// <summary>
+    ///     Checks if a symbol has an attribute by its short name (with or without "Attribute" suffix).
+    /// </summary>
+    /// <param name="symbol">The symbol to check for the attribute.</param>
+    /// <param name="attributeShortName">
+    ///     The short name of the attribute (e.g., "Obsolete" or "ObsoleteAttribute").
+    /// </param>
+    /// <returns>
+    ///     <c>true</c> if the symbol has an attribute matching the short name;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method matches attributes by their short class name, ignoring namespaces.
+    ///         It automatically handles the "Attribute" suffix convention:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 If <paramref name="attributeShortName" /> is "Obsolete", matches both
+    ///                 "Obsolete" and "ObsoleteAttribute"
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 If <paramref name="attributeShortName" /> is "ObsoleteAttribute", matches both
+    ///                 "Obsolete" and "ObsoleteAttribute"
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    ///     <para>
+    ///         This is useful when you need to check for an attribute but don't have the
+    ///         <see cref="INamedTypeSymbol" /> for it (e.g., when the attribute type might
+    ///         not be available in the current compilation).
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // Check for RequiresUnreferencedCode attribute
+    /// if (method.HasAttributeByShortName("RequiresUnreferencedCode"))
+    /// {
+    ///     // Method requires unreferenced code
+    /// }
+    ///
+    /// // Both of these work the same:
+    /// symbol.HasAttributeByShortName("Obsolete")
+    /// symbol.HasAttributeByShortName("ObsoleteAttribute")
+    /// </code>
+    /// </example>
+    /// <seealso cref="HasAttribute(ISymbol, string)" />
+    /// <seealso cref="GetAttributeByShortName" />
+    public static bool HasAttributeByShortName(this ISymbol symbol, string attributeShortName)
+    {
+        var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
+            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            : attributeShortName;
+        var nameWithSuffix = nameWithoutSuffix + "Attribute";
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            var className = attribute.AttributeClass?.Name;
+            if (className is null)
+                continue;
+
+            if (string.Equals(className, nameWithoutSuffix, StringComparison.Ordinal) ||
+                string.Equals(className, nameWithSuffix, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Gets the first attribute matching the short name (with or without "Attribute" suffix).
+    /// </summary>
+    /// <param name="symbol">The symbol to get the attribute from.</param>
+    /// <param name="attributeShortName">
+    ///     The short name of the attribute (e.g., "Obsolete" or "ObsoleteAttribute").
+    /// </param>
+    /// <returns>
+    ///     The <see cref="AttributeData" /> for the first matching attribute,
+    ///     or <c>null</c> if no attribute matches.
+    /// </returns>
+    /// <seealso cref="HasAttributeByShortName" />
+    /// <seealso cref="GetAttribute(ISymbol, string)" />
+    public static AttributeData? GetAttributeByShortName(this ISymbol symbol, string attributeShortName)
+    {
+        var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
+            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            : attributeShortName;
+        var nameWithSuffix = nameWithoutSuffix + "Attribute";
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            var className = attribute.AttributeClass?.Name;
+            if (className is null)
+                continue;
+
+            if (string.Equals(className, nameWithoutSuffix, StringComparison.Ordinal) ||
+                string.Equals(className, nameWithSuffix, StringComparison.Ordinal))
+                return attribute;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    ///     Gets all attributes matching the short name (with or without "Attribute" suffix).
+    /// </summary>
+    /// <param name="symbol">The symbol to get the attributes from.</param>
+    /// <param name="attributeShortName">
+    ///     The short name of the attribute (e.g., "Obsolete" or "ObsoleteAttribute").
+    /// </param>
+    /// <returns>
+    ///     An enumerable of <see cref="AttributeData" /> for all matching attributes.
+    /// </returns>
+    /// <seealso cref="HasAttributeByShortName" />
+    /// <seealso cref="GetAttributeByShortName" />
+    public static IEnumerable<AttributeData> GetAttributesByShortName(this ISymbol symbol, string attributeShortName)
+    {
+        var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
+            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            : attributeShortName;
+        var nameWithSuffix = nameWithoutSuffix + "Attribute";
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            var className = attribute.AttributeClass?.Name;
+            if (className is null)
+                continue;
+
+            if (string.Equals(className, nameWithoutSuffix, StringComparison.Ordinal) ||
+                string.Equals(className, nameWithSuffix, StringComparison.Ordinal))
+                yield return attribute;
+        }
+    }
 }

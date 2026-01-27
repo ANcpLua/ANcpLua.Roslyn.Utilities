@@ -268,4 +268,154 @@ internal
     /// </remarks>
     /// <seealso cref="GetNameLocation(TypeDeclarationSyntax)" />
     public static Location GetNameLocation(this MethodDeclarationSyntax method) => method.Identifier.GetLocation();
+
+    // ========== Code Fix Helpers ==========
+
+    /// <summary>
+    ///     Creates an invocation expression for calling an extension method.
+    /// </summary>
+    /// <param name="receiver">The expression that will become the receiver (first argument to the extension method).</param>
+    /// <param name="methodName">The name of the extension method to call.</param>
+    /// <param name="arguments">The arguments to pass to the extension method (excluding the receiver).</param>
+    /// <returns>
+    ///     An <see cref="InvocationExpressionSyntax" /> representing <c>receiver.methodName(arguments)</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This helper is commonly used in code fix providers that replace verbose patterns
+    ///         with cleaner extension method calls. The receiver's trivia is stripped to produce
+    ///         clean output.
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // Transform: SymbolEqualityComparer.Default.Equals(a, b)
+    /// // Into: a.IsEqualTo(b)
+    /// var newInvocation = leftArg.CreateExtensionMethodCall("IsEqualTo", rightArg);
+    /// </code>
+    /// </example>
+    /// <seealso cref="CreateExtensionMethodCall(ExpressionSyntax, string)" />
+    public static InvocationExpressionSyntax CreateExtensionMethodCall(
+        this ExpressionSyntax receiver,
+        string methodName,
+        params ExpressionSyntax[] arguments)
+    {
+        var memberAccess = SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            receiver.WithoutTrivia(),
+            SyntaxFactory.IdentifierName(methodName));
+
+        if (arguments.Length == 0)
+            return SyntaxFactory.InvocationExpression(memberAccess);
+
+        var argumentList = SyntaxFactory.ArgumentList(
+            SyntaxFactory.SeparatedList(
+                arguments.Select(arg => SyntaxFactory.Argument(arg.WithoutTrivia()))));
+
+        return SyntaxFactory.InvocationExpression(memberAccess, argumentList);
+    }
+
+    /// <summary>
+    ///     Creates a parameterless invocation expression for calling an extension method.
+    /// </summary>
+    /// <param name="receiver">The expression that will become the receiver.</param>
+    /// <param name="methodName">The name of the extension method to call.</param>
+    /// <returns>
+    ///     An <see cref="InvocationExpressionSyntax" /> representing <c>receiver.methodName()</c>.
+    /// </returns>
+    /// <example>
+    ///     <code>
+    /// // Transform: collection ?? Array.Empty&lt;T&gt;()
+    /// // Into: collection.OrEmpty()
+    /// var newInvocation = collection.CreateExtensionMethodCall("OrEmpty");
+    /// </code>
+    /// </example>
+    /// <seealso cref="CreateExtensionMethodCall(ExpressionSyntax, string, ExpressionSyntax[])" />
+    public static InvocationExpressionSyntax CreateExtensionMethodCall(
+        this ExpressionSyntax receiver,
+        string methodName) =>
+        receiver.CreateExtensionMethodCall(methodName, Array.Empty<ExpressionSyntax>());
+
+    /// <summary>
+    ///     Adds the <c>static</c> modifier to an anonymous function (lambda or delegate).
+    /// </summary>
+    /// <param name="lambda">The anonymous function to add the modifier to.</param>
+    /// <returns>
+    ///     A new anonymous function with the <c>static</c> modifier added.
+    ///     If the function type is not recognized, returns the original lambda unchanged.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method handles all types of anonymous functions:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description><see cref="SimpleLambdaExpressionSyntax" />: <c>x => x + 1</c></description></item>
+    ///         <item><description><see cref="ParenthesizedLambdaExpressionSyntax" />: <c>(x, y) => x + y</c></description></item>
+    ///         <item><description><see cref="AnonymousMethodExpressionSyntax" />: <c>delegate(int x) { return x; }</c></description></item>
+    ///     </list>
+    ///     <para>
+    ///         The method preserves existing modifiers and adds <c>static</c> at the beginning.
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // In a code fix provider:
+    /// var newLambda = originalLambda.WithStaticModifier();
+    /// // Transforms: x => x + 1
+    /// // Into: static x => x + 1
+    /// </code>
+    /// </example>
+    public static AnonymousFunctionExpressionSyntax WithStaticModifier(this AnonymousFunctionExpressionSyntax lambda)
+    {
+        var staticKeyword = SyntaxFactory.Token(SyntaxKind.StaticKeyword).WithTrailingTrivia(SyntaxFactory.Space);
+
+        return lambda switch
+        {
+            SimpleLambdaExpressionSyntax simple => simple.AddModifiers(staticKeyword),
+            ParenthesizedLambdaExpressionSyntax paren => paren.AddModifiers(staticKeyword),
+            AnonymousMethodExpressionSyntax anon => anon.AddModifiers(staticKeyword),
+            _ => lambda
+        };
+    }
+
+    /// <summary>
+    ///     Adds the <c>static</c> modifier to a local function.
+    /// </summary>
+    /// <param name="localFunction">The local function to add the modifier to.</param>
+    /// <returns>
+    ///     A new local function with the <c>static</c> modifier added.
+    /// </returns>
+    /// <example>
+    ///     <code>
+    /// // In a code fix provider:
+    /// var newFunction = originalFunction.WithStaticModifier();
+    /// // Transforms: int Add(int x, int y) => x + y;
+    /// // Into: static int Add(int x, int y) => x + y;
+    /// </code>
+    /// </example>
+    public static LocalFunctionStatementSyntax WithStaticModifier(this LocalFunctionStatementSyntax localFunction)
+    {
+        var staticKeyword = SyntaxFactory.Token(SyntaxKind.StaticKeyword).WithTrailingTrivia(SyntaxFactory.Space);
+        return localFunction.AddModifiers(staticKeyword);
+    }
+
+    /// <summary>
+    ///     Checks if an anonymous function has the <c>static</c> modifier.
+    /// </summary>
+    /// <param name="lambda">The anonymous function to check.</param>
+    /// <returns>
+    ///     <c>true</c> if the function has the <c>static</c> modifier; otherwise, <c>false</c>.
+    /// </returns>
+    public static bool IsStatic(this AnonymousFunctionExpressionSyntax lambda) =>
+        lambda.Modifiers.Any(SyntaxKind.StaticKeyword);
+
+    /// <summary>
+    ///     Checks if a local function has the <c>static</c> modifier.
+    /// </summary>
+    /// <param name="localFunction">The local function to check.</param>
+    /// <returns>
+    ///     <c>true</c> if the function has the <c>static</c> modifier; otherwise, <c>false</c>.
+    /// </returns>
+    public static bool IsStatic(this LocalFunctionStatementSyntax localFunction) =>
+        localFunction.Modifiers.Any(SyntaxKind.StaticKeyword);
 }
