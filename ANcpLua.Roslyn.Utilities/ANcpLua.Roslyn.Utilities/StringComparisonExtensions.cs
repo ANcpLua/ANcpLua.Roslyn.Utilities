@@ -488,6 +488,23 @@ internal
     }
 
     /// <summary>
+    ///     Reports the zero-based index of the first occurrence of the specified character using ordinal comparison.
+    /// </summary>
+    /// <param name="value">The string to search in.</param>
+    /// <param name="character">The character to search for.</param>
+    /// <returns>
+    ///     The zero-based index of <paramref name="character" /> if found; otherwise, -1.
+    ///     Returns -1 if <paramref name="value" /> is <c>null</c>.
+    /// </returns>
+    public static int IndexOfOrdinal(this string? value, char character)
+    {
+        if (value is null)
+            return -1;
+
+        return value.IndexOf(character);
+    }
+
+    /// <summary>
     ///     Reports the zero-based index of the first occurrence of the specified string using case-insensitive ordinal
     ///     comparison.
     /// </summary>
@@ -497,7 +514,7 @@ internal
     ///     The zero-based index of <paramref name="substring" /> if found; otherwise, -1.
     ///     Returns -1 if <paramref name="value" /> is <c>null</c>.
     /// </returns>
-    /// <seealso cref="IndexOfOrdinal" />
+    /// <seealso cref="IndexOfOrdinal(string?, string)" />
     public static int IndexOfIgnoreCase(this string? value, string substring)
     {
         if (value is null)
