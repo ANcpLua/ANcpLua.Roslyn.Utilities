@@ -565,7 +565,7 @@ Each helper file answers ONE question. Use this guide to pick the right tool:
 | **NullableExtensions.cs**         | "Functional transformation of nullable values"    | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or`    |
 | **ObjectExtensions.cs**           | "What type is this? Cast it safely."              | Safe casting (`As<T>`), type checking (`Is<T>`), reflection   |
 | **TryExtensions.cs**              | "Parse or lookup, get null on failure"            | `TryParse*` methods, dictionary access, collection indexing   |
-| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics"         | `EqualsOrdinal`, `ContainsIgnoreCase`, `HasValue` for strings |
+| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics"         | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
 
 ### Guard vs NullableExtensions
 
