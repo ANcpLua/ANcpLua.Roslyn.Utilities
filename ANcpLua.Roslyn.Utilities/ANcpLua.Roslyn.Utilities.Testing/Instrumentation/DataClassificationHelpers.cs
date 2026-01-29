@@ -4,7 +4,6 @@
 // =============================================================================
 
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 
