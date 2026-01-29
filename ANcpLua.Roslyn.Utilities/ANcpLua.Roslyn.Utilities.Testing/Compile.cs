@@ -263,7 +263,11 @@ public sealed class Compile
     /// </summary>
     /// <returns>The compiled assembly.</returns>
     /// <exception cref="InvalidOperationException">Thrown when compilation fails.</exception>
-    public Assembly BuildOrThrow() => Build().ShouldSucceed().Assembly!;
+    public Assembly BuildOrThrow()
+    {
+        var result = Build().ShouldSucceed();
+        return result.Assembly ?? throw new InvalidOperationException("Assembly was null after successful compilation");
+    }
 }
 
 /// <summary>
@@ -425,13 +429,39 @@ public sealed class CompileResult
     /// <returns>A formatted string containing all diagnostics.</returns>
     public string FormatDiagnostics()
     {
-        if (Diagnostics.Count == 0)
+        if (Diagnostics.Count is 0)
             return "(none)";
 
         var sb = new StringBuilder();
         foreach (var d in Diagnostics)
             sb.AppendLine($"  {d.Severity}: {d.Id} - {d.GetMessage()}");
         return sb.ToString();
+    }
+
+    /// <summary>
+    ///     Gets the combined source text from all syntax trees in the compilation.
+    /// </summary>
+    /// <returns>The combined source code.</returns>
+    public string GetSourceText()
+    {
+        var sb = new StringBuilder();
+        foreach (var tree in Compilation.SyntaxTrees)
+        {
+            if (sb.Length > 0)
+                sb.AppendLine();
+            sb.Append(tree.GetText());
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     Gets a semantic model for the first syntax tree.
+    /// </summary>
+    /// <returns>The semantic model, or <see langword="null" /> if no syntax trees exist.</returns>
+    public SemanticModel? GetSemanticModel()
+    {
+        var tree = Compilation.SyntaxTrees.FirstOrDefault();
+        return tree is null ? null : Compilation.GetSemanticModel(tree);
     }
 }
 
@@ -491,7 +521,7 @@ public static class CompileResultAssertions
     /// <returns>The same <see cref="CompileResult" /> instance for fluent chaining.</returns>
     public static CompileResult ShouldHaveNoWarnings(this CompileResult result)
     {
-        Assert.True(result.Warnings.Count == 0,
+        Assert.True(result.Warnings.Count is 0,
             $"Expected no warnings, got {result.Warnings.Count}. Diagnostics:\n{result.FormatDiagnostics()}");
         return result;
     }

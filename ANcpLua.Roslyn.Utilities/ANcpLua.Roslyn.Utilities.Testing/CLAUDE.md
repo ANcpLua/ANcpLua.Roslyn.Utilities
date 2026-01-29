@@ -329,6 +329,8 @@ result.CreateInstance(typeName)
 result.CreateInstance<T>(typeName)
 result.CreateRequiredInstance<T>(typeName)    // Throws if null
 result.FormatDiagnostics()
+result.GetSourceText()                        // Combined source from all trees
+result.GetSemanticModel()                     // SemanticModel for first tree
 ```
 
 ### CompileResultAssertions

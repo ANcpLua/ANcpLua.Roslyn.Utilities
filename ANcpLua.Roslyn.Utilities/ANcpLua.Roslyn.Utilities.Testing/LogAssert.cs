@@ -59,7 +59,7 @@ public static class LogAssert
     public static string FormatLogs(this FakeLogCollector collector)
     {
         var logs = collector.GetSnapshot();
-        if (logs.Count == 0)
+        if (logs.Count is 0)
             return "(empty)";
 
         var sb = new StringBuilder();
@@ -108,7 +108,7 @@ public static class LogAssert
     public static FakeLogCollector ShouldBeEmpty(this FakeLogCollector collector)
     {
         var logs = collector.GetSnapshot();
-        Assert.True(logs.Count == 0,
+        Assert.True(logs.Count is 0,
             $"Expected no log entries, got {logs.Count}.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -130,7 +130,7 @@ public static class LogAssert
         StringComparison comparison = StringComparison.Ordinal)
     {
         var logs = collector.GetSnapshot();
-        Assert.True(logs.Any(r => r.Message?.Contains(text, comparison) == true),
+        Assert.True(logs.Any(r => r.Message.Contains(text, comparison)),
             $"No log message contains '{text}'.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -148,7 +148,7 @@ public static class LogAssert
         StringComparison comparison = StringComparison.Ordinal)
     {
         var logs = collector.GetSnapshot();
-        Assert.True(!logs.Any(r => r.Message?.Contains(text, comparison) == true),
+        Assert.True(logs.All(r => !r.Message.Contains(text, comparison)),
             $"Log should not contain '{text}' but does.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -163,7 +163,7 @@ public static class LogAssert
     {
         var regex = new Regex(pattern);
         var logs = collector.GetSnapshot();
-        Assert.True(logs.Any(r => r.Message is not null && regex.IsMatch(r.Message)),
+        Assert.True(logs.Any(r => regex.IsMatch(r.Message)),
             $"No log message matches pattern '{pattern}'.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -195,7 +195,7 @@ public static class LogAssert
     public static FakeLogCollector ShouldNotHaveLevel(this FakeLogCollector collector, LogLevel level)
     {
         var logs = collector.GetSnapshot();
-        Assert.True(!logs.Any(r => r.Level == level),
+        Assert.True(logs.All(r => r.Level != level),
             $"Log should not contain level {level} but does.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -241,7 +241,7 @@ public static class LogAssert
         string containsText)
     {
         var logs = collector.GetSnapshot();
-        Assert.True(logs.Any(r => r.Level == level && r.Message?.Contains(containsText) == true),
+        Assert.True(logs.Any(r => r.Level == level && r.Message.Contains(containsText)),
             $"No {level} log containing '{containsText}'.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }
@@ -324,7 +324,7 @@ public static class LogAssert
     {
         var found = await WaitForCondition(
             collector,
-            logs => logs.Any(r => r.Message?.Contains(text) == true),
+            logs => logs.Any(r => r.Message.Contains(text)),
             timeout,
             ct);
 
