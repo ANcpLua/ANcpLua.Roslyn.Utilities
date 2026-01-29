@@ -50,7 +50,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     _name = name ?? throw new ArgumentNullException(nameof(name));
 ///     _service = service ?? throw new ArgumentNullException(nameof(service));
 /// }
-/// 
+///
 /// // After: Clean, expressive guards
 /// public void Process(string? name, IService? service)
 /// {
@@ -217,7 +217,7 @@ internal
     {
         if (value is null)
             throw new ArgumentNullException(paramName);
-        if (value.Length == 0)
+        if (value.Length is 0)
             throw new ArgumentException("Value cannot be empty.", paramName);
         return value;
     }
@@ -356,9 +356,7 @@ internal
     {
         if (value is null)
             throw new ArgumentNullException(paramName);
-        if (value.Count == 0)
-            throw new ArgumentException("Collection cannot be empty.", paramName);
-        return value;
+        return value.Count is 0 ? throw new ArgumentException("Collection cannot be empty.", paramName) : value;
     }
 
     /// <summary>
@@ -474,8 +472,6 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        if (!predicate(value))
-            throw new ArgumentException(message, paramName);
-        return value;
+        return !predicate(value) ? throw new ArgumentException(message, paramName) : value;
     }
 }

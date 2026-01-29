@@ -196,7 +196,7 @@ internal static class ForbiddenTypeAnalyzer
                     type.GetGenericTypeDefinition().FullName == "System.Collections.Immutable.ImmutableArray`1")
                 {
                     var isDefaultProp = type.GetProperty("IsDefault");
-                    if (isDefaultProp is not null && isDefaultProp.GetValue(node) is true)
+                    if (isDefaultProp?.GetValue(node) is true)
                         continue;
                 }
 

@@ -44,57 +44,57 @@ internal
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.IDisposable" />, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? IDisposable { get; }
+    private INamedTypeSymbol? IDisposable { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <c>IAsyncDisposable</c>, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? IAsyncDisposable { get; }
+    private INamedTypeSymbol? IAsyncDisposable { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Runtime.InteropServices.SafeHandle" />, or
     ///     <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? SafeHandle { get; }
+    private INamedTypeSymbol? SafeHandle { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.IO.Stream" />, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? Stream { get; }
+    private INamedTypeSymbol? Stream { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.IO.TextReader" />, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? TextReader { get; }
+    private INamedTypeSymbol? TextReader { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.IO.TextWriter" />, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? TextWriter { get; }
+    private INamedTypeSymbol? TextWriter { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Data.Common.DbConnection" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? DbConnection { get; }
+    private INamedTypeSymbol? DbConnection { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Data.Common.DbCommand" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? DbCommand { get; }
+    private INamedTypeSymbol? DbCommand { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Data.Common.DbDataReader" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? DbDataReader { get; }
+    private INamedTypeSymbol? DbDataReader { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Net.Http.HttpClient" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? HttpClient { get; }
+    private INamedTypeSymbol? HttpClient { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Net.Http.HttpMessageHandler" />, or <c>null</c> if
@@ -106,7 +106,7 @@ internal
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.CancellationTokenSource" />, or
     ///     <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? CancellationTokenSource { get; }
+    private INamedTypeSymbol? CancellationTokenSource { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.Timer" />, or <c>null</c> if not
@@ -118,31 +118,31 @@ internal
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.Semaphore" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? Semaphore { get; }
+    private INamedTypeSymbol? Semaphore { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.SemaphoreSlim" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? SemaphoreSlim { get; }
+    private INamedTypeSymbol? SemaphoreSlim { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.Mutex" />, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? Mutex { get; }
+    private INamedTypeSymbol? Mutex { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.ReaderWriterLock" />, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? ReaderWriterLock { get; }
+    private INamedTypeSymbol? ReaderWriterLock { get; }
 
     /// <summary>
     ///     Gets the <see cref="INamedTypeSymbol" /> for <see cref="System.Threading.ReaderWriterLockSlim" />, or <c>null</c>
     ///     if not available.
     /// </summary>
-    public INamedTypeSymbol? ReaderWriterLockSlim { get; }
+    private INamedTypeSymbol? ReaderWriterLockSlim { get; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="DisposableContext" /> class by resolving

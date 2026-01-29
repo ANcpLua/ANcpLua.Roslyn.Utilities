@@ -39,6 +39,8 @@
     <ItemGroup Label="MSBuild Testing">
         <PackageReference Include="Meziantou.Framework"/>
         <PackageReference Include="Meziantou.Framework.Threading"/>
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+        <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" />
         <PackageReference Include="MSBuild.StructuredLogger"/>
         <PackageReference Include="Microsoft.Deployment.DotNet.Releases"/>
         <PackageReference Include="xunit.v3.extensibility.core"/>

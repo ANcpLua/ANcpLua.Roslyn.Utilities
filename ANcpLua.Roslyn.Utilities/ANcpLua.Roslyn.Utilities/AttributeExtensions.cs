@@ -496,7 +496,7 @@ internal
                 builder.Add(derivedType);
         }
 
-        return builder.Count == 0 ? null : builder.ToImmutable();
+        return builder.Count is 0 ? null : builder.ToImmutable();
     }
 
     // ========== Private Helpers ==========

@@ -285,10 +285,7 @@ internal
         if (_array is null)
             return other._array is null;
 
-        if (other._array is null)
-            return false;
-
-        return AsSpan().SequenceEqual(other.AsSpan());
+        return other._array is not null && AsSpan().SequenceEqual(other.AsSpan());
     }
 
     /// <summary>

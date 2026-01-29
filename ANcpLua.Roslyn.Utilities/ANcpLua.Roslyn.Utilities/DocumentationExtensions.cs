@@ -119,7 +119,7 @@ internal
     ///         expandInheritdoc: true);
     ///     </code>
     /// </example>
-    public static string GetDocumentationComment(
+    private static string GetDocumentationComment(
         this ISymbol symbol,
         Compilation compilation,
         CultureInfo? preferredCulture = null,
@@ -364,7 +364,7 @@ internal
         }
     }
 
-    private static void RewriteTypeParameterReferences(XDocument document, ISymbol symbol)
+    private static void RewriteTypeParameterReferences(XContainer document, ISymbol symbol)
     {
         var typeParameterRefs = document
             .Descendants(DocumentationXmlNames.TypeParameterReferenceElementName)
@@ -424,11 +424,14 @@ internal
 
             while (sourceAttributes.MoveNext() && targetAttributes.MoveNext())
             {
-                // ReSharper disable NullableWarningSuppressionIsUsed
-                // After MoveNext() returns true, Current is guaranteed to be valid
-                Debug.Assert(sourceAttributes.Current!.Name == targetAttributes.Current!.Name);
-                CopyAnnotations(sourceAttributes.Current, targetAttributes.Current);
-                // ReSharper restore NullableWarningSuppressionIsUsed
+                var sourceAttr = sourceAttributes.Current;
+                var targetAttr = targetAttributes.Current;
+
+                if (sourceAttr is null || targetAttr is null)
+                    continue;
+
+                Debug.Assert(sourceAttr.Name == targetAttr.Name);
+                CopyAnnotations(sourceAttr, targetAttr);
             }
         }
 
@@ -445,8 +448,6 @@ internal
     {
         try
         {
-            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-            // XPathEvaluate can return null for certain expressions
             var xpathResult = (IEnumerable)node.XPathEvaluate(xpath);
             return xpathResult.Cast<XNode>().ToArray();
         }

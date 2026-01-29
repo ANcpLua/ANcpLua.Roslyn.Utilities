@@ -798,7 +798,7 @@ internal
         // Return only successful values using pattern matching to avoid null-forgiving operator
         return source
             .SelectMany(static (flow, _) => flow is { IsSuccess: true, Value: { } value }
-                ? ImmutableArray.Create(value)
+                ? [value]
                 : ImmutableArray<T>.Empty);
     }
 
@@ -880,7 +880,7 @@ internal
         // Only continue with values that have no errors using pattern matching to avoid null-forgiving operator
         return source
             .SelectMany(static (flow, _) => flow is { IsSuccess: true, Value: { } value }
-                ? ImmutableArray.Create(value)
+                ? [value]
                 : ImmutableArray<T>.Empty);
     }
 
@@ -939,7 +939,7 @@ internal
         this IncrementalValuesProvider<TSource> source,
         Func<TSource, CancellationToken, DiagnosticFlow<TResult>> selector)
     {
-        return source.Select((value, ct) => selector(value, ct));
+        return source.Select(selector);
     }
 
     /// <summary>

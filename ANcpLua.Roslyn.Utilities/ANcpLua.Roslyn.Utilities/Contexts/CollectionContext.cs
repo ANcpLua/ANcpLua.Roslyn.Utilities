@@ -37,130 +37,130 @@ internal
     sealed class CollectionContext
 {
     /// <summary>Gets the <see cref="System.Collections.IEnumerable" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? IEnumerable { get; }
+    private INamedTypeSymbol? IEnumerable { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.IEnumerable{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? IEnumerableOfT { get; }
+    private INamedTypeSymbol? IEnumerableOfT { get; }
 
     /// <summary>Gets the <see cref="System.Collections.ICollection" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? ICollection { get; }
+    private INamedTypeSymbol? ICollection { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.ICollection{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ICollectionOfT { get; }
+    private INamedTypeSymbol? ICollectionOfT { get; }
 
     /// <summary>Gets the <see cref="System.Collections.IList" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? IList { get; }
+    private INamedTypeSymbol? IList { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.IList{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? IListOfT { get; }
+    private INamedTypeSymbol? IListOfT { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.IReadOnlyCollection{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? IReadOnlyCollection { get; }
+    private INamedTypeSymbol? IReadOnlyCollection { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.IReadOnlyList{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? IReadOnlyList { get; }
+    private INamedTypeSymbol? IReadOnlyList { get; }
 
     /// <summary>Gets the <see cref="System.Collections.IDictionary" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? IDictionary { get; }
+    private INamedTypeSymbol? IDictionary { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.IDictionary{TKey, TValue}" /> type symbol, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? IDictionaryOfTKeyTValue { get; }
+    private INamedTypeSymbol? IDictionaryOfTKeyTValue { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.IReadOnlyDictionary{TKey, TValue}" /> type symbol, or
     ///     <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? IReadOnlyDictionary { get; }
+    private INamedTypeSymbol? IReadOnlyDictionary { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.ISet{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? ISet { get; }
+    private INamedTypeSymbol? ISet { get; }
 
     /// <summary>Gets the <c>IReadOnlySet&lt;T&gt;</c> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? IReadOnlySet { get; }
+    private INamedTypeSymbol? IReadOnlySet { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.List{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? List { get; }
+    private INamedTypeSymbol? List { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Generic.Dictionary{TKey, TValue}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? Dictionary { get; }
+    private INamedTypeSymbol? Dictionary { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.HashSet{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? HashSet { get; }
+    private INamedTypeSymbol? HashSet { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.Queue{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? Queue { get; }
+    private INamedTypeSymbol? Queue { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.Stack{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? Stack { get; }
+    private INamedTypeSymbol? Stack { get; }
 
     /// <summary>Gets the <see cref="System.Collections.Generic.LinkedList{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? LinkedList { get; }
+    private INamedTypeSymbol? LinkedList { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Immutable.ImmutableArray{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ImmutableArray { get; }
+    private INamedTypeSymbol? ImmutableArray { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Immutable.ImmutableList{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ImmutableList { get; }
+    private INamedTypeSymbol? ImmutableList { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Immutable.ImmutableDictionary{TKey, TValue}" /> type symbol, or
     ///     <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? ImmutableDictionary { get; }
+    private INamedTypeSymbol? ImmutableDictionary { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Collections.Immutable.ImmutableHashSet{T}" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ImmutableHashSet { get; }
+    private INamedTypeSymbol? ImmutableHashSet { get; }
 
     /// <summary>Gets the <c>System.Collections.Frozen.FrozenSet&lt;T&gt;</c> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? FrozenSet { get; }
+    private INamedTypeSymbol? FrozenSet { get; }
 
     /// <summary>
     ///     Gets the <c>System.Collections.Frozen.FrozenDictionary&lt;TKey, TValue&gt;</c> type symbol, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? FrozenDictionary { get; }
+    private INamedTypeSymbol? FrozenDictionary { get; }
 
     /// <summary>Gets the <see cref="System.ArraySegment{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? ArraySegment { get; }
+    private INamedTypeSymbol? ArraySegment { get; }
 
     /// <summary>Gets the <see cref="System.Span{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? Span { get; }
+    private INamedTypeSymbol? Span { get; }
 
     /// <summary>Gets the <see cref="System.ReadOnlySpan{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? ReadOnlySpan { get; }
+    private INamedTypeSymbol? ReadOnlySpan { get; }
 
     /// <summary>Gets the <see cref="System.Memory{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? Memory { get; }
+    private INamedTypeSymbol? Memory { get; }
 
     /// <summary>Gets the <see cref="System.ReadOnlyMemory{T}" /> type symbol, or <c>null</c> if not available.</summary>
-    public INamedTypeSymbol? ReadOnlyMemory { get; }
+    private INamedTypeSymbol? ReadOnlyMemory { get; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CollectionContext" /> class by resolving
@@ -213,11 +213,13 @@ internal
     /// <seealso cref="IsList" />
     public bool IsEnumerable(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
-        if (type is IArrayTypeSymbol)
-            return true;
+        switch (type)
+        {
+            case null:
+                return false;
+            case IArrayTypeSymbol:
+                return true;
+        }
 
         if (IEnumerable is not null && type.Implements(IEnumerable))
             return true;
@@ -242,11 +244,13 @@ internal
     /// <seealso cref="IsList" />
     public bool IsCollection(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
-        if (type is IArrayTypeSymbol)
-            return true;
+        switch (type)
+        {
+            case null:
+                return false;
+            case IArrayTypeSymbol:
+                return true;
+        }
 
         if (ICollection is not null && type.Implements(ICollection))
             return true;
@@ -271,11 +275,13 @@ internal
     /// <seealso cref="IsCollection" />
     public bool IsList(ITypeSymbol? type)
     {
-        if (type is null)
-            return false;
-
-        if (type is IArrayTypeSymbol)
-            return true;
+        switch (type)
+        {
+            case null:
+                return false;
+            case IArrayTypeSymbol:
+                return true;
+        }
 
         if (IList is not null && type.Implements(IList))
             return true;
@@ -305,7 +311,17 @@ internal
         if (IDictionary is not null && type.Implements(IDictionary))
             return true;
 
-        if (IDictionaryOfTKeyTValue is not null && type is INamedTypeSymbol named)
+        if (type is not INamedTypeSymbol named)
+            return false;
+
+        var original = named.OriginalDefinition;
+
+        // Check concrete dictionary types
+        if (Dictionary is not null && SymbolEqualityComparer.Default.Equals(original, Dictionary))
+            return true;
+
+        // Check generic dictionary interface
+        if (IDictionaryOfTKeyTValue is not null)
             foreach (var iface in named.AllInterfaces)
                 if (SymbolEqualityComparer.Default.Equals(iface.OriginalDefinition, IDictionaryOfTKeyTValue))
                     return true;
@@ -373,7 +389,7 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsImmutable" />
-    public bool IsFrozen(ITypeSymbol? type)
+    public  bool IsFrozen(ITypeSymbol? type)
     {
         if (type is not INamedTypeSymbol named)
             return false;
@@ -503,7 +519,7 @@ internal
     /// <summary>
     ///     Determines whether the specified type definition is a known single-element collection type.
     /// </summary>
-    private bool IsSingleElementCollectionType(INamedTypeSymbol original) =>
+    public bool IsSingleElementCollectionType(ISymbol original) =>
         MatchesAny(original,
             IEnumerableOfT, ICollectionOfT, IListOfT, IReadOnlyCollection, IReadOnlyList,
             ISet, IReadOnlySet, List, HashSet, Queue, Stack, LinkedList,
@@ -513,7 +529,7 @@ internal
     /// <summary>
     ///     Checks if the specified type matches any of the provided candidate types.
     /// </summary>
-    private static bool MatchesAny(INamedTypeSymbol type, params INamedTypeSymbol?[] candidates)
+    public static bool MatchesAny(ISymbol type, params INamedTypeSymbol?[] candidates)
     {
         foreach (var candidate in candidates)
             if (candidate is not null && SymbolEqualityComparer.Default.Equals(type, candidate))

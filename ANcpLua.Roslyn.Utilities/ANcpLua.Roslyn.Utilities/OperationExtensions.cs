@@ -187,7 +187,7 @@ internal
     ///     Checks if a type is constructed from the <c>Expression&lt;T&gt;</c> open generic type
     ///     or inherits from such a type.
     /// </summary>
-    private static bool IsConstructedFromExpressionType(ITypeSymbol type, INamedTypeSymbol expressionSymbol)
+    private static bool IsConstructedFromExpressionType(ITypeSymbol type, ISymbol expressionSymbol)
     {
         // Check if the type itself is a constructed Expression<T>
         if (type is INamedTypeSymbol namedType &&
@@ -882,8 +882,8 @@ internal
             IFieldReferenceOperation fieldRef => fieldRef.Field.Name,
             ILocalReferenceOperation localRef => localRef.Local.Name,
             IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
-            IConversionOperation conversion => GetCollectionSourceName(conversion.Operand),
-            IParenthesizedOperation paren => GetCollectionSourceName(paren.Operand),
+            IConversionOperation conversion => conversion.Operand.GetCollectionSourceName(),
+            IParenthesizedOperation paren => paren.Operand.GetCollectionSourceName(),
             _ => null
         };
     }

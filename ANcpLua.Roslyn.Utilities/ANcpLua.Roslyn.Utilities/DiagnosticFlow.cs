@@ -403,9 +403,7 @@ internal
 
         var hasErrors = false;
         foreach (var d in diagnostics)
-            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-            // Defensive: guard against default(DiagnosticInfo) with null Descriptor
-            if (d.Descriptor?.DefaultSeverity == DiagnosticSeverity.Error)
+            if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
             {
                 hasErrors = true;
                 break;
@@ -540,7 +538,7 @@ internal
         SourceProductionContext context)
     {
         flow.Report(context);
-        if (flow is { IsSuccess: true, Value: { } files })
+        if (flow is { IsSuccess: true, Value: var files })
             foreach (var file in files)
                 context.AddSource(file.Name, file.Text);
     }

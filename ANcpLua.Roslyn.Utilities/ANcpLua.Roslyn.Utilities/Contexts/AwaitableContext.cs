@@ -39,40 +39,40 @@ internal
     /// <summary>
     ///     Gets the <see cref="System.Threading.Tasks.Task" /> type symbol, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? Task { get; }
+    private INamedTypeSymbol? Task { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Threading.Tasks.Task{TResult}" /> generic type definition, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? TaskOfT { get; }
+    private INamedTypeSymbol? TaskOfT { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Threading.Tasks.ValueTask" /> type symbol, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? ValueTask { get; }
+    private INamedTypeSymbol? ValueTask { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Threading.Tasks.ValueTask{TResult}" /> generic type definition, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ValueTaskOfT { get; }
+    private INamedTypeSymbol? ValueTaskOfT { get; }
 
     /// <summary>
     ///     Gets the <c>IAsyncEnumerable&lt;T&gt;</c> generic type definition, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? IAsyncEnumerable { get; }
+    private INamedTypeSymbol? IAsyncEnumerable { get; }
 
     /// <summary>
     ///     Gets the <c>IAsyncEnumerator&lt;T&gt;</c> generic type definition, or <c>null</c> if not available.
     /// </summary>
-    public INamedTypeSymbol? IAsyncEnumerator { get; }
+    private INamedTypeSymbol? IAsyncEnumerator { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Runtime.CompilerServices.INotifyCompletion" /> interface type symbol, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? INotifyCompletion { get; }
+    private INamedTypeSymbol? INotifyCompletion { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Runtime.CompilerServices.ICriticalNotifyCompletion" /> interface type symbol, or
@@ -84,19 +84,19 @@ internal
     ///     Gets the <see cref="System.Runtime.CompilerServices.AsyncMethodBuilderAttribute" /> type symbol, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? AsyncMethodBuilderAttribute { get; }
+    private INamedTypeSymbol? AsyncMethodBuilderAttribute { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Runtime.CompilerServices.ConfiguredTaskAwaitable" /> type symbol, or <c>null</c> if not
     ///     available.
     /// </summary>
-    public INamedTypeSymbol? ConfiguredTaskAwaitable { get; }
+    private INamedTypeSymbol? ConfiguredTaskAwaitable { get; }
 
     /// <summary>
     ///     Gets the <see cref="System.Runtime.CompilerServices.ConfiguredValueTaskAwaitable" /> type symbol, or <c>null</c> if
     ///     not available.
     /// </summary>
-    public INamedTypeSymbol? ConfiguredValueTaskAwaitable { get; }
+    private INamedTypeSymbol? ConfiguredValueTaskAwaitable { get; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AwaitableContext" /> class.
@@ -321,10 +321,7 @@ internal
                 return true;
         }
 
-        if (AsyncMethodBuilderAttribute is not null && method.ReturnType.HasAttribute(AsyncMethodBuilderAttribute))
-            return true;
-
-        return false;
+        return AsyncMethodBuilderAttribute is not null && method.ReturnType.HasAttribute(AsyncMethodBuilderAttribute);
     }
 
     /// <summary>

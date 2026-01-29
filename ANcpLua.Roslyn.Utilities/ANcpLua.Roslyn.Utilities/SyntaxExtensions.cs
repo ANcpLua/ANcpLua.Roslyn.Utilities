@@ -165,13 +165,13 @@ internal
     /// {
     ///     // Analyze async-specific patterns
     /// }
-    /// 
+    ///
     /// // Check for static members
     /// if (memberDeclaration.HasModifier(SyntaxKind.StaticKeyword))
     /// {
     ///     // Apply static member rules
     /// }
-    /// 
+    ///
     /// // Check for virtual methods that could be overridden
     /// if (methodDeclaration.HasModifier(SyntaxKind.VirtualKeyword) ||
     ///     methodDeclaration.HasModifier(SyntaxKind.AbstractKeyword))
@@ -305,7 +305,7 @@ internal
             receiver.WithoutTrivia(),
             SyntaxFactory.IdentifierName(methodName));
 
-        if (arguments.Length == 0)
+        if (arguments.Length is 0)
             return SyntaxFactory.InvocationExpression(memberAccess);
 
         var argumentList = SyntaxFactory.ArgumentList(
@@ -334,7 +334,7 @@ internal
     public static InvocationExpressionSyntax CreateExtensionMethodCall(
         this ExpressionSyntax receiver,
         string methodName) =>
-        receiver.CreateExtensionMethodCall(methodName, Array.Empty<ExpressionSyntax>());
+        receiver.CreateExtensionMethodCall(methodName, []);
 
     /// <summary>
     ///     Adds the <c>static</c> modifier to an anonymous function (lambda or delegate).

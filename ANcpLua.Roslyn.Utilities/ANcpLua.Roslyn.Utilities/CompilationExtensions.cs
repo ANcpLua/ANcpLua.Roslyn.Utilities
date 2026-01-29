@@ -204,6 +204,7 @@ internal
                 case SymbolVisibility.Internal when currentType.ContainingAssembly.GivesAccessTo(compilation.Assembly):
                     break;
 
+                case SymbolVisibility.Private:
                 default:
                     continue;
             }

@@ -212,7 +212,7 @@ internal
     /// <seealso cref="TryGetPropertyValue{T}(object?, string, T)" />
     public static bool HasProperty(this object? obj, string propertyName)
     {
-        return obj?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) != null;
+        return obj?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) is not null;
     }
 
     /// <summary>

@@ -258,9 +258,12 @@ internal
         return ns.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
     }
 
-    private static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamedTypeSymbol type)
+    private static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamespaceOrTypeSymbol type)
     {
-        foreach (var nested in type.GetTypeMembers())
+        if (type is not INamedTypeSymbol namedType)
+            yield break;
+
+        foreach (var nested in namedType.GetTypeMembers())
         {
             yield return nested;
             foreach (var deepNested in GetNestedTypes(nested))

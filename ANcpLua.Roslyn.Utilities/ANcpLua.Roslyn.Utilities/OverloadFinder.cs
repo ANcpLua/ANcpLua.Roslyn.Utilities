@@ -322,7 +322,7 @@ internal
         return false;
     }
 
-    private static bool HasParameterOfType(IMethodSymbol method, ITypeSymbol type)
+    private static bool HasParameterOfType(IMethodSymbol method, ISymbol type)
     {
         foreach (var param in method.Parameters)
             if (param.Type.IsEqualTo(type))
@@ -351,7 +351,7 @@ internal
     }
 
     private static bool HasSimilarParameters(IMethodSymbol original, IMethodSymbol candidate,
-        ITypeSymbol additionalType)
+        ISymbol additionalType)
     {
         // Candidate should have all parameters of original plus the additional one
         if (candidate.Parameters.Length != original.Parameters.Length + 1)
@@ -363,10 +363,8 @@ internal
         var additionalFound = false;
         var originalIndex = 0;
 
-        for (var i = 0; i < candidateParams.Length; i++)
+        foreach (var candidateParam in candidateParams)
         {
-            var candidateParam = candidateParams[i];
-
             if (!additionalFound && candidateParam.Type.IsEqualTo(additionalType))
             {
                 additionalFound = true;
@@ -424,5 +422,5 @@ internal
         return additionalTypesRemaining.Count is 0 && originalParams.Count is 0;
     }
 
-    private bool IsObsolete(IMethodSymbol method) => _obsoleteAttribute is not null && method.HasAttribute(_obsoleteAttribute);
+    private bool IsObsolete(ISymbol method) => _obsoleteAttribute is not null && method.HasAttribute(_obsoleteAttribute);
 }

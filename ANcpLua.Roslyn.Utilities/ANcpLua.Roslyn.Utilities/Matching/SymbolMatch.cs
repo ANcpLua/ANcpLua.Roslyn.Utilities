@@ -922,7 +922,7 @@ internal
         return AddPredicate(t => HasParameterlessCtor(t));
     }
 
-    private static bool InheritsFromName(INamedTypeSymbol type, string name)
+    private static bool InheritsFromName(ITypeSymbol type, string name)
     {
         var current = type.BaseType;
         while (current is not null)
@@ -935,9 +935,12 @@ internal
         return false;
     }
 
-    private static bool ImplementsInterface(INamedTypeSymbol type, string name)
+    private static bool ImplementsInterface(ITypeSymbol type, string name)
     {
-        foreach (var iface in type.AllInterfaces)
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        foreach (var iface in namedType.AllInterfaces)
             if (iface.Name == name || iface.ToDisplayString() == name)
                 return true;
 

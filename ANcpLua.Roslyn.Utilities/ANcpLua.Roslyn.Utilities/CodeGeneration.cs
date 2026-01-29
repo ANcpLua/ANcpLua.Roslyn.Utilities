@@ -150,9 +150,7 @@ internal
     /// <seealso cref="RestoreWarnings" />
     public static string SuppressWarnings(params string[] warningIds)
     {
-        if (warningIds.Length is 0)
-            return string.Empty;
-        return $"#pragma warning disable {string.Join(", ", warningIds)}";
+        return warningIds.Length is 0 ? string.Empty : $"#pragma warning disable {string.Join(", ", warningIds)}";
     }
 
     /// <summary>
@@ -166,9 +164,7 @@ internal
     /// <seealso cref="SuppressWarnings" />
     public static string RestoreWarnings(params string[] warningIds)
     {
-        if (warningIds.Length is 0)
-            return string.Empty;
-        return $"#pragma warning restore {string.Join(", ", warningIds)}";
+        return warningIds.Length is 0 ? string.Empty : $"#pragma warning restore {string.Join(", ", warningIds)}";
     }
 }
 

@@ -5,7 +5,7 @@ namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
 ///     Extension methods that simplify diagnostic reporting by combining
-///     <see cref="Diagnostic.Create" /> and <c>ReportDiagnostic</c> into a single call.
+///     <see cref="Diagnostic" />.<c>Create</c> and <c>ReportDiagnostic</c> into a single call.
 /// </summary>
 /// <remarks>
 ///     <para>
