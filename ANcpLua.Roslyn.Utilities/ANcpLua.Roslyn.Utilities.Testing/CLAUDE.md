@@ -265,6 +265,137 @@ var dotnetPath = await DotNetSdkHelpers.Get(NetSdkVersion.Net100);
 DotNetSdkHelpers.ClearCache();                // Clear in-memory cache
 ```
 
+## Dynamic Compilation
+
+### Compile
+
+```csharp
+// Basic compilation with assertions
+Compile.Source(code)
+    .WithCommonReferences()
+    .Build()
+    .ShouldSucceed();
+
+// Get assembly directly (throws on failure)
+var assembly = Compile.Source(code).BuildOrThrow();
+
+// Create instance from compiled code
+var instance = Compile.Source(code)
+    .Build()
+    .ShouldSucceed()
+    .CreateInstance<IGreeter>("Greeter");
+```
+
+### Compile Builder Methods
+
+```csharp
+Compile.Source(code)                          // Create with source
+Compile.Empty()                               // Create empty
+    .WithSource(code)                         // Add source
+    .WithSources(code1, code2)                // Add multiple sources
+    .WithReference<T>()                       // Reference from type
+    .WithReference(assembly)                  // Reference from assembly
+    .WithReference(path)                      // Reference from path
+    .WithReferences(types)                    // Multiple type references
+    .WithCommonReferences()                   // Console, Linq, Collections
+    .WithAssemblyName(name)
+    .WithOutputKind(kind)
+    .AsExecutable()                           // ConsoleApplication
+    .WithLanguageVersion(version)
+    .WithOptimization()                       // Release mode
+    .WithUnsafe()                             // Allow unsafe
+    .Build()                                  // Returns CompileResult
+    .BuildOrThrow()                           // Returns Assembly
+```
+
+### CompileResult
+
+```csharp
+result.Succeeded
+result.Failed
+result.Assembly                               // Loaded assembly if succeeded
+result.Compilation                            // CSharpCompilation
+result.Diagnostics                            // All diagnostics
+result.Errors                                 // Error diagnostics
+result.Warnings                               // Warning diagnostics
+
+// Query methods
+result.HasError(errorId)
+result.HasWarning(warningId)
+result.ContainsType(typeName)
+result.GetType(name)
+result.GetRequiredType(name)                  // Throws if not found
+result.CreateInstance(typeName)
+result.CreateInstance<T>(typeName)
+result.CreateRequiredInstance<T>(typeName)    // Throws if null
+result.FormatDiagnostics()
+```
+
+### CompileResultAssertions
+
+```csharp
+result.ShouldSucceed(because)
+result.ShouldFail(because)
+result.ShouldHaveNoWarnings()
+result.ShouldHaveError(errorId)
+result.ShouldHaveWarning(warningId)
+result.ShouldHaveErrors(count)
+result.ShouldContainType(typeName)
+```
+
+## Log Testing
+
+### LogAssert
+
+```csharp
+// Fluent chaining
+collector
+    .ShouldHaveCount(3)
+    .ShouldContain("started")
+    .ShouldHaveNoErrors();
+
+// Async waiting
+await collector.ShouldEventuallyContain("completed");
+```
+
+### LogAssert Methods
+
+```csharp
+// Count assertions
+collector.ShouldHaveCount(expected)
+collector.ShouldHaveExactCount(expected)
+collector.ShouldBeEmpty()
+
+// Content assertions
+collector.ShouldContain(text, comparison)
+collector.ShouldNotContain(text, comparison)
+collector.ShouldMatch(pattern)                // Regex
+
+// Level assertions
+collector.ShouldHaveLevel(level)
+collector.ShouldNotHaveLevel(level)
+collector.ShouldHaveNoErrors()
+collector.ShouldHaveNoWarnings()
+collector.ShouldBeClean()                     // No errors or warnings
+
+// Combined assertions
+collector.ShouldHave(level, containsText)
+
+// Predicate assertions
+collector.ShouldHaveAny(predicate, because)
+collector.ShouldHaveAll(predicate, because)
+collector.ShouldHaveNone(predicate, because)
+
+// Async waiting
+await collector.ShouldEventuallyContain(text, timeout, ct)
+await collector.ShouldEventuallyHaveCount(count, timeout, ct)
+await collector.ShouldEventuallyHaveLevel(level, timeout, ct)
+await collector.ShouldEventuallySatisfy(condition, because, timeout, ct)
+
+// Utility
+collector.FormatLogs()                        // For display
+```
+
 ## Caching Analysis
 
 ### GeneratorCachingReport
@@ -309,6 +440,8 @@ ANcpLua.Roslyn.Utilities.Testing/
 ├── AnalyzerTest.cs              # Base class for analyzer tests
 ├── CodeFixTest.cs               # Base class for code fix tests
 ├── CodeFixTestWithEditorConfig.cs  # Code fix tests with EditorConfig
+├── Compile.cs                   # Dynamic compilation + CompileResult + assertions
+├── LogAssert.cs                 # FakeLogCollector assertions
 ├── Analysis/
 │   └── StepClassification.cs    # GeneratorStepAnalysis + classification
 ├── Formatting/
