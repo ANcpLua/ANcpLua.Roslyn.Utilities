@@ -476,6 +476,144 @@ internal
         return !predicate(value) ? throw new ArgumentException(message, paramName) : value;
     }
 
+    #region String Length
+
+    /// <summary>
+    ///     Validates that a string has exactly the specified length and returns it.
+    /// </summary>
+    /// <param name="value">The string to validate.</param>
+    /// <param name="length">The required length.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated string.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> does not have the required length.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetCountryCode(string code)
+    /// {
+    ///     _code = Guard.HasLength(code, 2); // ISO country codes
+    /// }
+    /// </code>
+    /// </example>
+    public static string HasLength(
+        [NotNull] string? value,
+        int length,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        NotNull(value, paramName);
+
+        if (value.Length != length)
+            throw new ArgumentException($"String must be exactly {length} characters. Actual: {value.Length}.", paramName);
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a string has at least the specified minimum length and returns it.
+    /// </summary>
+    /// <param name="value">The string to validate.</param>
+    /// <param name="minLength">The minimum required length.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated string.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is shorter than <paramref name="minLength" />.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetPassword(string password)
+    /// {
+    ///     _password = Guard.HasMinLength(password, 8);
+    /// }
+    /// </code>
+    /// </example>
+    public static string HasMinLength(
+        [NotNull] string? value,
+        int minLength,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        NotNull(value, paramName);
+
+        if (value.Length < minLength)
+            throw new ArgumentException($"String must be at least {minLength} characters. Actual: {value.Length}.", paramName);
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a string does not exceed the specified maximum length and returns it.
+    /// </summary>
+    /// <param name="value">The string to validate.</param>
+    /// <param name="maxLength">The maximum allowed length.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated string.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> exceeds <paramref name="maxLength" />.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetUsername(string username)
+    /// {
+    ///     _username = Guard.HasMaxLength(username, 50);
+    /// }
+    /// </code>
+    /// </example>
+    public static string HasMaxLength(
+        [NotNull] string? value,
+        int maxLength,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        NotNull(value, paramName);
+
+        if (value.Length > maxLength)
+            throw new ArgumentException($"String must not exceed {maxLength} characters. Actual: {value.Length}.", paramName);
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a string length is within the specified range (inclusive) and returns it.
+    /// </summary>
+    /// <param name="value">The string to validate.</param>
+    /// <param name="minLength">The minimum required length.</param>
+    /// <param name="maxLength">The maximum allowed length.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated string.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> length is outside the specified range.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetDisplayName(string name)
+    /// {
+    ///     _name = Guard.HasLengthBetween(name, 3, 100);
+    /// }
+    /// </code>
+    /// </example>
+    public static string HasLengthBetween(
+        [NotNull] string? value,
+        int minLength,
+        int maxLength,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        NotNull(value, paramName);
+
+        if (value.Length < minLength || value.Length > maxLength)
+            throw new ArgumentException($"String length must be between {minLength} and {maxLength}. Actual: {value.Length}.", paramName);
+
+        return value;
+    }
+
+    #endregion
+
     #region Collections
 
     /// <summary>
@@ -887,6 +1025,132 @@ internal
 
     #endregion
 
+    #region Set Membership
+
+    /// <summary>
+    ///     Validates that a value is one of the allowed values and returns it.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="allowed">The set of allowed values.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is not in <paramref name="allowed" />.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetProtocol(string protocol)
+    /// {
+    ///     _protocol = Guard.OneOf(protocol, "http", "https", "ftp");
+    /// }
+    /// </code>
+    /// </example>
+    public static T OneOf<T>(
+        T value,
+        T[] allowed,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        foreach (var item in allowed)
+        {
+            if (EqualityComparer<T>.Default.Equals(value, item))
+                return value;
+        }
+
+        var allowedStr = string.Join(", ", allowed);
+        throw new ArgumentException($"Value must be one of: [{allowedStr}]. Actual: {value}.", paramName);
+    }
+
+    /// <summary>
+    ///     Validates that a value is one of the allowed values and returns it.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="allowed">The set of allowed values.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is not in <paramref name="allowed" />.</exception>
+    public static T OneOf<T>(
+        T value,
+        HashSet<T> allowed,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (allowed.Contains(value))
+            return value;
+
+        var allowedStr = string.Join(", ", allowed);
+        throw new ArgumentException($"Value must be one of: [{allowedStr}]. Actual: {value}.", paramName);
+    }
+
+    /// <summary>
+    ///     Validates that a value is not one of the disallowed values and returns it.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="disallowed">The set of disallowed values.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is in <paramref name="disallowed" />.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetPort(int port)
+    /// {
+    ///     _port = Guard.NotOneOf(port, 0, 80, 443); // Reserved ports
+    /// }
+    /// </code>
+    /// </example>
+    public static T NotOneOf<T>(
+        T value,
+        T[] disallowed,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        foreach (var item in disallowed)
+        {
+            if (EqualityComparer<T>.Default.Equals(value, item))
+            {
+                var disallowedStr = string.Join(", ", disallowed);
+                throw new ArgumentException($"Value must not be one of: [{disallowedStr}]. Actual: {value}.", paramName);
+            }
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a value is not one of the disallowed values and returns it.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="disallowed">The set of disallowed values.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is in <paramref name="disallowed" />.</exception>
+    public static T NotOneOf<T>(
+        T value,
+        HashSet<T> disallowed,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (disallowed.Contains(value))
+        {
+            var disallowedStr = string.Join(", ", disallowed);
+            throw new ArgumentException($"Value must not be one of: [{disallowedStr}]. Actual: {value}.", paramName);
+        }
+
+        return value;
+    }
+
+    #endregion
+
     #region Numeric - Int32
 
     /// <summary>
@@ -1287,6 +1551,59 @@ internal
 
         return value.StartsWith(".") ? value : "." + value;
     }
+
+    #endregion
+
+    #region Value Type Validation
+
+    /// <summary>
+    ///     Validates that a value type is not its default value and returns it.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> equals <c>default(T)</c>.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetId(Guid id)
+    /// {
+    ///     _id = Guard.NotDefault(id);
+    /// }
+    /// </code>
+    /// </example>
+    public static T NotDefault<T>(T value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        where T : struct
+    {
+        if (EqualityComparer<T>.Default.Equals(value, default))
+            throw new ArgumentException("Value cannot be default.", paramName);
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="Guid" /> is not empty and returns it.
+    /// </summary>
+    /// <param name="value">The Guid to validate.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated Guid.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is <see cref="Guid.Empty" />.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetUserId(Guid userId)
+    /// {
+    ///     _userId = Guard.NotEmpty(userId);
+    /// }
+    /// </code>
+    /// </example>
+    public static Guid NotEmpty(Guid value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        => value == Guid.Empty
+            ? throw new ArgumentException("Guid cannot be empty.", paramName)
+            : value;
 
     #endregion
 
