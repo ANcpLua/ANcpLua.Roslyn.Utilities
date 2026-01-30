@@ -137,13 +137,13 @@ internal
     /// {
     ///     // Method is marked obsolete
     /// }
-    /// 
+    ///
     /// // Check for custom attributes
     /// if (classSymbol.HasAttribute("MyNamespace.MyCustomAttribute"))
     /// {
     ///     // Apply custom logic
     /// }
-    /// 
+    ///
     /// // Check for serialization attributes
     /// if (fieldSymbol.HasAttribute("System.NonSerializedAttribute"))
     /// {
@@ -543,11 +543,11 @@ internal
             return ImmutableArray<ISymbol>.Empty;
 
         var containingType = symbol.ContainingType;
-        var query = from iface in containingType.AllInterfaces
-            from interfaceMember in iface.GetMembers()
-            let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
-            where SymbolEqualityComparer.Default.Equals(symbol, impl)
-            select interfaceMember;
+        var query = containingType.AllInterfaces
+            .SelectMany(iface => iface.GetMembers(), (iface, interfaceMember) => new { iface, interfaceMember })
+            .Select(t => new { t, impl = containingType.FindImplementationForInterfaceMember(t.interfaceMember) })
+            .Where(t => SymbolEqualityComparer.Default.Equals(symbol, t.impl))
+            .Select(t => t.t.interfaceMember);
         return [..query];
     }
 
