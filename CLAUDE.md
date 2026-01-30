@@ -1,106 +1,349 @@
 # CLAUDE.md - ANcpLua.Roslyn.Utilities
 
-Reusable utilities for Roslyn incremental source generators.
+**The SOURCE OF TRUTH for Roslyn utilities.** Other repositories (ErrorOrX, ANcpLua.Analyzers, qyl) consume these utilities. Check here FIRST before writing any helper code.
 
 ## Ecosystem Position
 
 ```
-LAYER 0: ANcpLua.Roslyn.Utilities  <-- YOU ARE HERE (UPSTREAM)
-         | publishes .Sources
-LAYER 1: ANcpLua.NET.Sdk           <-- SOURCE OF TRUTH (Version.props)
+LAYER 0: ANcpLua.Roslyn.Utilities  <-- YOU ARE HERE (UPSTREAM SOURCE OF TRUTH)
+         | publishes packages
+LAYER 1: ANcpLua.NET.Sdk           <-- Syncs Version.props from here
          | auto-syncs Version.props
 LAYER 2: ANcpLua.Analyzers         <-- DOWNSTREAM (uses SDK)
          | consumed by
-LAYER 3: qyl, other projects       <-- END USERS
+LAYER 3: ErrorOrX, qyl, other      <-- END USERS
 ```
 
-### This Repo: LAYER 0 (Upstream)
+### Critical Rules
 
-| Property | Value |
-|----------|-------|
-| **Upstream dependencies** | None (Microsoft.NET.Sdk only) |
-| **Downstream consumers** | ANcpLua.NET.Sdk |
-| **Version.props** | CUSTOM (own Roslyn versions) |
-| **Auto-sync** | NO (manual sync only) |
+| Rule | Description |
+|------|-------------|
+| **No SDK dependency** | This repo CANNOT depend on ANcpLua.NET.Sdk (circular) |
+| **Publish first** | Must publish to NuGet before SDK can update |
+| **Check before writing** | Always search this repo before writing helper code |
 
-## CRITICAL: Dependency Direction
+## Packages
 
-**THIS REPO IS UPSTREAM - IT CANNOT DEPEND ON ANcpLua.NET.Sdk**
-
-**NEVER add:**
-- `Sdk="ANcpLua.NET.Sdk"` in any csproj
-- `msbuild-sdks` referencing ANcpLua.NET.Sdk in global.json
-- Any PackageReference to ANcpLua.NET.Sdk packages
-
-CI will fail if these are detected.
+| Package | Target | Purpose |
+|---------|--------|---------|
+| `ANcpLua.Roslyn.Utilities` | `netstandard2.0` | Core utilities for generators/analyzers |
+| `ANcpLua.Roslyn.Utilities.Testing` | `net10.0` | Testing framework for Roslyn tooling |
 
 ## Build Commands
 
 ```bash
-# Build
 dotnet build -c Release
-
-# Pack
 dotnet pack -c Release
+dotnet test
 ```
+
+---
+
+## Utility Catalog - CHECK HERE FIRST
+
+Before writing ANY helper code, search this catalog. Duplication is the enemy.
+
+### Core Types
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `EquatableArray<T>` | Value-equality array for generator caching | `EquatableArray.cs` |
+| `DiagnosticFlow<T>` | Railway-oriented error accumulation | `DiagnosticFlow.cs` |
+| `DiagnosticInfo` | Equatable diagnostic for caching | `Models/DiagnosticInfo.cs` |
+| `LocationInfo` | Serializable location | `Models/LocationInfo.cs` |
+| `FileWithName` | Hint name + generated content | `Models/FileWithName.cs` |
+| `HashCombiner` | Hash code combining | `HashCombiner.cs` |
+| `ValueStringBuilder` | Stack-allocated string building | `ValueStringBuilder.cs` |
+
+### Pattern Matching DSL
+
+| Entry Point | Purpose | Location |
+|-------------|---------|----------|
+| `Match.Method()` | Method symbol matching | `Matching/SymbolMatch.cs` |
+| `Match.Type()` | Type symbol matching | `Matching/SymbolMatch.cs` |
+| `Match.Property()` | Property symbol matching | `Matching/SymbolMatch.cs` |
+| `Match.Field()` | Field symbol matching | `Matching/SymbolMatch.cs` |
+| `Match.Parameter()` | Parameter symbol matching | `Matching/SymbolMatch.cs` |
+| `Invoke.Method()` | Invocation operation matching | `Matching/InvocationMatch.cs` |
+
+### Validation
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `Guard.NotNull()` | Argument validation with CallerArgumentExpression | `Guard.cs` |
+| `Guard.NotNullOrElse()` | Null fallback (eager or lazy) | `Guard.cs` |
+| `Guard.FileExists()` | File/directory existence validation | `Guard.cs` |
+| `Guard.ValidFileName()` | Path character validation | `Guard.cs` |
+| `Guard.DefinedEnum<T>()` | Enum value validation | `Guard.cs` |
+| `Guard.NotNegative()` | Numeric guards (int, long, double, decimal) | `Guard.cs` |
+| `Guard.Unreachable()` | Unreachable code marker with caller info | `Guard.cs` |
+| `SemanticGuard<T>` | Declarative semantic validation | `SemanticGuard.cs` |
+
+### Domain Contexts (cache well-known types)
+
+| Context | Purpose | Location |
+|---------|---------|----------|
+| `AwaitableContext` | Task/ValueTask/async patterns | `Contexts/AwaitableContext.cs` |
+| `AspNetContext` | Controllers, actions, binding | `Contexts/AspNetContext.cs` |
+| `DisposableContext` | IDisposable/IAsyncDisposable | `Contexts/DisposableContext.cs` |
+| `CollectionContext` | IEnumerable, lists, dictionaries | `Contexts/CollectionContext.cs` |
+
+### Extension Categories
+
+| File | Purpose |
+|------|---------|
+| `SymbolExtensions.cs` | Symbol attributes, visibility, equality |
+| `TypeSymbolExtensions.cs` | Type hierarchy, primitives, patterns |
+| `MethodSymbolExtensions.cs` | Interface implementation, overrides |
+| `OperationExtensions.cs` | Operation tree navigation, context detection |
+| `InvocationExtensions.cs` | Invocation arguments, receivers |
+| `SyntaxExtensions.cs` | Syntax modifiers, locations |
+| `CompilationExtensions.cs` | Target framework detection |
+| `EnumerableExtensions.cs` | `.OrEmpty()`, `.WhereNotNull()`, etc. |
+| `NullableExtensions.cs` | Functional nullable transforms |
+| `StringExtensions.cs` | Name conversion, line splitting |
+| `StringComparisonExtensions.cs` | Ordinal comparisons |
+| `TryExtensions.cs` | TryParse, TryGet patterns |
+| `DictionaryExtensions.cs` | Dictionary utilities |
+| `ListExtensions.cs` | List utilities |
+
+### Pipeline Extensions
+
+| File | Purpose |
+|------|---------|
+| `IncrementalValuesProviderExtensions.cs` | Generator pipeline operations |
+| `SyntaxValueProviderExtensions.cs` | Syntax-filtered providers |
+| `SourceProductionContextExtensions.cs` | Output source files |
+
+### Code Generation
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `IndentedStringBuilder` | Structured code building | `CodeGeneration.cs` |
+| `GeneratedCodeHelpers` | Standard headers/attributes | `CodeGeneration.cs` |
+
+### Configuration
+
+| File | Purpose |
+|------|---------|
+| `AnalyzerConfigOptionsProviderExtensions.cs` | MSBuild property access |
+| `AnalyzerOptionsExtensions.cs` | EditorConfig access |
+
+---
+
+## Key Utility Reference
+
+### EquatableArray<T> - Generator Caching
+
+```csharp
+// Create from ImmutableArray
+var equatable = items.ToImmutableArray().AsEquatableArray();
+
+// Create from array (ownership transfer)
+var equatable = new[] { "a", "b" }.ToEquatableArray();
+
+// Use in records for generator caching
+public record EndpointModel(
+    string Name,
+    EquatableArray<string> Parameters  // Value equality!
+);
+
+// Access
+equatable.Length
+equatable[index]
+equatable.AsImmutableArray()
+equatable.AsSpan()
+equatable.IsDefaultOrEmpty
+```
+
+### DiagnosticFlow<T> - Railway-Oriented Programming
+
+```csharp
+// Create flows
+DiagnosticFlow.Ok(model)
+DiagnosticFlow.Fail<T>(diagnostic)
+symbol.ToFlow(nullDiagnostic)  // fails if null
+
+// Chain operations
+flow.Then(Validate)           // chain DiagnosticFlow-returning functions
+    .Select(m => m.Transform) // map values (no new diagnostics)
+    .Where(m => m.IsValid, errorDiag)  // filter with diagnostic on false
+    .WarnIf(m => m.IsOld, warnDiag)    // add warning if predicate true
+
+// Combine
+DiagnosticFlow.Zip(flow1, flow2)        // (T1, T2) tuple
+DiagnosticFlow.Collect(flows)           // all must succeed
+DiagnosticFlow.CollectSuccesses(flows)  // keep only successes
+
+// Pipeline integration
+provider
+    .SelectFlow(ExtractModel)
+    .ThenFlow(ValidateModel)
+    .ReportAndContinue(context)  // report diagnostics, return successes
+    .AddSource(context);
+```
+
+### Match.* DSL - Symbol Matching
+
+```csharp
+// Method matching
+Match.Method()
+    .Named("Execute")
+    .Async()
+    .Public()
+    .WithParameters(2)
+    .WithCancellationToken()
+    .Matches(method);
+
+// Multiple attributes (any match)
+Match.Method()
+    .WithAttribute("Xunit.FactAttribute", "Xunit.TheoryAttribute")
+    .Matches(method);
+
+// Type matching
+Match.Type()
+    .Class()
+    .Public()
+    .Implements("IDisposable")
+    .HasParameterlessConstructor()
+    .Matches(type);
+
+// IMPORTANT: Matchers mutate! Create new for each pattern
+static MethodMatcher PublicInstance() => Match.Method().Public().NotStatic();
+var asyncApi = PublicInstance().Async();
+var syncApi = PublicInstance().NotAsync();  // fresh matcher
+```
+
+### Invoke.* - Operation Matching
+
+```csharp
+Invoke.Method("Dispose")
+    .OnTypeImplementing("IDisposable")
+    .WithNoArguments()
+    .Matches(invocation);
+
+// Multiple names
+Invoke.Method("WriteLine", "Write").OnConsole().Matches(invocation);
+
+// Multiple receiver types
+Invoke.Method("Wait").OnType("Task", "ValueTask").Matches(invocation);
+
+// LINQ methods
+Invoke.Method().Linq().Named("Where").Matches(invocation);
+```
+
+### Guard - Argument Validation
+
+```csharp
+// Null validation
+var validated = Guard.NotNull(possiblyNull);
+var config = Guard.NotNullOrElse(optionalConfig, DefaultConfig);
+var conn = Guard.NotNullWithMember(config, config?.ConnectionString);
+
+// String/collection validation
+Guard.NotNullOrEmpty(name);
+Guard.NotNullOrWhiteSpace(title);
+Guard.NoDuplicates(items);
+
+// File system validation
+var path = Guard.FileExists(filePath);
+var dir = Guard.DirectoryExists(dirPath);
+var name = Guard.ValidFileName(fileName);
+
+// Type validation
+Guard.DefinedEnum(status);
+Guard.AssignableTo<IService>(serviceType);
+
+// Numeric validation (int, long, double, decimal)
+Guard.NotNegative(count);
+Guard.Positive(amount);
+Guard.NotGreaterThan(value, 100);
+Guard.InRange(page, 1, maxPages);
+
+// Unreachable code
+return status switch
+{
+    Status.Active => "Active",
+    _ => Guard.Unreachable<string>()
+};
+```
+
+### Collection Extensions
+
+```csharp
+// Null-safe operations
+items.OrEmpty()              // returns empty if null
+items.WhereNotNull()         // filter nulls
+items.ToImmutableArrayOrEmpty()
+
+// Utilities
+items.HasDuplicates()
+items.SingleOrDefaultIfMultiple()
+seq1.SequenceEquals(seq2)
+items.GetSequenceHashCode()
+```
+
+### Context Classes
+
+```csharp
+// Create once per compilation, reuse for all checks
+var awaitable = new AwaitableContext(compilation);
+awaitable.IsTaskLike(type)
+awaitable.IsAwaitable(type)
+awaitable.CanUseAsyncKeyword(method)
+
+var disposable = new DisposableContext(compilation);
+disposable.IsDisposable(type)
+disposable.ShouldBeDisposed(type)  // excludes DI-managed
+
+var aspnet = new AspNetContext(compilation);
+aspnet.IsController(type)
+aspnet.IsAction(method)
+aspnet.IsFromBody(parameter)
+```
+
+---
+
+## Helper Selection Guide
+
+| Question | Use |
+|----------|-----|
+| "Validate argument, throw if null" | `Guard.NotNull()` |
+| "Provide fallback for null" | `Guard.NotNullOrElse()` |
+| "Transform nullable in pipeline" | `NullableExtensions.Select()` |
+| "Safe cast" | `ObjectExtensions.As<T>()` |
+| "Parse with null on failure" | `TryExtensions.TryParse*()` |
+| "Compare strings explicitly" | `StringComparisonExtensions.EqualsOrdinal()` |
+| "Check if type implements X" | `TypeSymbolExtensions.Implements()` |
+| "Match method pattern" | `Match.Method()...Matches()` |
+| "Match invocation" | `Invoke.Method()...Matches()` |
+| "Accumulate errors in pipeline" | `DiagnosticFlow<T>` |
+| "Cache array in generator" | `EquatableArray<T>` |
+
+---
 
 ## Structure
 
 ```
 ANcpLua.Roslyn.Utilities/
 ├── ANcpLua.Roslyn.Utilities/        # netstandard2.0 - Core library
+│   ├── Contexts/                    # Domain-specific type caches
+│   ├── Matching/                    # Symbol/invocation matching DSL
+│   └── Models/                      # Equatable data models
 └── ANcpLua.Roslyn.Utilities.Testing/ # net10.0 - Testing framework
+    ├── MSBuild/                     # Integration test infrastructure
+    ├── Analysis/                    # Caching analysis
+    ├── Formatting/                  # Report formatting
+    └── Instrumentation/             # OpenTelemetry integration
 ```
 
-## Key Libraries
-
-### Main Library (ANcpLua.Roslyn.Utilities)
-
-- `EquatableArray<T>` - Value-equal array for generator caching
-- Symbol extensions for attribute lookup, type hierarchy, accessibility
-- Pipeline extensions for filtered syntax providers
-- Configuration extensions for MSBuild property access
-- Code generation helpers: `IndentedStringBuilder`, `ValueStringBuilder`, `TypedConstantExtensions`
-- **Matching API** - Fluent DSL for symbol and invocation matching:
-  - `Match.Method()`, `Match.Type()`, `Match.Property()`, `Match.Field()`, `Match.Parameter()`
-  - `Invoke.Method()` for operation-level invocation matching
-  - Varargs support: `Invoke.Method(name, params additionalNames)`, `OnType(typeName, params additionalTypeNames)`, `WithAttribute(name, params additionalNames)`
-  - Finalizer matching: `Match.Method().Finalizer()`
-
-### Testing Library (ANcpLua.Roslyn.Utilities.Testing)
-
-Comprehensive testing framework for Roslyn tooling:
-
-**Generator Testing:**
-- `Test<TGenerator>` - Fluent API entry point for generator tests
-- `GeneratorResult` - Assertions for output files, caching, diagnostics
-- `GeneratorTestEngine<TGenerator>` - Low-level test compilation engine
-- Caching validation and forbidden type detection (ISymbol, Compilation)
-
-**Analyzer Testing:**
-- `AnalyzerTest<TAnalyzer>` - Base class for analyzer tests
-- `CodeFixTest<TAnalyzer, TCodeFix>` - Base class for code fix tests
-- `CodeFixTestWithEditorConfig` - Tests with EditorConfig support
-
-**MSBuild Integration Testing:**
-- `ProjectBuilder` - Fluent builder for isolated .NET project tests
-- `BuildResult` + `BuildResultAssertions` - SARIF parsing, binary log analysis
-- `DotNetSdkHelpers` - Automatic SDK download and caching
-- MSBuild constants: `Tfm`, `Prop`, `Val`, `Item`, `Attr`
-
-## Polyfills
-
-This repo uses `PolySharp` for netstandard2.0 polyfills (IsExternalInit, NotNullWhen, etc.) instead of SDK-provided polyfills.
-
-## Release Order (CRITICAL!)
-
-This repo must be published FIRST before SDK can update:
+## Release Order
 
 ```
 1. Roslyn.Utilities -> publish to NuGet  <-- YOU ARE HERE
-2. SDK -> update Version.props -> publish to NuGet
-3. THEN sync Version.props to Analyzers
-4. Analyzers -> can now build
+2. SDK -> update Version.props -> publish
+3. Sync Version.props to downstream repos
+4. Downstream repos can now build
 ```
 
 ## Common CI Errors
@@ -110,10 +353,11 @@ This repo must be published FIRST before SDK can update:
 error: Unable to find package ANcpLua.NET.Sdk with version (= X.X.X)
 ```
 
-**Cause:** global.json references SDK version not yet published to NuGet.
+**Fix:** Either downgrade global.json to published version, OR publish SDK first.
 
-**Fix Options:**
-1. **Downgrade:** Change global.json to latest published version
-2. **Publish:** Tag and push in SDK repo: `git tag vX.X.X && git push --tags`
+### Circular Dependency Detected
+```
+error: ANcpLua.Roslyn.Utilities cannot reference ANcpLua.NET.Sdk
+```
 
-**Prevention:** Always publish SDK BEFORE syncing version to downstream repos.
+**Fix:** Remove the SDK reference. This repo is UPSTREAM - it cannot depend on SDK.

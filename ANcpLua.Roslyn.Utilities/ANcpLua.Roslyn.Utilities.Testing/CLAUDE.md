@@ -1,6 +1,23 @@
 # ANcpLua.Roslyn.Utilities.Testing
 
-Test utilities for Roslyn analyzers and generators. net10.0.
+**Test utilities for Roslyn analyzers and source generators.** Target: `net10.0`.
+
+This library provides comprehensive testing infrastructure for Roslyn tooling, including generator validation, analyzer testing, MSBuild integration testing, and dynamic compilation.
+
+---
+
+## Quick Reference
+
+| Category | Key Types |
+|----------|-----------|
+| **Generator Testing** | `Test<TGenerator>`, `GeneratorResult`, `GeneratorTestEngine<TGenerator>` |
+| **Analyzer Testing** | `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer, TCodeFix>` |
+| **MSBuild Testing** | `ProjectBuilder`, `BuildResult`, `BuildResultAssertions` |
+| **Dynamic Compilation** | `Compile`, `CompileResult`, `CompileResultAssertions` |
+| **Log Testing** | `LogAssert` |
+| **Configuration** | `TestConfiguration` |
+
+---
 
 ## Generator Testing
 
@@ -43,6 +60,8 @@ result[hintName]                // GeneratedFile?
 
 ### GeneratorTestEngine
 
+For more control over the test setup:
+
 ```csharp
 var engine = new GeneratorTestEngine<TGenerator>()
     .WithSource(code)
@@ -57,6 +76,8 @@ var (first, second) = await engine.RunTwiceAsync(ct);
 
 ### TestConfiguration
 
+Thread-safe global configuration via `AsyncLocal`:
+
 ```csharp
 TestConfiguration.LanguageVersion          // AsyncLocal, default Preview
 TestConfiguration.ReferenceAssemblies      // AsyncLocal, default net10.0
@@ -66,21 +87,27 @@ using (TestConfiguration.WithLanguageVersion(version)) { }
 using (TestConfiguration.WithReferenceAssemblies(assemblies)) { }
 ```
 
+---
+
 ## Analyzer Testing
 
 ### AnalyzerTest
+
+Base class for analyzer-only tests:
 
 ```csharp
 public class MyAnalyzerTests : AnalyzerTest<MyAnalyzer>
 {
     [Fact]
     public async Task Test() => await Verify("""
-        class C { [|string|] s; }  // [|...|] marks the span of an expected diagnostic
+        class C { [|string|] s; }  // [|...|] marks expected diagnostic span
         """);
 }
 ```
 
 ### CodeFixTest
+
+Base class for analyzer + code fix tests:
 
 ```csharp
 public class MyCodeFixTests : CodeFixTest<MyAnalyzer, MyCodeFix>
@@ -94,6 +121,8 @@ public class MyCodeFixTests : CodeFixTest<MyAnalyzer, MyCodeFix>
 
 ### CodeFixTestWithEditorConfig
 
+Tests with EditorConfig support:
+
 ```csharp
 public class MyTests : CodeFixTestWithEditorConfig<MyAnalyzer, MyCodeFix>
 {
@@ -104,9 +133,27 @@ public class MyTests : CodeFixTestWithEditorConfig<MyAnalyzer, MyCodeFix>
 }
 ```
 
+### RefactoringTest
+
+Base class for refactoring provider tests:
+
+```csharp
+public class MyRefactoringTests : RefactoringTest<MyRefactoringProvider>
+{
+    [Fact]
+    public async Task Test() => await Verify(
+        source: """class C { [||]void M() { } }""",  // [||] marks cursor position
+        fixedSource: """class C { async Task M() { } }""");
+}
+```
+
+---
+
 ## MSBuild Integration Testing
 
 ### ProjectBuilder
+
+Fluent builder for isolated .NET project tests:
 
 ```csharp
 await using var builder = new ProjectBuilder(testOutputHelper);
@@ -194,6 +241,8 @@ result.IsMsBuildTargetExecuted(name)
 
 ### BuildResultAssertions
 
+Fluent assertions for build results:
+
 ```csharp
 result.ShouldSucceed(because)
 result.ShouldFail(because)
@@ -210,6 +259,8 @@ result.ShouldNotHaveExecutedTarget(targetName)
 
 ### MSBuild Constants
 
+Strongly-typed constants for MSBuild projects:
+
 ```csharp
 // Target Frameworks (Tfm)
 Tfm.NetStandard20, Tfm.NetStandard21
@@ -221,10 +272,6 @@ Prop.Nullable, Prop.ImplicitUsings, Prop.LangVersion
 Prop.TreatWarningsAsErrors, Prop.IsPackable, Prop.GenerateDocumentationFile
 Prop.ManagePackageVersionsCentrally, Prop.CentralPackageTransitivePinningEnabled
 Prop.Version, Prop.PackageId, Prop.Authors, Prop.Description
-Prop.RepositoryUrl, Prop.RepositoryType, Prop.PublishRepositoryUrl
-Prop.EmbedUntrackedSources, Prop.IncludeSymbols, Prop.SymbolPackageFormat
-Prop.Deterministic, Prop.ContinuousIntegrationBuild
-Prop.EnableNETAnalyzers, Prop.AnalysisLevel, Prop.EnforceCodeStyleInBuild
 // ... and more
 
 // Property Values (Val)
@@ -252,6 +299,8 @@ XmlSnippetBuilder.Property(name, value)
 
 ### RepositoryRoot
 
+Locate repository root directory:
+
 ```csharp
 var root = RepositoryRoot.Locate();           // Finds *.sln, *.slnx, or .git
 var root = RepositoryRoot.Locate("package.json", ".git");
@@ -260,14 +309,20 @@ FullPath path = root["src/MyProject"];        // Indexer for relative paths
 
 ### DotNetSdkHelpers
 
+Automatic SDK download and caching:
+
 ```csharp
 var dotnetPath = await DotNetSdkHelpers.Get(NetSdkVersion.Net100);
 DotNetSdkHelpers.ClearCache();                // Clear in-memory cache
 ```
 
+---
+
 ## Dynamic Compilation
 
 ### Compile
+
+Quick compilation for unit tests:
 
 ```csharp
 // Basic compilation with assertions
@@ -345,9 +400,13 @@ result.ShouldHaveErrors(count)
 result.ShouldContainType(typeName)
 ```
 
+---
+
 ## Log Testing
 
 ### LogAssert
+
+Fluent assertions for `FakeLogCollector`:
 
 ```csharp
 // Fluent chaining
@@ -398,9 +457,13 @@ await collector.ShouldEventuallySatisfy(condition, because, timeout, ct)
 collector.FormatLogs()                        // For display
 ```
 
+---
+
 ## Caching Analysis
 
 ### GeneratorCachingReport
+
+Report on generator caching behavior:
 
 ```csharp
 report.GeneratorName
@@ -410,6 +473,8 @@ report.ProducedOutput
 ```
 
 ### GeneratorStepAnalysis
+
+Per-step caching analysis:
 
 ```csharp
 step.StepName
@@ -421,13 +486,41 @@ step.FormatBreakdown()
 
 ### ForbiddenTypeViolation
 
+Detected caching violations:
+
 ```csharp
 violation.StepName
 violation.ForbiddenType
 violation.Path
 ```
 
-## Files
+---
+
+## Instrumentation
+
+OpenTelemetry integration for test observability:
+
+### ActivityInstrumentation
+
+```csharp
+var activity = ActivityInstrumentation.StartActivity("TestName");
+activity?.SetTag("key", "value");
+```
+
+### MetricsInstrumentation
+
+```csharp
+MetricsInstrumentation.RecordTestDuration(testName, duration);
+MetricsInstrumentation.IncrementCounter(name);
+```
+
+### LogEnricherInfrastructure
+
+Structured logging enrichment for tests.
+
+---
+
+## File Structure
 
 ```
 ANcpLua.Roslyn.Utilities.Testing/
@@ -442,6 +535,7 @@ ANcpLua.Roslyn.Utilities.Testing/
 ├── AnalyzerTest.cs              # Base class for analyzer tests
 ├── CodeFixTest.cs               # Base class for code fix tests
 ├── CodeFixTestWithEditorConfig.cs  # Code fix tests with EditorConfig
+├── RefactoringTest.cs           # Base class for refactoring tests
 ├── Compile.cs                   # Dynamic compilation + CompileResult + assertions
 ├── LogAssert.cs                 # FakeLogCollector assertions
 ├── Analysis/
@@ -449,6 +543,12 @@ ANcpLua.Roslyn.Utilities.Testing/
 ├── Formatting/
 │   ├── ReportFormatter.cs       # Failure formatting + ViolationFormatter
 │   └── AssertionHelpers.cs      # Message helpers + StepFormatter
+├── Instrumentation/
+│   ├── ActivityInstrumentation.cs
+│   ├── MetricsInstrumentation.cs
+│   ├── LogEnricherInfrastructure.cs
+│   ├── LoggingConventions.cs
+│   └── DataClassificationHelpers.cs
 └── MSBuild/
     ├── ProjectBuilder.cs        # Fluent MSBuild project builder
     ├── DotNetSdkHelpers.cs      # SDK download/cache + NetSdkVersion enum

@@ -1,16 +1,21 @@
 # ANcpLua.Roslyn.Utilities
 
-Comprehensive utilities for Roslyn analyzers and source generators. netstandard2.0.
+**Core utilities for Roslyn analyzers and source generators.** Target: `netstandard2.0`.
+
+This is the SOURCE OF TRUTH for Roslyn helpers. Before writing ANY utility code in downstream projects (ErrorOrX, ANcpLua.Analyzers, qyl), check this library first.
+
+---
 
 ## Quick Reference
 
-| Category             | Key Types                                                                                        |
-|----------------------|--------------------------------------------------------------------------------------------------|
-| **Flow Control**     | `DiagnosticFlow<T>`                                                                              |
-| **Pattern Matching** | `Match.*` (symbols), `Invoke.*` (operations)                                                     |
-| **Validation**       | `SemanticGuard<T>`                                                                               |
-| **Contexts**         | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext`                    |
-| **Code Generation**  | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `TypedConstantExtensions` |
+| Category | Key Types |
+|----------|-----------|
+| **Flow Control** | `DiagnosticFlow<T>` |
+| **Pattern Matching** | `Match.*`, `Invoke.*` |
+| **Validation** | `Guard`, `SemanticGuard<T>` |
+| **Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder` |
+| **Caching** | `EquatableArray<T>`, `DiagnosticInfo`, `LocationInfo` |
 
 ---
 
@@ -44,11 +49,13 @@ provider
     .AddSource(context);
 ```
 
+---
+
 ## Symbol Pattern Matching
 
 ### Match.* DSL (fluent symbol matching)
 
-> **Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
+**Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
 
 ```csharp
 // Method matching
@@ -111,6 +118,86 @@ Invoke.Method("Wait", "GetAwaiter")
 // Additional methods: Named(name, params additionalNames)
 Invoke.Method().Named("Add", "Remove", "Clear").Matches(invocation);
 ```
+
+---
+
+## Guard - Argument Validation
+
+Expressive argument validation with `CallerArgumentExpression` for automatic parameter names.
+
+### Null Validation
+
+```csharp
+Guard.NotNull(value)                          // throws if null
+Guard.NotNullOrElse(value, fallback)          // returns fallback if null
+Guard.NotNullOrElse(value, () => Expensive()) // lazy fallback
+Guard.NotNullWithMember(obj, obj?.Member)     // validates both
+Guard.MemberNotNull(obj, obj.Member)          // validates member only
+```
+
+### String Validation
+
+```csharp
+Guard.NotNullOrEmpty(str)
+Guard.NotNullOrWhiteSpace(str)
+Guard.NotNullOrEmptyOrElse(str, fallback)
+Guard.NotNullOrWhiteSpaceOrElse(str, fallback)
+```
+
+### Collection Validation
+
+```csharp
+Guard.NotNullOrEmpty(collection)              // IReadOnlyCollection<T>
+Guard.NoDuplicates(items)                     // throws with duplicate value
+```
+
+### File System Validation
+
+```csharp
+Guard.FileExists(path)                        // validates file exists
+Guard.DirectoryExists(path)                   // validates directory exists
+Guard.ValidFileName(name)                     // no invalid filename chars
+Guard.ValidPath(path)                         // no invalid path chars
+Guard.ValidExtension(ext)                     // no leading dot, no separators
+```
+
+### Type Validation
+
+```csharp
+Guard.DefinedEnum(enumValue)                  // validates enum is defined
+Guard.NotNullableType(type)                   // not Nullable<T>
+Guard.AssignableTo<IService>(type)            // type implements IService
+Guard.AssignableFrom<MyClass>(type)           // MyClass assignable to type
+```
+
+### Numeric Validation (int, long, double, decimal)
+
+```csharp
+Guard.NotZero(value)
+Guard.NotNegative(value)
+Guard.Positive(value)                         // > 0
+Guard.NotGreaterThan(value, max)              // value ≤ max
+Guard.NotLessThan(value, min)                 // value ≥ min
+Guard.LessThan(value, max)                    // value < max
+Guard.GreaterThan(value, min)                 // value > min
+Guard.InRange(value, min, max)                // min ≤ value ≤ max
+Guard.ValidIndex(index, count)                // 0 ≤ index < count
+
+// Double-specific
+Guard.NotNaN(value)
+Guard.Finite(value)                           // not NaN or Infinity
+```
+
+### Condition Validation
+
+```csharp
+Guard.That(condition, message)                // throws if false
+Guard.Satisfies(value, predicate, message)    // throws if predicate false
+Guard.Unreachable()                           // for unreachable code
+Guard.Unreachable<T>()                        // in expression contexts
+```
+
+---
 
 ## SemanticGuard - Declarative Validation
 
@@ -186,6 +273,8 @@ ns.GetAllNamespaces()
 ns.GetPublicTypes()
 ```
 
+---
+
 ## Operation Extensions
 
 ```csharp
@@ -227,6 +316,8 @@ operation.IsPassedByRef()
 operation.GetCSharpLanguageVersion()
 ```
 
+---
+
 ## Invocation Extensions
 
 ```csharp
@@ -252,10 +343,11 @@ invocation.AllArgumentsAreConstant()
 invocation.IsNullConditionalAccess()
 ```
 
+---
+
 ## Domain Contexts
 
-> **Note:** Context classes cache well-known type symbols from a `Compilation` for efficient repeated lookups.
-> Create one context per compilation and reuse it for multiple checks.
+**Note:** Context classes cache well-known type symbols from a `Compilation` for efficient repeated lookups. Create one context per compilation and reuse it for multiple checks.
 
 ### AwaitableContext
 
@@ -335,6 +427,8 @@ ctx.GetElementType(type)
 type.HasCountProperty()               // TypeSymbolExtensions
 ```
 
+---
+
 ## Overload Analysis
 
 ```csharp
@@ -349,16 +443,7 @@ method.HasOverloadWithReturnType(returnType)
 method.HasOverloadWithFewerParameters()
 ```
 
-## Namespace Extensions
-
-```csharp
-// NamespaceExtensions.cs
-assembly.GetTypesRecursive()       // all types in assembly
-assembly.GetPublicTypes()          // visible outside assembly
-ns.GetAllTypes()                   // recursive type enumeration
-ns.GetAllNamespaces()              // recursive namespace enumeration
-ns.GetPublicTypes()                // visible types in namespace
-```
+---
 
 ## Pipeline Extensions
 
@@ -398,6 +483,8 @@ provider.SelectAndReportExceptions(selector, context)
 provider.SelectAndReportDiagnostics(context)
 provider.WhereNotNull()
 ```
+
+---
 
 ## Code Generation
 
@@ -440,6 +527,8 @@ var value = vsb.ToString();
 vsb.Dispose();
 ```
 
+---
+
 ## Hash Combining
 
 ```csharp
@@ -454,6 +543,8 @@ array.ToEquatableArray()
 seq1.SequenceEquals(seq2)
 collection.GetSequenceHashCode()
 ```
+
+---
 
 ## Other Extensions
 
@@ -505,6 +596,29 @@ source.HasDuplicates()
 source.SingleOrDefaultIfMultiple()
 ```
 
+---
+
+## Configuration Extensions
+
+```csharp
+// AnalyzerConfigOptionsProviderExtensions.cs
+provider.GetRequiredGlobalProperty(name, prefix)
+provider.GetRequiredAdditionalTextMetadata(text, name, prefix)
+provider.TryGetGlobalBool(name, out value, prefix)
+provider.GetGlobalBoolOrDefault(name, default, prefix)
+provider.TryGetGlobalInt(name, out value, prefix)
+provider.GetGlobalIntOrDefault(name, default, prefix)
+provider.IsDesignTimeBuild()
+
+// AnalyzerOptionsExtensions.cs
+options.TryGetConfigurationValue(tree, key, out value)
+options.GetConfigurationValue(tree, key, defaultBool)
+options.GetConfigurationValue(tree, key, defaultInt)
+options.GetConfigurationValue(tree, key, defaultString)
+```
+
+---
+
 ## Models
 
 ```csharp
@@ -534,38 +648,19 @@ file.IsEmpty
 new ResultWithDiagnostics<T>(result, diagnostics)
 ```
 
-## Configuration Extensions
-
-```csharp
-// AnalyzerConfigOptionsProviderExtensions.cs
-provider.GetRequiredGlobalProperty(name, prefix)
-provider.GetRequiredAdditionalTextMetadata(text, name, prefix)
-provider.TryGetGlobalBool(name, out value, prefix)
-provider.GetGlobalBoolOrDefault(name, default, prefix)
-provider.TryGetGlobalInt(name, out value, prefix)
-provider.GetGlobalIntOrDefault(name, default, prefix)
-provider.IsDesignTimeBuild()
-
-// AnalyzerOptionsExtensions.cs
-options.TryGetConfigurationValue(tree, key, out value)
-options.GetConfigurationValue(tree, key, defaultBool)
-options.GetConfigurationValue(tree, key, defaultInt)
-options.GetConfigurationValue(tree, key, defaultString)
-```
-
 ---
 
 ## Helper Extensions Philosophy
 
 Each helper file answers ONE question. Use this guide to pick the right tool:
 
-| File                              | Philosophy                                        | When to Use                                                   |
-|-----------------------------------|---------------------------------------------------|---------------------------------------------------------------|
-| **Guard.cs**                      | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions                  |
-| **NullableExtensions.cs**         | "Functional transformation of nullable values"    | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or`    |
-| **ObjectExtensions.cs**           | "What type is this? Cast it safely."              | Safe casting (`As<T>`), type checking (`Is<T>`), reflection   |
-| **TryExtensions.cs**              | "Parse or lookup, get null on failure"            | `TryParse*` methods, dictionary access, collection indexing   |
-| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics"         | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
+| File | Philosophy | When to Use |
+|------|------------|-------------|
+| **Guard.cs** | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions |
+| **NullableExtensions.cs** | "Functional transformation of nullable values" | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or` |
+| **ObjectExtensions.cs** | "What type is this? Cast it safely." | Safe casting (`As<T>`), type checking (`Is<T>`), reflection |
+| **TryExtensions.cs** | "Parse or lookup, get null on failure" | `TryParse*` methods, dictionary access, collection indexing |
+| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics" | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
 
 ### Guard vs NullableExtensions
 
@@ -598,30 +693,3 @@ var data = GetValue().OrElse(() => LoadFromDisk());
 - Working with optional data (not parameters)
 - You want LINQ-style composition
 - Use `.OrElse(() => ...)` for lazy fallbacks in chains
-
-### Migration from ObjectExtensions
-
-The `IfNotNull` methods were removed (duplicated `NullableExtensions`):
-
-```csharp
-// BEFORE                                    // AFTER
-obj.IfNotNull(x => x.Length)                → obj.Select(x => x.Length)
-obj.IfNotNull(x => Process(x))              → obj.Do(x => Process(x))
-obj.IfNotNull(x => x.Name, "default")       → obj.Select(x => x.Name).Or("default")
-```
-
-### Migration from Guard (v1.17 → v1.18)
-
-The `NotNullOr*` methods were renamed to `NotNullOrElse*` for clarity, and lazy `Func<T>` overloads were added:
-
-```csharp
-// BEFORE                                    // AFTER
-Guard.NotNullOr(value, fallback)            → Guard.NotNullOrElse(value, fallback)
-Guard.NotNullOrEmptyOr(str, fallback)       → Guard.NotNullOrEmptyOrElse(str, fallback)
-Guard.NotNullOrWhiteSpaceOr(str, fallback)  → Guard.NotNullOrWhiteSpaceOrElse(str, fallback)
-
-// NEW: Lazy evaluation (Func<T> overloads)
-Guard.NotNullOrElse(value, () => ExpensiveDefault())
-Guard.NotNullOrEmptyOrElse(str, () => GenerateName())
-Guard.NotNullOrWhiteSpaceOrElse(str, () => GenerateTitle())
-```
