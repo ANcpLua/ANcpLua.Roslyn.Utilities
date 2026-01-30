@@ -124,6 +124,7 @@ Invoke.Method().Named("Add", "Remove", "Clear").Matches(invocation);
 ## Guard - Argument Validation
 
 Expressive argument validation with `CallerArgumentExpression` for automatic parameter names.
+All methods use `[MethodImpl(AggressiveInlining)]` where appropriate for hot path performance.
 
 ### Null Validation
 
@@ -144,11 +145,37 @@ Guard.NotNullOrEmptyOrElse(str, fallback)
 Guard.NotNullOrWhiteSpaceOrElse(str, fallback)
 ```
 
+### String Length Validation
+
+```csharp
+Guard.HasLength(str, 2)                       // exact length
+Guard.HasMinLength(str, 8)                    // minimum length
+Guard.HasMaxLength(str, 50)                   // maximum length
+Guard.HasLengthBetween(str, 3, 100)           // length range
+```
+
+### Value Type Validation
+
+```csharp
+Guard.NotDefault(value)                       // value type not default(T)
+Guard.NotEmpty(guid)                          // Guid is not Guid.Empty
+```
+
 ### Collection Validation
 
 ```csharp
 Guard.NotNullOrEmpty(collection)              // IReadOnlyCollection<T>
 Guard.NoDuplicates(items)                     // throws with duplicate value
+Guard.NoDuplicates(items, comparer)           // with custom IEqualityComparer<T>
+```
+
+### Set Membership Validation
+
+```csharp
+Guard.OneOf(value, new[] { "a", "b", "c" })   // value must be in allowed set
+Guard.OneOf(value, allowedHashSet)            // O(1) lookup variant
+Guard.NotOneOf(value, new[] { 0, 80, 443 })   // value must not be in disallowed set
+Guard.NotOneOf(value, disallowedHashSet)      // O(1) lookup variant
 ```
 
 ### File System Validation
@@ -157,8 +184,11 @@ Guard.NoDuplicates(items)                     // throws with duplicate value
 Guard.FileExists(path)                        // validates file exists
 Guard.DirectoryExists(path)                   // validates directory exists
 Guard.ValidFileName(name)                     // no invalid filename chars
+Guard.ValidFileNameOrNull(name)               // nullable variant
 Guard.ValidPath(path)                         // no invalid path chars
+Guard.ValidPathOrNull(path)                   // nullable variant
 Guard.ValidExtension(ext)                     // no leading dot, no separators
+Guard.NormalizedExtension(ext)                // ensures leading dot (accepts both "txt" and ".txt")
 ```
 
 ### Type Validation
@@ -183,7 +213,7 @@ Guard.GreaterThan(value, min)                 // value > min
 Guard.InRange(value, min, max)                // min ≤ value ≤ max
 Guard.ValidIndex(index, count)                // 0 ≤ index < count
 
-// Double-specific
+// Double-specific (NaN-aware comparisons)
 Guard.NotNaN(value)
 Guard.Finite(value)                           // not NaN or Infinity
 ```
@@ -195,6 +225,7 @@ Guard.That(condition, message)                // throws if false
 Guard.Satisfies(value, predicate, message)    // throws if predicate false
 Guard.Unreachable()                           // for unreachable code
 Guard.Unreachable<T>()                        // in expression contexts
+Guard.UnreachableIf(condition)                // throws only if condition is true
 ```
 
 ---

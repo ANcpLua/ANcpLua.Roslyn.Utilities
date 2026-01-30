@@ -244,16 +244,14 @@ internal
         var arg = operation.GetArgument(paramName);
         if (arg is not null)
         {
-            if (arg.Value.ConstantValue is { HasValue: true, Value: string str })
+            switch (arg.Value.ConstantValue)
             {
-                value = str;
-                return true;
-            }
-
-            if (arg.Value.ConstantValue is { HasValue: true, Value: null })
-            {
-                value = null;
-                return true;
+                case { HasValue: true, Value: string str }:
+                    value = str;
+                    return true;
+                case { HasValue: true, Value: null }:
+                    value = null;
+                    return true;
             }
         }
 
@@ -281,16 +279,14 @@ internal
         var arg = operation.GetArgument(index);
         if (arg is not null)
         {
-            if (arg.Value.ConstantValue is { HasValue: true, Value: string str })
+            switch (arg.Value.ConstantValue)
             {
-                value = str;
-                return true;
-            }
-
-            if (arg.Value.ConstantValue is { HasValue: true, Value: null })
-            {
-                value = null;
-                return true;
+                case { HasValue: true, Value: string str }:
+                    value = str;
+                    return true;
+                case { HasValue: true, Value: null }:
+                    value = null;
+                    return true;
             }
         }
 

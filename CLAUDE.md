@@ -72,6 +72,10 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 |------|---------|----------|
 | `Guard.NotNull()` | Argument validation with CallerArgumentExpression | `Guard.cs` |
 | `Guard.NotNullOrElse()` | Null fallback (eager or lazy) | `Guard.cs` |
+| `Guard.HasMinLength()` | String length validation | `Guard.cs` |
+| `Guard.NotDefault<T>()` | Value type not default | `Guard.cs` |
+| `Guard.OneOf<T>()` | Set membership validation | `Guard.cs` |
+| `Guard.NoDuplicates<T>()` | Collection duplicate detection | `Guard.cs` |
 | `Guard.FileExists()` | File/directory existence validation | `Guard.cs` |
 | `Guard.ValidFileName()` | Path character validation | `Guard.cs` |
 | `Guard.DefinedEnum<T>()` | Enum value validation | `Guard.cs` |
