@@ -509,6 +509,38 @@ internal
     }
 
     /// <summary>
+    ///     Validates that a collection contains no duplicate elements using a custom equality comparer.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="value">The collection to validate.</param>
+    /// <param name="comparer">The equality comparer to use for duplicate detection.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> contains duplicate elements.</exception>
+    /// <example>
+    ///     <code>
+    /// public void SetNames(IEnumerable&lt;string&gt; names)
+    /// {
+    ///     Guard.NoDuplicates(names, StringComparer.OrdinalIgnoreCase);
+    /// }
+    /// </code>
+    /// </example>
+    public static void NoDuplicates<T>(
+        IEnumerable<T> value,
+        IEqualityComparer<T> comparer,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        var seen = new HashSet<T>(comparer);
+        foreach (var item in value)
+        {
+            if (!seen.Add(item))
+                throw new ArgumentException($"Duplicate value found: {item}", paramName);
+        }
+    }
+
+    /// <summary>
     ///     Validates that a collection contains no duplicate elements and returns it.
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
@@ -528,6 +560,37 @@ internal
             throw new ArgumentNullException(paramName);
 
         var seen = new HashSet<T>();
+        foreach (var item in value)
+        {
+            if (!seen.Add(item))
+                throw new ArgumentException($"Duplicate value found: {item}", paramName);
+        }
+
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a collection contains no duplicate elements using a custom equality comparer and returns it.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="value">The collection to validate.</param>
+    /// <param name="comparer">The equality comparer to use for duplicate detection.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated collection.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> contains duplicate elements.</exception>
+    public static IReadOnlyList<T> NoDuplicates<T>(
+        [NotNull] IReadOnlyList<T>? value,
+        IEqualityComparer<T> comparer,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value is null)
+            throw new ArgumentNullException(paramName);
+
+        var seen = new HashSet<T>(comparer);
         foreach (var item in value)
         {
             if (!seen.Add(item))
@@ -782,6 +845,44 @@ internal
     {
         Unreachable(message, memberName, filePath, lineNumber);
         return default!; // Never reached
+    }
+
+    /// <summary>
+    ///     Throws an exception if the condition is <c>true</c>, indicating unreachable code was executed.
+    /// </summary>
+    /// <param name="condition">The condition that should never be true.</param>
+    /// <param name="message">Optional message describing why this code should be unreachable.</param>
+    /// <param name="conditionExpression">The condition expression (automatically captured).</param>
+    /// <param name="memberName">The calling member name (automatically captured).</param>
+    /// <param name="filePath">The source file path (automatically captured).</param>
+    /// <param name="lineNumber">The line number (automatically captured).</param>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="condition" /> is <c>true</c>.</exception>
+    /// <example>
+    ///     <code>
+    /// Guard.UnreachableIf(list.Count &lt; 0, "Count should never be negative");
+    /// </code>
+    /// </example>
+    public static void UnreachableIf(
+        [DoesNotReturnIf(true)] bool condition,
+        string? message = null,
+        [CallerArgumentExpression(nameof(condition))]
+        string conditionExpression = "",
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string filePath = "",
+        [CallerLineNumber] int lineNumber = 0)
+    {
+        if (condition)
+        {
+            var location = string.IsNullOrEmpty(filePath)
+                ? memberName
+                : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
+
+            var fullMessage = string.IsNullOrEmpty(message)
+                ? $"Unreachable code executed in {location}. Condition: {conditionExpression}"
+                : $"{message} (in {location}). Condition: {conditionExpression}";
+
+            throw new InvalidOperationException(fullMessage);
+        }
     }
 
     #endregion
