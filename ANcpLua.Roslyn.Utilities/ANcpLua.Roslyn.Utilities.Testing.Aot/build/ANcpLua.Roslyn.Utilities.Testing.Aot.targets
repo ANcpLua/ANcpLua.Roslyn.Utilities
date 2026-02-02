@@ -70,12 +70,20 @@ try
     foreach (var type in types)
     {
         if (type == null) continue;
-        var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+
+        MethodInfo[] methods;
+        try { methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance); }
+        catch { continue; } // Skip types that can't be reflected (e.g., ASP.NET generated types)
 
         foreach (var method in methods)
         {
-            var aotTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "AotTestAttribute");
-            var trimTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "TrimTestAttribute");
+            object aotTestAttr, trimTestAttr;
+            try
+            {
+                aotTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "AotTestAttribute");
+                trimTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "TrimTestAttribute");
+            }
+            catch { continue; } // Skip methods that can't be reflected
 
             if (aotTestAttr == null && trimTestAttr == null) continue;
             if (method.ReturnType != typeof(int))
