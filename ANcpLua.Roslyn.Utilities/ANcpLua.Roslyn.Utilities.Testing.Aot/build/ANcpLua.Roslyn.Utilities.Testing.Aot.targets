@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AOT/Trim Testing Orchestration Targets (auto-imported from NuGet package)
+
+  When EnableAotTesting=true, this:
+  1. Discovers methods with [AotTest] or [TrimTest] attributes
+  2. Generates temporary projects for each test
+  3. Publishes them with AOT/Trim
+  4. Executes and validates exit codes (100 = success)
+-->
+<Project>
+
+  <PropertyGroup>
+    <_AotTestTemplateDir>$(MSBuildThisFileDirectory)</_AotTestTemplateDir>
+    <_AotTestProjectTemplate>$(_AotTestTemplateDir)ProjectTemplate.csproj.txt</_AotTestProjectTemplate>
+    <_AotTestDirBuildProps>$(_AotTestTemplateDir)Directory.Build.props.txt</_AotTestDirBuildProps>
+    <AotTestProjectsDir Condition="'$(AotTestProjectsDir)' == ''">$(IntermediateOutputPath)AotTests</AotTestProjectsDir>
+
+    <_CurrentOsName Condition="$([MSBuild]::IsOSPlatform('Windows'))">win</_CurrentOsName>
+    <_CurrentOsName Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</_CurrentOsName>
+    <_CurrentOsName Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</_CurrentOsName>
+
+    <_RawArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</_RawArchitecture>
+    <_CurrentArchitecture Condition="'$(_RawArchitecture)' == 'x86'">x86</_CurrentArchitecture>
+    <_CurrentArchitecture Condition="'$(_RawArchitecture)' == 'x64' or '$(_RawArchitecture)' == 'amd64'">x64</_CurrentArchitecture>
+    <_CurrentArchitecture Condition="'$(_RawArchitecture)' == 'arm'">arm</_CurrentArchitecture>
+    <_CurrentArchitecture Condition="'$(_RawArchitecture)' == 'arm64'">arm64</_CurrentArchitecture>
+    <_CurrentArchitecture Condition="'$(_CurrentArchitecture)' == ''">$(_RawArchitecture)</_CurrentArchitecture>
+    <_DefaultRuntimeIdentifier>$(_CurrentOsName)-$(_CurrentArchitecture)</_DefaultRuntimeIdentifier>
+
+    <_TestAssemblyPath Condition="$([System.IO.Path]::IsPathRooted('$(TargetPath)'))">$(TargetPath)</_TestAssemblyPath>
+    <_TestAssemblyPath Condition="!$([System.IO.Path]::IsPathRooted('$(TargetPath)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(TargetPath)'))</_TestAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="DiscoverAotTestsTask"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <TestAssemblyPath ParameterType="System.String" Required="true" />
+      <DefaultRuntimeIdentifier ParameterType="System.String" Required="true" />
+      <CurrentOsName ParameterType="System.String" Required="true" />
+      <DiscoveredTests ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Reflection" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+var discoveredTests = new List<ITaskItem>();
+
+if (!File.Exists(TestAssemblyPath))
+{
+    Log.LogWarning($"Test assembly not found: {TestAssemblyPath}");
+    DiscoveredTests = discoveredTests.ToArray();
+    return true;
+}
+
+try
+{
+    var assembly = Assembly.LoadFrom(TestAssemblyPath);
+    Type[] types;
+    try { types = assembly.GetTypes(); }
+    catch (ReflectionTypeLoadException ex) { types = ex.Types.Where(t => t != null).ToArray(); }
+
+    int testIndex = 0;
+    foreach (var type in types)
+    {
+        if (type == null) continue;
+        var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+
+        foreach (var method in methods)
+        {
+            var aotTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "AotTestAttribute");
+            var trimTestAttr = method.GetCustomAttributes(false).FirstOrDefault(a => a.GetType().Name == "TrimTestAttribute");
+
+            if (aotTestAttr == null && trimTestAttr == null) continue;
+            if (method.ReturnType != typeof(int))
+            {
+                Log.LogWarning($"Skipping {type.FullName}.{method.Name}: must return int");
+                continue;
+            }
+
+            var attrToUse = aotTestAttr ?? trimTestAttr;
+            var attrType = attrToUse.GetType();
+
+            string skipOnPlatform = attrType.GetProperty("SkipOnPlatform")?.GetValue(attrToUse) as string;
+            string runtimeIdentifier = attrType.GetProperty("RuntimeIdentifier")?.GetValue(attrToUse) as string;
+            string[] disabledSwitches = attrType.GetProperty("DisabledFeatureSwitches")?.GetValue(attrToUse) as string[];
+            string configuration = (attrType.GetProperty("Configuration")?.GetValue(attrToUse) as string) ?? "Release";
+            int timeoutSeconds = (int)(attrType.GetProperty("TimeoutSeconds")?.GetValue(attrToUse) ?? 300);
+
+            if (!string.IsNullOrEmpty(skipOnPlatform) && skipOnPlatform.Equals(CurrentOsName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (string.IsNullOrEmpty(runtimeIdentifier)) runtimeIdentifier = DefaultRuntimeIdentifier;
+
+            string trimMode = "full";
+            if (trimTestAttr != null)
+            {
+                var trimModeValue = attrType.GetProperty("TrimMode")?.GetValue(attrToUse);
+                if (trimModeValue != null) trimMode = trimModeValue.ToString().ToLowerInvariant();
+            }
+
+            var testItem = new TaskItem($"AotTest_{testIndex++}");
+            testItem.SetMetadata("MethodName", method.Name);
+            testItem.SetMetadata("TypeName", type.FullName);
+            testItem.SetMetadata("AssemblyPath", TestAssemblyPath);
+            testItem.SetMetadata("IsAot", aotTestAttr != null ? "true" : "false");
+            testItem.SetMetadata("IsTrim", trimTestAttr != null ? "true" : "false");
+            testItem.SetMetadata("RuntimeIdentifier", runtimeIdentifier);
+            testItem.SetMetadata("TrimMode", trimMode);
+            testItem.SetMetadata("Configuration", configuration);
+            testItem.SetMetadata("TimeoutSeconds", timeoutSeconds.ToString());
+            testItem.SetMetadata("IsStatic", method.IsStatic ? "true" : "false");
+            if (disabledSwitches != null && disabledSwitches.Length > 0)
+                testItem.SetMetadata("DisabledFeatureSwitches", string.Join(";", disabledSwitches));
+
+            discoveredTests.Add(testItem);
+            Log.LogMessage(MessageImportance.Normal, $"Discovered {(aotTestAttr != null ? "AOT" : "Trim")} test: {type.FullName}.{method.Name}");
+        }
+    }
+
+    DiscoveredTests = discoveredTests.ToArray();
+    Log.LogMessage(MessageImportance.High, $"Discovered {discoveredTests.Count} AOT/Trim tests");
+}
+catch (Exception ex)
+{
+    Log.LogError($"Error discovering AOT tests: {ex.Message}");
+    return false;
+}
+return true;
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="_DiscoverAotTests" BeforeTargets="VSTest" Condition="'$(EnableAotTesting)' == 'true'">
+    <Message Text="[AOT Testing] Discovering tests in $(_TestAssemblyPath)" Importance="High" />
+    <DiscoverAotTestsTask TestAssemblyPath="$(_TestAssemblyPath)" DefaultRuntimeIdentifier="$(_DefaultRuntimeIdentifier)" CurrentOsName="$(_CurrentOsName)">
+      <Output TaskParameter="DiscoveredTests" ItemName="AotTestItem" />
+    </DiscoverAotTestsTask>
+    <ItemGroup>
+      <AotTestItem>
+        <ProjectDir>$([MSBuild]::NormalizeDirectory('$(AotTestProjectsDir)', '%(Identity)'))</ProjectDir>
+        <ExecutableName Condition="'$(_CurrentOsName)' == 'win'">project.exe</ExecutableName>
+        <ExecutableName Condition="'$(_CurrentOsName)' != 'win'">project</ExecutableName>
+      </AotTestItem>
+    </ItemGroup>
+    <ItemGroup>
+      <AotTestItem>
+        <ProjectFile>%(ProjectDir)project.csproj</ProjectFile>
+        <ProgramFile>%(ProjectDir)Program.cs</ProgramFile>
+        <DirBuildProps>%(ProjectDir)Directory.Build.props</DirBuildProps>
+        <PublishDir>%(ProjectDir)bin\%(Configuration)\$(TargetFramework)\%(RuntimeIdentifier)\publish\</PublishDir>
+      </AotTestItem>
+    </ItemGroup>
+    <ItemGroup>
+      <AotTestItem>
+        <ExecutablePath>%(PublishDir)%(ExecutableName)</ExecutablePath>
+      </AotTestItem>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateAotTestProjects" DependsOnTargets="_DiscoverAotTests" Inputs="$(_TestAssemblyPath)" Outputs="%(AotTestItem.ProjectFile)" Condition="'$(EnableAotTesting)' == 'true' and '@(AotTestItem)' != ''">
+    <PropertyGroup>
+      <_CurrentProjectDir>%(AotTestItem.ProjectDir)</_CurrentProjectDir>
+      <_CurrentProjectFile>%(AotTestItem.ProjectFile)</_CurrentProjectFile>
+      <_CurrentProgramFile>%(AotTestItem.ProgramFile)</_CurrentProgramFile>
+      <_CurrentDirBuildProps>%(AotTestItem.DirBuildProps)</_CurrentDirBuildProps>
+      <_CurrentMethodName>%(AotTestItem.MethodName)</_CurrentMethodName>
+      <_CurrentTypeName>%(AotTestItem.TypeName)</_CurrentTypeName>
+      <_CurrentIsStatic>%(AotTestItem.IsStatic)</_CurrentIsStatic>
+      <_CurrentRuntimeIdentifier>%(AotTestItem.RuntimeIdentifier)</_CurrentRuntimeIdentifier>
+      <_CurrentConfiguration>%(AotTestItem.Configuration)</_CurrentConfiguration>
+      <_CurrentIsAot>%(AotTestItem.IsAot)</_CurrentIsAot>
+      <_CurrentIsTrim>%(AotTestItem.IsTrim)</_CurrentIsTrim>
+      <_CurrentTrimMode>%(AotTestItem.TrimMode)</_CurrentTrimMode>
+      <_CurrentDisabledSwitches>%(AotTestItem.DisabledFeatureSwitches)</_CurrentDisabledSwitches>
+    </PropertyGroup>
+    <MakeDir Directories="$(_CurrentProjectDir)" />
+    <ItemGroup>
+      <_CurrentSwitchItem Include="$(_CurrentDisabledSwitches.Split(';'))" Condition="'$(_CurrentDisabledSwitches)' != ''" />
+      <_RuntimeHostConfigOptions Include="@(_CurrentSwitchItem->'&lt;RuntimeHostConfigurationOption Include=&quot;%(Identity)&quot; Value=&quot;false&quot; Trim=&quot;true&quot; /&gt;', '%0a    ')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_RuntimeHostConfigOptionsString>@(_RuntimeHostConfigOptions)</_RuntimeHostConfigOptionsString>
+      <_AotPropertiesString Condition="'$(_CurrentIsAot)' == 'true'">&lt;PublishAot&gt;true&lt;/PublishAot&gt;%0a    &lt;TrimMode&gt;$(_CurrentTrimMode)&lt;/TrimMode&gt;</_AotPropertiesString>
+      <_AotPropertiesString Condition="'$(_CurrentIsTrim)' == 'true' and '$(_CurrentIsAot)' != 'true'">&lt;PublishTrimmed&gt;true&lt;/PublishTrimmed&gt;%0a    &lt;TrimMode&gt;$(_CurrentTrimMode)&lt;/TrimMode&gt;</_AotPropertiesString>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_CurrentProjectFile)" Lines="$([System.IO.File]::ReadAllText('$(_AotTestProjectTemplate)').Replace('{TargetFramework}', '$(TargetFramework)').Replace('{RuntimeIdentifier}', '$(_CurrentRuntimeIdentifier)').Replace('{Configuration}', '$(_CurrentConfiguration)').Replace('{AotProperties}', '    $(_AotPropertiesString)').Replace('{RuntimeHostConfigurationOptions}', '$(_RuntimeHostConfigOptionsString)').Replace('{ProjectReferences}', '&lt;Reference Include=&quot;$(_TestAssemblyPath)&quot; /&gt;'))" Overwrite="true" />
+    <Copy SourceFiles="$(_AotTestDirBuildProps)" DestinationFiles="$(_CurrentDirBuildProps)" SkipUnchangedFiles="false" />
+    <PropertyGroup>
+      <_ProgramCsContent Condition="'$(_CurrentIsStatic)' == 'true'">
+using System%3b
+public class Program { public static int Main() { try { return $(_CurrentTypeName).$(_CurrentMethodName)()%3b } catch (Exception ex) { Console.WriteLine($"Test failed: {ex}")%3b return 1%3b } } }
+      </_ProgramCsContent>
+      <_ProgramCsContent Condition="'$(_CurrentIsStatic)' != 'true'">
+using System%3b
+public class Program { public static int Main() { try { return new $(_CurrentTypeName)().$(_CurrentMethodName)()%3b } catch (Exception ex) { Console.WriteLine($"Test failed: {ex}")%3b return 1%3b } } }
+      </_ProgramCsContent>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_CurrentProgramFile)" Lines="$(_ProgramCsContent)" Overwrite="true" />
+    <ItemGroup>
+      <_CurrentSwitchItem Remove="@(_CurrentSwitchItem)" />
+      <_RuntimeHostConfigOptions Remove="@(_RuntimeHostConfigOptions)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_PublishAotTests" DependsOnTargets="_GenerateAotTestProjects" Condition="'$(EnableAotTesting)' == 'true' and '@(AotTestItem)' != ''">
+    <Message Text="[AOT Testing] Publishing..." Importance="High" />
+    <MSBuild Projects="@(AotTestItem->'%(ProjectFile)')" Targets="Restore" Properties="Configuration=%(Configuration);RuntimeIdentifier=%(RuntimeIdentifier)" ContinueOnError="ErrorAndContinue" />
+    <MSBuild Projects="@(AotTestItem->'%(ProjectFile)')" Targets="Publish" Properties="Configuration=%(Configuration);RuntimeIdentifier=%(RuntimeIdentifier)" ContinueOnError="ErrorAndContinue" />
+  </Target>
+
+  <Target Name="_ExecuteAotTests" DependsOnTargets="_PublishAotTests" Inputs="%(AotTestItem.ProjectFile)" Outputs="_unused" Condition="'$(EnableAotTesting)' == 'true' and '@(AotTestItem)' != ''">
+    <PropertyGroup>
+      <_TestExecutable>%(AotTestItem.ExecutablePath)</_TestExecutable>
+      <_TestMethodName>%(AotTestItem.MethodName)</_TestMethodName>
+      <_TestTypeName>%(AotTestItem.TypeName)</_TestTypeName>
+      <_TestTimeout>%(AotTestItem.TimeoutSeconds)</_TestTimeout>
+      <_TestTimeout Condition="'$(_TestTimeout)' == ''">300</_TestTimeout>
+    </PropertyGroup>
+    <Message Text="[AOT Testing] Running: $(_TestTypeName).$(_TestMethodName)" Importance="High" />
+    <Exec Command="&quot;$(_TestExecutable)&quot;" IgnoreExitCode="true" Timeout="$([MSBuild]::Multiply($(_TestTimeout), 1000))" Condition="Exists('$(_TestExecutable)')">
+      <Output TaskParameter="ExitCode" PropertyName="_TestExitCode" />
+    </Exec>
+    <Error Condition="!Exists('$(_TestExecutable)')" Text="[AOT Testing] Executable not found: $(_TestExecutable)" ContinueOnError="ErrorAndContinue" />
+    <PropertyGroup>
+      <_TestPassed Condition="'$(_TestExitCode)' == '100'">true</_TestPassed>
+      <_TestPassed Condition="'$(_TestExitCode)' != '100'">false</_TestPassed>
+    </PropertyGroup>
+    <Message Text="[AOT Testing] PASSED: $(_TestTypeName).$(_TestMethodName)" Importance="High" Condition="'$(_TestPassed)' == 'true'" />
+    <Error Text="[AOT Testing] FAILED: $(_TestTypeName).$(_TestMethodName) (exit code $(_TestExitCode))" Condition="'$(_TestPassed)' == 'false' and Exists('$(_TestExecutable)')" ContinueOnError="ErrorAndContinue" />
+    <ItemGroup>
+      <_AotTestResult Include="%(AotTestItem.Identity)">
+        <Passed>$(_TestPassed)</Passed>
+        <TestName>$(_TestTypeName).$(_TestMethodName)</TestName>
+      </_AotTestResult>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ReportAotTestResults" DependsOnTargets="_ExecuteAotTests" Condition="'$(EnableAotTesting)' == 'true' and '@(AotTestItem)' != ''">
+    <PropertyGroup>
+      <_TotalTests>@(AotTestItem->Count())</_TotalTests>
+      <_PassedTests>@(_AotTestResult->WithMetadataValue('Passed', 'true')->Count())</_PassedTests>
+      <_FailedTests>@(_AotTestResult->WithMetadataValue('Passed', 'false')->Count())</_FailedTests>
+    </PropertyGroup>
+    <Message Text="[AOT Testing] ========================================" Importance="High" />
+    <Message Text="[AOT Testing] Total: $(_TotalTests) | Passed: $(_PassedTests) | Failed: $(_FailedTests)" Importance="High" />
+    <Message Text="[AOT Testing] ========================================" Importance="High" />
+    <Error Text="[AOT Testing] $(_FailedTests) test(s) failed." Condition="'$(_FailedTests)' != '0'" />
+  </Target>
+
+  <Target Name="_RunAotTests" AfterTargets="VSTest" DependsOnTargets="_DiscoverAotTests;_GenerateAotTestProjects;_PublishAotTests;_ExecuteAotTests;_ReportAotTestResults" Condition="'$(EnableAotTesting)' == 'true'">
+    <Message Text="[AOT Testing] Completed." Importance="High" Condition="'@(AotTestItem)' != ''" />
+    <Message Text="[AOT Testing] No tests discovered." Importance="Normal" Condition="'@(AotTestItem)' == ''" />
+  </Target>
+
+  <Target Name="_CleanAotTests" AfterTargets="Clean" Condition="'$(EnableAotTesting)' == 'true'">
+    <RemoveDir Directories="$(AotTestProjectsDir)" />
+  </Target>
+
+</Project>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+    AOT Testing Configuration (auto-imported from NuGet package)
+
+    Set EnableAotTesting=true in your project to activate AOT/Trim test orchestration.
+  -->
+  <PropertyGroup>
+    <EnableAotTesting Condition="'$(EnableAotTesting)' == ''">false</EnableAotTesting>
+    <AotTestProjectsDir Condition="'$(AotTestProjectsDir)' == ''">$(IntermediateOutputPath)aot-tests/</AotTestProjectsDir>
+    <DefaultAotTestTimeout Condition="'$(DefaultAotTestTimeout)' == ''">300</DefaultAotTestTimeout>
+  </PropertyGroup>
+</Project>

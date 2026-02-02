@@ -1,0 +1,25 @@
+<Project>
+  <!--
+    Directory.Build.props for generated AOT/Trim test projects.
+    This file is copied to each test project directory.
+  -->
+  <PropertyGroup>
+    <!-- Workaround for preview .NET versions -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
+    <!-- Standard trimming/AOT settings -->
+    <PublishTrimmed Condition="'$(PublishAot)' != 'true'">true</PublishTrimmed>
+    <SelfContained>true</SelfContained>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Enable static graph for faster restore -->
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+
+    <!-- Platform detection -->
+    <TargetOsName Condition="'$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
+    <TargetOsName Condition="'$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
+    <TargetOsName Condition="'$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+  </PropertyGroup>
+</Project>

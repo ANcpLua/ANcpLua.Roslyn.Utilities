@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>{TargetFramework}</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RuntimeIdentifier>{RuntimeIdentifier}</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <Configuration>{Configuration}</Configuration>
+    <!-- Suppress common warnings that are expected in test scenarios -->
+    <NoWarn>$(NoWarn);IL2026;IL2057</NoWarn>
+{AotProperties}
+  </PropertyGroup>
+
+  <ItemGroup>
+    {RuntimeHostConfigurationOptions}
+  </ItemGroup>
+
+  <ItemGroup>
+    {ProjectReferences}
+  </ItemGroup>
+</Project>

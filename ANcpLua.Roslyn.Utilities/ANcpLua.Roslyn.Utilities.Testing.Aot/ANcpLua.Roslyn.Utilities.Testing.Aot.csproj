@@ -21,6 +21,11 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <!-- MSBuild files for NuGet auto-import (enables out-of-the-box AOT testing) -->
+  <ItemGroup>
+    <None Include="build\**\*" Pack="true" PackagePath="build\" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="PolySharp" PrivateAssets="all" />
   </ItemGroup>
