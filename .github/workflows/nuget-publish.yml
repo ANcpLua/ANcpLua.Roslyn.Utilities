@@ -64,6 +64,7 @@ jobs:
         run: |
           dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
           dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
           dotnet pack ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
         env:
           CI: true
