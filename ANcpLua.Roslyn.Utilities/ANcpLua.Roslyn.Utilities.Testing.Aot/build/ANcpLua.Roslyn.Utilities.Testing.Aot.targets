@@ -238,11 +238,11 @@ public class Program { public static int Main() { try { return new $(_CurrentTyp
     </Exec>
     <Error Condition="!Exists('$(_TestExecutable)')" Text="[AOT Testing] Executable not found: $(_TestExecutable)" ContinueOnError="ErrorAndContinue" />
     <PropertyGroup>
-      <_TestPassed Condition="'$(_TestExitCode)' == '100'">true</_TestPassed>
-      <_TestPassed Condition="'$(_TestExitCode)' != '100'">false</_TestPassed>
+      <_TestPassed Condition="'$(_TestExitCode)' == '0'">true</_TestPassed>
+      <_TestPassed Condition="'$(_TestExitCode)' != '0'">false</_TestPassed>
     </PropertyGroup>
     <Message Text="[AOT Testing] PASSED: $(_TestTypeName).$(_TestMethodName)" Importance="High" Condition="'$(_TestPassed)' == 'true'" />
-    <Error Text="[AOT Testing] FAILED: $(_TestTypeName).$(_TestMethodName) (exit code $(_TestExitCode))" Condition="'$(_TestPassed)' == 'false' and Exists('$(_TestExecutable)')" ContinueOnError="ErrorAndContinue" />
+    <Error Text="[AOT Testing] FAILED: $(_TestTypeName).$(_TestMethodName) (exit code $(_TestExitCode), expected 0)" Condition="'$(_TestPassed)' == 'false' and Exists('$(_TestExecutable)')" ContinueOnError="ErrorAndContinue" />
     <ItemGroup>
       <_AotTestResult Include="%(AotTestItem.Identity)">
         <Passed>$(_TestPassed)</Passed>
