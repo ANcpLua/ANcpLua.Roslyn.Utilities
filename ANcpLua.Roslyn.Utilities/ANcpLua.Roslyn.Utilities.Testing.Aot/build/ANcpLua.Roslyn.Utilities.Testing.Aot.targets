@@ -6,7 +6,7 @@
   1. Discovers methods with [AotTest] or [TrimTest] attributes
   2. Generates temporary projects for each test
   3. Publishes them with AOT/Trim
-  4. Executes and validates exit codes (100 = success)
+  4. Executes and validates exit codes (0 = success)
 -->
 <Project>
 

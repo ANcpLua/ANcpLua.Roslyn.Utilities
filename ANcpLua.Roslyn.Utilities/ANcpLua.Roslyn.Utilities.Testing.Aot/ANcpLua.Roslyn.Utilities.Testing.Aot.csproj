@@ -12,6 +12,9 @@
     <PackageTags>aot;trimming;native-aot;testing;publishaot;publishtrimmed</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
+    <!-- This library is safe to trim (only contains attributes and constants) -->
+    <IsTrimmable>true</IsTrimmable>
+
     <!-- Suppress analyzer warnings for netstandard2.0 compatibility -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
