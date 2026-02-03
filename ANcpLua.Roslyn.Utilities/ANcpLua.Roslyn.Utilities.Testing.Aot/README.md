@@ -17,12 +17,12 @@ using ANcpLua.Roslyn.Utilities.Testing.Aot;
 
 public class MyAotTests
 {
-    // AOT test - returns 100 for success
+    // AOT test - returns 0 for success
     [AotTest]
     public static int BasicAotTest()
     {
         // Test code runs in AOT-compiled binary
-        return 100; // Success
+        return 0; // Success
     }
 
     // Trim test with full trimming
@@ -30,7 +30,7 @@ public class MyAotTests
     public static int TrimTest()
     {
         TrimAssert.TypePreserved("System.String", "System.Private.CoreLib");
-        return 100;
+        return 0;
     }
 
     // AOT test with disabled feature switches
@@ -38,7 +38,7 @@ public class MyAotTests
     public static int AotWithoutJsonReflection()
     {
         // JSON source generation only
-        return 100;
+        return 0;
     }
 }
 ```

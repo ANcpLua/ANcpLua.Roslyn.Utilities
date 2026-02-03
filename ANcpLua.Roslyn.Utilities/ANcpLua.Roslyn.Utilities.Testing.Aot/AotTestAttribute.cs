@@ -7,7 +7,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Aot;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The decorated method must return <see cref="int"/>, with return value 100 indicating success.
+/// The decorated method must return <see cref="int"/>, with return value 0 indicating success.
 /// </para>
 /// <para>
 /// The method may be static or an instance method on a class with a parameterless constructor.

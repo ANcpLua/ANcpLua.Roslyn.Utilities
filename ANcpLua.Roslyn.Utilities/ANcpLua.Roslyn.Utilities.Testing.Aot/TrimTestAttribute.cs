@@ -6,7 +6,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Aot;
 /// Marks a test method for trimming validation using PublishTrimmed=true.
 /// </summary>
 /// <remarks>
-/// The test method must return an int where 100 indicates success.
+/// The test method must return an int where 0 indicates success.
 /// This attribute uses PublishTrimmed=true for testing trimming support, not AOT compilation.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
