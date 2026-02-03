@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
@@ -146,6 +147,7 @@ internal static class ForbiddenTypeAnalyzer
     ///     </list>
     /// </remarks>
     /// <seealso cref="ForbiddenTypeViolation" />
+    [RequiresUnreferencedCode("Uses reflection to traverse object graphs and inspect field values at runtime.")]
     public static IReadOnlyList<ForbiddenTypeViolation> AnalyzeGeneratorRun(GeneratorDriverRunResult run)
     {
         List<ForbiddenTypeViolation> violations = [];

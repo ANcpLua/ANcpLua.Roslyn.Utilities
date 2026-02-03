@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -402,6 +403,7 @@ public sealed class CompileResult
     /// </summary>
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns>The created instance, or <see langword="null" /> if creation failed.</returns>
+    [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
     public object? CreateInstance(string typeName) => Assembly?.CreateInstance(typeName);
 
     /// <summary>
@@ -410,6 +412,7 @@ public sealed class CompileResult
     /// <typeparam name="T">The expected type of the instance.</typeparam>
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns>The created instance, or <see langword="null" /> if creation failed.</returns>
+    [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
     public T? CreateInstance<T>(string typeName) where T : class => CreateInstance(typeName) as T;
 
     /// <summary>
@@ -419,6 +422,7 @@ public sealed class CompileResult
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns>The created instance.</returns>
     /// <exception cref="InvalidOperationException">Thrown when instance creation fails.</exception>
+    [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
     public T CreateRequiredInstance<T>(string typeName) where T : class =>
         CreateInstance<T>(typeName) ?? throw new InvalidOperationException($"Failed to create instance of '{typeName}'");
 
