@@ -919,7 +919,7 @@ internal
     /// <seealso cref="HasMember" />
     public TypeMatcher HasParameterlessConstructor()
     {
-        return AddPredicate(t => HasParameterlessCtor(t));
+        return AddPredicate(HasParameterlessCtor);
     }
 
     private static bool InheritsFromName(ITypeSymbol type, string name)
