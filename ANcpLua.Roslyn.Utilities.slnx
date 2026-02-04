@@ -1,25 +1,4 @@
 <Solution>
-    <Folder Name="/docs/">
-        <File Path="..\Downloads\anthropic-agent.md" />
-        <File Path="..\Downloads\azure-ai-inference.md" />
-        <File Path="..\Downloads\best_practices_for_vision (1).ipynb" />
-        <File Path="..\Downloads\best_practices_for_vision.ipynb" />
-        <File Path="..\Downloads\citations_agent.md" />
-        <File Path="..\Downloads\directory-discovery.md" />
-        <File Path="..\Downloads\dotnet-upgrade.agent (1).md" />
-        <File Path="..\Downloads\evaluator_optimizer.ipynb" />
-        <File Path="..\Downloads\examples-llm-calls.md" />
-        <File Path="..\Downloads\extended_thinking.ipynb" />
-        <File Path="..\Downloads\extended_thinking_with_tool_use.ipynb" />
-        <File Path="..\Downloads\multi-turn-conversation.md" />
-        <File Path="..\Downloads\orchestrator_workers.ipynb" />
-        <File Path="..\Downloads\prompting_for_frontend_aesthetics.ipynb" />
-        <File Path="..\Downloads\research_lead_agent.md" />
-        <File Path="..\Downloads\research_subagent.md" />
-        <File Path="..\Downloads\using_sub_agents.ipynb" />
-        <File Path="..\Downloads\visualization.md" />
-        <File Path="..\Downloads\workflow.py" />
-    </Folder>
     <Folder Name="/Solution Items/">
         <File Path="Directory.Build.props" />
         <File Path="Directory.Packages.props" />
