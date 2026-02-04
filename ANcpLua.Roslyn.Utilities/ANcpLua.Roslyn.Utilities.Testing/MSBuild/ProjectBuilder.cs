@@ -119,6 +119,11 @@ public class ProjectBuilder : IAsyncDisposable
     protected NetSdkVersion SdkVersion = NetSdkVersion.Net100;
 
     /// <summary>
+    ///     Tracks whether Microsoft Testing Platform (MTP) mode is enabled.
+    /// </summary>
+    protected bool UseMtpRunner;
+
+    /// <summary>
     ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
     /// </summary>
     /// <param name="testOutputHelper">
@@ -132,8 +137,8 @@ public class ProjectBuilder : IAsyncDisposable
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward
-    ///                 policy.
+    ///                 Generates a default global.json configured for the SDK version pinned by repository
+    ///                 global.json with latestMinor rollForward policy.
     ///             </description>
     ///         </item>
     ///         <item>
@@ -157,14 +162,7 @@ public class ProjectBuilder : IAsyncDisposable
         GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
 
         // Create isolated global.json
-        Directory.CreateTextFile("global.json", """
-                                                {
-                                                  "sdk": {
-                                                    "rollForward": "latestMinor",
-                                                    "version": "10.0.100"
-                                                  }
-                                                }
-                                                """);
+        Directory.CreateTextFile("global.json", CreateGlobalJsonContent());
     }
 
     /// <summary>
@@ -368,13 +366,15 @@ public class ProjectBuilder : IAsyncDisposable
     /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
     ///     The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers" /> if not already present.
-    ///     The default SDK version is <see cref="NetSdkVersion.Net100" />.
+    ///     The default SDK version is <see cref="NetSdkVersion.Net100" />, with the patch pinned by repository
+    ///     global.json.
     /// </remarks>
     /// <seealso cref="NetSdkVersion" />
     /// <seealso cref="DotNetSdkHelpers" />
     public ProjectBuilder WithDotnetSdkVersion(NetSdkVersion dotnetSdkVersion)
     {
         SdkVersion = dotnetSdkVersion;
+        Directory.CreateTextFile("global.json", CreateGlobalJsonContent());
         return this;
     }
 
@@ -397,18 +397,37 @@ public class ProjectBuilder : IAsyncDisposable
     /// </example>
     public ProjectBuilder WithMtpMode()
     {
-        Directory.CreateTextFile("global.json", """
-                                                {
-                                                  "sdk": {
-                                                    "rollForward": "latestMinor",
-                                                    "version": "10.0.100"
-                                                  },
-                                                  "test": {
-                                                    "runner": "Microsoft.Testing.Platform"
-                                                  }
-                                                }
-                                                """);
+        UseMtpRunner = true;
+        Directory.CreateTextFile("global.json", CreateGlobalJsonContent());
         return this;
+    }
+
+    private string CreateGlobalJsonContent()
+    {
+        var sdkVersion = DotNetSdkHelpers.GetPinnedSdkVersionString(SdkVersion);
+        if (UseMtpRunner)
+        {
+            return $$"""
+                     {
+                       "sdk": {
+                         "rollForward": "latestMinor",
+                         "version": "{{sdkVersion}}"
+                       },
+                       "test": {
+                         "runner": "Microsoft.Testing.Platform"
+                       }
+                     }
+                     """;
+        }
+
+        return $$"""
+                 {
+                   "sdk": {
+                     "rollForward": "latestMinor",
+                     "version": "{{sdkVersion}}"
+                   }
+                 }
+                 """;
     }
 
     /// <summary>

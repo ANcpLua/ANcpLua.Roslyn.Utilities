@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Meziantou.Framework;
 using Meziantou.Framework.Threading;
 using Microsoft.Deployment.DotNet.Releases;
@@ -77,7 +78,7 @@ public static class DotNetSdkHelpers
     ///     <list type="bullet">
     ///         <item>Checks the in-memory cache for a previously resolved path</item>
     ///         <item>Checks if the SDK already exists on disk in the cache directory</item>
-    ///         <item>If not cached, downloads the latest SDK release for the specified major version</item>
+    ///         <item>If not cached, downloads the SDK pinned by <c>global.json</c>.</item>
     ///         <item>Extracts the SDK to a temporary directory, then moves it to the cache location</item>
     ///         <item>On Unix platforms, sets executable permissions on <c>dotnet</c> and <c>csc</c> binaries</item>
     ///     </list>
@@ -108,24 +109,19 @@ public static class DotNetSdkHelpers
             if (Values.TryGetValue(version, out result))
                 return result;
 
-            var versionString = version switch
-            {
-                NetSdkVersion.Net100 => "10.0",
-                _ => throw new NotSupportedException($"SDK version {version} is not supported")
-            };
+            var productVersion = GetSdkProductVersion(version);
+            var pinnedSdkVersion = GetPinnedSdkVersion(version);
 
             var products = await ProductCollection.GetAsync();
-            var product = products.Single(a => a.ProductName == ".NET" && a.ProductVersion == versionString);
+            var product = products.Single(a => a.ProductName == ".NET" && a.ProductVersion == productVersion);
             var releases = await product.GetReleasesAsync();
-            var latestRelease = releases.Single(r => r.Version == product.LatestReleaseVersion);
-            var latestSdk = latestRelease.Sdks.MaxBy(static sdk => sdk.Version)
-                            ?? throw new InvalidOperationException($"No SDK found for .NET {versionString}");
+            var selectedSdk = SelectPinnedSdk(releases, pinnedSdkVersion, productVersion);
 
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
-            var file = latestSdk.Files.Single(file =>
+            var file = selectedSdk.Files.Single(file =>
                 file.Rid == runtimeIdentifier && Path.GetExtension(file.Name) is ".zip" or ".gz");
             var finalFolderPath = FullPath.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) / "ANcpLua" /
-                                  "dotnet" / latestSdk.Version.ToString();
+                                  "dotnet" / selectedSdk.Version.ToString();
             var finalDotnetPath = finalFolderPath / (OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
             if (File.Exists(finalDotnetPath))
             {
@@ -196,6 +192,98 @@ public static class DotNetSdkHelpers
             return finalDotnetPath;
         }
     }
+
+    internal static string GetPinnedSdkVersionString(NetSdkVersion version)
+        => GetPinnedSdkVersion(version).ToString();
+
+    private static SdkReleaseComponent SelectPinnedSdk(IEnumerable<ProductRelease> releases, ReleaseVersion pinnedSdkVersion,
+        string productVersion)
+    {
+        var sdk = releases.SelectMany(static release => release.Sdks)
+            .SingleOrDefault(candidate => candidate.Version == pinnedSdkVersion);
+        if (sdk is null)
+            throw new InvalidOperationException($"SDK version {pinnedSdkVersion} was not found for .NET {productVersion}");
+        return sdk;
+    }
+
+    private static ReleaseVersion GetPinnedSdkVersion(NetSdkVersion version)
+    {
+        var sdkVersionString = ReadGlobalJsonSdkVersion();
+
+        if (!ReleaseVersion.TryParse(sdkVersionString, out var pinnedVersion))
+            throw new InvalidOperationException($"global.json sdk.version '{sdkVersionString}' is not a valid release version.");
+
+        var (major, minor) = GetSdkMajorMinor(version);
+        if (pinnedVersion.Major != major || pinnedVersion.Minor != minor)
+            throw new InvalidOperationException($"global.json sdk.version '{sdkVersionString}' does not match {version} (expected {major}.{minor}.x).");
+
+        return pinnedVersion;
+    }
+
+    private static string ReadGlobalJsonSdkVersion()
+    {
+        var globalJsonPath = LocateGlobalJson();
+
+        using var stream = File.OpenRead(globalJsonPath.Value);
+        using var document = JsonDocument.Parse(stream);
+        if (!document.RootElement.TryGetProperty("sdk", out var sdkElement))
+            throw new InvalidOperationException($"global.json at '{globalJsonPath}' does not contain a 'sdk' section.");
+
+        if (!sdkElement.TryGetProperty("version", out var versionElement) ||
+            versionElement.ValueKind != JsonValueKind.String)
+            throw new InvalidOperationException($"global.json at '{globalJsonPath}' does not contain a valid 'sdk.version' string.");
+
+        var versionString = versionElement.GetString();
+        if (string.IsNullOrWhiteSpace(versionString))
+            throw new InvalidOperationException($"global.json at '{globalJsonPath}' has an empty 'sdk.version'.");
+
+        return versionString;
+    }
+
+    private static FullPath LocateGlobalJson()
+    {
+        foreach (var root in GetGlobalJsonSearchRoots())
+        {
+            var current = root;
+            while (!current.IsEmpty)
+            {
+                var candidate = current / "global.json";
+                if (File.Exists(candidate))
+                    return candidate;
+
+                var parent = current.Parent;
+                if (parent.IsEmpty || parent == current)
+                    break;
+
+                current = parent;
+            }
+        }
+
+        throw new InvalidOperationException("global.json was not found while searching from the current directory or base directory.");
+    }
+
+    private static IEnumerable<FullPath> GetGlobalJsonSearchRoots()
+    {
+        var currentDirectory = FullPath.CurrentDirectory();
+        if (!currentDirectory.IsEmpty)
+            yield return currentDirectory;
+
+        var baseDirectory = FullPath.FromPath(AppContext.BaseDirectory);
+        if (!baseDirectory.IsEmpty && baseDirectory != currentDirectory)
+            yield return baseDirectory;
+    }
+
+    private static string GetSdkProductVersion(NetSdkVersion version) => version switch
+    {
+        NetSdkVersion.Net100 => "10.0",
+        _ => throw new NotSupportedException($"SDK version {version} is not supported")
+    };
+
+    private static (int Major, int Minor) GetSdkMajorMinor(NetSdkVersion version) => version switch
+    {
+        NetSdkVersion.Net100 => (10, 0),
+        _ => throw new NotSupportedException($"SDK version {version} is not supported")
+    };
 
     /// <summary>
     ///     Clears the in-memory cache of SDK paths.

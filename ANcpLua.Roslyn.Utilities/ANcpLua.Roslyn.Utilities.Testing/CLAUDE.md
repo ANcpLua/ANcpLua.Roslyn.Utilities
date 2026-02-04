@@ -309,7 +309,7 @@ FullPath path = root["src/MyProject"];        // Indexer for relative paths
 
 ### DotNetSdkHelpers
 
-Automatic SDK download and caching:
+Automatic SDK download and caching (pinned to repository `global.json`):
 
 ```csharp
 var dotnetPath = await DotNetSdkHelpers.Get(NetSdkVersion.Net100);
