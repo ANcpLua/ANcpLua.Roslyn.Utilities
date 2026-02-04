@@ -15,8 +15,9 @@
     <!-- This library is safe to trim (only contains attributes and constants) -->
     <IsTrimmable>true</IsTrimmable>
 
-    <!-- Suppress analyzer warnings for netstandard2.0 compatibility -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Suppress warnings for netstandard2.0 compatibility -->
+    <!-- NETSDK1212: IsTrimmable metadata is valid for consumers even on netstandard2.0 -->
+    <NoWarn>$(NoWarn);CS1591;NETSDK1212</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
