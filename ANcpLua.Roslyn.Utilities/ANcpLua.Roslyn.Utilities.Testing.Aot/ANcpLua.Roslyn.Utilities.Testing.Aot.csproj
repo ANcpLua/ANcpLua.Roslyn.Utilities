@@ -29,8 +29,4 @@
   <ItemGroup>
     <None Include="build\**\*" Pack="true" PackagePath="build\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="PolySharp" PrivateAssets="all" />
-  </ItemGroup>
 </Project>

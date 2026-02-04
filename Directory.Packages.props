@@ -19,16 +19,8 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.2.0" />
-    <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="10.2.0" />
-  </ItemGroup>
-  <ItemGroup Label="Transitive Pins">
-    <!-- Pin transitive dependencies - these need variables in Version.props -->
-    <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
-    <PackageVersion Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="Polyfills">
-    <PackageVersion Include="PolySharp" Version="$(PolySharpVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
   <ItemGroup Label="Analyzers">
     <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
