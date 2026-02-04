@@ -16,6 +16,7 @@ This is the SOURCE OF TRUTH for Roslyn helpers. Before writing ANY utility code 
 | **Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
 | **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder` |
 | **Caching** | `EquatableArray<T>`, `DiagnosticInfo`, `LocationInfo` |
+| **Analyzer Infrastructure** | `DiagnosticAnalyzerBase`, `CodeFixProviderBase<T>` |
 
 ---
 
@@ -55,7 +56,7 @@ provider
 
 ### Match.* DSL (fluent symbol matching)
 
-**Note:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern.
+**⚠️ IMPORTANT:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern using factory methods.
 
 ```csharp
 // Method matching
@@ -94,6 +95,81 @@ var asyncApi = PublicInstance().Async().ReturningTask();
 var syncApi = PublicInstance().NotAsync().ReturningVoid();
 ```
 
+#### MethodMatcher - All Methods
+
+```csharp
+// Base methods (inherited by all matchers)
+.Named(name)                    // exact name match
+.NameMatches(regex)             // regex pattern
+.NameStartsWith(prefix)
+.NameEndsWith(suffix)
+.NameContains(substring)
+.Public() / .Private() / .Internal() / .Protected()
+.VisibleOutsideAssembly()
+.Static() / .NotStatic()
+.Abstract() / .Sealed() / .Virtual() / .Override()
+.WithAttribute(fullyQualifiedName)
+.WithAttribute(name, params additionalNames)  // any match
+.WithoutAttribute(fullyQualifiedName)
+.DeclaredIn(typeName)           // containing type
+.InNamespace(namespaceName)
+.Where(predicate)               // custom predicate
+
+// Method-specific
+.Constructor() / .Finalizer()
+.Async() / .NotAsync()
+.Extension() / .NotExtension()
+.Generic() / .NotGeneric()
+.WithTypeParameters(count)
+.WithNoParameters()
+.WithParameters(count)
+.WithMinParameters(count)
+.WithCancellationToken()
+.ReturningVoid()
+.ReturningTask()                // Task or ValueTask
+.ReturningBool()
+.ReturningString()
+.Returning(typeName)
+.ExplicitImplementation()
+```
+
+#### TypeMatcher - All Methods
+
+```csharp
+.Class() / .Struct() / .Interface() / .Enum() / .Record()
+.Generic() / .NotGeneric()
+.InheritsFrom(baseTypeName)
+.Implements(interfaceName)
+.Disposable()                   // shortcut for IDisposable
+.Nested() / .TopLevel()
+.StaticClass()
+.HasMember(name)
+.HasParameterlessConstructor()
+```
+
+#### PropertyMatcher / FieldMatcher / ParameterMatcher
+
+```csharp
+// PropertyMatcher
+.WithGetter() / .WithSetter() / .WithInitSetter()
+.ReadOnly()
+.Indexer()
+.Required()
+.OfType(typeName)
+
+// FieldMatcher
+.Const() / .ReadOnly() / .Volatile()
+.OfType(typeName)
+.BackingField() / .NotBackingField()
+
+// ParameterMatcher
+.Ref() / .Out() / .In()
+.Params()
+.Optional()
+.OfType(typeName)
+.CancellationToken()            // shortcut for CancellationToken type
+```
+
 ### Invoke.* (operation matching)
 
 ```csharp
@@ -117,6 +193,57 @@ Invoke.Method("Wait", "GetAwaiter")
 
 // Additional methods: Named(name, params additionalNames)
 Invoke.Method().Named("Add", "Remove", "Clear").Matches(invocation);
+```
+
+#### InvocationMatcher - All Methods
+
+```csharp
+// Method name matching
+.Named(name)
+.Named(name, params additionalNames)  // any match
+.NameStartsWith(prefix)
+.NameEndsWith(suffix)
+.NameContains(substring)
+
+// Receiver type matching
+.OnType(typeName)
+.OnType(typeName, params additionalTypeNames)  // any match
+.OnTypeInheritingFrom(baseTypeName)
+.OnTypeImplementing(interfaceName)
+
+// Method characteristics
+.Extension() / .NotExtension()
+.Static() / .Instance()
+.Async()
+.Generic()
+
+// Return type
+.ReturningVoid()
+.ReturningTask()
+.Returning(typeName)
+
+// Arguments
+.WithNoArguments()
+.WithArguments(count)
+.WithMinArguments(count)
+.WithConstantArg(index)
+.WithConstantStringArg(index)
+.WithNullArg(index)
+.WithArgOfType(index, typeName)
+.WithAllConstantArgs()
+
+// Namespace
+.InNamespace(namespaceName)
+.InNamespaceStartingWith(prefix)
+
+// Shortcuts
+.Linq()                         // System.Linq extensions
+.OnString()                     // String receiver
+.OnTask()                       // Task receiver
+.OnConsole()                    // Console receiver
+
+// Custom
+.Where(predicate)
 ```
 
 ---
@@ -314,37 +441,60 @@ operation.Ancestors()
 operation.FindAncestor<T>()
 operation.IsDescendantOf<T>()
 operation.Descendants()
+operation.DescendantsAndSelf()
 operation.DescendantsOfType<T>()
 operation.ContainsOperation<T>()
-operation.GetContainingMethod()
-operation.GetContainingType()
+operation.GetContainingMethod(ct)              // ⚠️ requires CancellationToken
+operation.GetContainingType(ct)                // ⚠️ requires CancellationToken
 operation.GetContainingBlock()
 
 // Context detection
 operation.IsInNameofOperation()
-operation.IsInExpressionTree()
-operation.IsInStaticContext()
+operation.IsInExpressionTree(expressionSymbol) // ⚠️ requires Expression<T> symbol
+operation.IsInStaticContext(ct)                // ⚠️ requires CancellationToken
 operation.IsInsideLoop()
 operation.IsInsideTryBlock()
 operation.IsInsideCatchBlock()
 operation.IsInsideFinallyBlock()
 operation.IsInsideLockStatement()
 operation.IsInsideUsingStatement()
+operation.IsUsingStatement()                   // is IUsingOperation or IUsingDeclarationOperation
 
 // Unwrapping
 operation.UnwrapImplicitConversions()
 operation.UnwrapAllConversions()
 operation.UnwrapParenthesized()
+operation.UnwrapLabeledOperations()
 
 // Value analysis
 operation.GetActualType()
 operation.IsConstantZero()
 operation.IsConstantNull()
+operation.IsNull()                             // alias for IsConstantNull
+operation.IsConstant(out value)
+operation.IsConstant<T>(value)                 // equals specific value
 operation.TryGetConstantValue<T>(out value)
+operation.IsKind(OperationKind)
 operation.IsAssignmentTarget()
 operation.IsLeftSideOfAssignment()
 operation.IsPassedByRef()
 operation.GetCSharpLanguageVersion()
+
+// Human-readable names (for diagnostics)
+operation.GetOperandName(fallback)             // "myVar", "GetValue()", "this"
+operation.GetCollectionSourceName()            // source name from foreach collection
+```
+
+### Getting Expression Tree Symbol
+
+```csharp
+// For IsInExpressionTree, get the Expression<T> symbol from compilation:
+var expressionSymbol = compilation.GetTypeByMetadataName(
+    "System.Linq.Expressions.Expression`1");
+if (operation.IsInExpressionTree(expressionSymbol))
+{
+    // Inside expression tree - different runtime semantics
+}
 ```
 
 ---
@@ -647,6 +797,64 @@ options.GetConfigurationValue(tree, key, defaultBool)
 options.GetConfigurationValue(tree, key, defaultInt)
 options.GetConfigurationValue(tree, key, defaultString)
 ```
+
+---
+
+## Analyzer Infrastructure
+
+Base classes that eliminate boilerplate for analyzers and code fixes.
+
+### DiagnosticAnalyzerBase
+
+```csharp
+// Automatically configures:
+// - GeneratedCodeAnalysisFlags.None (skip generated code)
+// - EnableConcurrentExecution() (better performance)
+
+public class MyAnalyzer : DiagnosticAnalyzerBase
+{
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ...;
+
+    protected override void InitializeCore(AnalysisContext context)
+    {
+        // Register your analysis actions here
+        context.RegisterOperationAction(AnalyzeInvocation, OperationKind.Invocation);
+    }
+}
+```
+
+### CodeFixProviderBase&lt;TSyntax&gt;
+
+```csharp
+// Eliminates boilerplate for common pattern:
+// 1. Find syntax node at diagnostic location
+// 2. Get semantic model
+// 3. Transform node
+// 4. Replace in document
+
+public class MyCodeFix : CodeFixProviderBase<InvocationExpressionSyntax>
+{
+    protected override string Title => "Use better API";
+
+    public override ImmutableArray<string> FixableDiagnosticIds =>
+        ImmutableArray.Create("MY001");
+
+    protected override InvocationExpressionSyntax? Transform(
+        InvocationExpressionSyntax node,
+        SemanticModel semanticModel,
+        Diagnostic diagnostic,
+        CancellationToken cancellationToken)
+    {
+        // Return transformed node, or null to skip
+        return node.WithExpression(...);
+    }
+}
+```
+
+**Features:**
+- Automatic `FixAllProvider` (BatchFixer)
+- Null-safe semantic model handling
+- Returns original document if Transform returns null or same node
 
 ---
 

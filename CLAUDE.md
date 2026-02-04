@@ -133,6 +133,13 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 | `AnalyzerConfigOptionsProviderExtensions.cs` | MSBuild property access |
 | `AnalyzerOptionsExtensions.cs` | EditorConfig access |
 
+### Analyzer Infrastructure
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `DiagnosticAnalyzerBase` | Base analyzer with standard config | `Analyzers/DiagnosticAnalyzerBase.cs` |
+| `CodeFixProviderBase<T>` | Base code fix with transform pattern | `CodeFixes/CodeFixProviderBase.cs` |
+
 ---
 
 ## Key Utility Reference

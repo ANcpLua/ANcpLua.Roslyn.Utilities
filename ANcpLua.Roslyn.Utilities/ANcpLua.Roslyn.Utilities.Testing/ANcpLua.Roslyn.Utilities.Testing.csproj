@@ -47,6 +47,10 @@
         <PackageReference Include="xunit.v3.assert"/>
     </ItemGroup>
 
+    <ItemGroup Label="Web Testing">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
         <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Testing.Aot\ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>

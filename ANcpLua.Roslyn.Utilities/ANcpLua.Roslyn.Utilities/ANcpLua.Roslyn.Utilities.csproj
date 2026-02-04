@@ -39,6 +39,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Bcl.HashCode"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common"/>
         <!-- Polyfills for netstandard2.0 (IsExternalInit, NotNullWhen, etc.) -->
         <PackageReference Include="PolySharp" PrivateAssets="all"/>
     </ItemGroup>
