@@ -1,0 +1,10 @@
+global using ANcpLua.Roslyn.Utilities;
+global using ANcpLua.Roslyn.Utilities.Matching;
+global using ANcpLua.Roslyn.Utilities.Models;
+global using Microsoft.CodeAnalysis;
+global using Microsoft.CodeAnalysis.CSharp;
+global using Microsoft.CodeAnalysis.CSharp.Syntax;
+global using System.Collections.Immutable;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
+global using System.Text;
