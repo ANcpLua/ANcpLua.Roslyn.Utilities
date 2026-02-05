@@ -12,11 +12,8 @@
     <PackageTags>aot;trimming;native-aot;testing;publishaot;publishtrimmed</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
-    <!-- This library is safe to trim (only contains attributes and constants) -->
     <IsTrimmable>true</IsTrimmable>
 
-    <!-- Suppress warnings for netstandard2.0 compatibility -->
-    <!-- NETSDK1212: IsTrimmable metadata is valid for consumers even on netstandard2.0 -->
     <NoWarn>$(NoWarn);CS1591;NETSDK1212</NoWarn>
   </PropertyGroup>
 
@@ -25,7 +22,6 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <!-- MSBuild files for NuGet auto-import (enables out-of-the-box AOT testing) -->
   <ItemGroup>
     <None Include="build\**\*" Pack="true" PackagePath="build\" />
   </ItemGroup>

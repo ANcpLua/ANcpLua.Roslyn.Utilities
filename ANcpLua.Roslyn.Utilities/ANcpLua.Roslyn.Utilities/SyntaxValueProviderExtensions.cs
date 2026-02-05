@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -87,7 +86,8 @@ internal
     /// <remarks>
     ///     <para>
     ///         This method retrieves the version from the <c>RecognizeFramework_Version</c> MSBuild property.
-    ///         If the property is not set, it falls back to the version of the calling assembly.
+    ///         If the property is not set, it falls back to <c>ThisAssembly.Version</c>,
+    ///         which is generated at build time from the MSBuild <c>Version</c> property.
     ///     </para>
     ///     <para>
     ///         This is commonly used in source generators to embed version information in generated code
@@ -97,15 +97,13 @@ internal
     /// <param name="context">The incremental generator initialization context.</param>
     /// <returns>
     ///     An <see cref="IncrementalValueProvider{TValue}" /> of <see cref="string" /> containing the detected version,
-    ///     either from the MSBuild property or from the calling assembly.
+    ///     either from the MSBuild property or from <c>ThisAssembly.Version</c>.
     /// </returns>
     public static IncrementalValueProvider<string> DetectVersion(
         this IncrementalGeneratorInitializationContext context)
     {
-        var defaultVersion = $"{Assembly.GetCallingAssembly().GetName().Version}";
-
         return context.AnalyzerConfigOptionsProvider
             .Select<AnalyzerConfigOptionsProvider, string>((options, _) =>
-                options.GetGlobalProperty("Version", "RecognizeFramework") ?? defaultVersion);
+                options.GetGlobalProperty("Version", "RecognizeFramework") ?? ThisAssembly.Version);
     }
 }

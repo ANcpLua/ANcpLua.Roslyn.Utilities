@@ -3,13 +3,11 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>latest</LangVersion>
 
-        <!-- Source-only: no DLL output -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeSymbols>false</IncludeSymbols>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <DevelopmentDependency>true</DevelopmentDependency>
 
-        <!-- Package metadata -->
         <PackageId>ANcpLua.Roslyn.Utilities.Sources</PackageId>
         <Description>Source-only Roslyn utilities for analyzers and generators. Embeds as internal types.</Description>
         <PackageTags>roslyn;source-generator;source-only;analyzer</PackageTags>
@@ -17,11 +15,9 @@
         <IsPackable>true</IsPackable>
         <NoPackageAnalysis>true</NoPackageAnalysis>
 
-        <!-- contentFiles settings -->
         <ContentTargetFolders>contentFiles</ContentTargetFolders>
     </PropertyGroup>
 
-    <!-- Build integration -->
     <ItemGroup>
         <None Include="build/*.props" Pack="true" PackagePath="build/"/>
         <None Include="build/*.targets" Pack="true" PackagePath="build/"/>
@@ -29,7 +25,6 @@
         <None Include="buildTransitive/*.targets" Pack="true" PackagePath="buildTransitive/"/>
     </ItemGroup>
 
-    <!-- Transform sources before packing: public -> internal -->
     <Target Name="_TransformSourcesForPack" BeforeTargets="GenerateNuspec">
         <PropertyGroup>
             <_TransformedDir>$(IntermediateOutputPath)transformed/</_TransformedDir>
@@ -38,7 +33,6 @@
         <Exec Command="pwsh -NoProfile -File Transform-Sources.ps1 -SourceDir ../ANcpLua.Roslyn.Utilities -OutputDir $(_TransformedDir)"
               WorkingDirectory="$(MSBuildProjectDirectory)"/>
 
-        <!-- Add transformed files as contentFiles for packing -->
         <ItemGroup>
             <Content Remove="../ANcpLua.Roslyn.Utilities/**/*.cs"/>
             <Content Include="$(_TransformedDir)**/*.cs"
