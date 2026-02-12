@@ -122,7 +122,7 @@
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Microsoft.Extensions">
     <MicrosoftExtensionsVersion>10.2.0</MicrosoftExtensionsVersion>
-    <AspNetCoreVersion>10.0.2</AspNetCoreVersion>
+    <AspNetCoreVersion>10.0.3</AspNetCoreVersion>
     <MicrosoftBclAsyncInterfacesVersion>10.0.2</MicrosoftBclAsyncInterfacesVersion>
   </PropertyGroup>
 
