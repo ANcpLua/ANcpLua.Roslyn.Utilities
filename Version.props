@@ -75,7 +75,7 @@
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Meziantou">
     <MeziantouFrameworkVersion>5.0.12</MeziantouFrameworkVersion>
-    <MeziantouFullPathVersion>1.1.14</MeziantouFullPathVersion>
+    <MeziantouFullPathVersion>1.1.15</MeziantouFullPathVersion>
     <MeziantouTemporaryDirectoryVersion>1.0.33</MeziantouTemporaryDirectoryVersion>
     <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
     <MeziantouDependencyScanningVersion>2.0.6</MeziantouDependencyScanningVersion>
@@ -122,7 +122,7 @@
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Microsoft.Extensions">
     <MicrosoftExtensionsVersion>10.3.0</MicrosoftExtensionsVersion>
-    <AspNetCoreVersion>10.0.2</AspNetCoreVersion>
+    <AspNetCoreVersion>10.0.3</AspNetCoreVersion>
     <MicrosoftBclAsyncInterfacesVersion>10.0.2</MicrosoftBclAsyncInterfacesVersion>
   </PropertyGroup>
 
