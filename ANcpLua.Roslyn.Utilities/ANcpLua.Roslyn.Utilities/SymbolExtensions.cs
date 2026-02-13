@@ -79,6 +79,36 @@ internal
     public static string GetMetadataName(this ITypeSymbol symbol) => symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 
     /// <summary>
+    ///     Gets the reflection-style full name of a symbol, suitable for <c>Type.GetType()</c>.
+    /// </summary>
+    /// <param name="symbol">The symbol to get the reflection name for.</param>
+    /// <returns>
+    ///     A string in the format <c>Namespace.Outer+Inner</c> using <see cref="ISymbol.MetadataName" />
+    ///     and <c>+</c> as the nested type separator.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This produces the same format as <see cref="Type.FullName" /> at runtime,
+    ///         using <c>MetadataName</c> (which includes generic arity suffixes like <c>`1</c>)
+    ///         and <c>+</c> for nested types. Useful when generated code needs to reference types
+    ///         via reflection or <c>Type.GetType()</c>.
+    ///     </para>
+    /// </remarks>
+    public static string GetReflectionFullName(this ISymbol symbol)
+    {
+        var typeNames = new Stack<string>();
+        for (ISymbol? current = symbol; current is ITypeSymbol; current = current.ContainingType)
+            typeNames.Push(current.MetadataName);
+
+        var typeName = string.Join("+", typeNames);
+        var ns = symbol.ContainingNamespace?.IsGlobalNamespace == true
+            ? null
+            : symbol.ContainingNamespace?.ToDisplayString();
+
+        return string.IsNullOrEmpty(ns) ? typeName : $"{ns}.{typeName}";
+    }
+
+    /// <summary>
     ///     Checks if the symbol has public accessibility.
     /// </summary>
     public static bool IsPublic(this ISymbol symbol) => symbol.DeclaredAccessibility == Accessibility.Public;

@@ -648,6 +648,37 @@ internal
     }
 
     /// <summary>
+    ///     Gets the result type from a generic <c>Task&lt;T&gt;</c> or <c>ValueTask&lt;T&gt;</c> type symbol.
+    /// </summary>
+    /// <param name="type">The type symbol to extract the result type from.</param>
+    /// <returns>
+    ///     The <c>TResult</c> type argument if <paramref name="type" /> is <c>Task&lt;T&gt;</c>
+    ///     or <c>ValueTask&lt;T&gt;</c>; otherwise, <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This is a context-free alternative to <c>AwaitableContext.GetTaskResultType()</c>
+    ///         that uses string matching instead of cached type symbols. Useful in source generators
+    ///         that don't create an <c>AwaitableContext</c>.
+    ///     </para>
+    ///     <para>
+    ///         Returns <c>null</c> for non-generic <c>Task</c>, non-generic <c>ValueTask</c>,
+    ///         and all non-task types.
+    ///     </para>
+    /// </remarks>
+    public static ITypeSymbol? GetTaskResultType(this ITypeSymbol type)
+    {
+        if (type is not INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } named)
+            return null;
+
+        var originalDef = named.OriginalDefinition.ToDisplayString();
+        return originalDef is "System.Threading.Tasks.Task<TResult>"
+            or "System.Threading.Tasks.ValueTask<TResult>"
+            ? named.TypeArguments[0]
+            : null;
+    }
+
+    /// <summary>
     ///     Determines whether the type symbol represents an enumerable type.
     /// </summary>
     /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
