@@ -160,9 +160,8 @@ public static class LogAssert
     /// <returns>The same <see cref="FakeLogCollector" /> instance for fluent chaining.</returns>
     public static FakeLogCollector ShouldMatch(this FakeLogCollector collector, string pattern)
     {
-        var regex = new Regex(pattern);
         var logs = collector.GetSnapshot();
-        Assert.True(logs.Any(r => regex.IsMatch(r.Message)),
+        Assert.True(logs.Any(r => Regex.IsMatch(r.Message, pattern)),
             $"No log message matches pattern '{pattern}'.\nActual logs:\n{collector.FormatLogs()}");
         return collector;
     }

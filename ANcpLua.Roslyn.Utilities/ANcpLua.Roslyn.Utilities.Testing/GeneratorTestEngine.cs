@@ -191,11 +191,6 @@ internal sealed class GeneratorTestEngine
     }
 }
 
-internal class InClassName(bool trackSteps)
-{
-    public bool TrackSteps { get; } = trackSteps;
-}
-
 /// <summary>
 ///     Generic version of <see cref="GeneratorTestEngine" /> for a single generator.
 /// </summary>
@@ -252,9 +247,8 @@ internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrem
 
     public Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default) => WithSource(source).CreateCompilationAsync(cancellationToken);
 
-    public static GeneratorDriver CreateDriver(InClassName inClassName)
+    public static GeneratorDriver CreateDriver(bool trackSteps)
     {
-        var trackSteps = inClassName.TrackSteps;
         return new GeneratorTestEngine<TGenerator>().WithStepTracking(trackSteps).CreateDriver();
     }
 

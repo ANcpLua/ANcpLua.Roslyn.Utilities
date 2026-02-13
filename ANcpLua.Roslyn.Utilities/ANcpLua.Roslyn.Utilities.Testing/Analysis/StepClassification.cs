@@ -279,8 +279,10 @@ internal static class StepClassification
     /// </remarks>
     public static bool IsSinkStep(string stepName)
     {
-        return SinkStepPatterns.Any(p =>
-            stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+        foreach (var p in SinkStepPatterns)
+            if (stepName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
     }
 
     /// <summary>
@@ -325,7 +327,9 @@ internal static class StepClassification
     /// </remarks>
     public static bool IsInfrastructureFile(string fileName)
     {
-        return InfrastructureFilePatterns.Any(p =>
-            fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase));
+        foreach (var p in InfrastructureFilePatterns)
+            if (fileName.AsSpan().Contains(p.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
     }
 }

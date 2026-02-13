@@ -16,7 +16,6 @@
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
-    <PackageVersion Include="ANcpLua.Roslyn.Utilities.Sources" Version="$(ANcpLuaRoslynUtilitiesSourcesVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)" />

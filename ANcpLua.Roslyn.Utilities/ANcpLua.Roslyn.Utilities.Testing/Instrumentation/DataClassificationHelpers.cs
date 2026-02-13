@@ -140,7 +140,9 @@ public sealed class HashingRedactor : Redactor
 
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
-        var bytes = Encoding.UTF8.GetBytes(source.ToString());
+        var byteCount = Encoding.UTF8.GetByteCount(source);
+        Span<byte> bytes = byteCount <= 256 ? stackalloc byte[byteCount] : new byte[byteCount];
+        Encoding.UTF8.GetBytes(source, bytes);
         var hash = SHA256.HashData(bytes);
         var hashString = Convert.ToHexString(hash)[.._hashLength];
 

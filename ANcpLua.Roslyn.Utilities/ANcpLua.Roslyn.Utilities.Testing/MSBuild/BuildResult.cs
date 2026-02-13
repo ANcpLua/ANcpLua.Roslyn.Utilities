@@ -346,14 +346,14 @@ public sealed record BuildResult(
 /// </remarks>
 /// <seealso cref="SarifFileRun" />
 /// <seealso cref="SarifFileRunResult" />
-public class SarifFile
+public sealed class SarifFile
 {
     /// <summary>
     ///     Gets or sets the collection of runs in this SARIF file.
     /// </summary>
     /// <value>An array of <see cref="SarifFileRun" /> objects, or <see langword="null" /> if not present.</value>
     [JsonPropertyName("runs")]
-    public SarifFileRun[]? Runs { get; set; }
+    public SarifFileRun[]? Runs { get; init; }
 
     /// <summary>
     ///     Gets all results from all runs in this SARIF file.
@@ -378,14 +378,14 @@ public class SarifFile
 /// <seealso cref="SarifFile" />
 /// <seealso cref="SarifFileRun" />
 /// <seealso cref="SarifFileRunResultMessage" />
-public class SarifFileRunResult
+public sealed class SarifFileRunResult
 {
     /// <summary>
     ///     Gets or sets the rule ID that produced this result.
     /// </summary>
     /// <value>The diagnostic rule identifier (e.g., "CS0001", "CA1000"), or <see langword="null" /> if not specified.</value>
     [JsonPropertyName("ruleId")]
-    public string? RuleId { get; set; }
+    public string? RuleId { get; init; }
 
     /// <summary>
     ///     Gets or sets the severity level of this result.
@@ -408,7 +408,7 @@ public class SarifFileRunResult
     ///     </list>
     /// </value>
     [JsonPropertyName("level")]
-    public string? Level { get; set; }
+    public string? Level { get; init; }
 
     /// <summary>
     ///     Gets or sets the message associated with this result.
@@ -418,7 +418,7 @@ public class SarifFileRunResult
     ///     not present.
     /// </value>
     [JsonPropertyName("message")]
-    public SarifFileRunResultMessage? Message { get; set; }
+    public SarifFileRunResultMessage? Message { get; init; }
 
     /// <summary>
     ///     Returns a string representation of this result.
@@ -431,14 +431,14 @@ public class SarifFileRunResult
 ///     Represents the message content of a SARIF result.
 /// </summary>
 /// <seealso cref="SarifFileRunResult" />
-public class SarifFileRunResultMessage
+public sealed class SarifFileRunResultMessage
 {
     /// <summary>
     ///     Gets or sets the text content of the message.
     /// </summary>
     /// <value>The diagnostic message text, or <see langword="null" /> if not specified.</value>
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public string? Text { get; init; }
 
     /// <summary>
     ///     Returns the message text.
@@ -456,12 +456,12 @@ public class SarifFileRunResultMessage
 /// </remarks>
 /// <seealso cref="SarifFile" />
 /// <seealso cref="SarifFileRunResult" />
-public class SarifFileRun
+public sealed class SarifFileRun
 {
     /// <summary>
     ///     Gets or sets the results produced by this run.
     /// </summary>
     /// <value>An array of <see cref="SarifFileRunResult" /> objects, or <see langword="null" /> if no results.</value>
     [JsonPropertyName("results")]
-    public SarifFileRunResult[]? Results { get; set; }
+    public SarifFileRunResult[]? Results { get; init; }
 }
