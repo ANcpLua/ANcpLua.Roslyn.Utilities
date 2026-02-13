@@ -54,6 +54,7 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 | `FileWithName` | Hint name + generated content | `Models/FileWithName.cs` |
 | `HashCombiner` | Hash code combining | `HashCombiner.cs` |
 | `ValueStringBuilder` | Stack-allocated string building | `ValueStringBuilder.cs` |
+| `EmptyServiceProvider` | Singleton null-returning IServiceProvider | `EmptyServiceProvider.cs` |
 
 ### Pattern Matching DSL
 
@@ -96,8 +97,8 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 
 | File | Purpose |
 |------|---------|
-| `SymbolExtensions.cs` | Symbol attributes, visibility, equality |
-| `TypeSymbolExtensions.cs` | Type hierarchy, primitives, patterns |
+| `SymbolExtensions.cs` | Symbol attributes, visibility, equality, attribute type extraction |
+| `TypeSymbolExtensions.cs` | Type hierarchy, primitives, patterns, codegen helpers |
 | `MethodSymbolExtensions.cs` | Interface implementation, overrides |
 | `OperationExtensions.cs` | Operation tree navigation, context detection |
 | `InvocationExtensions.cs` | Invocation arguments, receivers |
@@ -105,8 +106,10 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 | `CompilationExtensions.cs` | Target framework detection |
 | `EnumerableExtensions.cs` | `.OrEmpty()`, `.WhereNotNull()`, etc. |
 | `NullableExtensions.cs` | Functional nullable transforms |
-| `StringExtensions.cs` | Name conversion, line splitting |
+| `StringExtensions.cs` | Name conversion, line splitting, hashing, graph escaping |
 | `StringComparisonExtensions.cs` | Ordinal comparisons |
+| `ReflectionExtensions.cs` | Multi-TFM MethodInfo invoke, generic method lookup |
+| `RuntimeTypeExtensions.cs` | Runtime Type checks for tasks, open generics |
 | `TryExtensions.cs` | TryParse, TryGet patterns |
 | `DictionaryExtensions.cs` | Dictionary utilities |
 | `ListExtensions.cs` | List utilities |
@@ -330,6 +333,16 @@ aspnet.IsFromBody(parameter)
 | "Match invocation" | `Invoke.Method()...Matches()` |
 | "Accumulate errors in pipeline" | `DiagnosticFlow<T>` |
 | "Cache array in generator" | `EquatableArray<T>` |
+| "Extract typeof() args from attributes" | `symbol.GetAttributeTypeArguments()` |
+| "Get nested type chain for codegen" | `type.GetContainingTypeChain()` |
+| "Get generic clause for codegen" | `type.GetGenericParameterClause()` |
+| "Short deterministic ID from string" | `input.ToShortHash()` |
+| "Escape label for graph visualization" | `label.EscapeDotLabel()` / `.EscapeMermaidLabel()` |
+| "Invoke method without TIE wrapping" | `method.InvokeUnwrapped()` |
+| "Find method on closed generic from open" | `type.GetMethodFromGenericDefinition()` |
+| "Is this Type a Task<T> or ValueTask<T>?" | `type.IsGenericTask()` / `.IsGenericValueTask()` |
+| "Find IHandler<> implementations" | `type.ImplementsOpenGeneric()` / `.GetClosedImplementations()` |
+| "Need empty IServiceProvider" | `EmptyServiceProvider.Instance` |
 
 ---
 

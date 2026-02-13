@@ -401,6 +401,7 @@ symbol.ExplicitOrImplicitInterfaceImplementations()
 symbol.GetAllTypeParameters()
 symbol.GetTypeArguments()
 symbol.GetOverriddenMember()
+symbol.GetAttributeTypeArguments(attrName)  // sorted EquatableArray<string> of typeof() args
 
 // TypeSymbolExtensions.cs
 type.InheritsFrom(baseType)
@@ -418,6 +419,8 @@ type.IsTaskType()
 type.IsEnumerableType()
 type.GetUnderlyingNullableTypeOrSelf()
 type.GetElementType()
+type.GetContainingTypeChain()        // "Outer.Middle.Inner" for nested types
+type.GetGenericParameterClause()     // "<T, U>" or null
 
 // MethodSymbolExtensions.cs
 method.IsInterfaceImplementation()
@@ -762,6 +765,21 @@ input.ToPropertyName()       // PascalCase + keyword escape
 input.ToParameterName()      // camelCase + keyword escape
 text.TrimBlankLines()
 text.NormalizeLineEndings()
+input.ToShortHash()          // deterministic 8-char hex hash (SHA-256)
+label.EscapeDotLabel()       // escape for Graphviz DOT labels
+label.EscapeMermaidLabel()   // escape for Mermaid diagram labels
+
+// ReflectionExtensions.cs
+method.InvokeUnwrapped(target, args)                  // invoke without TargetInvocationException
+specializedType.GetMethodFromGenericDefinition(method) // generic method lookup across TFMs
+
+// RuntimeTypeExtensions.cs
+type.IsGenericTask()           // is Task<T>
+type.IsGenericValueTask()      // is ValueTask<T>
+type.IsTaskLike()              // Task, Task<T>, ValueTask, ValueTask<T>
+type.GetTaskResultType()       // extract T from Task<T>/ValueTask<T>
+type.ImplementsOpenGeneric(openGenericInterface)       // e.g. IHandler<>
+type.GetClosedImplementations(openGenericInterface)    // all IHandler<T> implementations
 
 // ConvertExtensions.cs
 typedConstant.ToBoolean(default)
@@ -900,6 +918,8 @@ Each helper file answers ONE question. Use this guide to pick the right tool:
 | **ObjectExtensions.cs** | "What type is this? Cast it safely." | Safe casting (`As<T>`), type checking (`Is<T>`), reflection |
 | **TryExtensions.cs** | "Parse or lookup, get null on failure" | `TryParse*` methods, dictionary access, collection indexing |
 | **StringComparisonExtensions.cs** | "Compare strings with explicit semantics" | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
+| **ReflectionExtensions.cs** | "Invoke without TIE wrapping, find generic methods" | Runtime dispatch, handler tables, type-erased invocation |
+| **RuntimeTypeExtensions.cs** | "What async/generic shape is this runtime Type?" | Handler registries, middleware, open generic interface scanning |
 
 ### Guard vs NullableExtensions
 

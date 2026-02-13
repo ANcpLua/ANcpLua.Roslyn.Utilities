@@ -831,4 +831,57 @@ internal
                 yield return attribute;
         }
     }
+
+    // ========== Attribute Type Argument Extraction ==========
+
+    /// <summary>
+    ///     Extracts fully-qualified type names from <c>typeof()</c> constructor arguments
+    ///     of all attributes matching the specified name.
+    /// </summary>
+    /// <param name="symbol">The symbol to extract attribute type arguments from.</param>
+    /// <param name="fullyQualifiedAttributeName">
+    ///     The fully qualified name of the attribute type (e.g., <c>"MyNamespace.MyAttribute"</c>).
+    /// </param>
+    /// <returns>
+    ///     An <see cref="EquatableArray{T}" /> of fully-qualified type name strings,
+    ///     sorted by ordinal comparison for deterministic incremental generator caching.
+    ///     Returns an empty array if no matching attributes are found.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method extracts the first constructor argument from each matching attribute
+    ///         when that argument is a <c>typeof()</c> expression. It is designed for the common
+    ///         generator pattern where attributes declare types:
+    ///     </para>
+    ///     <code>
+    ///     [SendsMessage(typeof(Request))]
+    ///     [YieldsOutput(typeof(Response))]
+    ///     public partial class MyExecutor { }
+    ///     </code>
+    ///     <para>
+    ///         Results are sorted by <see cref="StringComparer.Ordinal" /> to ensure consistent
+    ///         ordering for incremental generator caching, since attribute order is not guaranteed
+    ///         across partial class declarations.
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="GetAttribute(ISymbol, string)" />
+    /// <seealso cref="HasAttribute(ISymbol, string)" />
+    public static EquatableArray<string> GetAttributeTypeArguments(
+        this ISymbol symbol,
+        string fullyQualifiedAttributeName)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+
+        foreach (var attr in symbol.GetAttributes())
+            if (attr.AttributeClass?.ToDisplayString() == fullyQualifiedAttributeName &&
+                attr.ConstructorArguments.Length > 0 &&
+                attr.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol)
+                builder.Add(typeSymbol.GetFullyQualifiedName());
+
+        if (builder.Count == 0)
+            return default;
+
+        builder.Sort(StringComparer.Ordinal);
+        return new EquatableArray<string>(builder.ToImmutable());
+    }
 }

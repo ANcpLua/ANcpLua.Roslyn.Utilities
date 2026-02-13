@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -635,6 +636,70 @@ internal
         value.StartsWith(prefix, StringComparison.Ordinal)
             ? value.Substring(prefix.Length)
             : value;
+
+    // ========== Hash Utilities ==========
+
+    /// <summary>
+    ///     Computes a deterministic 8-character uppercase hexadecimal hash from a string.
+    /// </summary>
+    /// <param name="input">The input string to hash.</param>
+    /// <returns>
+    ///     An 8-character uppercase hexadecimal string derived from the SHA-256 hash of the input.
+    ///     Returns <c>"00000000"</c> if the input is <c>null</c> or empty.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method produces a short, deterministic identifier suitable for use as a suffix
+    ///         in generated type names, file hint names, or graph node IDs where full hashes are too long.
+    ///     </para>
+    ///     <para>
+    ///         On .NET 5+ the optimized <c>SHA256.HashData</c> and <c>Convert.ToHexString</c> APIs are used.
+    ///         On older runtimes the traditional <c>SHA256.Create()</c> path is used.
+    ///     </para>
+    /// </remarks>
+    public static string ToShortHash(this string input)
+    {
+        if (string.IsNullOrEmpty(input)) return "00000000";
+
+#if NET5_0_OR_GREATER
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash).Substring(0, 8);
+#else
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return BitConverter.ToString(hash, 0, 4).Replace("-", "");
+#endif
+    }
+
+    // ========== Graph Label Escaping ==========
+
+    /// <summary>
+    ///     Escapes a string for use as a label in Graphviz DOT format.
+    /// </summary>
+    /// <param name="label">The label text to escape.</param>
+    /// <returns>The escaped label safe for use inside DOT double-quoted strings.</returns>
+    /// <remarks>
+    ///     Escapes backslashes, double quotes, and newlines which are special characters in DOT labels.
+    /// </remarks>
+    public static string EscapeDotLabel(this string label) =>
+        label
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\n", "\\n");
+
+    /// <summary>
+    ///     Escapes a string for use as a label in Mermaid diagram format.
+    /// </summary>
+    /// <param name="label">The label text to escape.</param>
+    /// <returns>The escaped label safe for use in Mermaid node and edge labels.</returns>
+    /// <remarks>
+    ///     Encodes double quotes as HTML entities and newlines as HTML line breaks,
+    ///     which Mermaid renderers interpret correctly.
+    /// </remarks>
+    public static string EscapeMermaidLabel(this string label) =>
+        label
+            .Replace("\"", "&quot;")
+            .Replace("\n", "<br/>");
 
     private static readonly Regex WhitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
 
