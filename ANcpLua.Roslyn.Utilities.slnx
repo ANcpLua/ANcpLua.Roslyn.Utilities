@@ -13,5 +13,7 @@
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj" />
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj" />
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj" />
+        <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj" />
+        <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj" />
     </Folder>
 </Solution>

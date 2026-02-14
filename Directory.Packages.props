@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup Label="Analyzers">
     <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(RoslynAnalyzersVersion)" />
     <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)" />
   </ItemGroup>
   <ItemGroup Label="Testing">
