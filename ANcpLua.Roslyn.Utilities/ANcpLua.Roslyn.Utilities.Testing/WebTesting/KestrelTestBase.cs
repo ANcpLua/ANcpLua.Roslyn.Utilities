@@ -15,15 +15,14 @@ public abstract class KestrelTestBase<TProgram> : IAsyncLifetime
     where TProgram : class
 {
     private readonly WebApplicationFactory<TProgram> _baseFactory;
+    private HttpClient? _client;
+    private FakeLogCollector? _logs;
 
-    /// <summary>HTTP client for making requests to the test server.</summary>
-    protected HttpClient Client { get; private set; } = null!;
+    /// <summary>HTTP client for making requests to the test server. Available after <see cref="InitializeAsync"/>.</summary>
+    protected HttpClient Client => _client ?? throw new InvalidOperationException("Server not started. Call InitializeAsync first.");
 
-    /// <summary>
-    /// Fake log collector for asserting log output.
-    /// Available after <see cref="InitializeAsync"/> completes.
-    /// </summary>
-    protected FakeLogCollector? Logs { get; private set; }
+    /// <summary>Fake log collector for asserting log output. Available after <see cref="InitializeAsync"/>.</summary>
+    protected FakeLogCollector Logs => _logs ?? throw new InvalidOperationException("Server not started. Call InitializeAsync first.");
 
     /// <summary>The base address of the running server.</summary>
     protected Uri BaseAddress => _baseFactory.ClientOptions.BaseAddress;
@@ -53,18 +52,18 @@ public abstract class KestrelTestBase<TProgram> : IAsyncLifetime
     {
         _baseFactory.UseKestrel(0);
         _baseFactory.StartServer();
-        Client = _baseFactory.CreateClient(new WebApplicationFactoryClientOptions
+        _client = _baseFactory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
         });
-        Logs = _baseFactory.Services.GetFakeLogCollector();
+        _logs = _baseFactory.Services.GetFakeLogCollector();
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
     public virtual async ValueTask DisposeAsync()
     {
-        Client.Dispose();
+        _client?.Dispose();
         await _baseFactory.DisposeAsync();
         GC.SuppressFinalize(this);
     }

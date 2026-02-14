@@ -161,28 +161,32 @@ internal
         bool expandInheritdoc,
         CancellationToken cancellationToken)
     {
-        var xmlText = symbol.GetDocumentationCommentXml(preferredCulture, expandIncludes, cancellationToken);
+        var raw = symbol.GetDocumentationCommentXml(preferredCulture, expandIncludes, cancellationToken);
 
         if (!expandInheritdoc)
-            return xmlText ?? string.Empty;
+            return raw ?? string.Empty;
 
-        if (string.IsNullOrEmpty(xmlText))
+        string xmlText;
+        if (raw is { Length: > 0 } nonEmpty)
         {
-            if (IsEligibleForAutomaticInheritdoc(symbol))
-                xmlText = "<doc><inheritdoc/></doc>";
-            else
-                return string.Empty;
+            xmlText = nonEmpty;
+        }
+        else if (IsEligibleForAutomaticInheritdoc(symbol))
+        {
+            xmlText = "<doc><inheritdoc/></doc>";
+        }
+        else
+        {
+            return string.Empty;
         }
 
-        var element = TryParseXElement(xmlText!, LoadOptions.PreserveWhitespace);
-        if (element is not null)
-        {
-            element.ReplaceNodes(RewriteMany(symbol, visitedSymbols, compilation, element.Nodes().ToArray(),
-                cancellationToken));
-            xmlText = element.ToString(SaveOptions.DisableFormatting);
-        }
+        var element = TryParseXElement(xmlText, LoadOptions.PreserveWhitespace);
+        if (element is null)
+            return xmlText;
 
-        return xmlText ?? string.Empty;
+        element.ReplaceNodes(RewriteMany(symbol, visitedSymbols, compilation, element.Nodes().ToArray(),
+            cancellationToken));
+        return element.ToString(SaveOptions.DisableFormatting);
 
         static bool IsEligibleForAutomaticInheritdoc(ISymbol symbol)
         {
@@ -283,7 +287,7 @@ internal
 
         return TrySelectNodes(document, xpathValue) ?? [];
 
-        static string? ResolveXPath(XElement element, XAttribute? pathAttribute) =>
+        static string? ResolveXPath(XObject element, XAttribute? pathAttribute) =>
             pathAttribute?.Value is { Length: > 0 } path
                 ? NormalizePath(path)
                 : element.Parent is { } parent

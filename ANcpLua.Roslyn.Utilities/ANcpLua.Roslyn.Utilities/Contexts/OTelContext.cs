@@ -84,11 +84,6 @@ internal
     private INamedTypeSymbol? Baggage { get; }
 
     /// <summary>
-    ///     Gets a value indicating whether the OpenTelemetry SDK is referenced by the compilation.
-    /// </summary>
-    public bool HasOTelSdk { get; }
-
-    /// <summary>
     ///     Well-known metadata names for instrumentation types resolved by <see cref="OTelContext" />.
     /// </summary>
     private static class WellKnownTypes
@@ -190,8 +185,6 @@ internal
         BaseProcessorOfT = compilation.GetTypeByMetadataName(WellKnownTypes.BaseProcessorOfT);
         ResourceBuilder = compilation.GetTypeByMetadataName(WellKnownTypes.ResourceBuilder);
         Baggage = compilation.GetTypeByMetadataName(WellKnownTypes.Baggage);
-
-        HasOTelSdk = TracerProvider is not null;
     }
 
     // ── Activity checks ──────────────────────────────────────────────────────
