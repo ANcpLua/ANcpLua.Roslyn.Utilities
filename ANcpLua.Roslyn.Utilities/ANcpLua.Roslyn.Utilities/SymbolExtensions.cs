@@ -779,7 +779,7 @@ internal
     public static bool HasAttributeByShortName(this ISymbol symbol, string attributeShortName)
     {
         var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
-            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            ? attributeShortName[..^9]
             : attributeShortName;
         var nameWithSuffix = nameWithoutSuffix + "Attribute";
 
@@ -813,7 +813,7 @@ internal
     public static AttributeData? GetAttributeByShortName(this ISymbol symbol, string attributeShortName)
     {
         var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
-            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            ? attributeShortName[..^9]
             : attributeShortName;
         var nameWithSuffix = nameWithoutSuffix + "Attribute";
 
@@ -846,7 +846,7 @@ internal
     public static IEnumerable<AttributeData> GetAttributesByShortName(this ISymbol symbol, string attributeShortName)
     {
         var nameWithoutSuffix = attributeShortName.EndsWith("Attribute", StringComparison.Ordinal)
-            ? attributeShortName.Substring(0, attributeShortName.Length - 9)
+            ? attributeShortName[..^9]
             : attributeShortName;
         var nameWithSuffix = nameWithoutSuffix + "Attribute";
 

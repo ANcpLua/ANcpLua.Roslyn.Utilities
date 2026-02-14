@@ -726,7 +726,7 @@ internal
         if (value is null || value.Length <= maxLength)
             return value;
 
-        return value.Substring(0, maxLength);
+        return value[..maxLength];
     }
 
     /// <summary>
@@ -756,8 +756,8 @@ internal
 
         var truncateLength = maxLength - ellipsis.Length;
         if (truncateLength <= 0)
-            return ellipsis.Substring(0, maxLength);
+            return ellipsis[..maxLength];
 
-        return value.Substring(0, truncateLength) + ellipsis;
+        return value[..truncateLength] + ellipsis;
     }
 }

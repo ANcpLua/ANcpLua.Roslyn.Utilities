@@ -487,14 +487,14 @@ internal
         // Handle array types (e.g., "string[]", "int[][]")
         if (typeName.EndsWithOrdinal("[]"))
         {
-            var elementType = typeName.Substring(0, typeName.Length - 2);
+            var elementType = typeName[..^2];
             return elementType.ToGlobalTypeName(typeParameterNames) + "[]";
         }
 
         // Handle nullable reference types (trailing ?)
         if (typeName.EndsWithOrdinal("?"))
         {
-            var innerType = typeName.Substring(0, typeName.Length - 1);
+            var innerType = typeName[..^1];
             return innerType.ToGlobalTypeName(typeParameterNames) + "?";
         }
 
@@ -502,7 +502,7 @@ internal
         var genericStart = typeName.IndexOf('<');
         if (genericStart > 0 && typeName.EndsWithOrdinal(">"))
         {
-            var baseTypeName = typeName.Substring(0, genericStart);
+            var baseTypeName = typeName[..genericStart];
             var argsContent = typeName.Substring(genericStart + 1, typeName.Length - genericStart - 2);
 
             var args = ParseGenericArguments(argsContent);
@@ -589,7 +589,7 @@ internal
         }
 
         if (start < argsContent.Length)
-            args.Add(argsContent.Substring(start).Trim());
+            args.Add(argsContent[start..].Trim());
 
         return args;
     }

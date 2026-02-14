@@ -417,7 +417,7 @@ internal
 
         var diagArray = diagnostics.Count > 0 ? diagnostics.ToImmutable().AsEquatableArray() : default;
 
-        return hasErrors ? new DiagnosticFlow<ImmutableArray<TItem>>(default, diagArray) : new DiagnosticFlow<ImmutableArray<TItem>>(values.ToImmutable(), diagArray);
+        return hasErrors ? new DiagnosticFlow<ImmutableArray<TItem>>(ImmutableArray<TItem>.Empty, diagArray) : new DiagnosticFlow<ImmutableArray<TItem>>(values.ToImmutable(), diagArray);
     }
 
     /// <summary>

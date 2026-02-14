@@ -62,7 +62,7 @@ internal
         if (str.Length > _span.Length - _pos)
             Grow(str.Length);
 
-        str.AsSpan().CopyTo(_span.Slice(_pos));
+        str.AsSpan().CopyTo(_span[_pos..]);
         _pos += str.Length;
     }
 
@@ -75,7 +75,7 @@ internal
         if (str.Length > _span.Length - _pos)
             Grow(str.Length);
 
-        str.CopyTo(_span.Slice(_pos));
+        str.CopyTo(_span[_pos..]);
         _pos += str.Length;
     }
 
@@ -108,11 +108,11 @@ internal
     ///     Returns the current contents as a trimmed string.
     /// </summary>
     /// <returns>The trimmed string representation.</returns>
-    public readonly string ToTrimString() => new(_span.Slice(0, _pos).Trim().ToArray());
+    public readonly string ToTrimString() => new(_span[.._pos].Trim().ToArray());
 
     /// <summary>
     ///     Returns the current contents as a string.
     /// </summary>
     /// <returns>The string representation.</returns>
-    public override readonly string ToString() => new(_span.Slice(0, _pos).ToArray());
+    public override readonly string ToString() => new(_span[.._pos].ToArray());
 }

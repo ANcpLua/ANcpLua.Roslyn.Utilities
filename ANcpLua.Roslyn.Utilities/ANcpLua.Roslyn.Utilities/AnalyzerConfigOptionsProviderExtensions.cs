@@ -324,9 +324,9 @@ internal
 
     private static string BuildPropertyKey(string name, string? prefix) => BuildPropertyPrefix + CompositeName(name, prefix);
 
-    private static string BuildMetadataKey(string group, string name, string? prefix) => BuildMetadataPrefix + group + "." + CompositeName(name, prefix);
+    private static string BuildMetadataKey(string group, string name, string? prefix) => $"{BuildMetadataPrefix}{group}.{CompositeName(name, prefix)}";
 
-    private static string CompositeName(string name, string? prefix) => prefix is null ? name : prefix + "_" + name;
+    private static string CompositeName(string name, string? prefix) => prefix is null ? name : $"{prefix}_{name}";
 
     private static bool TryParseMsBuildBoolean(string? text, out bool value)
     {

@@ -261,37 +261,34 @@ internal
 
         visitedSymbols ??= [];
         if (!visitedSymbols.Add(symbol))
-            return null; // Prevent recursion
+            return null;
 
-        try
-        {
-            var inheritedDocumentation = GetDocumentationComment(symbol, visitedSymbols, compilation,
-                null, true, true, cancellationToken);
+        using var scope = new VisitedScope(visitedSymbols, symbol);
 
-            if (string.IsNullOrEmpty(inheritedDocumentation))
-                return [];
+        var inheritedDocumentation = GetDocumentationComment(symbol, visitedSymbols, compilation,
+            null, true, true, cancellationToken);
 
-            var document = TryParseXDocument(inheritedDocumentation, LoadOptions.PreserveWhitespace);
-            if (document is null)
-                return [];
+        if (string.IsNullOrEmpty(inheritedDocumentation))
+            return [];
 
-            var xpathValue = pathAttribute?.Value is { Length: > 0 } path
+        var document = TryParseXDocument(inheritedDocumentation, LoadOptions.PreserveWhitespace);
+        if (document is null)
+            return [];
+
+        var xpathValue = ResolveXPath(element, pathAttribute);
+        if (xpathValue is null)
+            return [];
+
+        RewriteTypeParameterReferences(document, symbol);
+
+        return TrySelectNodes(document, xpathValue) ?? [];
+
+        static string? ResolveXPath(XElement element, XAttribute? pathAttribute) =>
+            pathAttribute?.Value is { Length: > 0 } path
                 ? NormalizePath(path)
                 : element.Parent is { } parent
                     ? BuildXPathForElement(parent)
                     : null;
-
-            if (xpathValue is null)
-                return [];
-
-            RewriteTypeParameterReferences(document, symbol);
-
-            return TrySelectNodes(document, xpathValue) ?? [];
-        }
-        finally
-        {
-            visitedSymbols.Remove(symbol);
-        }
 
         static ISymbol? GetCandidateSymbol(ISymbol memberSymbol)
         {
@@ -329,7 +326,7 @@ internal
             return true;
         }
 
-        static string NormalizePath(string path) => path.StartsWith("/", StringComparison.Ordinal) ? "/*" + path : path;
+        static string NormalizePath(string path) => path.StartsWith("/", StringComparison.Ordinal) ? $"/*{path}" : path;
 
         static string BuildXPathForElement(XElement element)
         {
@@ -343,7 +340,7 @@ internal
                 if (ElementNameIs(current, "member") || ElementNameIs(current, "doc"))
                     currentName = "*";
 
-                path = "/" + currentName + path;
+                path = $"/{currentName}{path}";
             }
 
             return path;
@@ -383,45 +380,48 @@ internal
 
     private static TNode Copy<TNode>(TNode node, bool copyAttributeAnnotations) where TNode : XNode
     {
-        XNode copy;
-
-        if (node.NodeType is XmlNodeType.Document)
-            copy = new XDocument((XDocument)(object)node);
-        else
-        {
-            XContainer temp = new XElement("temp");
-            temp.Add(node);
-            copy = temp.LastNode ?? throw new InvalidOperationException("Failed to copy XML node - LastNode was null after Add");
-            temp.RemoveNodes();
-        }
-
-        Debug.Assert(copy != node);
-        Debug.Assert(copy.Parent is null);
+        var copy = CloneNode(node);
 
         CopyAnnotations(node, copy);
 
         if (copyAttributeAnnotations && node.NodeType is XmlNodeType.Element)
-        {
-            var sourceElement = (XElement)(object)node;
-            var targetElement = (XElement)copy;
-
-            using var sourceAttributes = sourceElement.Attributes().GetEnumerator();
-            using var targetAttributes = targetElement.Attributes().GetEnumerator();
-
-            while (sourceAttributes.MoveNext() && targetAttributes.MoveNext())
-            {
-                var sourceAttr = sourceAttributes.Current;
-                var targetAttr = targetAttributes.Current;
-
-                if (sourceAttr is null || targetAttr is null)
-                    continue;
-
-                Debug.Assert(sourceAttr.Name == targetAttr.Name);
-                CopyAnnotations(sourceAttr, targetAttr);
-            }
-        }
+            CopyAttributeAnnotations((XElement)(object)node, (XElement)copy);
 
         return (TNode)copy;
+    }
+
+    private static XNode CloneNode(XNode node)
+    {
+        if (node.NodeType is XmlNodeType.Document)
+            return new XDocument((XDocument)node);
+
+        XContainer temp = new XElement("temp");
+        temp.Add(node);
+        var copy = temp.LastNode ?? throw new InvalidOperationException("Failed to copy XML node - LastNode was null after Add");
+        temp.RemoveNodes();
+
+        Debug.Assert(copy != node);
+        Debug.Assert(copy.Parent is null);
+
+        return copy;
+    }
+
+    private static void CopyAttributeAnnotations(XElement source, XElement target)
+    {
+        using var sourceAttributes = source.Attributes().GetEnumerator();
+        using var targetAttributes = target.Attributes().GetEnumerator();
+
+        while (sourceAttributes.MoveNext() && targetAttributes.MoveNext())
+        {
+            var sourceAttr = sourceAttributes.Current;
+            var targetAttr = targetAttributes.Current;
+
+            if (sourceAttr is null || targetAttr is null)
+                continue;
+
+            Debug.Assert(sourceAttr.Name == targetAttr.Name);
+            CopyAnnotations(sourceAttr, targetAttr);
+        }
     }
 
     private static void CopyAnnotations(XObject source, XObject target)
@@ -562,4 +562,22 @@ file static class DocumentationXmlNames
     ///     <c>true</c> if the element names are equal (ignoring case); otherwise, <c>false</c>.
     /// </returns>
     public static bool ElementEquals(string name1, string name2) => string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+}
+
+/// <summary>
+///     Disposable scope that removes a symbol from a visited set on disposal,
+///     replacing manual try/finally patterns for recursion tracking.
+/// </summary>
+file ref struct VisitedScope
+{
+    private readonly HashSet<ISymbol> _set;
+    private readonly ISymbol _symbol;
+
+    public VisitedScope(HashSet<ISymbol> set, ISymbol symbol)
+    {
+        _set = set;
+        _symbol = symbol;
+    }
+
+    public void Dispose() => _set.Remove(_symbol);
 }

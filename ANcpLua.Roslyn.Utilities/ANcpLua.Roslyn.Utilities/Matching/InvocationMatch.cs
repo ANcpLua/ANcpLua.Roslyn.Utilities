@@ -556,7 +556,7 @@ internal
     public InvocationMatcher OnTask() => OnType("Task");
 
     /// <summary>
-    ///     Matches method invocations on <see cref="Console" /> instances.
+    ///     Matches method invocations on <c>Console</c> instances.
     /// </summary>
     /// <returns>This matcher for method chaining.</returns>
     /// <seealso cref="OnType(string)" />

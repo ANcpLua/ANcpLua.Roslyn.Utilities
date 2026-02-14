@@ -1559,7 +1559,7 @@ internal
         if (value.Contains('\\') || value.Contains('/'))
             throw new ArgumentException("Extension must not contain path separators.", paramName);
 
-        return value.StartsWith(".", StringComparison.Ordinal) ? value : "." + value;
+        return value.StartsWith(".", StringComparison.Ordinal) ? value : $".{value}";
     }
 
     #endregion

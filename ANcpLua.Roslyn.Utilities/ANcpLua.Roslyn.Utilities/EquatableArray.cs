@@ -288,7 +288,7 @@ internal
     /// </returns>
     /// <remarks>
     ///     The hash code is computed by combining the hash codes of all elements using
-    ///     <see cref="HashCode" />. This ensures that arrays with equal elements
+    ///     <see cref="HashCombiner" />. This ensures that arrays with equal elements
     ///     produce equal hash codes.
     /// </remarks>
     public override int GetHashCode()

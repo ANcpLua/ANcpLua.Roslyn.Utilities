@@ -113,7 +113,7 @@ internal
 #if NET6_0_OR_GREATER
             _ => string.Concat(input[0].ToString().ToUpper(CultureInfo.InvariantCulture), input.AsSpan(1)),
 #else
-            _ => input[0].ToString().ToUpper(CultureInfo.InvariantCulture) + input.Substring(1),
+            _ => input[0].ToString().ToUpper(CultureInfo.InvariantCulture) + input[1..],
 #endif
         };
     }
@@ -244,7 +244,7 @@ internal
 #if NET6_0_OR_GREATER
             _ => string.Concat(input[0].ToString().ToLower(CultureInfo.InvariantCulture), input.AsSpan(1)),
 #else
-            _ => input[0].ToString().ToLower(CultureInfo.InvariantCulture) + input.Substring(1),
+            _ => input[0].ToString().ToLower(CultureInfo.InvariantCulture) + input[1..],
 #endif
         };
     }
@@ -464,7 +464,7 @@ internal
     /// <returns>The type name without the global:: prefix.</returns>
     public static string StripGlobalPrefix(this string typeFqn) =>
         typeFqn.StartsWith(GlobalPrefix, StringComparison.Ordinal)
-            ? typeFqn.Substring(GlobalPrefix.Length)
+            ? typeFqn[GlobalPrefix.Length..]
             : typeFqn;
 
     /// <summary>
@@ -478,7 +478,7 @@ internal
         var result = typeFqn.Replace(GlobalPrefix, string.Empty);
 
         if (result.EndsWith("?", StringComparison.Ordinal))
-            result = result.Substring(0, result.Length - 1);
+            result = result[..^1];
 
         return result;
     }
@@ -495,7 +495,7 @@ internal
             return typeFqn;
 
         if (typeFqn.EndsWith("?", StringComparison.Ordinal))
-            return typeFqn.Substring(0, typeFqn.Length - 1);
+            return typeFqn[..^1];
 
         var normalized = typeFqn.NormalizeTypeName();
         if (normalized.StartsWith("System.Nullable<", StringComparison.Ordinal) &&
@@ -521,13 +521,13 @@ internal
         var normalized = typeFqn.StripGlobalPrefix();
 
         var isArray = normalized.EndsWith("[]", StringComparison.Ordinal);
-        var baseName = isArray ? normalized.Substring(0, normalized.Length - 2) : normalized;
+        var baseName = isArray ? normalized[..^2] : normalized;
 
         if (baseName.StartsWith("::", StringComparison.Ordinal))
-            baseName = baseName.Substring(2);
+            baseName = baseName[2..];
 
         var lastDot = baseName.LastIndexOf('.');
-        var shortName = lastDot >= 0 ? baseName.Substring(lastDot + 1) : baseName;
+        var shortName = lastDot >= 0 ? baseName[(lastDot + 1)..] : baseName;
 
         return isArray ? shortName + "[]" : shortName;
     }
@@ -623,7 +623,7 @@ internal
     /// <returns>The string without the suffix if it was present; otherwise, the original string.</returns>
     public static string StripSuffix(this string value, string suffix) =>
         value.EndsWith(suffix, StringComparison.Ordinal)
-            ? value.Substring(0, value.Length - suffix.Length)
+            ? value[..^suffix.Length]
             : value;
 
     /// <summary>
@@ -634,7 +634,7 @@ internal
     /// <returns>The string without the prefix if it was present; otherwise, the original string.</returns>
     public static string StripPrefix(this string value, string prefix) =>
         value.StartsWith(prefix, StringComparison.Ordinal)
-            ? value.Substring(prefix.Length)
+            ? value[prefix.Length..]
             : value;
 
     // ========== Hash Utilities ==========
@@ -778,14 +778,14 @@ internal
                 var next = span[index + 1];
                 if (next == '\n')
                 {
-                    Current = new LineSplitEntry(span.Slice(0, index), span.Slice(index, 2));
-                    _str = span.Slice(index + 2);
+                    Current = new LineSplitEntry(span[..index], span.Slice(index, 2));
+                    _str = span[(index + 2)..];
                     return true;
                 }
             }
 
-            Current = new LineSplitEntry(span.Slice(0, index), span.Slice(index, 1));
-            _str = span.Slice(index + 1);
+            Current = new LineSplitEntry(span[..index], span.Slice(index, 1));
+            _str = span[(index + 1)..];
             return true;
         }
 

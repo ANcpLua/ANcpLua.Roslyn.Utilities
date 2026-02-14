@@ -233,7 +233,7 @@ internal
     /// <remarks>
     ///     <para>
     ///         This method is equivalent to reading the <see cref="HashCode" /> property and is provided
-    ///         for API compatibility with <see cref="System.HashCode.ToHashCode" />.
+    ///         for API compatibility with <c>System.HashCode.ToHashCode</c>.
     ///     </para>
     /// </remarks>
     /// <seealso cref="HashCode" />
