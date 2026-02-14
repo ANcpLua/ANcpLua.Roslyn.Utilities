@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -137,12 +138,7 @@ internal
         var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
         if (string.IsNullOrEmpty(xml)) return null;
 
-        try
-        {
-            var element = XElement.Parse(xml);
-            return element.Element("summary")?.Value.NormalizeWhitespace();
-        }
-        catch (XmlException) { return null; }
+        return TryReadElementText(xml, "summary")?.NormalizeWhitespace();
     }
 
     /// <summary>
@@ -153,12 +149,7 @@ internal
         var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
         if (string.IsNullOrEmpty(xml)) return null;
 
-        try
-        {
-            var element = XElement.Parse(xml);
-            return element.Element("remarks")?.Value.NormalizeWhitespace();
-        }
-        catch (XmlException) { return null; }
+        return TryReadElementText(xml, "remarks")?.NormalizeWhitespace();
     }
 
     private static string GetDocumentationComment(
@@ -183,16 +174,12 @@ internal
                 return string.Empty;
         }
 
-        try
+        var element = TryParseXElement(xmlText!, LoadOptions.PreserveWhitespace);
+        if (element is not null)
         {
-            var element = XElement.Parse(xmlText, LoadOptions.PreserveWhitespace);
             element.ReplaceNodes(RewriteMany(symbol, visitedSymbols, compilation, element.Nodes().ToArray(),
                 cancellationToken));
             xmlText = element.ToString(SaveOptions.DisableFormatting);
-        }
-        catch (XmlException)
-        {
-            // Malformed documentation comments - not actionable
         }
 
         return xmlText ?? string.Empty;
@@ -284,7 +271,10 @@ internal
             if (string.IsNullOrEmpty(inheritedDocumentation))
                 return [];
 
-            var document = XDocument.Parse(inheritedDocumentation, LoadOptions.PreserveWhitespace);
+            var document = TryParseXDocument(inheritedDocumentation, LoadOptions.PreserveWhitespace);
+            if (document is null)
+                return [];
+
             var xpathValue = pathAttribute?.Value is { Length: > 0 } path
                 ? NormalizePath(path)
                 : element.Parent is { } parent
@@ -297,10 +287,6 @@ internal
             RewriteTypeParameterReferences(document, symbol);
 
             return TrySelectNodes(document, xpathValue) ?? [];
-        }
-        catch (XmlException)
-        {
-            return [];
         }
         finally
         {
@@ -446,16 +432,64 @@ internal
 
     private static XNode[]? TrySelectNodes(XNode node, string xpath)
     {
+        if (TryCompileXPath(xpath) is not { ReturnType: XPathResultType.NodeSet })
+            return null;
+
+        var xpathResult = (IEnumerable)node.XPathEvaluate(xpath);
+        return xpathResult.Cast<XNode>().ToArray();
+    }
+
+    private static XPathExpression? TryCompileXPath(string xpath)
+    {
         try
         {
-            var xpathResult = (IEnumerable)node.XPathEvaluate(xpath);
-            return xpathResult.Cast<XNode>().ToArray();
+            return XPathExpression.Compile(xpath);
         }
-        catch (InvalidOperationException)
+        catch (XPathException)
         {
             return null;
         }
-        catch (XPathException)
+    }
+
+    private static string? TryReadElementText(string xml, string elementName)
+    {
+        try
+        {
+            using var reader = XmlReader.Create(new StringReader(xml),
+                new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment });
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element && reader.LocalName == elementName)
+                    return reader.ReadElementContentAsString();
+            }
+
+            return null;
+        }
+        catch (XmlException)
+        {
+            return null;
+        }
+    }
+
+    private static XElement? TryParseXElement(string xml, LoadOptions options = LoadOptions.None)
+    {
+        try
+        {
+            return XElement.Parse(xml, options);
+        }
+        catch (XmlException)
+        {
+            return null;
+        }
+    }
+
+    private static XDocument? TryParseXDocument(string xml, LoadOptions options = LoadOptions.None)
+    {
+        try
+        {
+            return XDocument.Parse(xml, options);
+        }
+        catch (XmlException)
         {
             return null;
         }
