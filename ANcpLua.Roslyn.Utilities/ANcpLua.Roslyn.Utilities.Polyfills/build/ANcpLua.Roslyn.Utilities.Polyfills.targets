@@ -1,5 +1,5 @@
 <!--
-  ANcpLua.Roslyn.Utilities.Sources.targets - Polyfill injection control
+  ANcpLua.Roslyn.Utilities.Polyfills.targets - Polyfill injection control
 
   All polyfill source files are included via NuGet contentFiles with BuildAction=Compile.
   Each file has #if guards that gate compilation based on target framework.
@@ -10,7 +10,7 @@
   USAGE: Set any property to 'false' in your project to exclude that polyfill:
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
 
-  Or disable ALL polyfills (keeps only Roslyn utilities):
+  Or disable ALL polyfills:
     <InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>
 -->
 <Project>
@@ -44,22 +44,17 @@
   <!-- ═══════════════════════════════════════════════════════════════════════
        CONDITIONAL EXCLUSION
        Remove polyfill contentFiles from Compile when opted out.
-       Files self-gate via #if guards, so exclusion is only needed to
-       avoid duplicate type definitions from other polyfill sources.
        ═══════════════════════════════════════════════════════════════════════ -->
 
-  <!-- Trim Attributes -->
   <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/TrimAttributes/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TrimAttributes/'))" />
   </ItemGroup>
 
-  <!-- Nullable Attributes (DiagnosticAttributes + NullabilityAttributes) -->
   <ItemGroup Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/DiagnosticAttributes/'))" />
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/NullabilityAttributes/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('DiagnosticAttributes/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('NullabilityAttributes/'))" />
   </ItemGroup>
 
-  <!-- Language Features (individual control) -->
   <ItemGroup Condition="'$(InjectIsExternalInitOnLegacy)' == 'false'">
     <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IsExternalInit.cs'))" />
   </ItemGroup>
@@ -84,39 +79,32 @@
     <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('ParamCollectionAttribute.cs'))" />
   </ItemGroup>
 
-  <!-- Diagnostics -->
   <ItemGroup Condition="'$(InjectStackTraceHiddenOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/Diagnostics/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Diagnostics/StackTraceHiddenAttribute.cs'))" />
   </ItemGroup>
 
-  <!-- Exceptions -->
   <ItemGroup Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/Exceptions/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Exceptions/'))" />
   </ItemGroup>
 
-  <!-- Experimental -->
   <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/Experimental/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Experimental/'))" />
   </ItemGroup>
 
-  <!-- Index/Range -->
   <ItemGroup Condition="'$(InjectIndexRangeOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/IndexRange/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IndexRange/'))" />
   </ItemGroup>
 
-  <!-- Lock -->
   <ItemGroup Condition="'$(InjectLockPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/Lock.cs'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Lock.cs'))" />
   </ItemGroup>
 
-  <!-- TimeProvider -->
   <ItemGroup Condition="'$(InjectTimeProviderPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/TimeProvider/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TimeProvider/'))" />
   </ItemGroup>
 
-  <!-- String Extensions -->
   <ItemGroup Condition="'$(InjectStringExtensionsPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Polyfills/StringExtensions/'))" />
+    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('StringExtensions/'))" />
   </ItemGroup>
 
 </Project>

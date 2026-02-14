@@ -16,10 +16,10 @@
       <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
   -->
   <PropertyGroup Label="SDK Version (Auto-generated)">
-    <ANcpSdkPackageVersion>2.0.7</ANcpSdkPackageVersion>
+    <ANcpSdkPackageVersion>2.0.8</ANcpSdkPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label=".NET SDK">
-    <DotNetSdkVersion>10.0.102</DotNetSdkVersion>
+    <DotNetSdkVersion>10.0.103</DotNetSdkVersion>
     <DotNetSdkRollForward>latestMinor</DotNetSdkRollForward>
   </PropertyGroup>
 
@@ -36,21 +36,28 @@
        ROSLYN.UTILITIES (Runtime package)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Roslyn.Utilities">
-    <ANcpLuaRoslynUtilitiesVersion>1.16.0</ANcpLuaRoslynUtilitiesVersion>
+    <ANcpLuaRoslynUtilitiesVersion>1.34.0</ANcpLuaRoslynUtilitiesVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        ROSLYN.UTILITIES.SOURCES (Source-only package for generators)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Roslyn.Utilities.Sources">
-    <ANcpLuaRoslynUtilitiesSourcesVersion>1.16.0</ANcpLuaRoslynUtilitiesSourcesVersion>
+    <ANcpLuaRoslynUtilitiesSourcesVersion>1.34.0</ANcpLuaRoslynUtilitiesSourcesVersion>
+  </PropertyGroup>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       ROSLYN.UTILITIES.POLYFILLS (Source-only polyfills for netstandard2.0)
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <PropertyGroup Label="Roslyn.Utilities.Polyfills">
+    <ANcpLuaRoslynUtilitiesPolyfillsVersion>1.34.0</ANcpLuaRoslynUtilitiesPolyfillsVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        ROSLYN.UTILITIES.TESTING (Analyzer/CodeFix/Generator test infrastructure)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Roslyn.Utilities.Testing">
-    <ANcpLuaRoslynUtilitiesTestingVersion>1.16.0</ANcpLuaRoslynUtilitiesTestingVersion>
+    <ANcpLuaRoslynUtilitiesTestingVersion>1.34.0</ANcpLuaRoslynUtilitiesTestingVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -78,9 +85,8 @@
     <MeziantouFullPathVersion>1.1.15</MeziantouFullPathVersion>
     <MeziantouTemporaryDirectoryVersion>1.0.33</MeziantouTemporaryDirectoryVersion>
     <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
-    <MeziantouDependencyScanningVersion>2.0.6</MeziantouDependencyScanningVersion>
-    <MeziantouAnalyzerVersion>2.0.285</MeziantouAnalyzerVersion>
-    <MeziantouParallelTestFrameworkVersion>1.0.6</MeziantouParallelTestFrameworkVersion>
+    <MeziantouDependencyScanningVersion>2.0.7</MeziantouDependencyScanningVersion>
+    <MeziantouAnalyzerVersion>2.0.301</MeziantouAnalyzerVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -98,8 +104,8 @@
        Used by: SDK (auto-injected for TUnit, NUnit MTP, MSTest MTP)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="MTP Extensions">
-    <MTPExtensionsVersion>2.0.2</MTPExtensionsVersion>
-    <CodeCoverageVersion>18.1.0</CodeCoverageVersion>
+    <MTPExtensionsVersion>2.1.0</MTPExtensionsVersion>
+    <CodeCoverageVersion>18.4.1</CodeCoverageVersion>
     <TestSdkVersion>18.0.1</TestSdkVersion>
     <DiagnosticsTestingVersion>10.0.0</DiagnosticsTestingVersion>
     <GitHubActionsLoggerMTPVersion>3.0.1</GitHubActionsLoggerMTPVersion>
@@ -110,9 +116,9 @@
        ANALYZERS (SDK-injected)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Analyzers">
-    <ANcpLuaAnalyzersVersion>1.15.0</ANcpLuaAnalyzersVersion>
+    <ANcpLuaAnalyzersVersion>1.16.0</ANcpLuaAnalyzersVersion>
     <SbomTargetsVersion>4.1.5</SbomTargetsVersion>
-    <BannedApiAnalyzersVersion>3.3.4</BannedApiAnalyzersVersion>
+    <BannedApiAnalyzersVersion>4.14.0</BannedApiAnalyzersVersion>
     <JonSkeetAnalyzersVersion>1.0.0-beta.6</JonSkeetAnalyzersVersion>
   </PropertyGroup>
 
@@ -139,9 +145,9 @@
        Used by: SDK
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Build Tools">
-    <NuGetVersion>7.0.1</NuGetVersion>
+    <NuGetVersion>7.3.0</NuGetVersion>
     <MSBuildStructuredLoggerVersion>2.3.113</MSBuildStructuredLoggerVersion>
-    <MicrosoftSourceLinkVersion>10.0.102</MicrosoftSourceLinkVersion>
+    <MicrosoftSourceLinkVersion>10.0.103</MicrosoftSourceLinkVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>1.0.1</MicrosoftDeploymentDotNetReleasesVersion>
   </PropertyGroup>
 
@@ -153,7 +159,7 @@
   <PropertyGroup Label="OpenAPI">
     <MicrosoftOpenApiVersion>2.0.0</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiReadersVersion>2.0.0-preview.13</MicrosoftOpenApiReadersVersion>
-    <YamlDotNetVersion>16.3.0</YamlDotNetVersion>
+    <YamlDotNetVersion>16.3.1</YamlDotNetVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
@@ -178,7 +184,6 @@
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Aliases">
     <XunitMtpVersion>$(XunitV3Version)</XunitMtpVersion>
-    <ParallelTestFrameworkVersion>$(MeziantouParallelTestFrameworkVersion)</ParallelTestFrameworkVersion>
-    <MvcTestingVersion>$(AspNetCoreVersion)</MvcTestingVersion>
+<MvcTestingVersion>$(AspNetCoreVersion)</MvcTestingVersion>
   </PropertyGroup>
 </Project>

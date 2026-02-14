@@ -27,6 +27,8 @@ LAYER 3: ErrorOrX, qyl, other      <-- END USERS
 | Package | Target | Purpose |
 |---------|--------|---------|
 | `ANcpLua.Roslyn.Utilities` | `netstandard2.0` | Core utilities for generators/analyzers |
+| `ANcpLua.Roslyn.Utilities.Sources` | `netstandard2.0` | Source-only package (embeds as `internal` in analyzers/generators) |
+| `ANcpLua.Roslyn.Utilities.Polyfills` | `netstandard2.0` | Source-only polyfills (no Roslyn dependency) |
 | `ANcpLua.Roslyn.Utilities.Testing` | `net10.0` | Testing framework for Roslyn tooling |
 
 ## Build Commands
@@ -135,6 +137,32 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 |------|---------|
 | `AnalyzerConfigOptionsProviderExtensions.cs` | MSBuild property access |
 | `AnalyzerOptionsExtensions.cs` | EditorConfig access |
+
+### Comparers
+
+| Type | Purpose | Location |
+|------|---------|----------|
+| `StringOrdinalComparer` | Ordinal string comparison (case-sensitive) | `Comparers/StringOrdinalComparer.cs` |
+| `StringOrdinalIgnoreCaseComparer` | Ordinal string comparison (case-insensitive) | `Comparers/StringOrdinalComparer.cs` |
+
+### Polyfills (netstandard2.0)
+
+All polyfills are `#if`-gated and compile only on older TFMs. Included in `.Sources` and `.Polyfills` packages.
+
+| Category | Files | TFM Guard |
+|----------|-------|-----------|
+| Language Features | `IsExternalInit`, `RequiredMember`, `CompilerFeatureRequired`, `SetsRequiredMembers`, `CallerArgumentExpression`, `ParamCollection` | `!NET5_0` to `!NET9_0` |
+| Nullable Attributes | `AllowNull`, `MaybeNull`, `NotNull`, `MemberNotNull`, etc. | `!NETCOREAPP3_1` / `!NET5_0` |
+| Trim/AOT Attributes | `DynamicallyAccessedMembers`, `RequiresUnreferencedCode`, `RequiresDynamicCode`, `UnconditionalSuppressMessage` | `!NET5_0` / `!NET7_0` |
+| Index/Range | `Index`, `Range` | `!NETCOREAPP3_0 && !NETSTANDARD2_1` |
+| Diagnostics | `StackTraceHiddenAttribute` | `!NET6_0` |
+| Exceptions | `UnreachableException` | `!NET7_0` |
+| Experimental | `ExperimentalAttribute` | `!NET8_0` |
+| TimeProvider | `TimeProvider`, `ITimer` | `!NET8_0` |
+| Lock | `System.Threading.Lock` | `!NET9_0` |
+| String Extensions | `Contains`, `Replace`, `IndexOf` with `StringComparison` | `!NETCOREAPP2_1 && !NETSTANDARD2_1` |
+
+**Opt-out**: Set `InjectXxxOnLegacy=false` per category, or `InjectAllPolyfillsOnLegacy=false` for all.
 
 ### Analyzer Infrastructure
 
@@ -343,6 +371,9 @@ aspnet.IsFromBody(parameter)
 | "Is this Type a Task<T> or ValueTask<T>?" | `type.IsGenericTask()` / `.IsGenericValueTask()` |
 | "Find IHandler<> implementations" | `type.ImplementsOpenGeneric()` / `.GetClosedImplementations()` |
 | "Need empty IServiceProvider" | `EmptyServiceProvider.Instance` |
+| "Ordinal string comparer for dictionaries" | `StringOrdinalComparer.Instance` / `.IgnoreCase` |
+| "Polyfills for netstandard2.0 generator" | `ANcpLua.Roslyn.Utilities.Sources` (includes polyfills) |
+| "Polyfills without Roslyn dependency" | `ANcpLua.Roslyn.Utilities.Polyfills` |
 
 ---
 
@@ -350,15 +381,30 @@ aspnet.IsFromBody(parameter)
 
 ```
 ANcpLua.Roslyn.Utilities/
-├── ANcpLua.Roslyn.Utilities/        # netstandard2.0 - Core library
-│   ├── Contexts/                    # Domain-specific type caches
-│   ├── Matching/                    # Symbol/invocation matching DSL
-│   └── Models/                      # Equatable data models
-└── ANcpLua.Roslyn.Utilities.Testing/ # net10.0 - Testing framework
-    ├── MSBuild/                     # Integration test infrastructure
-    ├── Analysis/                    # Caching analysis
-    ├── Formatting/                  # Report formatting
-    └── Instrumentation/             # OpenTelemetry integration
+├── ANcpLua.Roslyn.Utilities/         # netstandard2.0 - Core library
+│   ├── Comparers/                    # StringOrdinalComparer
+│   ├── Contexts/                     # Domain-specific type caches
+│   ├── Matching/                     # Symbol/invocation matching DSL
+│   ├── Models/                       # Equatable data models
+│   └── Polyfills/                    # All netstandard2.0 polyfills (SOURCE OF TRUTH)
+│       ├── DiagnosticAttributes/     # NullableAttributes
+│       ├── Diagnostics/              # StackTraceHidden
+│       ├── Exceptions/               # UnreachableException
+│       ├── Experimental/             # ExperimentalAttribute
+│       ├── IndexRange/               # Index, Range
+│       ├── LanguageFeatures/         # IsExternalInit, Required, etc.
+│       ├── NullabilityAttributes/    # MemberNotNull
+│       ├── StringExtensions/         # String.Contains(StringComparison)
+│       ├── TimeProvider/             # TimeProvider polyfill
+│       ├── TrimAttributes/           # DynamicallyAccessedMembers, etc.
+│       └── Lock.cs                   # System.Threading.Lock polyfill
+├── ANcpLua.Roslyn.Utilities.Sources/  # Source-only NuGet (public→internal + polyfills)
+├── ANcpLua.Roslyn.Utilities.Polyfills/ # Source-only polyfills (no Roslyn dependency)
+└── ANcpLua.Roslyn.Utilities.Testing/  # net10.0 - Testing framework
+    ├── MSBuild/                      # Integration test infrastructure
+    ├── Analysis/                     # Caching analysis
+    ├── Formatting/                   # Report formatting
+    └── Instrumentation/              # OpenTelemetry integration
 ```
 
 ## Release Order

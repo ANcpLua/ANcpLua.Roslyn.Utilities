@@ -10,6 +10,7 @@
     <Folder Name="/src/">
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj" />
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj" />
+        <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj" />
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj" />
         <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj" />
     </Folder>

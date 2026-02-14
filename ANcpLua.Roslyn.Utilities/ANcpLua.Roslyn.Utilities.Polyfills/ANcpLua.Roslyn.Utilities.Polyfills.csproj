@@ -8,9 +8,9 @@
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <DevelopmentDependency>true</DevelopmentDependency>
 
-        <PackageId>ANcpLua.Roslyn.Utilities.Sources</PackageId>
-        <Description>Source-only Roslyn utilities for analyzers and generators. Embeds as internal types.</Description>
-        <PackageTags>roslyn;source-generator;source-only;analyzer</PackageTags>
+        <PackageId>ANcpLua.Roslyn.Utilities.Polyfills</PackageId>
+        <Description>Source-only polyfills for netstandard2.0: nullable attributes, language features (init, required, params collections), trim attributes, Index/Range, Lock, TimeProvider, StackTraceHidden, UnreachableException, and more. All types are internal and #if-gated by target framework.</Description>
+        <PackageTags>polyfills;netstandard2.0;source-only;backport;init;required;index;range;lock</PackageTags>
 
         <IsPackable>true</IsPackable>
         <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -18,6 +18,7 @@
         <ContentTargetFolders>contentFiles</ContentTargetFolders>
     </PropertyGroup>
 
+    <!-- Pack props/targets for injection control -->
     <ItemGroup>
         <None Include="build/*.props" Pack="true" PackagePath="build/"/>
         <None Include="build/*.targets" Pack="true" PackagePath="build/"/>
@@ -25,18 +26,15 @@
         <None Include="buildTransitive/*.targets" Pack="true" PackagePath="buildTransitive/"/>
     </ItemGroup>
 
-    <Target Name="_TransformSourcesForPack" BeforeTargets="_GetPackageFiles">
-        <PropertyGroup>
-            <_TransformedDir>$(IntermediateOutputPath)transformed/</_TransformedDir>
-        </PropertyGroup>
-
-        <Exec Command="pwsh -NoProfile -File Transform-Sources.ps1 -SourceDir ../ANcpLua.Roslyn.Utilities -OutputDir $(_TransformedDir)"
-              WorkingDirectory="$(MSBuildProjectDirectory)"/>
-
+    <!--
+        Pack polyfill source files directly as contentFiles.
+        No transform needed: all polyfills are already 'internal' with #if guards.
+    -->
+    <Target Name="_PackPolyfillSources" BeforeTargets="_GetPackageFiles">
         <ItemGroup>
-            <Content Remove="../ANcpLua.Roslyn.Utilities/**/*.cs"/>
-            <Content Include="$(_TransformedDir)**/*.cs"
-                     PackagePath="contentFiles/cs/any/ANcpLua.Roslyn.Utilities/"
+            <_PolyfillFiles Include="../ANcpLua.Roslyn.Utilities/Polyfills/**/*.cs" />
+            <Content Include="@(_PolyfillFiles)"
+                     PackagePath="contentFiles/cs/any/ANcpLua.Roslyn.Utilities.Polyfills/%(RecursiveDir)%(Filename)%(Extension)"
                      Pack="true"
                      BuildAction="Compile"
                      CopyToOutput="false"

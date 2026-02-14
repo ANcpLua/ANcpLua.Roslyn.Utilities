@@ -1,0 +1,7 @@
+<Project>
+    <!--
+        ANcpLua.Roslyn.Utilities.Polyfills - Source-only polyfills for netstandard2.0.
+        All types are internal and #if-gated by target framework.
+        No configuration needed - polyfills activate automatically based on TFM.
+    -->
+</Project>

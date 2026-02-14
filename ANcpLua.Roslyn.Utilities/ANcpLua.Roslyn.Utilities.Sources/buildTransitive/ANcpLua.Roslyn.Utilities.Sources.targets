@@ -1,4 +1,9 @@
+<!--
+  ANcpLua.Roslyn.Utilities.Sources.targets (transitive)
+
+  Same as build/ANcpLua.Roslyn.Utilities.Sources.targets.
+  Ensures polyfill injection control works for transitive package consumers.
+-->
 <Project>
-    <!-- Source files are automatically included via contentFiles -->
-    <!-- This file exists for future extensibility -->
+  <Import Project="$(MSBuildThisFileDirectory)../build/ANcpLua.Roslyn.Utilities.Sources.targets" />
 </Project>
