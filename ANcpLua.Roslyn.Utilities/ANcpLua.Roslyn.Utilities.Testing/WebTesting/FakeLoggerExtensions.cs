@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting;
 
 using System.Text;

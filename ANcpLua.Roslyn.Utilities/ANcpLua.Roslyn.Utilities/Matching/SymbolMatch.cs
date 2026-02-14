@@ -232,7 +232,7 @@ internal
     /// <seealso cref="NameEndsWith" />
     public TSelf NameStartsWith(string prefix)
     {
-        return AddPredicate(s => s.Name.StartsWith(prefix, StringComparison.Ordinal));
+        return AddPredicate(s => s.Name.StartsWithOrdinal(prefix));
     }
 
     /// <summary>
@@ -244,7 +244,7 @@ internal
     /// <seealso cref="NameStartsWith" />
     public TSelf NameEndsWith(string suffix)
     {
-        return AddPredicate(s => s.Name.EndsWith(suffix, StringComparison.Ordinal));
+        return AddPredicate(s => s.Name.EndsWithOrdinal(suffix));
     }
 
     /// <summary>
@@ -268,7 +268,7 @@ internal
     /// <seealso cref="VisibleOutsideAssembly" />
     public TSelf Public()
     {
-        return AddPredicate(s => s.DeclaredAccessibility == Accessibility.Public);
+        return AddPredicate(static s => s.DeclaredAccessibility == Accessibility.Public);
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ internal
     /// <seealso cref="Protected" />
     public TSelf Private()
     {
-        return AddPredicate(s => s.DeclaredAccessibility == Accessibility.Private);
+        return AddPredicate(static s => s.DeclaredAccessibility == Accessibility.Private);
     }
 
     /// <summary>
@@ -292,7 +292,7 @@ internal
     /// <seealso cref="Protected" />
     public TSelf Internal()
     {
-        return AddPredicate(s => s.DeclaredAccessibility == Accessibility.Internal);
+        return AddPredicate(static s => s.DeclaredAccessibility == Accessibility.Internal);
     }
 
     /// <summary>
@@ -304,7 +304,7 @@ internal
     /// <seealso cref="Internal" />
     public TSelf Protected()
     {
-        return AddPredicate(s => s.DeclaredAccessibility == Accessibility.Protected);
+        return AddPredicate(static s => s.DeclaredAccessibility == Accessibility.Protected);
     }
 
     /// <summary>
@@ -317,7 +317,7 @@ internal
     /// <seealso cref="Public" />
     public TSelf VisibleOutsideAssembly()
     {
-        return AddPredicate(s => s.IsVisibleOutsideOfAssembly());
+        return AddPredicate(static s => s.IsVisibleOutsideOfAssembly());
     }
 
     /// <summary>
@@ -327,7 +327,7 @@ internal
     /// <seealso cref="NotStatic" />
     public TSelf Static()
     {
-        return AddPredicate(s => s.IsStatic);
+        return AddPredicate(static s => s.IsStatic);
     }
 
     /// <summary>
@@ -337,7 +337,7 @@ internal
     /// <seealso cref="Static" />
     public TSelf NotStatic()
     {
-        return AddPredicate(s => !s.IsStatic);
+        return AddPredicate(static s => !s.IsStatic);
     }
 
     /// <summary>
@@ -348,7 +348,7 @@ internal
     /// <seealso cref="Override" />
     public TSelf Abstract()
     {
-        return AddPredicate(s => s.IsAbstract);
+        return AddPredicate(static s => s.IsAbstract);
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ internal
     /// <seealso cref="Virtual" />
     public TSelf Sealed()
     {
-        return AddPredicate(s => s.IsSealed);
+        return AddPredicate(static s => s.IsSealed);
     }
 
     /// <summary>
@@ -369,7 +369,7 @@ internal
     /// <seealso cref="Override" />
     public TSelf Virtual()
     {
-        return AddPredicate(s => s.IsVirtual);
+        return AddPredicate(static s => s.IsVirtual);
     }
 
     /// <summary>
@@ -380,7 +380,7 @@ internal
     /// <seealso cref="Abstract" />
     public TSelf Override()
     {
-        return AddPredicate(s => s.IsOverride);
+        return AddPredicate(static s => s.IsOverride);
     }
 
     /// <summary>
@@ -514,7 +514,7 @@ internal
     /// <seealso cref="Finalizer" />
     public MethodMatcher Constructor()
     {
-        return AddPredicate(m => m.MethodKind == MethodKind.Constructor);
+        return AddPredicate(static m => m.MethodKind == MethodKind.Constructor);
     }
 
     /// <summary>
@@ -524,7 +524,7 @@ internal
     /// <seealso cref="Constructor" />
     public MethodMatcher Finalizer()
     {
-        return AddPredicate(m => m.MethodKind == MethodKind.Destructor);
+        return AddPredicate(static m => m.MethodKind == MethodKind.Destructor);
     }
 
     /// <summary>
@@ -534,7 +534,7 @@ internal
     /// <seealso cref="NotAsync" />
     public MethodMatcher Async()
     {
-        return AddPredicate(m => m.IsAsync);
+        return AddPredicate(static m => m.IsAsync);
     }
 
     /// <summary>
@@ -544,7 +544,7 @@ internal
     /// <seealso cref="Async" />
     public MethodMatcher NotAsync()
     {
-        return AddPredicate(m => !m.IsAsync);
+        return AddPredicate(static m => !m.IsAsync);
     }
 
     /// <summary>
@@ -554,7 +554,7 @@ internal
     /// <seealso cref="NotExtension" />
     public MethodMatcher Extension()
     {
-        return AddPredicate(m => m.IsExtensionMethod);
+        return AddPredicate(static m => m.IsExtensionMethod);
     }
 
     /// <summary>
@@ -564,7 +564,7 @@ internal
     /// <seealso cref="Extension" />
     public MethodMatcher NotExtension()
     {
-        return AddPredicate(m => !m.IsExtensionMethod);
+        return AddPredicate(static m => !m.IsExtensionMethod);
     }
 
     /// <summary>
@@ -575,7 +575,7 @@ internal
     /// <seealso cref="WithTypeParameters" />
     public MethodMatcher Generic()
     {
-        return AddPredicate(m => m.IsGenericMethod);
+        return AddPredicate(static m => m.IsGenericMethod);
     }
 
     /// <summary>
@@ -585,7 +585,7 @@ internal
     /// <seealso cref="Generic" />
     public MethodMatcher NotGeneric()
     {
-        return AddPredicate(m => !m.IsGenericMethod);
+        return AddPredicate(static m => !m.IsGenericMethod);
     }
 
     /// <summary>
@@ -607,7 +607,7 @@ internal
     /// <seealso cref="WithMinParameters" />
     public MethodMatcher WithNoParameters()
     {
-        return AddPredicate(m => m.Parameters.Length is 0);
+        return AddPredicate(static m => m.Parameters.Length is 0);
     }
 
     /// <summary>
@@ -640,7 +640,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher WithCancellationToken()
     {
-        return AddPredicate(m => HasParameterOfType(m.Parameters, "CancellationToken"));
+        return AddPredicate(static m => HasParameterOfType(m.Parameters, "CancellationToken"));
     }
 
     /// <summary>
@@ -651,7 +651,7 @@ internal
     /// <seealso cref="ReturningTask" />
     public MethodMatcher ReturningVoid()
     {
-        return AddPredicate(m => m.ReturnsVoid);
+        return AddPredicate(static m => m.ReturnsVoid);
     }
 
     /// <summary>
@@ -680,7 +680,7 @@ internal
     /// <seealso cref="ReturningVoid" />
     public MethodMatcher ReturningTask()
     {
-        return AddPredicate(m => m.ReturnType.Name is "Task" or "ValueTask" ||
+        return AddPredicate(static m => m.ReturnType.Name is "Task" or "ValueTask" ||
                                  m.ReturnType.OriginalDefinition.Name is "Task" or "ValueTask");
     }
 
@@ -691,7 +691,7 @@ internal
     /// <seealso cref="Returning" />
     public MethodMatcher ReturningBool()
     {
-        return AddPredicate(m => m.ReturnType.SpecialType == SpecialType.System_Boolean);
+        return AddPredicate(static m => m.ReturnType.SpecialType == SpecialType.System_Boolean);
     }
 
     /// <summary>
@@ -701,7 +701,7 @@ internal
     /// <seealso cref="Returning" />
     public MethodMatcher ReturningString()
     {
-        return AddPredicate(m => m.ReturnType.SpecialType == SpecialType.System_String);
+        return AddPredicate(static m => m.ReturnType.SpecialType == SpecialType.System_String);
     }
 
     /// <summary>
@@ -710,7 +710,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher ExplicitImplementation()
     {
-        return AddPredicate(m => m.ExplicitInterfaceImplementations.Length > 0);
+        return AddPredicate(static m => m.ExplicitInterfaceImplementations.Length > 0);
     }
 
     private static bool HasParameterOfType(ImmutableArray<IParameterSymbol> parameters, string typeName)
@@ -765,7 +765,7 @@ internal
     /// <seealso cref="Record" />
     public TypeMatcher Class()
     {
-        return AddPredicate(t => t.TypeKind == TypeKind.Class);
+        return AddPredicate(static t => t.TypeKind == TypeKind.Class);
     }
 
     /// <summary>
@@ -776,7 +776,7 @@ internal
     /// <seealso cref="Record" />
     public TypeMatcher Struct()
     {
-        return AddPredicate(t => t.TypeKind == TypeKind.Struct);
+        return AddPredicate(static t => t.TypeKind == TypeKind.Struct);
     }
 
     /// <summary>
@@ -786,7 +786,7 @@ internal
     /// <seealso cref="Class" />
     public TypeMatcher Interface()
     {
-        return AddPredicate(t => t.TypeKind == TypeKind.Interface);
+        return AddPredicate(static t => t.TypeKind == TypeKind.Interface);
     }
 
     /// <summary>
@@ -797,7 +797,7 @@ internal
     /// <seealso cref="Struct" />
     public TypeMatcher Enum()
     {
-        return AddPredicate(t => t.TypeKind == TypeKind.Enum);
+        return AddPredicate(static t => t.TypeKind == TypeKind.Enum);
     }
 
     /// <summary>
@@ -808,7 +808,7 @@ internal
     /// <seealso cref="Struct" />
     public TypeMatcher Record()
     {
-        return AddPredicate(t => t.IsRecord);
+        return AddPredicate(static t => t.IsRecord);
     }
 
     /// <summary>
@@ -818,7 +818,7 @@ internal
     /// <seealso cref="NotGeneric" />
     public TypeMatcher Generic()
     {
-        return AddPredicate(t => t.IsGenericType);
+        return AddPredicate(static t => t.IsGenericType);
     }
 
     /// <summary>
@@ -828,7 +828,7 @@ internal
     /// <seealso cref="Generic" />
     public TypeMatcher NotGeneric()
     {
-        return AddPredicate(t => !t.IsGenericType);
+        return AddPredicate(static t => !t.IsGenericType);
     }
 
     /// <summary>
@@ -878,7 +878,7 @@ internal
     /// <seealso cref="TopLevel" />
     public TypeMatcher Nested()
     {
-        return AddPredicate(t => t.ContainingType is not null);
+        return AddPredicate(static t => t.ContainingType is not null);
     }
 
     /// <summary>
@@ -888,7 +888,7 @@ internal
     /// <seealso cref="Nested" />
     public TypeMatcher TopLevel()
     {
-        return AddPredicate(t => t.ContainingType is null);
+        return AddPredicate(static t => t.ContainingType is null);
     }
 
     /// <summary>
@@ -898,7 +898,7 @@ internal
     /// <seealso cref="Class" />
     public TypeMatcher StaticClass()
     {
-        return AddPredicate(t => t.IsStatic && t.TypeKind == TypeKind.Class);
+        return AddPredicate(static t => t.IsStatic && t.TypeKind == TypeKind.Class);
     }
 
     /// <summary>
@@ -994,7 +994,7 @@ internal
     /// <seealso cref="ReadOnly" />
     public PropertyMatcher WithGetter()
     {
-        return AddPredicate(p => p.GetMethod is not null);
+        return AddPredicate(static p => p.GetMethod is not null);
     }
 
     /// <summary>
@@ -1005,7 +1005,7 @@ internal
     /// <seealso cref="WithInitSetter" />
     public PropertyMatcher WithSetter()
     {
-        return AddPredicate(p => p.SetMethod is not null);
+        return AddPredicate(static p => p.SetMethod is not null);
     }
 
     /// <summary>
@@ -1015,7 +1015,7 @@ internal
     /// <seealso cref="WithSetter" />
     public PropertyMatcher WithInitSetter()
     {
-        return AddPredicate(p => p.SetMethod?.IsInitOnly == true);
+        return AddPredicate(static p => p.SetMethod?.IsInitOnly == true);
     }
 
     /// <summary>
@@ -1026,7 +1026,7 @@ internal
     /// <seealso cref="WithSetter" />
     public PropertyMatcher ReadOnly()
     {
-        return AddPredicate(p => p.GetMethod is not null && p.SetMethod is null);
+        return AddPredicate(static p => p.GetMethod is not null && p.SetMethod is null);
     }
 
     /// <summary>
@@ -1035,7 +1035,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public PropertyMatcher Indexer()
     {
-        return AddPredicate(p => p.IsIndexer);
+        return AddPredicate(static p => p.IsIndexer);
     }
 
     /// <summary>
@@ -1044,7 +1044,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public PropertyMatcher Required()
     {
-        return AddPredicate(p => p.IsRequired);
+        return AddPredicate(static p => p.IsRequired);
     }
 
     /// <summary>
@@ -1094,7 +1094,7 @@ internal
     /// <seealso cref="ReadOnly" />
     public FieldMatcher Const()
     {
-        return AddPredicate(f => f.IsConst);
+        return AddPredicate(static f => f.IsConst);
     }
 
     /// <summary>
@@ -1104,7 +1104,7 @@ internal
     /// <seealso cref="Const" />
     public FieldMatcher ReadOnly()
     {
-        return AddPredicate(f => f.IsReadOnly);
+        return AddPredicate(static f => f.IsReadOnly);
     }
 
     /// <summary>
@@ -1113,7 +1113,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public FieldMatcher Volatile()
     {
-        return AddPredicate(f => f.IsVolatile);
+        return AddPredicate(static f => f.IsVolatile);
     }
 
     /// <summary>
@@ -1133,7 +1133,7 @@ internal
     /// <seealso cref="NotBackingField" />
     public FieldMatcher BackingField()
     {
-        return AddPredicate(f => f.AssociatedSymbol is not null);
+        return AddPredicate(static f => f.AssociatedSymbol is not null);
     }
 
     /// <summary>
@@ -1143,7 +1143,7 @@ internal
     /// <seealso cref="BackingField" />
     public FieldMatcher NotBackingField()
     {
-        return AddPredicate(f => f.AssociatedSymbol is null);
+        return AddPredicate(static f => f.AssociatedSymbol is null);
     }
 }
 
@@ -1183,7 +1183,7 @@ internal
     /// <seealso cref="In" />
     public ParameterMatcher Ref()
     {
-        return AddPredicate(p => p.RefKind == RefKind.Ref);
+        return AddPredicate(static p => p.RefKind == RefKind.Ref);
     }
 
     /// <summary>
@@ -1194,7 +1194,7 @@ internal
     /// <seealso cref="In" />
     public ParameterMatcher Out()
     {
-        return AddPredicate(p => p.RefKind == RefKind.Out);
+        return AddPredicate(static p => p.RefKind == RefKind.Out);
     }
 
     /// <summary>
@@ -1205,7 +1205,7 @@ internal
     /// <seealso cref="Out" />
     public ParameterMatcher In()
     {
-        return AddPredicate(p => p.RefKind == RefKind.In);
+        return AddPredicate(static p => p.RefKind == RefKind.In);
     }
 
     /// <summary>
@@ -1215,7 +1215,7 @@ internal
     /// <seealso cref="Optional" />
     public ParameterMatcher Params()
     {
-        return AddPredicate(p => p.IsParams);
+        return AddPredicate(static p => p.IsParams);
     }
 
     /// <summary>
@@ -1225,7 +1225,7 @@ internal
     /// <seealso cref="Params" />
     public ParameterMatcher Optional()
     {
-        return AddPredicate(p => p.IsOptional);
+        return AddPredicate(static p => p.IsOptional);
     }
 
     /// <summary>

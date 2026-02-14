@@ -500,7 +500,7 @@ internal
     /// <seealso cref="GetArgumentCount" />
     public static bool HasOptionalArgumentsNotProvided(this IInvocationOperation operation)
     {
-        var providedCount = operation.Arguments.Count(a => !a.IsImplicit);
+        var providedCount = operation.Arguments.Count(static a => !a.IsImplicit);
         var totalParams = operation.TargetMethod.Parameters.Length;
         return providedCount < totalParams;
     }

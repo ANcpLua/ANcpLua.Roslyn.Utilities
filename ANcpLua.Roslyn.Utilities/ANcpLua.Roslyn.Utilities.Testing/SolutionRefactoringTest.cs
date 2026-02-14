@@ -8,6 +8,12 @@ using System.Collections.Immutable;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
+internal static class SolutionRefactoringTestReferences
+{
+    internal static readonly ImmutableArray<MetadataReference> References =
+        Net100.References.All.CastArray<MetadataReference>();
+}
+
 /// <summary>
 ///     Base class for solution-wide code refactoring tests that supports multi-document
 ///     and multi-project scenarios.
@@ -53,8 +59,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     where TRefactoring : CodeRefactoringProvider, new()
 {
-    private static readonly ImmutableArray<MetadataReference> References =
-        Net100.References.All.CastArray<MetadataReference>();
 
     private readonly AdhocWorkspace _workspace = new();
 
@@ -225,12 +229,12 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         }
     }
 
-    private Solution CreateSolution(IReadOnlyList<(string name, string source)> documents)
+    private Solution CreateSolution(IEnumerable<(string name, string source)> documents)
     {
         var project = _workspace.AddProject("TestProject", LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .WithParseOptions(new CSharpParseOptions(TestConfiguration.LanguageVersion))
-            .WithMetadataReferences(References);
+            .WithMetadataReferences(SolutionRefactoringTestReferences.References);
 
         var solution = project.Solution;
         foreach (var (name, source) in documents)
@@ -243,7 +247,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     }
 
     private Solution CreateMultiProjectSolution(
-        IReadOnlyList<(string projectName, IReadOnlyList<(string fileName, string content)> documents)> projects)
+        IEnumerable<(string projectName, IReadOnlyList<(string fileName, string content)> documents)> projects)
     {
         var solution = _workspace.CurrentSolution;
 
@@ -254,7 +258,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
                 .WithProjectCompilationOptions(projectId,
                     new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .WithProjectParseOptions(projectId, new CSharpParseOptions(TestConfiguration.LanguageVersion))
-                .WithProjectMetadataReferences(projectId, References);
+                .WithProjectMetadataReferences(projectId, SolutionRefactoringTestReferences.References);
 
             foreach (var (fileName, content) in documents)
             {

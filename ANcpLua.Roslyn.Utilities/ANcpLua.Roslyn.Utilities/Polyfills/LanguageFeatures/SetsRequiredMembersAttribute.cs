@@ -17,7 +17,7 @@ using System.ComponentModel;
 internal sealed class SetsRequiredMembersAttribute : Attribute
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SetsRequiredMembersAttribute"/> class.
+    ///     Initializes a new instance of the <c>SetsRequiredMembersAttribute</c> class.
     /// </summary>
     public SetsRequiredMembersAttribute()
     {

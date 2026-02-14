@@ -501,7 +501,7 @@ internal
     public static IncrementalValuesProvider<(T Value, int Index)> WithIndex<T>(
         this IncrementalValuesProvider<T> source)
     {
-        return source.Collect().SelectMany((values, _) =>
+        return source.Collect().SelectMany(static (values, _) =>
         {
             var result = ImmutableArray.CreateBuilder<(T, int)>(values.Length);
             for (var i = 0; i < values.Length; i++)
@@ -691,7 +691,7 @@ internal
     public static IncrementalValueProvider<int> Count<T>(
         this IncrementalValuesProvider<T> source)
     {
-        return source.Collect().Select((values, _) => values.Length);
+        return source.Collect().Select(static (values, _) => values.Length);
     }
 
     /// <summary>
@@ -708,7 +708,7 @@ internal
     public static IncrementalValueProvider<bool> Any<T>(
         this IncrementalValuesProvider<T> source)
     {
-        return source.Collect().Select((values, _) => !values.IsEmpty);
+        return source.Collect().Select(static (values, _) => !values.IsEmpty);
     }
 
     /// <summary>
@@ -748,7 +748,7 @@ internal
     public static IncrementalValueProvider<T?> FirstOrDefault<T>(
         this IncrementalValuesProvider<T> source)
     {
-        return source.Collect().Select((values, _) => values.IsEmpty ? default : values[0]);
+        return source.Collect().Select(static (values, _) => values.IsEmpty ? default : values[0]);
     }
 
     // ========== DiagnosticFlow Pipeline Integration ==========

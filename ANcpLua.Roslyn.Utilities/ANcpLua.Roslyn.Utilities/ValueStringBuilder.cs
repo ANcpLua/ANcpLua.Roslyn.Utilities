@@ -108,11 +108,11 @@ internal
     ///     Returns the current contents as a trimmed string.
     /// </summary>
     /// <returns>The trimmed string representation.</returns>
-    public string ToTrimString() => new(_span.Slice(0, _pos).Trim().ToArray());
+    public readonly string ToTrimString() => new(_span.Slice(0, _pos).Trim().ToArray());
 
     /// <summary>
     ///     Returns the current contents as a string.
     /// </summary>
     /// <returns>The string representation.</returns>
-    public override string ToString() => new(_span.Slice(0, _pos).ToArray());
+    public override readonly string ToString() => new(_span.Slice(0, _pos).ToArray());
 }

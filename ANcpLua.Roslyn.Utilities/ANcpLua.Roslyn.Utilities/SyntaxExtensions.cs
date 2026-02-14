@@ -310,7 +310,7 @@ internal
 
         var argumentList = SyntaxFactory.ArgumentList(
             SyntaxFactory.SeparatedList(
-                arguments.Select(arg => SyntaxFactory.Argument(arg.WithoutTrivia()))));
+                arguments.Select(static arg => SyntaxFactory.Argument(arg.WithoutTrivia()))));
 
         return SyntaxFactory.InvocationExpression(memberAccess, argumentList);
     }
@@ -418,4 +418,179 @@ internal
     /// </returns>
     public static bool IsStatic(this LocalFunctionStatementSyntax localFunction) =>
         localFunction.Modifiers.Any(SyntaxKind.StaticKeyword);
+
+    // ========== Code Generation Helpers ==========
+
+    /// <summary>
+    ///     Converts a type name string to its fully qualified <c>global::</c> form for use in generated code.
+    /// </summary>
+    /// <param name="typeName">The type name to qualify (e.g., <c>"string"</c>, <c>"Task&lt;Order&gt;"</c>, <c>"int[]"</c>).</param>
+    /// <param name="typeParameterNames">
+    ///     Optional list of type parameter names (e.g., <c>T</c>, <c>TResult</c>) that should be returned as-is
+    ///     without a <c>global::</c> prefix. Pass <c>null</c> when there are no type parameters.
+    /// </param>
+    /// <returns>
+    ///     The fully qualified type name. C# keyword aliases are mapped to their BCL equivalents
+    ///     (e.g., <c>"string"</c> becomes <c>"global::System.String"</c>), <c>"void"</c> is returned as-is,
+    ///     and all other types are prefixed with <c>global::</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         This method recursively handles composite type names:
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description>Arrays: <c>"int[]"</c> becomes <c>"global::System.Int32[]"</c></description></item>
+    ///         <item><description>Nullable reference types: <c>"Order?"</c> becomes <c>"global::Order?"</c></description></item>
+    ///         <item><description>Generic types: <c>"Task&lt;string&gt;"</c> becomes <c>"global::System.Threading.Tasks.Task&lt;global::System.String&gt;"</c></description></item>
+    ///         <item><description>Nested generics: <c>"Dictionary&lt;string, List&lt;int&gt;&gt;"</c> is handled correctly</description></item>
+    ///         <item><description>Type parameters: <c>"T"</c> is returned as <c>"T"</c> when present in <paramref name="typeParameterNames" /></description></item>
+    ///     </list>
+    ///     <para>
+    ///         <b>C# keyword mappings:</b> <c>string</c> -> <c>System.String</c>, <c>int</c> -> <c>System.Int32</c>,
+    ///         <c>bool</c> -> <c>System.Boolean</c>, <c>object</c> -> <c>System.Object</c>, etc.
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // Simple types
+    /// "string".ToGlobalTypeName()           // "global::System.String"
+    /// "int".ToGlobalTypeName()              // "global::System.Int32"
+    /// "void".ToGlobalTypeName()             // "void"
+    /// "MyApp.Order".ToGlobalTypeName()      // "global::MyApp.Order"
+    ///
+    /// // Composite types
+    /// "int[]".ToGlobalTypeName()            // "global::System.Int32[]"
+    /// "Order?".ToGlobalTypeName()           // "global::Order?"
+    /// "Task&lt;string&gt;".ToGlobalTypeName()     // "global::Task&lt;global::System.String&gt;"
+    ///
+    /// // With type parameters
+    /// var typeParams = new[] { "T", "TResult" };
+    /// "Task&lt;TResult&gt;".ToGlobalTypeName(typeParams)  // "global::Task&lt;TResult&gt;"
+    /// "T".ToGlobalTypeName(typeParams)                    // "T"
+    /// </code>
+    /// </example>
+    public static string ToGlobalTypeName(this string typeName, IReadOnlyList<string>? typeParameterNames = null)
+    {
+        if (string.IsNullOrEmpty(typeName))
+            return typeName;
+
+        // Check if this is a type parameter (T, TResult, etc.)
+        if (typeParameterNames is not null)
+        {
+            for (var i = 0; i < typeParameterNames.Count; i++)
+            {
+                if (string.Equals(typeName, typeParameterNames[i], StringComparison.Ordinal))
+                    return typeName;
+            }
+        }
+
+        // Handle array types (e.g., "string[]", "int[][]")
+        if (typeName.EndsWithOrdinal("[]"))
+        {
+            var elementType = typeName.Substring(0, typeName.Length - 2);
+            return elementType.ToGlobalTypeName(typeParameterNames) + "[]";
+        }
+
+        // Handle nullable reference types (trailing ?)
+        if (typeName.EndsWithOrdinal("?"))
+        {
+            var innerType = typeName.Substring(0, typeName.Length - 1);
+            return innerType.ToGlobalTypeName(typeParameterNames) + "?";
+        }
+
+        // Handle generic types: Task<Order> or Dictionary<string, Order>
+        var genericStart = typeName.IndexOf('<');
+        if (genericStart > 0 && typeName.EndsWithOrdinal(">"))
+        {
+            var baseTypeName = typeName.Substring(0, genericStart);
+            var argsContent = typeName.Substring(genericStart + 1, typeName.Length - genericStart - 2);
+
+            var args = ParseGenericArguments(argsContent);
+            var qualifiedArgs = args.Select(a => a.ToGlobalTypeName(typeParameterNames));
+
+            return $"{baseTypeName.ToGlobalTypeName(typeParameterNames)}<{string.Join(", ", qualifiedArgs)}>";
+        }
+
+        // Map C# keyword aliases to their BCL names
+        var mapped = MapPrimitiveKeyword(typeName);
+
+        return mapped == "void" ? "void" : $"global::{mapped}";
+    }
+
+    /// <summary>
+    ///     Maps a C# primitive keyword to its BCL type name.
+    ///     Returns the original type name if it is not a primitive keyword.
+    /// </summary>
+    private static string MapPrimitiveKeyword(string typeName)
+    {
+        return typeName switch
+        {
+            "string" => "System.String",
+            "int" => "System.Int32",
+            "long" => "System.Int64",
+            "short" => "System.Int16",
+            "byte" => "System.Byte",
+            "sbyte" => "System.SByte",
+            "uint" => "System.UInt32",
+            "ulong" => "System.UInt64",
+            "ushort" => "System.UInt16",
+            "float" => "System.Single",
+            "double" => "System.Double",
+            "decimal" => "System.Decimal",
+            "bool" => "System.Boolean",
+            "char" => "System.Char",
+            "object" => "System.Object",
+            "void" => "void",
+            _ => typeName
+        };
+    }
+
+    /// <summary>
+    ///     Determines whether a type name is a C# primitive keyword alias.
+    /// </summary>
+    /// <param name="typeName">The type name to check.</param>
+    /// <returns><c>true</c> if the type name is a C# primitive keyword; otherwise, <c>false</c>.</returns>
+    public static bool IsPrimitiveKeyword(this string typeName)
+    {
+        return typeName is "string" or "bool" or "byte" or "sbyte" or "short" or "ushort"
+            or "int" or "uint" or "long" or "ulong" or "float" or "double"
+            or "decimal" or "char" or "object" or "void";
+    }
+
+    /// <summary>
+    ///     Parses generic type arguments from a comma-separated string, correctly handling nested generics.
+    /// </summary>
+    /// <param name="argsContent">
+    ///     The content between the outermost angle brackets (e.g., <c>"string, List&lt;int&gt;"</c>
+    ///     from <c>"Dictionary&lt;string, List&lt;int&gt;&gt;"</c>).
+    /// </param>
+    /// <returns>A list of individual type argument strings, trimmed of whitespace.</returns>
+    private static IEnumerable<string> ParseGenericArguments(string argsContent)
+    {
+        var args = new List<string>();
+        var depth = 0;
+        var start = 0;
+
+        for (var i = 0; i < argsContent.Length; i++)
+        {
+            switch (argsContent[i])
+            {
+                case '<':
+                    depth++;
+                    break;
+                case '>':
+                    depth--;
+                    break;
+                case ',' when depth is 0:
+                    args.Add(argsContent.Substring(start, i - start).Trim());
+                    start = i + 1;
+                    break;
+            }
+        }
+
+        if (start < argsContent.Length)
+            args.Add(argsContent.Substring(start).Trim());
+
+        return args;
+    }
 }

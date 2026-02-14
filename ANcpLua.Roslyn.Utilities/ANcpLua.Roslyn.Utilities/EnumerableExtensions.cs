@@ -352,7 +352,7 @@ internal
     /// <seealso cref="ConsecutivePairs{TSource,TResult}(IEnumerable{TSource},Func{TSource,TSource,TResult})" />
     public static IEnumerable<(T Previous, T Current)> ConsecutivePairs<T>(this IEnumerable<T> source)
     {
-        return source.ConsecutivePairs((prev, curr) => (prev, curr));
+        return source.ConsecutivePairs(static (prev, curr) => (prev, curr));
     }
 
     /// <summary>
@@ -392,11 +392,11 @@ internal
     ///     for <see cref="IList{T}" /> implementations as it uses indexed access instead of enumeration.
     /// </remarks>
     /// <seealso cref="IndexOf{T}" />
-    public static T? FirstOrDefaultFast<T>(this IList<T> list, Func<T, bool> predicate)
+    public static T? FirstOrDefaultFast<T>(this IEnumerable<T> list, Func<T, bool> predicate)
     {
-        for (var i = 0; i < list.Count; i++)
-            if (predicate(list[i]))
-                return list[i];
+        foreach (var t in list)
+            if (predicate(t))
+                return t;
 
         return default;
     }

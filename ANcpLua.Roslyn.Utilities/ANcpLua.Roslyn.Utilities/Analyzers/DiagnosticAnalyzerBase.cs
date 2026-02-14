@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace ANcpLua.Roslyn.Utilities.Analyzers;
 
 using Microsoft.CodeAnalysis.Diagnostics;

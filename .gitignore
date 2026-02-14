@@ -14,10 +14,15 @@ artifacts/
 .DS_Store
 Thumbs.db
 
+# Agent session artifacts
+.eight-gates/
+.smart/
+
 # NuGet
 *.nupkg
 *.snupkg
 packages/
+nupkgs/
 
 # Test results
 TestResults/

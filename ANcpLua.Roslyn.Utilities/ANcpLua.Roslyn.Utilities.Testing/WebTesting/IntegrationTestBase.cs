@@ -14,10 +14,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting;
 public abstract class IntegrationTestBase<TProgram> : IClassFixture<WebApplicationFactory<TProgram>>, IAsyncLifetime
     where TProgram : class
 {
-    private WebApplicationFactory<TProgram>? _factory;
+    private readonly WebApplicationFactory<TProgram> _factory;
 
     /// <summary>The configured WebApplicationFactory.</summary>
-    protected WebApplicationFactory<TProgram> Factory => _factory!;
+    protected WebApplicationFactory<TProgram> Factory => _factory;
 
     /// <summary>HTTP client for making requests to the test server.</summary>
     protected HttpClient Client { get; private set; } = null!;

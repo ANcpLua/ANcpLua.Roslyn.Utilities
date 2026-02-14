@@ -220,7 +220,7 @@ internal
     /// <seealso cref="SymbolExtensions.IsVisibleOutsideOfAssembly" />
     public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this IAssemblySymbol assembly)
     {
-        return assembly.GlobalNamespace.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+        return assembly.GlobalNamespace.GetAllTypes().Where(static t => t.IsVisibleOutsideOfAssembly());
     }
 
     /// <summary>
@@ -255,7 +255,7 @@ internal
     /// <seealso cref="SymbolExtensions.IsVisibleOutsideOfAssembly" />
     public static IEnumerable<INamedTypeSymbol> GetPublicTypes(this INamespaceSymbol ns)
     {
-        return ns.GetAllTypes().Where(t => t.IsVisibleOutsideOfAssembly());
+        return ns.GetAllTypes().Where(static t => t.IsVisibleOutsideOfAssembly());
     }
 
     private static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamespaceOrTypeSymbol type)

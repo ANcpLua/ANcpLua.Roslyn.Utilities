@@ -43,25 +43,30 @@ internal
     private INamedTypeSymbol? ActivityStatusCode { get; }
     private INamedTypeSymbol? ActivityEvent { get; }
     private INamedTypeSymbol? ActivityLink { get; }
+    private INamedTypeSymbol? ActivityContext { get; }
+    private INamedTypeSymbol? ActivityTraceFlags { get; }
     private INamedTypeSymbol? ActivityListener { get; }
     private INamedTypeSymbol? ActivityTagsCollection { get; }
     private INamedTypeSymbol? TagList { get; }
     private INamedTypeSymbol? DiagnosticSource { get; }
     private INamedTypeSymbol? DiagnosticListener { get; }
+    private INamedTypeSymbol? DistributedContextPropagator { get; }
 
     // ── BCL: System.Diagnostics.Metrics ──────────────────────────────────────
 
     private INamedTypeSymbol? Meter { get; }
-    private INamedTypeSymbol? MeterOptions { get; }
     private INamedTypeSymbol? InstrumentOfT { get; }
     private INamedTypeSymbol? CounterOfT { get; }
     private INamedTypeSymbol? HistogramOfT { get; }
     private INamedTypeSymbol? UpDownCounterOfT { get; }
+    private INamedTypeSymbol? ObservableInstrumentOfT { get; }
     private INamedTypeSymbol? ObservableCounterOfT { get; }
     private INamedTypeSymbol? ObservableGaugeOfT { get; }
     private INamedTypeSymbol? ObservableUpDownCounterOfT { get; }
     private INamedTypeSymbol? GaugeOfT { get; }
+    private INamedTypeSymbol? MeasurementOfT { get; }
     private INamedTypeSymbol? MeterListener { get; }
+    private INamedTypeSymbol? IMeterFactory { get; }
 
     // ── OpenTelemetry SDK (optional) ─────────────────────────────────────────
 
@@ -69,11 +74,70 @@ internal
     private INamedTypeSymbol? MeterProvider { get; }
     private INamedTypeSymbol? TracerProviderBuilder { get; }
     private INamedTypeSymbol? MeterProviderBuilder { get; }
+    private INamedTypeSymbol? LoggerProviderBuilder { get; }
+    private INamedTypeSymbol? Tracer { get; }
+    private INamedTypeSymbol? TelemetrySpan { get; }
+    private INamedTypeSymbol? StatusCode { get; }
+    private INamedTypeSymbol? Sampler { get; }
+    private INamedTypeSymbol? BaseProcessorOfT { get; }
+    private INamedTypeSymbol? ResourceBuilder { get; }
+    private INamedTypeSymbol? Baggage { get; }
 
     /// <summary>
     ///     Gets a value indicating whether the OpenTelemetry SDK is referenced by the compilation.
     /// </summary>
     public bool HasOTelSdk { get; }
+
+    /// <summary>
+    ///     Well-known metadata names for instrumentation types resolved by <see cref="OTelContext" />.
+    /// </summary>
+    private static class WellKnownTypes
+    {
+        // BCL: System.Diagnostics
+        internal const string Activity = "System.Diagnostics.Activity";
+        internal const string ActivitySource = "System.Diagnostics.ActivitySource";
+        internal const string ActivityKind = "System.Diagnostics.ActivityKind";
+        internal const string ActivityStatusCode = "System.Diagnostics.ActivityStatusCode";
+        internal const string ActivityEvent = "System.Diagnostics.ActivityEvent";
+        internal const string ActivityLink = "System.Diagnostics.ActivityLink";
+        internal const string ActivityContext = "System.Diagnostics.ActivityContext";
+        internal const string ActivityTraceFlags = "System.Diagnostics.ActivityTraceFlags";
+        internal const string ActivityListener = "System.Diagnostics.ActivityListener";
+        internal const string ActivityTagsCollection = "System.Diagnostics.ActivityTagsCollection";
+        internal const string TagList = "System.Diagnostics.TagList";
+        internal const string DiagnosticSource = "System.Diagnostics.DiagnosticSource";
+        internal const string DiagnosticListener = "System.Diagnostics.DiagnosticListener";
+        internal const string DistributedContextPropagator = "System.Diagnostics.DistributedContextPropagator";
+
+        // BCL: System.Diagnostics.Metrics
+        internal const string Meter = "System.Diagnostics.Metrics.Meter";
+        internal const string InstrumentOfT = "System.Diagnostics.Metrics.Instrument`1";
+        internal const string CounterOfT = "System.Diagnostics.Metrics.Counter`1";
+        internal const string HistogramOfT = "System.Diagnostics.Metrics.Histogram`1";
+        internal const string UpDownCounterOfT = "System.Diagnostics.Metrics.UpDownCounter`1";
+        internal const string ObservableInstrumentOfT = "System.Diagnostics.Metrics.ObservableInstrument`1";
+        internal const string ObservableCounterOfT = "System.Diagnostics.Metrics.ObservableCounter`1";
+        internal const string ObservableGaugeOfT = "System.Diagnostics.Metrics.ObservableGauge`1";
+        internal const string ObservableUpDownCounterOfT = "System.Diagnostics.Metrics.ObservableUpDownCounter`1";
+        internal const string GaugeOfT = "System.Diagnostics.Metrics.Gauge`1";
+        internal const string MeasurementOfT = "System.Diagnostics.Metrics.Measurement`1";
+        internal const string MeterListener = "System.Diagnostics.Metrics.MeterListener";
+        internal const string IMeterFactory = "System.Diagnostics.Metrics.IMeterFactory";
+
+        // OpenTelemetry SDK
+        internal const string TracerProvider = "OpenTelemetry.Trace.TracerProvider";
+        internal const string MeterProvider = "OpenTelemetry.Metrics.MeterProvider";
+        internal const string TracerProviderBuilder = "OpenTelemetry.Trace.TracerProviderBuilder";
+        internal const string MeterProviderBuilder = "OpenTelemetry.Metrics.MeterProviderBuilder";
+        internal const string LoggerProviderBuilder = "OpenTelemetry.Logs.LoggerProviderBuilder";
+        internal const string Tracer = "OpenTelemetry.Trace.Tracer";
+        internal const string TelemetrySpan = "OpenTelemetry.Trace.TelemetrySpan";
+        internal const string StatusCode = "OpenTelemetry.Trace.StatusCode";
+        internal const string Sampler = "OpenTelemetry.Trace.Sampler";
+        internal const string BaseProcessorOfT = "OpenTelemetry.BaseProcessor`1";
+        internal const string ResourceBuilder = "OpenTelemetry.Resources.ResourceBuilder";
+        internal const string Baggage = "OpenTelemetry.Baggage";
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="OTelContext" /> class by resolving
@@ -83,36 +147,49 @@ internal
     public OTelContext(Compilation compilation)
     {
         // BCL: System.Diagnostics
-        Activity = compilation.GetTypeByMetadataName("System.Diagnostics.Activity");
-        ActivitySource = compilation.GetTypeByMetadataName("System.Diagnostics.ActivitySource");
-        ActivityKind = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityKind");
-        ActivityStatusCode = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityStatusCode");
-        ActivityEvent = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityEvent");
-        ActivityLink = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityLink");
-        ActivityListener = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityListener");
-        ActivityTagsCollection = compilation.GetTypeByMetadataName("System.Diagnostics.ActivityTagsCollection");
-        TagList = compilation.GetTypeByMetadataName("System.Diagnostics.TagList");
-        DiagnosticSource = compilation.GetTypeByMetadataName("System.Diagnostics.DiagnosticSource");
-        DiagnosticListener = compilation.GetTypeByMetadataName("System.Diagnostics.DiagnosticListener");
+        Activity = compilation.GetTypeByMetadataName(WellKnownTypes.Activity);
+        ActivitySource = compilation.GetTypeByMetadataName(WellKnownTypes.ActivitySource);
+        ActivityKind = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityKind);
+        ActivityStatusCode = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityStatusCode);
+        ActivityEvent = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityEvent);
+        ActivityLink = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityLink);
+        ActivityContext = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityContext);
+        ActivityTraceFlags = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityTraceFlags);
+        ActivityListener = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityListener);
+        ActivityTagsCollection = compilation.GetTypeByMetadataName(WellKnownTypes.ActivityTagsCollection);
+        TagList = compilation.GetTypeByMetadataName(WellKnownTypes.TagList);
+        DiagnosticSource = compilation.GetTypeByMetadataName(WellKnownTypes.DiagnosticSource);
+        DiagnosticListener = compilation.GetTypeByMetadataName(WellKnownTypes.DiagnosticListener);
+        DistributedContextPropagator = compilation.GetTypeByMetadataName(WellKnownTypes.DistributedContextPropagator);
 
         // BCL: System.Diagnostics.Metrics
-        Meter = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.Meter");
-        MeterOptions = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.MeterOptions");
-        InstrumentOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.Instrument`1");
-        CounterOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.Counter`1");
-        HistogramOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.Histogram`1");
-        UpDownCounterOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.UpDownCounter`1");
-        ObservableCounterOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.ObservableCounter`1");
-        ObservableGaugeOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.ObservableGauge`1");
-        ObservableUpDownCounterOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.ObservableUpDownCounter`1");
-        GaugeOfT = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.Gauge`1");
-        MeterListener = compilation.GetTypeByMetadataName("System.Diagnostics.Metrics.MeterListener");
+        Meter = compilation.GetTypeByMetadataName(WellKnownTypes.Meter);
+        InstrumentOfT = compilation.GetTypeByMetadataName(WellKnownTypes.InstrumentOfT);
+        CounterOfT = compilation.GetTypeByMetadataName(WellKnownTypes.CounterOfT);
+        HistogramOfT = compilation.GetTypeByMetadataName(WellKnownTypes.HistogramOfT);
+        UpDownCounterOfT = compilation.GetTypeByMetadataName(WellKnownTypes.UpDownCounterOfT);
+        ObservableInstrumentOfT = compilation.GetTypeByMetadataName(WellKnownTypes.ObservableInstrumentOfT);
+        ObservableCounterOfT = compilation.GetTypeByMetadataName(WellKnownTypes.ObservableCounterOfT);
+        ObservableGaugeOfT = compilation.GetTypeByMetadataName(WellKnownTypes.ObservableGaugeOfT);
+        ObservableUpDownCounterOfT = compilation.GetTypeByMetadataName(WellKnownTypes.ObservableUpDownCounterOfT);
+        GaugeOfT = compilation.GetTypeByMetadataName(WellKnownTypes.GaugeOfT);
+        MeasurementOfT = compilation.GetTypeByMetadataName(WellKnownTypes.MeasurementOfT);
+        MeterListener = compilation.GetTypeByMetadataName(WellKnownTypes.MeterListener);
+        IMeterFactory = compilation.GetTypeByMetadataName(WellKnownTypes.IMeterFactory);
 
         // OpenTelemetry SDK (optional — null when not referenced)
-        TracerProvider = compilation.GetTypeByMetadataName("OpenTelemetry.Trace.TracerProvider");
-        MeterProvider = compilation.GetTypeByMetadataName("OpenTelemetry.Metrics.MeterProvider");
-        TracerProviderBuilder = compilation.GetTypeByMetadataName("OpenTelemetry.Trace.TracerProviderBuilder");
-        MeterProviderBuilder = compilation.GetTypeByMetadataName("OpenTelemetry.Metrics.MeterProviderBuilder");
+        TracerProvider = compilation.GetTypeByMetadataName(WellKnownTypes.TracerProvider);
+        MeterProvider = compilation.GetTypeByMetadataName(WellKnownTypes.MeterProvider);
+        TracerProviderBuilder = compilation.GetTypeByMetadataName(WellKnownTypes.TracerProviderBuilder);
+        MeterProviderBuilder = compilation.GetTypeByMetadataName(WellKnownTypes.MeterProviderBuilder);
+        LoggerProviderBuilder = compilation.GetTypeByMetadataName(WellKnownTypes.LoggerProviderBuilder);
+        Tracer = compilation.GetTypeByMetadataName(WellKnownTypes.Tracer);
+        TelemetrySpan = compilation.GetTypeByMetadataName(WellKnownTypes.TelemetrySpan);
+        StatusCode = compilation.GetTypeByMetadataName(WellKnownTypes.StatusCode);
+        Sampler = compilation.GetTypeByMetadataName(WellKnownTypes.Sampler);
+        BaseProcessorOfT = compilation.GetTypeByMetadataName(WellKnownTypes.BaseProcessorOfT);
+        ResourceBuilder = compilation.GetTypeByMetadataName(WellKnownTypes.ResourceBuilder);
+        Baggage = compilation.GetTypeByMetadataName(WellKnownTypes.Baggage);
 
         HasOTelSdk = TracerProvider is not null;
     }
@@ -148,6 +225,16 @@ internal
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityLink</c>.
     /// </summary>
     public bool IsActivityLink(ITypeSymbol? type) => type is not null && ActivityLink is not null && type.IsEqualTo(ActivityLink);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>System.Diagnostics.ActivityContext</c>.
+    /// </summary>
+    public bool IsActivityContext(ITypeSymbol? type) => type is not null && ActivityContext is not null && type.IsEqualTo(ActivityContext);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>System.Diagnostics.ActivityTraceFlags</c>.
+    /// </summary>
+    public bool IsActivityTraceFlags(ITypeSymbol? type) => type is not null && ActivityTraceFlags is not null && type.IsEqualTo(ActivityTraceFlags);
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityListener</c>.
@@ -199,6 +286,11 @@ internal
     public bool IsUpDownCounter(ITypeSymbol? type) => IsSpecificInstrument(type, UpDownCounterOfT);
 
     /// <summary>
+    ///     Determines whether the specified type is <c>ObservableInstrument&lt;T&gt;</c>.
+    /// </summary>
+    public bool IsObservableInstrument(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableInstrumentOfT);
+
+    /// <summary>
     ///     Determines whether the specified type is <c>ObservableCounter&lt;T&gt;</c>.
     /// </summary>
     public bool IsObservableCounter(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableCounterOfT);
@@ -219,9 +311,19 @@ internal
     public bool IsGauge(ITypeSymbol? type) => IsSpecificInstrument(type, GaugeOfT);
 
     /// <summary>
+    ///     Determines whether the specified type is <c>Measurement&lt;T&gt;</c>.
+    /// </summary>
+    public bool IsMeasurement(ITypeSymbol? type) => IsSpecificInstrument(type, MeasurementOfT);
+
+    /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.Metrics.MeterListener</c>.
     /// </summary>
     public bool IsMeterListener(ITypeSymbol? type) => type is not null && MeterListener is not null && type.IsEqualTo(MeterListener);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>System.Diagnostics.Metrics.IMeterFactory</c>.
+    /// </summary>
+    public bool IsIMeterFactory(ITypeSymbol? type) => type is not null && IMeterFactory is not null && type.IsEqualTo(IMeterFactory);
 
     // ── Diagnostics checks ───────────────────────────────────────────────────
 
@@ -239,6 +341,11 @@ internal
     ///     Determines whether the specified type is or inherits from <c>System.Diagnostics.DiagnosticListener</c>.
     /// </summary>
     public bool IsDiagnosticListener(ITypeSymbol? type) => type is not null && DiagnosticListener is not null && type.IsOrInheritsFrom(DiagnosticListener);
+
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>System.Diagnostics.DistributedContextPropagator</c>.
+    /// </summary>
+    public bool IsDistributedContextPropagator(ITypeSymbol? type) => type is not null && DistributedContextPropagator is not null && type.IsOrInheritsFrom(DistributedContextPropagator);
 
     // ── OpenTelemetry SDK checks ─────────────────────────────────────────────
 
@@ -266,28 +373,93 @@ internal
     /// </summary>
     public bool IsMeterProviderBuilder(ITypeSymbol? type) => type is not null && MeterProviderBuilder is not null && type.IsOrInheritsFrom(MeterProviderBuilder);
 
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Logs.LoggerProviderBuilder</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
+    /// </summary>
+    public bool IsLoggerProviderBuilder(ITypeSymbol? type) => type is not null && LoggerProviderBuilder is not null && type.IsOrInheritsFrom(LoggerProviderBuilder);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>OpenTelemetry.Trace.Tracer</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
+    /// </summary>
+    public bool IsTracer(ITypeSymbol? type) => type is not null && Tracer is not null && type.IsEqualTo(Tracer);
+
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.TelemetrySpan</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
+    /// </summary>
+    public bool IsTelemetrySpan(ITypeSymbol? type) => type is not null && TelemetrySpan is not null && type.IsOrInheritsFrom(TelemetrySpan);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>OpenTelemetry.Trace.StatusCode</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
+    /// </summary>
+    public bool IsStatusCode(ITypeSymbol? type) => type is not null && StatusCode is not null && type.IsEqualTo(StatusCode);
+
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.Sampler</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
+    /// </summary>
+    public bool IsSampler(ITypeSymbol? type) => type is not null && Sampler is not null && type.IsOrInheritsFrom(Sampler);
+
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.BaseProcessor&lt;T&gt;</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
+    /// </summary>
+    public bool IsBaseProcessor(ITypeSymbol? type)
+    {
+        if (type is not INamedTypeSymbol named || BaseProcessorOfT is null)
+            return false;
+
+        return named.OriginalDefinition.IsOrInheritsFrom(BaseProcessorOfT);
+    }
+
+    /// <summary>
+    ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Resources.ResourceBuilder</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
+    /// </summary>
+    public bool IsResourceBuilder(ITypeSymbol? type) => type is not null && ResourceBuilder is not null && type.IsOrInheritsFrom(ResourceBuilder);
+
+    /// <summary>
+    ///     Determines whether the specified type is <c>OpenTelemetry.Baggage</c>.
+    ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
+    /// </summary>
+    public bool IsBaggage(ITypeSymbol? type) => type is not null && Baggage is not null && type.IsEqualTo(Baggage);
+
     // ── Composite checks ─────────────────────────────────────────────────────
 
     /// <summary>
     ///     Determines whether the specified type is any tracing-related type
-    ///     (<c>Activity</c>, <c>ActivitySource</c>, <c>ActivityEvent</c>, <c>ActivityLink</c>).
+    ///     (<c>Activity</c>, <c>ActivitySource</c>, <c>ActivityEvent</c>, <c>ActivityLink</c>, <c>ActivityContext</c>).
     /// </summary>
     public bool IsTracingType(ITypeSymbol? type) =>
-        IsActivity(type) || IsActivitySource(type) || IsActivityEvent(type) || IsActivityLink(type);
+        IsActivity(type) || IsActivitySource(type) || IsActivityEvent(type) || IsActivityLink(type) || IsActivityContext(type);
 
     /// <summary>
     ///     Determines whether the specified type is any metrics-related type
-    ///     (<c>Meter</c>, any <c>Instrument&lt;T&gt;</c> derivative, or <c>MeterListener</c>).
+    ///     (<c>Meter</c>, any <c>Instrument&lt;T&gt;</c> derivative, <c>Measurement&lt;T&gt;</c>, or <c>MeterListener</c>).
     /// </summary>
     public bool IsMetricsType(ITypeSymbol? type) =>
-        IsMeter(type) || IsInstrument(type) || IsMeterListener(type);
+        IsMeter(type) || IsInstrument(type) || IsMeasurement(type) || IsMeterListener(type);
 
     /// <summary>
     ///     Determines whether the specified type is any observability infrastructure type
-    ///     (tracing, metrics, or diagnostics).
+    ///     (tracing, metrics, diagnostics, or context propagation).
     /// </summary>
     public bool IsObservabilityType(ITypeSymbol? type) =>
-        IsTracingType(type) || IsMetricsType(type) || IsDiagnosticSource(type) || IsDiagnosticListener(type);
+        IsTracingType(type) || IsMetricsType(type) || IsDiagnosticSource(type) || IsDiagnosticListener(type) || IsDistributedContextPropagator(type);
+
+    /// <summary>
+    ///     Determines whether the specified type is any OpenTelemetry SDK type
+    ///     (providers, builders, tracer, span, sampler, processor, resource builder, or baggage).
+    ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
+    /// </summary>
+    public bool IsOTelSdkType(ITypeSymbol? type) =>
+        IsTracerProvider(type) || IsMeterProvider(type) ||
+        IsTracerProviderBuilder(type) || IsMeterProviderBuilder(type) || IsLoggerProviderBuilder(type) ||
+        IsTracer(type) || IsTelemetrySpan(type) || IsStatusCode(type) ||
+        IsSampler(type) || IsBaseProcessor(type) || IsResourceBuilder(type) || IsBaggage(type);
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
@@ -299,7 +471,7 @@ internal
         return SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, expected);
     }
 
-    private bool MatchesAnyInstrument(INamedTypeSymbol original) =>
+    private bool MatchesAnyInstrument(ISymbol original) =>
         (CounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, CounterOfT)) ||
         (HistogramOfT is not null && SymbolEqualityComparer.Default.Equals(original, HistogramOfT)) ||
         (UpDownCounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, UpDownCounterOfT)) ||

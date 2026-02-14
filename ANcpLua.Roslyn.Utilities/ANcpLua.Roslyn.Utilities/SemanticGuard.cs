@@ -249,7 +249,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustBeAsync(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => m.IsAsync, onFail);
+        return guard.Must(static m => m.IsAsync, onFail);
     }
 
     /// <summary>
@@ -261,7 +261,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustNotBeAsync(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => !m.IsAsync, onFail);
+        return guard.Must(static m => !m.IsAsync, onFail);
     }
 
     /// <summary>
@@ -273,7 +273,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustReturnVoid(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => m.ReturnsVoid, onFail);
+        return guard.Must(static m => m.ReturnsVoid, onFail);
     }
 
     /// <summary>
@@ -285,7 +285,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustNotReturnVoid(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => !m.ReturnsVoid, onFail);
+        return guard.Must(static m => !m.ReturnsVoid, onFail);
     }
 
     /// <summary>
@@ -298,7 +298,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustReturnTask(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => m.ReturnType.IsTaskType(), onFail);
+        return guard.Must(static m => m.ReturnType.IsTaskType(), onFail);
     }
 
     /// <summary>
@@ -310,7 +310,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustHaveNoParameters(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => m.Parameters.IsEmpty, onFail);
+        return guard.Must(static m => m.Parameters.IsEmpty, onFail);
     }
 
     /// <summary>
@@ -353,7 +353,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustBeExtensionMethod(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => m.IsExtensionMethod, onFail);
+        return guard.Must(static m => m.IsExtensionMethod, onFail);
     }
 
     /// <summary>
@@ -365,7 +365,7 @@ internal
     public static SemanticGuard<IMethodSymbol> MustNotBeExtensionMethod(this SemanticGuard<IMethodSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(m => !m.IsExtensionMethod, onFail);
+        return guard.Must(static m => !m.IsExtensionMethod, onFail);
     }
 
     // Type-specific guards
@@ -379,7 +379,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustHaveMultipleDeclarations(
         this SemanticGuard<INamedTypeSymbol> guard, DiagnosticInfo onFail)
     {
-        return guard.Must(t => t.DeclaringSyntaxReferences.Length > 1, onFail);
+        return guard.Must(static t => t.DeclaringSyntaxReferences.Length > 1, onFail);
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustBeClass(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => t.TypeKind == TypeKind.Class, onFail);
+        return guard.Must(static t => t.TypeKind == TypeKind.Class, onFail);
     }
 
     /// <summary>
@@ -403,7 +403,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustBeStruct(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => t.TypeKind == TypeKind.Struct, onFail);
+        return guard.Must(static t => t.TypeKind == TypeKind.Struct, onFail);
     }
 
     /// <summary>
@@ -415,7 +415,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustBeInterface(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => t.TypeKind == TypeKind.Interface, onFail);
+        return guard.Must(static t => t.TypeKind == TypeKind.Interface, onFail);
     }
 
     /// <summary>
@@ -427,7 +427,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustBeRecord(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => t.IsRecord, onFail);
+        return guard.Must(static t => t.IsRecord, onFail);
     }
 
     /// <summary>
@@ -439,7 +439,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustNotBeAbstract(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => !t.IsAbstract, onFail);
+        return guard.Must(static t => !t.IsAbstract, onFail);
     }
 
     /// <summary>
@@ -451,7 +451,7 @@ internal
     public static SemanticGuard<INamedTypeSymbol> MustNotBeGeneric(this SemanticGuard<INamedTypeSymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(t => !t.IsGenericType, onFail);
+        return guard.Must(static t => !t.IsGenericType, onFail);
     }
 
     /// <summary>
@@ -515,7 +515,7 @@ internal
     public static SemanticGuard<IPropertySymbol> MustHaveGetter(this SemanticGuard<IPropertySymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(p => p.GetMethod is not null, onFail);
+        return guard.Must(static p => p.GetMethod is not null, onFail);
     }
 
     /// <summary>
@@ -527,7 +527,7 @@ internal
     public static SemanticGuard<IPropertySymbol> MustHaveSetter(this SemanticGuard<IPropertySymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(p => p.SetMethod is not null, onFail);
+        return guard.Must(static p => p.SetMethod is not null, onFail);
     }
 
     /// <summary>
@@ -539,7 +539,7 @@ internal
     public static SemanticGuard<IPropertySymbol> MustBeReadOnly(this SemanticGuard<IPropertySymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(p => p.IsReadOnly, onFail);
+        return guard.Must(static p => p.IsReadOnly, onFail);
     }
 
     /// <summary>
@@ -551,7 +551,7 @@ internal
     public static SemanticGuard<IPropertySymbol> MustBeRequired(this SemanticGuard<IPropertySymbol> guard,
         DiagnosticInfo onFail)
     {
-        return guard.Must(p => p.IsRequired, onFail);
+        return guard.Must(static p => p.IsRequired, onFail);
     }
 }
 

@@ -315,7 +315,7 @@ internal
     /// <seealso cref="Instance" />
     public InvocationMatcher Extension()
     {
-        return AddPredicate(i => i.TargetMethod.IsExtensionMethod);
+        return AddPredicate(static i => i.TargetMethod.IsExtensionMethod);
     }
 
     /// <summary>
@@ -325,7 +325,7 @@ internal
     /// <seealso cref="Extension" />
     public InvocationMatcher NotExtension()
     {
-        return AddPredicate(i => !i.TargetMethod.IsExtensionMethod);
+        return AddPredicate(static i => !i.TargetMethod.IsExtensionMethod);
     }
 
     /// <summary>
@@ -336,7 +336,7 @@ internal
     /// <seealso cref="Extension" />
     public InvocationMatcher Static()
     {
-        return AddPredicate(i => i.TargetMethod is { IsStatic: true, IsExtensionMethod: false });
+        return AddPredicate(static i => i.TargetMethod is { IsStatic: true, IsExtensionMethod: false });
     }
 
     /// <summary>
@@ -347,7 +347,7 @@ internal
     /// <seealso cref="Extension" />
     public InvocationMatcher Instance()
     {
-        return AddPredicate(i => !i.TargetMethod.IsStatic || i.TargetMethod.IsExtensionMethod);
+        return AddPredicate(static i => !i.TargetMethod.IsStatic || i.TargetMethod.IsExtensionMethod);
     }
 
     /// <summary>
@@ -357,7 +357,7 @@ internal
     /// <seealso cref="ReturningTask" />
     public InvocationMatcher Async()
     {
-        return AddPredicate(i => i.TargetMethod.IsAsync);
+        return AddPredicate(static i => i.TargetMethod.IsAsync);
     }
 
     /// <summary>
@@ -366,7 +366,7 @@ internal
     /// <returns>This matcher for method chaining.</returns>
     public InvocationMatcher Generic()
     {
-        return AddPredicate(i => i.TargetMethod.IsGenericMethod);
+        return AddPredicate(static i => i.TargetMethod.IsGenericMethod);
     }
 
     // Return type
@@ -379,7 +379,7 @@ internal
     /// <seealso cref="Returning(string)" />
     public InvocationMatcher ReturningVoid()
     {
-        return AddPredicate(i => i.TargetMethod.ReturnsVoid);
+        return AddPredicate(static i => i.TargetMethod.ReturnsVoid);
     }
 
     /// <summary>
@@ -392,7 +392,7 @@ internal
     /// <seealso cref="Returning(string)" />
     public InvocationMatcher ReturningTask()
     {
-        return AddPredicate(i => i.TargetMethod.ReturnType.Name is "Task" or "ValueTask" ||
+        return AddPredicate(static i => i.TargetMethod.ReturnType.Name is "Task" or "ValueTask" ||
                                  i.TargetMethod.ReturnType.OriginalDefinition.Name is "Task" or "ValueTask");
     }
 
@@ -430,7 +430,7 @@ internal
     /// <seealso cref="WithMinArguments(int)" />
     public InvocationMatcher WithNoArguments()
     {
-        return AddPredicate(i => i.Arguments.Length is 0);
+        return AddPredicate(static i => i.Arguments.Length is 0);
     }
 
     /// <summary>

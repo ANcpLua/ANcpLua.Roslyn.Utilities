@@ -981,8 +981,14 @@ internal
         [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0)
     {
-        Unreachable(message, memberName, filePath, lineNumber);
-        return default!; // Never reached
+        var location = string.IsNullOrEmpty(filePath)
+            ? memberName
+            : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
+
+        throw new InvalidOperationException(
+            string.IsNullOrEmpty(message)
+                ? $"Unreachable code executed in {location}"
+                : $"{message} (in {location})");
     }
 
     /// <summary>
@@ -1382,7 +1388,7 @@ internal
 
     private static readonly char[] InvalidPathChars = Path
         .GetInvalidPathChars()
-        .Concat(InvalidFileNameChars.Except(new[] { '/', '\\', ':' }))
+        .Concat(InvalidFileNameChars.Except(['/', '\\', ':']))
         .Distinct()
         .ToArray();
 
@@ -1512,7 +1518,7 @@ internal
     {
         NotNullOrEmpty(value, paramName);
 
-        if (value.StartsWith("."))
+        if (value.StartsWith(".", StringComparison.Ordinal))
             throw new ArgumentException("Extension must not start with a period ('.').", paramName);
 
         if (value.Contains('\\') || value.Contains('/'))
@@ -1549,7 +1555,7 @@ internal
         if (value.Contains('\\') || value.Contains('/'))
             throw new ArgumentException("Extension must not contain path separators.", paramName);
 
-        return value.StartsWith(".") ? value : "." + value;
+        return value.StartsWith(".", StringComparison.Ordinal) ? value : "." + value;
     }
 
     #endregion

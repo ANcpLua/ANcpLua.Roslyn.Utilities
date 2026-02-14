@@ -313,6 +313,59 @@ public static class Prop
     /// </summary>
     /// <seealso cref="EnableNETAnalyzers" />
     public const string EnforceCodeStyleInBuild = "EnforceCodeStyleInBuild";
+
+    // ── ANcpLua.NET.Sdk polyfill/extension injection properties ──
+
+    /// <summary>Injects Throw guard clause utilities (all TFMs).</summary>
+    public const string InjectSharedThrow = "InjectSharedThrow";
+
+    /// <summary>Injects StringOrdinalComparer extension.</summary>
+    public const string InjectStringOrdinalComparer = "InjectStringOrdinalComparer";
+
+    /// <summary>Injects <c>System.Threading.Lock</c> polyfill.</summary>
+    public const string InjectLockPolyfill = "InjectLockPolyfill";
+
+    /// <summary>Injects <c>TimeProvider</c> polyfill.</summary>
+    public const string InjectTimeProviderPolyfill = "InjectTimeProviderPolyfill";
+
+    /// <summary>Injects <c>Index</c>/<c>Range</c> struct polyfills.</summary>
+    public const string InjectIndexRangeOnLegacy = "InjectIndexRangeOnLegacy";
+
+    /// <summary>Injects <c>IsExternalInit</c> polyfill for records support.</summary>
+    public const string InjectIsExternalInitOnLegacy = "InjectIsExternalInitOnLegacy";
+
+    /// <summary>Injects <c>RequiredMemberAttribute</c> polyfill.</summary>
+    public const string InjectRequiredMemberOnLegacy = "InjectRequiredMemberOnLegacy";
+
+    /// <summary>Injects <c>CompilerFeatureRequiredAttribute</c> polyfill.</summary>
+    public const string InjectCompilerFeatureRequiredOnLegacy = "InjectCompilerFeatureRequiredOnLegacy";
+
+    /// <summary>Injects <c>CallerArgumentExpressionAttribute</c> polyfill.</summary>
+    public const string InjectCallerAttributesOnLegacy = "InjectCallerAttributesOnLegacy";
+
+    /// <summary>Injects <c>ParamCollectionAttribute</c> polyfill.</summary>
+    public const string InjectParamCollectionOnLegacy = "InjectParamCollectionOnLegacy";
+
+    /// <summary>Injects <c>UnreachableException</c> polyfill.</summary>
+    public const string InjectUnreachableExceptionOnLegacy = "InjectUnreachableExceptionOnLegacy";
+
+    /// <summary>Injects <c>StackTraceHiddenAttribute</c> polyfill.</summary>
+    public const string InjectStackTraceHiddenOnLegacy = "InjectStackTraceHiddenOnLegacy";
+
+    /// <summary>Injects nullability attributes (<c>AllowNull</c>, <c>MaybeNull</c>, <c>NotNull</c>, etc.).</summary>
+    public const string InjectNullabilityAttributesOnLegacy = "InjectNullabilityAttributesOnLegacy";
+
+    /// <summary>Injects AOT/Trim attributes (<c>DynamicallyAccessedMembers</c>, etc.).</summary>
+    public const string InjectTrimAttributesOnLegacy = "InjectTrimAttributesOnLegacy";
+
+    /// <summary>Injects <c>ExperimentalAttribute</c> polyfill.</summary>
+    public const string InjectExperimentalAttributeOnLegacy = "InjectExperimentalAttributeOnLegacy";
+
+    /// <summary>Injects diagnostic code analysis classes polyfill.</summary>
+    public const string InjectDiagnosticClassesOnLegacy = "InjectDiagnosticClassesOnLegacy";
+
+    /// <summary>Injects <c>String.Contains</c>/<c>String.Replace</c> with <c>StringComparison</c> overloads.</summary>
+    public const string InjectStringExtensionsPolyfill = "InjectStringExtensionsPolyfill";
 }
 
 /// <summary>

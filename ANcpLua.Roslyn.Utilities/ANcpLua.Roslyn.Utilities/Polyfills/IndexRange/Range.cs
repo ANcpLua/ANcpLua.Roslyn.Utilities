@@ -20,7 +20,7 @@ internal readonly struct Range : IEquatable<Range>
     /// <summary>Gets the exclusive end index of the range.</summary>
     public Index End { get; }
 
-    /// <summary>Initializes a new instance of the <see cref="Range" /> struct.</summary>
+    /// <summary>Initializes a new instance of the <c>Range</c> struct.</summary>
     public Range(Index start, Index end)
     {
         Start = start;

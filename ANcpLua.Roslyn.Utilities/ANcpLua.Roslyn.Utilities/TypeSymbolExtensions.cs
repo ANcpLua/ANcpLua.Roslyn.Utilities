@@ -894,6 +894,6 @@ internal
         if (!type.IsGenericType)
             return null;
 
-        return $"<{string.Join(", ", type.TypeParameters.Select(p => p.Name))}>";
+        return $"<{string.Join(", ", type.TypeParameters.Select(static p => p.Name))}>";
     }
 }

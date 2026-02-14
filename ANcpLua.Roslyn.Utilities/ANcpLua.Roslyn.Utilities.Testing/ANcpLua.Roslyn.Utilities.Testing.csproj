@@ -50,7 +50,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
-        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Testing.Aot\ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
