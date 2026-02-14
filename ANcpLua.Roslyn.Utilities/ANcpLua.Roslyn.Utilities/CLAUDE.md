@@ -10,7 +10,7 @@ This is the SOURCE OF TRUTH for Roslyn helpers. Before writing ANY utility code 
 
 | Category | Key Types |
 |----------|-----------|
-| **Flow Control** | `DiagnosticFlow<T>` |
+| **Flow Control** | `DiagnosticFlow<T>`, `Result<T>` |
 | **Pattern Matching** | `Match.*`, `Invoke.*` |
 | **Validation** | `Guard`, `SemanticGuard<T>` |
 | **Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
@@ -49,6 +49,56 @@ provider
     .ReportAndContinue(context)
     .AddSource(context);
 ```
+
+---
+
+## Result&lt;T&gt; - General-Purpose Success/Failure
+
+For domain logic and non-Roslyn error handling. Use `DiagnosticFlow<T>` for Roslyn pipelines.
+
+```csharp
+// Create
+Result<int> ok = Result<int>.Ok(42);
+Result<int> ok2 = 42;                              // implicit
+Result<int> fail = new Error("bad", "Bad input");  // implicit
+
+// Pattern match
+string msg = ok.Match(v => $"Got {v}", e => e.Message);
+
+// Railway composition (same naming as DiagnosticFlow)
+Result<string> pipeline = ok
+    .Where(x => x > 0, new Error("neg", "Must be positive"))
+    .Select(x => x.ToString())
+    .Tap(Console.WriteLine);
+
+// Bind (flatMap)
+Result<Order> result = orderId
+    .Then(id => repo.Find(id))   // returns Result<Order>
+    .Where(o => !o.IsCancelled, Errors.Cancelled());
+
+// Async pipelines
+var shipped = await repo.LoadAsync(id, ct)
+    .ToResult(Errors.NotFound(id))
+    .ThenAsync(order => order.Match(
+        draft: _ => Result<OrderShipped>.Fail(Errors.MustBePaid()),
+        paid: p  => Task.FromResult(p.Ship(shipment)),
+        shipped: _ => Result<OrderShipped>.Fail(Errors.AlreadyShipped()),
+        cancelled: _ => Result<OrderShipped>.Fail(Errors.Cancelled())))
+    .TapAsync(s => repo.SaveAsync(s, ct));
+
+// Factory methods
+Result.Ok(42)
+Result.Fail<int>(new Error("x", "y"))
+Result.FromNullable(maybeNull, errorIfNull)
+Result.Try(() => Parse(input), ex => new Error("parse", ex.Message))
+```
+
+**When to use which:**
+| Scenario | Use |
+|----------|-----|
+| Roslyn generator pipeline with diagnostics | `DiagnosticFlow<T>` |
+| Domain logic success/failure | `Result<T>` |
+| Validate arguments (throw on invalid) | `Guard` |
 
 ---
 

@@ -51,6 +51,8 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 |------|---------|----------|
 | `EquatableArray<T>` | Value-equality array for generator caching | `EquatableArray.cs` |
 | `DiagnosticFlow<T>` | Railway-oriented error accumulation | `DiagnosticFlow.cs` |
+| `Result<T>` | General-purpose success/failure result | `Result.cs` |
+| `Error` | Error type with Code + Message | `Result.cs` |
 | `DiagnosticInfo` | Equatable diagnostic for caching | `Models/DiagnosticInfo.cs` |
 | `LocationInfo` | Serializable location | `Models/LocationInfo.cs` |
 | `FileWithName` | Hint name + generated content | `Models/FileWithName.cs` |
@@ -99,6 +101,7 @@ Before writing ANY helper code, search this catalog. Duplication is the enemy.
 
 | File | Purpose |
 |------|---------|
+| `ResultExtensions.cs` | Select/Then/Tap/Where + async variants for Result&lt;T&gt; |
 | `SymbolExtensions.cs` | Symbol attributes, visibility, equality, attribute type extraction |
 | `TypeSymbolExtensions.cs` | Type hierarchy, primitives, patterns, codegen helpers |
 | `MethodSymbolExtensions.cs` | Interface implementation, overrides |
@@ -360,6 +363,9 @@ aspnet.IsFromBody(parameter)
 | "Match method pattern" | `Match.Method()...Matches()` |
 | "Match invocation" | `Invoke.Method()...Matches()` |
 | "Accumulate errors in pipeline" | `DiagnosticFlow<T>` |
+| "General-purpose success/failure" | `Result<T>` |
+| "Chain result operations" | `ResultExtensions.Select/Then/Tap/Where` |
+| "Async result pipelines" | `ResultExtensions.ThenAsync/TapAsync/ToResult` |
 | "Cache array in generator" | `EquatableArray<T>` |
 | "Extract typeof() args from attributes" | `symbol.GetAttributeTypeArguments()` |
 | "Get nested type chain for codegen" | `type.GetContainingTypeChain()` |
