@@ -38,6 +38,12 @@ foreach ($file in $files)
     $relativePath = $file.FullName.Substring($SourceDir.Length + 1)
     $content = Get-Content $file.FullName -Raw
 
+    # Collapse ANCPLUA_ROSLYN_PUBLIC guards (Sources package is always internal)
+    # Pattern A: #if / public / #else / internal / #endif -> "internal"
+    $content = $content -replace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\npublic\r?\n#else\r?\ninternal\r?\n#endif', 'internal'
+    # Pattern B: #if / #else / internal / #endif -> "" (class line already has modifier)
+    $content = $content -replace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\n#else\r?\ninternal\r?\n#endif\r?\n', ''
+
     # Transform visibility: public -> internal
     $content = $content -replace 'public static class', 'internal static class'
     $content = $content -replace 'public readonly struct', 'internal readonly struct'
