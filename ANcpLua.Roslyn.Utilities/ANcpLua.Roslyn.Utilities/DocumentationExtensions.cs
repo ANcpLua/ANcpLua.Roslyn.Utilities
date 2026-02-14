@@ -568,7 +568,7 @@ file static class DocumentationXmlNames
 ///     Disposable scope that removes a symbol from a visited set on disposal,
 ///     replacing manual try/finally patterns for recursion tracking.
 /// </summary>
-file ref struct VisitedScope
+file readonly ref struct VisitedScope
 {
     private readonly HashSet<ISymbol> _set;
     private readonly ISymbol _symbol;
