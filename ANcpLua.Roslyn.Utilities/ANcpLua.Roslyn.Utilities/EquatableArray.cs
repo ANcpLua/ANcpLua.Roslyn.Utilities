@@ -85,7 +85,7 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EquatableArray<T> ToEquatableArray<T>(this T[] array)
         where T : IEquatable<T> =>
-        new(array);
+        new(ImmutableCollectionsMarshal.AsImmutableArray(array));
 }
 
 /// <summary>
@@ -163,24 +163,6 @@ internal
         // Normalize: empty arrays become null (single empty state)
         _array = backing is { Length: > 0 } ? backing : null;
     }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="EquatableArray{T}" /> struct from a raw array.
-    /// </summary>
-    /// <param name="array">
-    ///     The input array. Ownership is transferred - do not mutate after passing.
-    ///     <c>null</c> or empty arrays are normalized to the empty state.
-    /// </param>
-    /// <remarks>
-    ///     <para>
-    ///         This constructor is internal to avoid ambiguity with collection expressions in C# 12+.
-    ///         Use the <see cref="EquatableArray.ToEquatableArray{T}" /> extension method instead:
-    ///     </para>
-    ///     <code>myArray.ToEquatableArray()</code>
-    /// </remarks>
-    internal EquatableArray(T[]? array) =>
-        // Normalize: empty arrays become null (single empty state)
-        _array = array is { Length: > 0 } ? array : null;
 
     /// <summary>
     ///     Gets a value indicating whether this array is empty.
@@ -314,11 +296,11 @@ internal
         if (_array is null)
             return 0;
 
-        HashCode hashCode = default;
+        var hash = HashCombiner.Create();
         foreach (var item in _array)
-            hashCode.Add(item);
+            hash.Add(item);
 
-        return hashCode.ToHashCode();
+        return hash.ToHashCode();
     }
 
     /// <summary>
@@ -495,15 +477,12 @@ internal
         where T : IEquatable<T>
     {
         if (array.IsEmpty)
-            return new EquatableArray<T>(new[]
-            {
-                item
-            });
+            return new[] { item }.ToEquatableArray();
 
         var newArray = new T[array.Length + 1];
         array.AsSpan().CopyTo(newArray);
         newArray[array.Length] = item;
-        return new EquatableArray<T>(newArray);
+        return newArray.ToEquatableArray();
     }
 
     /// <summary>
@@ -532,7 +511,7 @@ internal
         var newArray = new T[first.Length + second.Length];
         first.AsSpan().CopyTo(newArray);
         second.AsSpan().CopyTo(newArray.AsSpan(first.Length));
-        return new EquatableArray<T>(newArray);
+        return newArray.ToEquatableArray();
     }
 
     /// <summary>
@@ -614,7 +593,7 @@ internal
         for (var i = 0; i < array.Length; i++)
             result[i] = selector(array[i]);
 
-        return new EquatableArray<TResult>(result);
+        return result.ToEquatableArray();
     }
 
     /// <summary>

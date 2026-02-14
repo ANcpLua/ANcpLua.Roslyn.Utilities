@@ -767,7 +767,9 @@ internal
         string? paramName = null)
     {
         NotNullOrEmpty(path, paramName);
+#pragma warning disable RS1035 // File I/O is valid for non-analyzer callers (testing, CLI tools)
         return File.Exists(path)
+#pragma warning restore RS1035
             ? path
             : throw new ArgumentException($"File not found: {path}", paramName);
     }
@@ -797,7 +799,9 @@ internal
         string? paramName = null)
     {
         NotNullOrEmpty(path, paramName);
+#pragma warning disable RS1035 // File I/O is valid for non-analyzer callers (testing, CLI tools)
         return Directory.Exists(path)
+#pragma warning restore RS1035
             ? path
             : throw new ArgumentException($"Directory not found: {path}", paramName);
     }

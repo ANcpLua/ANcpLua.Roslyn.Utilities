@@ -232,7 +232,13 @@ internal
     public override bool Equals(object? obj) => obj is DiagnosticFlow<T> other && Equals(other);
 
     /// <inheritdoc />
-    public override int GetHashCode() => HashCode.Combine(Value, Diagnostics);
+    public override int GetHashCode()
+    {
+        var hash = HashCombiner.Create();
+        hash.Add(Value);
+        hash.Add(Diagnostics);
+        return hash.ToHashCode();
+    }
 
     /// <summary>Determines whether two flows are equal.</summary>
     public static bool operator ==(DiagnosticFlow<T> left, DiagnosticFlow<T> right) => left.Equals(right);

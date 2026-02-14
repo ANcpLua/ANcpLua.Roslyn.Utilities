@@ -82,18 +82,23 @@ internal abstract class TimeProvider
             _timer.Dispose();
         }
 
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         public ValueTask DisposeAsync()
         {
             _timer.Dispose();
             return default;
         }
+#endif
     }
 }
 
 /// <summary>
 /// Represents a timer that can be changed or disposed.
 /// </summary>
-internal interface ITimer : IDisposable, IAsyncDisposable
+internal interface ITimer : IDisposable
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    , IAsyncDisposable
+#endif
 {
     /// <summary>
     /// Changes the start time and the interval between method invocations for a timer.

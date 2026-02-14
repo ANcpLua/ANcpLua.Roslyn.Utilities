@@ -268,15 +268,8 @@ internal
         if (property is null)
             return defaultValue;
 
-        try
-        {
-            var value = property.GetValue(obj);
-            return value is T typedValue ? typedValue : defaultValue;
-        }
-        catch
-        {
-            return defaultValue;
-        }
+        var value = property.GetValue(obj);
+        return value is T typedValue ? typedValue : defaultValue;
     }
 
     /// <summary>
@@ -310,21 +303,14 @@ internal
         if (property is null)
             return false;
 
-        try
+        var rawValue = property.GetValue(obj);
+        if (rawValue is T typedValue)
         {
-            var rawValue = property.GetValue(obj);
-            if (rawValue is T typedValue)
-            {
-                value = typedValue;
-                return true;
-            }
+            value = typedValue;
+            return true;
+        }
 
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
+        return false;
     }
 
     // ========== Equality and Comparison ==========

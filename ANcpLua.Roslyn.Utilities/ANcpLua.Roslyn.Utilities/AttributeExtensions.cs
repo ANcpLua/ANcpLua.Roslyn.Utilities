@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -518,16 +519,15 @@ internal
         if (typedConstant.Value is T value)
             return value;
 
-        // Try conversion for compatible types
-        if (typedConstant.Value is not null)
+        // Try conversion for compatible types (numeric widening, enum backing, etc.)
+        if (typedConstant.Value is IConvertible)
             try
             {
-                return (T)Convert.ChangeType(typedConstant.Value, typeof(T));
+                return (T)Convert.ChangeType(typedConstant.Value, typeof(T), CultureInfo.InvariantCulture);
             }
-            catch
-            {
-                // Conversion failed
-            }
+            catch (FormatException) { }
+            catch (InvalidCastException) { }
+            catch (OverflowException) { }
 
         return default;
     }

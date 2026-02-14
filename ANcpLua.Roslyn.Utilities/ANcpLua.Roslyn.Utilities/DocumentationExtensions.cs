@@ -142,7 +142,7 @@ internal
             var element = XElement.Parse(xml);
             return element.Element("summary")?.Value.NormalizeWhitespace();
         }
-        catch { return null; }
+        catch (XmlException) { return null; }
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ internal
             var element = XElement.Parse(xml);
             return element.Element("remarks")?.Value.NormalizeWhitespace();
         }
-        catch { return null; }
+        catch (XmlException) { return null; }
     }
 
     private static string GetDocumentationComment(
