@@ -3,4 +3,16 @@
         <!-- Consumers can override namespace -->
         <ANcpLuaRoslynUtilitiesNamespace Condition="'$(ANcpLuaRoslynUtilitiesNamespace)' == ''">ANcpLua.Roslyn.Utilities</ANcpLuaRoslynUtilitiesNamespace>
     </PropertyGroup>
+
+    <!-- Global usings required by the embedded source files -->
+    <ItemGroup>
+        <Using Include="System"/>
+        <Using Include="System.Collections.Generic"/>
+        <Using Include="System.Collections.Immutable"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Globalization"/>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Text"/>
+        <Using Include="System.Threading"/>
+    </ItemGroup>
 </Project>
