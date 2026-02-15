@@ -223,7 +223,14 @@ internal static class AssertionHelpers
     /// <seealso cref="StepFormatter" />
     public static string FormatFailedSteps(IEnumerable<GeneratorStepAnalysis> steps)
     {
-        return string.Join("\n", steps.Select(static s => $"  ✗ {s.StepName}: {s.FormatBreakdown()}"));
+        return string.Join("\n", steps.Select(static s =>
+        {
+            var breakdown = s.FormatBreakdown();
+            var hint = s.Modified > 0
+                ? " (output equality broken — model lacks IEquatable<T>)"
+                : s.New > 0 ? " (new outputs appeared)" : " (outputs removed)";
+            return $"  ✗ {s.StepName}: {breakdown}{hint}";
+        }));
     }
 }
 
@@ -304,7 +311,7 @@ internal static class StepFormatter
     {
         var tracked = requiredSteps?.Contains(step.StepName) == true ? "[Tracked]" : "";
         var forbidden = step.HasForbiddenTypes ? "[!]" : "";
-        var icon = step.IsCachedSuccessfully ? "[OK]" : "[FAIL]";
+        var icon = step.IsCachedSuccessfully ? (step.IsTrulyCached ? "[OK]" : "[OK*]") : "[FAIL]";
         return $"  {icon} {step.StepName} {tracked}{forbidden} | {FormatBreakdown(step)}";
     }
 

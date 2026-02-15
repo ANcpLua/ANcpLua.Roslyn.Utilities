@@ -39,7 +39,7 @@ result.Produces(hintName, expected, exactMatch)  // file exists with content
 result.Produces(hintName)                        // file exists
 result.IsClean()                                 // no diagnostics
 result.Compiles()                                // no errors
-result.IsCached(stepNames)                       // caching validated
+result.IsCached(stepNames)                       // caching validated (all steps, names = existence check)
 result.HasDiagnostic(id, severity)
 result.HasNoDiagnostic(id)
 result.HasNoForbiddenTypes()                     // no ISymbol/Compilation cached
@@ -480,7 +480,8 @@ Per-step caching analysis:
 step.StepName
 step.Cached, step.Unchanged, step.Modified, step.New, step.Removed
 step.HasForbiddenTypes
-step.IsCachedSuccessfully
+step.IsCachedSuccessfully                    // Cached + Unchanged = OK
+step.IsTrulyCached                           // Cached only (no re-computation)
 step.FormatBreakdown()
 ```
 
