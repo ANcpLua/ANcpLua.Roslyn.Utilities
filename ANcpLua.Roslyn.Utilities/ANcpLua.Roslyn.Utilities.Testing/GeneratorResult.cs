@@ -315,28 +315,36 @@ public sealed class GeneratorResult : IDisposable
     /// <summary>
     ///     Asserts that generator outputs are properly cached across runs.
     /// </summary>
-    /// <param name="stepNames">Optional step names to check; if empty, all steps are verified.</param>
+    /// <param name="stepNames">
+    ///     Optional step names to verify exist in the pipeline. When provided, the assertion
+    ///     verifies these steps are present (using prefix matching for hierarchical names).
+    ///     All observable steps are always validated for cache failures regardless of this parameter.
+    /// </param>
     /// <returns>This instance for fluent chaining.</returns>
     /// <remarks>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description>Verifies that the generator properly implements incremental caching.</description>
+    ///             <description>
+    ///                 Always validates ALL observable steps for cache invalidation (Modified/New/Removed).
+    ///                 Step names do not filter which steps are checked — they assert step existence.
+    ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>Checks for forbidden types (ISymbol, Compilation) in cached outputs.</description>
     ///         </item>
     ///         <item>
-    ///             <description>When step names are provided, only those specific steps are validated.</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>Forbidden type violations always cause failure, regardless of step filtering.</description>
+    ///             <description>
+    ///                 Step name matching uses prefix comparison: <c>"EndpointBindingFlow"</c> matches
+    ///                 <c>"EndpointBindingFlow"</c>, <c>"EndpointBindingFlow.Get"</c>, etc.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </remarks>
     /// <example>
     ///     <code>
     ///     result.IsCached();                                    // Check all steps
-    ///     result.IsCached("TransformStep", "CombineStep");      // Check specific steps
+    ///     result.IsCached("TransformStep", "CombineStep");      // Check all steps + verify these exist
+    ///     result.IsCached("EndpointBindingFlow");               // Matches EndpointBindingFlow.Get, .Post, etc.
     ///     </code>
     /// </example>
     /// <seealso cref="CachingReport" />
@@ -345,24 +353,50 @@ public sealed class GeneratorResult : IDisposable
     {
         var report = CachingReport;
 
-        // When step names are provided, only check forbidden types in those steps
+        // Forbidden type check: when step names are provided, only check matching steps.
+        // This allows intentional Roslyn type usage in upstream steps (e.g., ErrorOrContext holds
+        // INamedTypeSymbol fields by design, mitigated via IEquatable with null-presence bitmask).
         var violationsToCheck = stepNames.Length > 0
-            ? report.ForbiddenTypeViolations.Where(v => stepNames.Contains(v.StepName, StringComparer.Ordinal)).ToList()
+            ? report.ForbiddenTypeViolations
+                .Where(v => stepNames.Any(name => MatchesStepName(v.StepName, name)))
+                .ToList()
             : report.ForbiddenTypeViolations;
 
         if (violationsToCheck.Count > 0)
             Fail("Forbidden types cached", ViolationFormatter.FormatGrouped(violationsToCheck));
 
-        var stepsToCheck = stepNames.Length > 0
-            ? report.ObservableSteps.Where(s => stepNames.Contains(s.StepName, StringComparer.Ordinal)).ToList()
-            : report.ObservableSteps;
-
-        var failedSteps = stepsToCheck.Where(static s => !s.IsCachedSuccessfully).ToList();
+        // Caching check: ALWAYS check ALL observable steps for cache invalidation.
+        // Observable steps exclude Roslyn internals (Compilation, ForAttributeWithMetadataName, etc.)
+        // and only contain user-defined pipeline steps. This prevents false positives where a
+        // downstream step appears cached (Unchanged) but an upstream step has broken equality
+        // (Modified), causing unnecessary re-computation.
+        var failedSteps = report.ObservableSteps.Where(static s => !s.IsCachedSuccessfully).ToList();
         if (failedSteps.Count > 0)
             Fail($"{failedSteps.Count} steps not cached", AssertionHelpers.FormatFailedSteps(failedSteps));
 
+        // When step names are provided, verify those steps exist in the pipeline.
+        // Uses prefix matching to support hierarchical step names (e.g., "Flow" matches "Flow.Get").
+        if (stepNames.Length > 0)
+        {
+            var observedNames = report.ObservableSteps.Select(static s => s.StepName).ToList();
+            foreach (var required in stepNames)
+            {
+                if (!observedNames.Any(name => MatchesStepName(name, required)))
+                    Fail($"Required pipeline step not found: '{required}'",
+                        $"Available steps: {AssertionHelpers.FormatList(observedNames)}");
+            }
+        }
+
         return this;
     }
+
+    /// <summary>
+    ///     Checks if a step name matches a required name using prefix matching.
+    ///     Supports hierarchical names: "Flow" matches "Flow" and "Flow.Get".
+    /// </summary>
+    private static bool MatchesStepName(string stepName, string required) =>
+        stepName.Equals(required, StringComparison.Ordinal) ||
+        stepName.StartsWith(required + ".", StringComparison.Ordinal);
 
     /// <summary>
     ///     Asserts that the generator produced a diagnostic with the specified ID.
