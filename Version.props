@@ -167,7 +167,7 @@
        Used by: SDK (LegacySupport)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Legacy Polyfills">
-    <BclAsyncInterfacesVersion>6.0.0</BclAsyncInterfacesVersion>
+    <BclAsyncInterfacesVersion>10.0.3</BclAsyncInterfacesVersion>
     <TasksExtensionsVersion>4.5.4</TasksExtensionsVersion>
     <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
   </PropertyGroup>
