@@ -43,7 +43,7 @@ jobs:
           else
             COMMITS=$(git rev-list --count HEAD)
             SHA=$(git rev-parse --short HEAD)
-            echo "version=0.0.$COMMITS-ci.$SHA" >> $GITHUB_OUTPUT
+            echo "version=0.0.$COMMITS-ci.g$SHA" >> $GITHUB_OUTPUT
             echo "is_release=false" >> $GITHUB_OUTPUT
           fi
 
