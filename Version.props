@@ -83,7 +83,7 @@
   <PropertyGroup Label="Meziantou">
     <MeziantouFrameworkVersion>5.0.12</MeziantouFrameworkVersion>
     <MeziantouFullPathVersion>1.1.15</MeziantouFullPathVersion>
-    <MeziantouTemporaryDirectoryVersion>1.0.33</MeziantouTemporaryDirectoryVersion>
+    <MeziantouTemporaryDirectoryVersion>1.0.34</MeziantouTemporaryDirectoryVersion>
     <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
     <MeziantouDependencyScanningVersion>2.0.7</MeziantouDependencyScanningVersion>
     <MeziantouAnalyzerVersion>3.0.7</MeziantouAnalyzerVersion>
