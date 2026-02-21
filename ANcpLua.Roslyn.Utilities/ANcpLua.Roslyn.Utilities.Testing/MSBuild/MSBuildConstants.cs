@@ -66,11 +66,6 @@ public static class Tfm
     public const string Net80 = "net8.0";
 
     /// <summary>
-    ///     The .NET 9 target framework moniker.
-    /// </summary>
-    public const string Net90 = "net9.0";
-
-    /// <summary>
     ///     The .NET 10 target framework moniker (current LTS release).
     /// </summary>
     public const string Net100 = "net10.0";

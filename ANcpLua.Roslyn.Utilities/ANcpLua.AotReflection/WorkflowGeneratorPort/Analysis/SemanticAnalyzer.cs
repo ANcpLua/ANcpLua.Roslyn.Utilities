@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using ANcpLua.Roslyn.Utilities;
 using Microsoft.Agents.AI.Workflows.Generators.Diagnostics;
 using Microsoft.Agents.AI.Workflows.Generators.Models;
 using Microsoft.CodeAnalysis;
@@ -28,12 +29,21 @@ internal static class SemanticAnalyzer
 {
     // Fully-qualified type names used for symbol comparison
     private const string ExecutorTypeName = "Microsoft.Agents.AI.Workflows.Executor";
+    private const string ExecutorOfTTypeName = "Microsoft.Agents.AI.Workflows.Executor`1";
     private const string WorkflowContextTypeName = "Microsoft.Agents.AI.Workflows.IWorkflowContext";
     private const string CancellationTokenTypeName = "System.Threading.CancellationToken";
     private const string ValueTaskTypeName = "System.Threading.Tasks.ValueTask";
-    private const string MessageHandlerAttributeName = "Microsoft.Agents.AI.Workflows.MessageHandlerAttribute";
+    private const string ValueTaskOfTTypeName = "System.Threading.Tasks.ValueTask`1";
     private const string SendsMessageAttributeName = "Microsoft.Agents.AI.Workflows.SendsMessageAttribute";
     private const string YieldsOutputAttributeName = "Microsoft.Agents.AI.Workflows.YieldsOutputAttribute";
+
+    private readonly record struct KnownTypes(
+        INamedTypeSymbol? Executor,
+        INamedTypeSymbol? ExecutorOfT,
+        INamedTypeSymbol? WorkflowContext,
+        INamedTypeSymbol? CancellationToken,
+        INamedTypeSymbol? ValueTask,
+        INamedTypeSymbol? ValueTaskOfT);
 
     /// <summary>
     /// Analyzes a method with [MessageHandler] attribute found by ForAttributeWithMetadataName.
@@ -63,11 +73,12 @@ internal static class SemanticAnalyzer
 
         // Get the method syntax for location info
         MethodDeclarationSyntax? methodSyntax = context.TargetNode as MethodDeclarationSyntax;
+        KnownTypes knownTypes = ResolveKnownTypes(context.SemanticModel.Compilation);
 
         // Extract class-level info (raw facts, no validation here)
         string classKey = GetClassKey(classSymbol);
         bool isPartialClass = IsPartialClass(classSymbol, cancellationToken);
-        bool derivesFromExecutor = DerivesFromExecutor(classSymbol);
+        bool derivesFromExecutor = DerivesFromExecutor(classSymbol, knownTypes);
         bool hasManualConfigureRoutes = HasConfigureRoutesDefined(classSymbol);
 
         // Extract class metadata
@@ -78,7 +89,7 @@ internal static class SemanticAnalyzer
         string? genericParameters = GetGenericParameters(classSymbol);
         bool isNested = classSymbol.ContainingType != null;
         string containingTypeChain = GetContainingTypeChain(classSymbol);
-        bool baseHasConfigureRoutes = BaseHasConfigureRoutes(classSymbol);
+        bool baseHasConfigureRoutes = BaseHasConfigureRoutes(classSymbol, knownTypes);
         Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> classSendTypes = GetClassLevelTypes(classSymbol, SendsMessageAttributeName);
         Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> classYieldTypes = GetClassLevelTypes(classSymbol, YieldsOutputAttributeName);
 
@@ -91,7 +102,7 @@ internal static class SemanticAnalyzer
         HandlerInfo? handler = null;
         if (derivesFromExecutor)
         {
-            handler = AnalyzeHandler(methodSymbol, methodSyntax, methodDiagnostics);
+            handler = AnalyzeHandler(methodSymbol, methodSyntax, context.Attributes, methodDiagnostics, knownTypes);
         }
 
         return new MethodAnalysisResult(
@@ -109,24 +120,23 @@ internal static class SemanticAnalyzer
     /// </summary>
     public static AnalysisResult CombineHandlerMethodResults(IEnumerable<MethodAnalysisResult> methodResults)
     {
-        List<MethodAnalysisResult> methods = methodResults.ToList();
-        if (methods.Count == 0)
+        using IEnumerator<MethodAnalysisResult> enumerator = methodResults.GetEnumerator();
+        if (!enumerator.MoveNext())
         {
             return AnalysisResult.Empty;
         }
 
-        // All methods should have same class info - take from first
-        MethodAnalysisResult first = methods[0];
+        // All methods should have same class info - use first.
+        MethodAnalysisResult first = enumerator.Current;
         Location classLocation = first.ClassLocation?.ToRoslynLocation() ?? Location.None;
 
-        // Collect method-level diagnostics
-        var allDiagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
-        foreach (var method in methods)
+        ImmutableArray<Diagnostic>.Builder allDiagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+        ImmutableArray<HandlerInfo>.Builder handlers = ImmutableArray.CreateBuilder<HandlerInfo>();
+        CollectMethodResult(first, allDiagnostics, handlers);
+
+        while (enumerator.MoveNext())
         {
-            foreach (var diag in method.Diagnostics)
-            {
-                allDiagnostics.Add(diag.ToDiagnostic());
-            }
+            CollectMethodResult(enumerator.Current, allDiagnostics, handlers);
         }
 
         // Class-level validation (done once, not per-method)
@@ -158,13 +168,7 @@ internal static class SemanticAnalyzer
             return AnalysisResult.WithDiagnostics(allDiagnostics.ToImmutable());
         }
 
-        // Collect valid handlers
-        ImmutableArray<HandlerInfo> handlers = methods
-            .Where(m => m.Handler is not null)
-            .Select(m => m.Handler!)
-            .ToImmutableArray();
-
-        if (handlers.Length == 0)
+        if (handlers.Count == 0)
         {
             return AnalysisResult.WithDiagnostics(allDiagnostics.ToImmutable());
         }
@@ -176,7 +180,7 @@ internal static class SemanticAnalyzer
             first.IsNested,
             first.ContainingTypeChain,
             first.BaseHasConfigureRoutes,
-            new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<HandlerInfo>(handlers),
+            new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<HandlerInfo>(handlers.ToImmutable()),
             first.ClassSendTypes,
             first.ClassYieldTypes);
 
@@ -207,10 +211,12 @@ internal static class SemanticAnalyzer
             return ImmutableArray<ClassProtocolInfo>.Empty;
         }
 
+        KnownTypes knownTypes = ResolveKnownTypes(context.SemanticModel.Compilation);
+
         // Extract class-level info (same for all attributes)
         string classKey = GetClassKey(classSymbol);
         bool isPartialClass = IsPartialClass(classSymbol, cancellationToken);
-        bool derivesFromExecutor = DerivesFromExecutor(classSymbol);
+        bool derivesFromExecutor = DerivesFromExecutor(classSymbol, knownTypes);
         bool hasManualConfigureRoutes = HasConfigureRoutesDefined(classSymbol);
 
         string? @namespace = classSymbol.ContainingNamespace?.IsGlobalNamespace == true
@@ -258,57 +264,42 @@ internal static class SemanticAnalyzer
     /// <returns>The combined analysis result.</returns>
     public static AnalysisResult CombineProtocolOnlyResults(IEnumerable<ClassProtocolInfo> protocolInfos)
     {
-        List<ClassProtocolInfo> protocols = protocolInfos.ToList();
-        if (protocols.Count == 0)
+        using IEnumerator<ClassProtocolInfo> enumerator = protocolInfos.GetEnumerator();
+        if (!enumerator.MoveNext())
         {
             return AnalysisResult.Empty;
         }
 
-        // All entries should have same class info - take from first
-        ClassProtocolInfo first = protocols[0];
+        // All entries should have same class info - use first.
+        ClassProtocolInfo first = enumerator.Current;
         Location classLocation = first.ClassLocation?.ToRoslynLocation() ?? Location.None;
-
-        ImmutableArray<Diagnostic>.Builder allDiagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
 
         // Class-level validation
         if (!first.DerivesFromExecutor)
         {
-            allDiagnostics.Add(Diagnostic.Create(
+            return AnalysisResult.WithDiagnostics(ImmutableArray.Create(Diagnostic.Create(
                 DiagnosticDescriptors.NotAnExecutor,
                 classLocation,
                 first.ClassName,
-                first.ClassName));
-            return AnalysisResult.WithDiagnostics(allDiagnostics.ToImmutable());
+                first.ClassName)));
         }
 
         if (!first.IsPartialClass)
         {
-            allDiagnostics.Add(Diagnostic.Create(
+            return AnalysisResult.WithDiagnostics(ImmutableArray.Create(Diagnostic.Create(
                 DiagnosticDescriptors.ClassMustBePartial,
                 classLocation,
-                first.ClassName));
-            return AnalysisResult.WithDiagnostics(allDiagnostics.ToImmutable());
+                first.ClassName)));
         }
 
-        // Collect send and yield types
-        ImmutableArray<string>.Builder sendTypes = ImmutableArray.CreateBuilder<string>();
-        ImmutableArray<string>.Builder yieldTypes = ImmutableArray.CreateBuilder<string>();
+        HashSet<string> sendTypeSet = new(StringComparer.Ordinal);
+        HashSet<string> yieldTypeSet = new(StringComparer.Ordinal);
+        AddProtocolType(first, sendTypeSet, yieldTypeSet);
 
-        foreach (ClassProtocolInfo protocol in protocols)
+        while (enumerator.MoveNext())
         {
-            if (protocol.AttributeKind == ProtocolAttributeKind.Send)
-            {
-                sendTypes.Add(protocol.TypeName);
-            }
-            else
-            {
-                yieldTypes.Add(protocol.TypeName);
-            }
+            AddProtocolType(enumerator.Current, sendTypeSet, yieldTypeSet);
         }
-
-        // Sort to ensure consistent ordering for incremental generator caching
-        sendTypes.Sort(StringComparer.Ordinal);
-        yieldTypes.Sort(StringComparer.Ordinal);
 
         // Create ExecutorInfo with no handlers but with protocol types
         ExecutorInfo executorInfo = new(
@@ -319,15 +310,46 @@ internal static class SemanticAnalyzer
             first.ContainingTypeChain,
             BaseHasConfigureRoutes: false, // Not relevant for protocol-only
             Handlers: Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<HandlerInfo>.Empty,
-            ClassSendTypes: new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(sendTypes.ToImmutable()),
-            ClassYieldTypes: new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(yieldTypes.ToImmutable()));
-
-        if (allDiagnostics.Count > 0)
-        {
-            return AnalysisResult.WithInfoAndDiagnostics(executorInfo, allDiagnostics.ToImmutable());
-        }
+            ClassSendTypes: ToSortedEquatableArray(sendTypeSet),
+            ClassYieldTypes: ToSortedEquatableArray(yieldTypeSet));
 
         return AnalysisResult.Success(executorInfo);
+    }
+
+    private static void CollectMethodResult(
+        MethodAnalysisResult method,
+        ImmutableArray<Diagnostic>.Builder diagnostics,
+        ImmutableArray<HandlerInfo>.Builder handlers)
+    {
+        foreach (Microsoft.Agents.AI.Workflows.Generators.Models.DiagnosticInfo diagnostic in method.Diagnostics)
+        {
+            diagnostics.Add(diagnostic.ToDiagnostic());
+        }
+
+        if (method.Handler is { } handler)
+        {
+            handlers.Add(handler);
+        }
+    }
+
+    private static void AddProtocolType(
+        ClassProtocolInfo protocol,
+        HashSet<string> sendTypes,
+        HashSet<string> yieldTypes)
+    {
+        if (protocol.AttributeKind == ProtocolAttributeKind.Send)
+        {
+            sendTypes.Add(protocol.TypeName);
+        }
+        else
+        {
+            yieldTypes.Add(protocol.TypeName);
+        }
+    }
+
+    private static Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> ToSortedEquatableArray(HashSet<string> values)
+    {
+        return new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(ToSortedImmutableArray(values));
     }
 
     /// <summary>
@@ -364,7 +386,7 @@ internal static class SemanticAnalyzer
         {
             SyntaxNode syntax = syntaxRef.GetSyntax(cancellationToken);
             if (syntax is ClassDeclarationSyntax classDecl &&
-                classDecl.Modifiers.Any(SyntaxKind.PartialKeyword))
+                classDecl.IsPartial())
             {
                 return true;
             }
@@ -376,18 +398,36 @@ internal static class SemanticAnalyzer
     /// <summary>
     /// Walks the inheritance chain to check if the class derives from Executor or Executor&lt;T&gt;.
     /// </summary>
-    private static bool DerivesFromExecutor(INamedTypeSymbol classSymbol)
+    private static bool DerivesFromExecutor(INamedTypeSymbol classSymbol, KnownTypes knownTypes)
     {
-        INamedTypeSymbol? current = classSymbol.BaseType;
-        while (current != null)
+        if (knownTypes.Executor is not null || knownTypes.ExecutorOfT is not null)
         {
-            string fullName = current.OriginalDefinition.ToDisplayString();
+            INamedTypeSymbol? current = classSymbol.BaseType;
+            while (current is not null)
+            {
+                if (MatchesTypeOrOriginalDefinition(current, knownTypes.Executor) ||
+                    MatchesTypeOrOriginalDefinition(current, knownTypes.ExecutorOfT))
+                {
+                    return true;
+                }
+
+                current = current.BaseType;
+            }
+
+            return false;
+        }
+
+        // Fallback if metadata resolution fails.
+        INamedTypeSymbol? fallbackCurrent = classSymbol.BaseType;
+        while (fallbackCurrent is not null)
+        {
+            string fullName = fallbackCurrent.OriginalDefinition.ToDisplayString();
             if (fullName == ExecutorTypeName || fullName.StartsWith(ExecutorTypeName + "<", StringComparison.Ordinal))
             {
                 return true;
             }
 
-            current = current.BaseType;
+            fallbackCurrent = fallbackCurrent.BaseType;
         }
 
         return false;
@@ -415,14 +455,14 @@ internal static class SemanticAnalyzer
     /// Checks if any base class (between this class and Executor) defines ConfigureRoutes.
     /// If so, generated code should call base.ConfigureRoutes() to preserve inherited handlers.
     /// </summary>
-    private static bool BaseHasConfigureRoutes(INamedTypeSymbol classSymbol)
+    private static bool BaseHasConfigureRoutes(INamedTypeSymbol classSymbol, KnownTypes knownTypes)
     {
         INamedTypeSymbol? baseType = classSymbol.BaseType;
         while (baseType != null)
         {
-            string fullName = baseType.OriginalDefinition.ToDisplayString();
             // Stop at Executor - its ConfigureRoutes is abstract/empty
-            if (fullName == ExecutorTypeName)
+            if (MatchesTypeOrOriginalDefinition(baseType, knownTypes.Executor) ||
+                MatchesTypeOrOriginalDefinition(baseType, knownTypes.ExecutorOfT))
             {
                 return false;
             }
@@ -441,6 +481,39 @@ internal static class SemanticAnalyzer
         return false;
     }
 
+    private static KnownTypes ResolveKnownTypes(Compilation compilation) =>
+        new(
+            compilation.GetBestTypeByMetadataName(ExecutorTypeName),
+            compilation.GetBestTypeByMetadataName(ExecutorOfTTypeName),
+            compilation.GetBestTypeByMetadataName(WorkflowContextTypeName),
+            compilation.GetBestTypeByMetadataName(CancellationTokenTypeName),
+            compilation.GetBestTypeByMetadataName(ValueTaskTypeName),
+            compilation.GetBestTypeByMetadataName(ValueTaskOfTTypeName));
+
+    private static bool MatchesTypeOrOriginalDefinition(ITypeSymbol? symbol, ITypeSymbol? expected)
+    {
+        if (symbol is null || expected is null)
+        {
+            return false;
+        }
+
+        if (SymbolEqualityComparer.Default.Equals(symbol, expected))
+        {
+            return true;
+        }
+
+        return symbol is INamedTypeSymbol named &&
+               SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, expected);
+    }
+
+    private static bool IsTypeMatch(ITypeSymbol type, ITypeSymbol? expected, string fallbackFullName) =>
+        expected is not null
+            ? MatchesTypeOrOriginalDefinition(type, expected)
+            : type.ToDisplayString() == fallbackFullName;
+
+    private static bool HasResolvedValueTaskSymbols(KnownTypes knownTypes) =>
+        knownTypes.ValueTask is not null && knownTypes.ValueTaskOfT is not null;
+
     /// <summary>
     /// Validates a handler method's signature and extracts metadata.
     /// </summary>
@@ -456,7 +529,9 @@ internal static class SemanticAnalyzer
     private static HandlerInfo? AnalyzeHandler(
         IMethodSymbol methodSymbol,
         MethodDeclarationSyntax? methodSyntax,
-        ImmutableArray<Microsoft.Agents.AI.Workflows.Generators.Models.DiagnosticInfo>.Builder diagnostics)
+        ImmutableArray<AttributeData> messageHandlerAttributes,
+        ImmutableArray<Microsoft.Agents.AI.Workflows.Generators.Models.DiagnosticInfo>.Builder diagnostics,
+        KnownTypes knownTypes)
     {
         Location location = methodSyntax?.Identifier.GetLocation() ?? Location.None;
 
@@ -476,7 +551,7 @@ internal static class SemanticAnalyzer
 
         // Check second parameter is IWorkflowContext
         IParameterSymbol secondParam = methodSymbol.Parameters[1];
-        if (secondParam.Type.ToDisplayString() != WorkflowContextTypeName)
+        if (!IsTypeMatch(secondParam.Type, knownTypes.WorkflowContext, WorkflowContextTypeName))
         {
             diagnostics.Add(Microsoft.Agents.AI.Workflows.Generators.Models.DiagnosticInfo.Create(DiagnosticDescriptors.MissingWorkflowContext, location, methodSymbol.Name));
             return null;
@@ -484,11 +559,11 @@ internal static class SemanticAnalyzer
 
         // Check for optional CancellationToken as third parameter
         bool hasCancellationToken = methodSymbol.Parameters.Length >= 3 &&
-            methodSymbol.Parameters[2].Type.ToDisplayString() == CancellationTokenTypeName;
+            IsTypeMatch(methodSymbol.Parameters[2].Type, knownTypes.CancellationToken, CancellationTokenTypeName);
 
         // Analyze return type
         ITypeSymbol returnType = methodSymbol.ReturnType;
-        HandlerSignatureKind? signatureKind = GetSignatureKind(returnType);
+        HandlerSignatureKind? signatureKind = GetSignatureKind(returnType, knownTypes);
         if (signatureKind == null)
         {
             diagnostics.Add(Microsoft.Agents.AI.Workflows.Generators.Models.DiagnosticInfo.Create(DiagnosticDescriptors.InvalidReturnType, location, methodSymbol.Name));
@@ -514,7 +589,7 @@ internal static class SemanticAnalyzer
         }
 
         // Get Yield and Send types from attribute
-        (Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> yieldTypes, Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> sendTypes) = GetAttributeTypeArrays(methodSymbol);
+        (Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> yieldTypes, Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> sendTypes) = GetAttributeTypeArrays(messageHandlerAttributes);
 
         return new HandlerInfo(
             methodSymbol.Name,
@@ -530,25 +605,28 @@ internal static class SemanticAnalyzer
     /// Determines the handler signature kind from the return type.
     /// </summary>
     /// <returns>The signature kind, or null if the return type is not supported (e.g., Task, Task&lt;T&gt;).</returns>
-    private static HandlerSignatureKind? GetSignatureKind(ITypeSymbol returnType)
+    private static HandlerSignatureKind? GetSignatureKind(ITypeSymbol returnType, KnownTypes knownTypes)
     {
-        string returnTypeName = returnType.ToDisplayString();
-
         if (returnType.SpecialType == SpecialType.System_Void)
         {
             return HandlerSignatureKind.VoidSync;
         }
 
-        if (returnTypeName == ValueTaskTypeName)
+        if (MatchesTypeOrOriginalDefinition(returnType, knownTypes.ValueTask) ||
+            (!HasResolvedValueTaskSymbols(knownTypes) && returnType.ToDisplayString() == ValueTaskTypeName))
         {
             return HandlerSignatureKind.VoidAsync;
         }
 
         if (returnType is INamedTypeSymbol namedType &&
-            namedType.OriginalDefinition.ToDisplayString() == "System.Threading.Tasks.ValueTask<TResult>")
+            (MatchesTypeOrOriginalDefinition(namedType, knownTypes.ValueTaskOfT) ||
+             (!HasResolvedValueTaskSymbols(knownTypes) &&
+              namedType.OriginalDefinition.ToDisplayString() == "System.Threading.Tasks.ValueTask<TResult>")))
         {
             return HandlerSignatureKind.ResultAsync;
         }
+
+        string returnTypeName = returnType.ToDisplayString();
 
         // Any non-void, non-Task type is treated as a synchronous result
         if (returnType.SpecialType != SpecialType.System_Void &&
@@ -569,27 +647,27 @@ internal static class SemanticAnalyzer
     /// [MessageHandler(Yield = new[] { typeof(OutputA), typeof(OutputB) }, Send = new[] { typeof(Request) })]
     /// </example>
     private static (Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> YieldTypes, Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> SendTypes) GetAttributeTypeArrays(
-        IMethodSymbol methodSymbol)
+        ImmutableArray<AttributeData> messageHandlerAttributes)
     {
         var yieldTypes = ImmutableArray<string>.Empty;
         var sendTypes = ImmutableArray<string>.Empty;
 
-        foreach (var attr in methodSymbol.GetAttributes())
+        if (messageHandlerAttributes.IsDefaultOrEmpty)
         {
-            if (attr.AttributeClass?.ToDisplayString() != MessageHandlerAttributeName)
-            {
-                continue;
-            }
+            return (new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(yieldTypes), new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(sendTypes));
+        }
 
-            foreach (var namedArg in attr.NamedArguments)
+        foreach (AttributeData messageHandlerAttribute in messageHandlerAttributes)
+        {
+            foreach (KeyValuePair<string, TypedConstant> namedArgument in messageHandlerAttribute.NamedArguments)
             {
-                if (namedArg.Key.Equals("Yield", StringComparison.Ordinal) && !namedArg.Value.IsNull)
+                if (namedArgument.Key.Equals("Yield", StringComparison.Ordinal) && !namedArgument.Value.IsNull)
                 {
-                    yieldTypes = ExtractTypeArray(namedArg.Value);
+                    yieldTypes = ExtractTypeArray(namedArgument.Value);
                 }
-                else if (namedArg.Key.Equals("Send", StringComparison.Ordinal) && !namedArg.Value.IsNull)
+                else if (namedArgument.Key.Equals("Send", StringComparison.Ordinal) && !namedArgument.Value.IsNull)
                 {
-                    sendTypes = ExtractTypeArray(namedArg.Value);
+                    sendTypes = ExtractTypeArray(namedArgument.Value);
                 }
             }
         }
@@ -610,19 +688,16 @@ internal static class SemanticAnalyzer
             return ImmutableArray<string>.Empty;
         }
 
-        ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>();
+        HashSet<string> uniqueTypes = new(StringComparer.Ordinal);
         foreach (TypedConstant value in typedConstant.Values)
         {
             if (value.Value is INamedTypeSymbol typeSymbol)
             {
-                builder.Add(typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                uniqueTypes.Add(typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
             }
         }
 
-        // Sort to ensure consistent ordering for incremental generator caching
-        builder.Sort(StringComparer.Ordinal);
-
-        return builder.ToImmutable();
+        return ToSortedImmutableArray(uniqueTypes);
     }
 
     /// <summary>
@@ -639,7 +714,7 @@ internal static class SemanticAnalyzer
     /// </example>
     private static Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string> GetClassLevelTypes(INamedTypeSymbol classSymbol, string attributeName)
     {
-        ImmutableArray<string>.Builder builder = ImmutableArray.CreateBuilder<string>();
+        HashSet<string> uniqueTypes = new(StringComparer.Ordinal);
 
         foreach (AttributeData attr in classSymbol.GetAttributes())
         {
@@ -647,14 +722,11 @@ internal static class SemanticAnalyzer
                 attr.ConstructorArguments.Length > 0 &&
                 attr.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol)
             {
-                builder.Add(typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                uniqueTypes.Add(typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
             }
         }
 
-        // Sort to ensure consistent ordering for incremental generator caching
-        builder.Sort(StringComparer.Ordinal);
-
-        return new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(builder.ToImmutable());
+        return new Microsoft.Agents.AI.Workflows.Generators.Models.EquatableArray<string>(ToSortedImmutableArray(uniqueTypes));
     }
 
     /// <summary>
@@ -670,10 +742,11 @@ internal static class SemanticAnalyzer
 
         while (current != null)
         {
-            chain.Insert(0, current.Name);
+            chain.Add(current.Name);
             current = current.ContainingType;
         }
 
+        chain.Reverse();
         return string.Join(".", chain);
     }
 
@@ -689,5 +762,18 @@ internal static class SemanticAnalyzer
 
         string parameters = string.Join(", ", classSymbol.TypeParameters.Select(p => p.Name));
         return $"<{parameters}>";
+    }
+
+    private static ImmutableArray<string> ToSortedImmutableArray(HashSet<string> values)
+    {
+        if (values.Count == 0)
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
+        string[] orderedValues = new string[values.Count];
+        values.CopyTo(orderedValues);
+        Array.Sort(orderedValues, StringComparer.Ordinal);
+        return ImmutableArray.Create(orderedValues);
     }
 }

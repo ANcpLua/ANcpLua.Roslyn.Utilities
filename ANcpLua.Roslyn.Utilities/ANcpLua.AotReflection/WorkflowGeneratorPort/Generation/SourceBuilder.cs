@@ -46,10 +46,12 @@ internal static class SourceBuilder
         // For nested classes, we must emit partial declarations for each containing type.
         // Example: if MyExecutor is nested in Outer.Inner, we emit:
         //   partial class Outer { partial class Inner { partial class MyExecutor { ... } } }
+        string[] containingTypes = [];
         string indent = "";
         if (info.IsNested)
         {
-            foreach (string containingType in info.ContainingTypeChain.Split('.'))
+            containingTypes = info.ContainingTypeChain.Split('.');
+            foreach (string containingType in containingTypes)
             {
                 sb.AppendLine($"{indent}partial class {containingType}");
                 sb.AppendLine($"{indent}{{");
@@ -91,7 +93,6 @@ internal static class SourceBuilder
         // Close nested classes
         if (info.IsNested)
         {
-            string[] containingTypes = info.ContainingTypeChain.Split('.');
             for (int i = containingTypes.Length - 1; i >= 0; i--)
             {
                 indent = new string(' ', i * 4);
@@ -134,20 +135,17 @@ internal static class SourceBuilder
             // Multiple handlers: chain fluent calls, semicolon only on the last one.
             sb.AppendLine($"{bodyIndent}return routeBuilder");
 
+            int lastHandlerIndex = info.Handlers.Length - 1;
             for (int i = 0; i < info.Handlers.Length; i++)
             {
                 HandlerInfo handler = info.Handlers[i];
 
                 sb.Append($"{bodyIndent}    .AddHandler");
                 AppendHandlerGenericArgs(sb, handler);
-                sb.Append($"(this.{handler.MethodName})");
-                sb.AppendLine();
+                sb.AppendLine(i == lastHandlerIndex
+                    ? $"(this.{handler.MethodName});"
+                    : $"(this.{handler.MethodName})");
             }
-
-            // Remove last newline without using that System.Environment which is banned from use in analyzers
-            var newLineLength = new StringBuilder().AppendLine().Length;
-            sb.Remove(sb.Length - newLineLength, newLineLength);
-            sb.AppendLine(";");
         }
 
         sb.AppendLine($"{indent}}}");
@@ -182,19 +180,26 @@ internal static class SourceBuilder
         sb.AppendLine($"{indent}{{");
 
         string bodyIndent = indent + "    ";
+        var addedTypes = new HashSet<string>();
 
         sb.AppendLine($"{bodyIndent}var types = base.ConfigureSentTypes();");
 
         foreach (var type in info.ClassSendTypes)
         {
-            sb.AppendLine($"{bodyIndent}types.Add(typeof({type}));");
+            if (addedTypes.Add(type))
+            {
+                sb.AppendLine($"{bodyIndent}types.Add(typeof({type}));");
+            }
         }
 
         foreach (var handler in info.Handlers)
         {
             foreach (var type in handler.SendTypes)
             {
-                sb.AppendLine($"{bodyIndent}types.Add(typeof({type}));");
+                if (addedTypes.Add(type))
+                {
+                    sb.AppendLine($"{bodyIndent}types.Add(typeof({type}));");
+                }
             }
         }
 
