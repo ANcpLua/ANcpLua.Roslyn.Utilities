@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 
-namespace ANcpLua.Roslyn.Utilities.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
 
 /// <summary>
 ///     Common data classifications for structured logging redaction.
@@ -136,12 +136,15 @@ public sealed class HashingRedactor : Redactor
         _prefix = prefix;
     }
 
-    public override int GetRedactedLength(ReadOnlySpan<char> input) => _prefix.Length + _hashLength;
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
+    {
+        return _prefix.Length + _hashLength;
+    }
 
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
         var byteCount = Encoding.UTF8.GetByteCount(source);
-        Span<byte> bytes = byteCount <= 256 ? stackalloc byte[byteCount] : new byte[byteCount];
+        var bytes = byteCount <= 256 ? stackalloc byte[byteCount] : new byte[byteCount];
         Encoding.UTF8.GetBytes(source, bytes);
         var hash = SHA256.HashData(bytes);
         var hashString = Convert.ToHexString(hash)[.._hashLength];
@@ -160,7 +163,10 @@ public sealed class ErasingRedactor : Redactor
 {
     private const string Replacement = "[REDACTED]";
 
-    public override int GetRedactedLength(ReadOnlySpan<char> input) => Replacement.Length;
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
+    {
+        return Replacement.Length;
+    }
 
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
@@ -174,7 +180,10 @@ public sealed class ErasingRedactor : Redactor
 /// </summary>
 public sealed class NullRedactor : Redactor
 {
-    public override int GetRedactedLength(ReadOnlySpan<char> input) => input.Length;
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
+    {
+        return input.Length;
+    }
 
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
@@ -188,8 +197,8 @@ public sealed class NullRedactor : Redactor
 /// </summary>
 public sealed class PartialMaskRedactor : Redactor
 {
-    private readonly int _visibleChars;
     private readonly char _maskChar;
+    private readonly int _visibleChars;
 
     public PartialMaskRedactor(int visibleChars = 4, char maskChar = '*')
     {
@@ -197,7 +206,10 @@ public sealed class PartialMaskRedactor : Redactor
         _maskChar = maskChar;
     }
 
-    public override int GetRedactedLength(ReadOnlySpan<char> input) => input.Length;
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
+    {
+        return input.Length;
+    }
 
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {

@@ -2,21 +2,22 @@
 
 **Core utilities for Roslyn analyzers and source generators.** Target: `netstandard2.0`.
 
-This is the SOURCE OF TRUTH for Roslyn helpers. Before writing ANY utility code in downstream projects (ErrorOrX, ANcpLua.Analyzers, qyl), check this library first.
+This is the SOURCE OF TRUTH for Roslyn helpers. Before writing ANY utility code in downstream projects (ErrorOrX,
+ANcpLua.Analyzers, qyl), check this library first.
 
 ---
 
 ## Quick Reference
 
-| Category | Key Types |
-|----------|-----------|
-| **Flow Control** | `DiagnosticFlow<T>`, `Result<T>` |
-| **Pattern Matching** | `Match.*`, `Invoke.*` |
-| **Validation** | `Guard`, `SemanticGuard<T>` |
-| **Contexts** | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
-| **Code Generation** | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder` |
-| **Caching** | `EquatableArray<T>`, `DiagnosticInfo`, `LocationInfo` |
-| **Analyzer Infrastructure** | `DiagnosticAnalyzerBase`, `CodeFixProviderBase<T>` |
+| Category                    | Key Types                                                                     |
+|-----------------------------|-------------------------------------------------------------------------------|
+| **Flow Control**            | `DiagnosticFlow<T>`, `Result<T>`                                              |
+| **Pattern Matching**        | `Match.*`, `Invoke.*`                                                         |
+| **Validation**              | `Guard`, `SemanticGuard<T>`                                                   |
+| **Contexts**                | `AwaitableContext`, `AspNetContext`, `DisposableContext`, `CollectionContext` |
+| **Code Generation**         | `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`         |
+| **Caching**                 | `EquatableArray<T>`, `DiagnosticInfo`, `LocationInfo`                         |
+| **Analyzer Infrastructure** | `DiagnosticAnalyzerBase`, `CodeFixProviderBase<T>`                            |
 
 ---
 
@@ -106,7 +107,8 @@ Result.Try(() => Parse(input), ex => new Error("parse", ex.Message))
 
 ### Match.* DSL (fluent symbol matching)
 
-**⚠️ IMPORTANT:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern using factory methods.
+**⚠️ IMPORTANT:** Matchers mutate `this` when chaining. Create new matchers for each distinct pattern using factory
+methods.
 
 ```csharp
 // Method matching
@@ -581,7 +583,8 @@ invocation.IsNullConditionalAccess()
 
 ## Domain Contexts
 
-**Note:** Context classes cache well-known type symbols from a `Compilation` for efficient repeated lookups. Create one context per compilation and reuse it for multiple checks.
+**Note:** Context classes cache well-known type symbols from a `Compilation` for efficient repeated lookups. Create one
+context per compilation and reuse it for multiple checks.
 
 ### AwaitableContext
 
@@ -920,6 +923,7 @@ public class MyCodeFix : CodeFixProviderBase<InvocationExpressionSyntax>
 ```
 
 **Features:**
+
 - Automatic `FixAllProvider` (BatchFixer)
 - Null-safe semantic model handling
 - Returns original document if Transform returns null or same node
@@ -961,15 +965,15 @@ new ResultWithDiagnostics<T>(result, diagnostics)
 
 Each helper file answers ONE question. Use this guide to pick the right tool:
 
-| File | Philosophy | When to Use |
-|------|------------|-------------|
-| **Guard.cs** | "Validate or throw. Provide defensive fallbacks." | Argument validation, fail-fast preconditions |
-| **NullableExtensions.cs** | "Functional transformation of nullable values" | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or` |
-| **ObjectExtensions.cs** | "What type is this? Cast it safely." | Safe casting (`As<T>`), type checking (`Is<T>`), reflection |
-| **TryExtensions.cs** | "Parse or lookup, get null on failure" | `TryParse*` methods, dictionary access, collection indexing |
-| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics" | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
-| **ReflectionExtensions.cs** | "Invoke without TIE wrapping, find generic methods" | Runtime dispatch, handler tables, type-erased invocation |
-| **RuntimeTypeExtensions.cs** | "What async/generic shape is this runtime Type?" | Handler registries, middleware, open generic interface scanning |
+| File                              | Philosophy                                          | When to Use                                                         |
+|-----------------------------------|-----------------------------------------------------|---------------------------------------------------------------------|
+| **Guard.cs**                      | "Validate or throw. Provide defensive fallbacks."   | Argument validation, fail-fast preconditions                        |
+| **NullableExtensions.cs**         | "Functional transformation of nullable values"      | LINQ-style chaining, pipelines, `Select`/`Where`/`Do`/`Or`          |
+| **ObjectExtensions.cs**           | "What type is this? Cast it safely."                | Safe casting (`As<T>`), type checking (`Is<T>`), reflection         |
+| **TryExtensions.cs**              | "Parse or lookup, get null on failure"              | `TryParse*` methods, dictionary access, collection indexing         |
+| **StringComparisonExtensions.cs** | "Compare strings with explicit semantics"           | `EqualsOrdinal`, `IndexOfOrdinal`, `ContainsIgnoreCase`, `HasValue` |
+| **ReflectionExtensions.cs**       | "Invoke without TIE wrapping, find generic methods" | Runtime dispatch, handler tables, type-erased invocation            |
+| **RuntimeTypeExtensions.cs**      | "What async/generic shape is this runtime Type?"    | Handler registries, middleware, open generic interface scanning     |
 
 ### Guard vs NullableExtensions
 

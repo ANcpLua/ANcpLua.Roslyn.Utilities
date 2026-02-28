@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 using InvalidOperationException = System.InvalidOperationException;
@@ -5,8 +10,9 @@ using InvalidOperationException = System.InvalidOperationException;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Provides extension methods for <see cref="IncrementalValuesProvider{TValues}" /> and
-///     <see cref="IncrementalValueProvider{TValue}" /> to simplify common operations in incremental source generators.
+///     Provides extension methods for <see cref="Microsoft.CodeAnalysis.IncrementalValuesProvider{TValues}" /> and
+///     <see cref="Microsoft.CodeAnalysis.IncrementalValueProvider{TValue}" /> to simplify common operations in incremental
+///     source generators.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -29,8 +35,8 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="IncrementalValuesProvider{TValues}" />
-/// <seealso cref="IncrementalValueProvider{TValue}" />
+/// <seealso cref="Microsoft.CodeAnalysis.IncrementalValuesProvider{TValues}" />
+/// <seealso cref="Microsoft.CodeAnalysis.IncrementalValueProvider{TValue}" />
 /// <seealso cref="DiagnosticFlow{T}" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
@@ -196,26 +202,25 @@ internal
         string id = "SRE001")
     {
         var outputWithErrors = source
-            .Select<TSource, (TResult? Value, Exception? Exception)>((value, cancellationToken) =>
+            .Select((value, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: null);
+                    return (Value: selector(value, cancellationToken), Exception: (Exception?)null);
                 }
                 catch (Exception exception)
                 {
-                    return (Value: default, Exception: exception);
+                    return (Value: default(TResult), Exception: (Exception?)exception);
                 }
             });
 
         initializationContext.RegisterSourceOutput(outputWithErrors,
             (context, tuple) =>
             {
-                if (tuple.Exception is null) return;
-
-                context.ReportException(id, tuple.Exception);
+                if (tuple.Exception is not null)
+                    context.ReportException(id, tuple.Exception);
             });
 
         return outputWithErrors
@@ -369,17 +374,17 @@ internal
         string id = "SRE001")
     {
         var outputWithErrors = source
-            .Select<TSource, (TResult? Value, Exception? Exception)>((value, cancellationToken) =>
+            .Select((value, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: null);
+                    return (Value: selector(value, cancellationToken), Exception: (Exception?)null);
                 }
                 catch (Exception exception)
                 {
-                    return (Value: default, Exception: exception);
+                    return (Value: default(TResult), Exception: (Exception?)exception);
                 }
             });
 
@@ -558,24 +563,30 @@ internal
         TRight>(
         this IncrementalValuesProvider<TLeft> left,
         IncrementalValueProvider<TRight> right)
-        where TLeft : IEquatable<TLeft> =>
-        left.CollectAsEquatableArray().Combine(right);
+        where TLeft : IEquatable<TLeft>
+    {
+        return left.CollectAsEquatableArray().Combine(right);
+    }
 
     /// <summary>
     ///     Expressive alias for <c>IncrementalValueProvider.Combine</c>.
     /// </summary>
     public static IncrementalValueProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
         this IncrementalValueProvider<TLeft> left,
-        IncrementalValueProvider<TRight> right) =>
-        left.Combine(right);
+        IncrementalValueProvider<TRight> right)
+    {
+        return left.Combine(right);
+    }
 
     /// <summary>
     ///     Expressive alias for <c>IncrementalValuesProvider.Combine</c>.
     /// </summary>
     public static IncrementalValuesProvider<(TLeft Left, TRight Right)> CombineWith<TLeft, TRight>(
         this IncrementalValuesProvider<TLeft> left,
-        IncrementalValueProvider<TRight> right) =>
-        left.Combine(right);
+        IncrementalValueProvider<TRight> right)
+    {
+        return left.Combine(right);
+    }
 
     /// <summary>
     ///     Splits values into batches of a specified size.

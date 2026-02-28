@@ -32,7 +32,7 @@
     -->
     <Target Name="_PackPolyfillSources" BeforeTargets="_GetPackageFiles">
         <ItemGroup>
-            <_PolyfillFiles Include="../ANcpLua.Roslyn.Utilities/Polyfills/**/*.cs" />
+            <_PolyfillFiles Include="../ANcpLua.Roslyn.Utilities/Polyfills/**/*.cs"/>
             <Content Include="@(_PolyfillFiles)"
                      PackagePath="contentFiles/cs/any/ANcpLua.Roslyn.Utilities.Polyfills/%(RecursiveDir)%(Filename)%(Extension)"
                      Pack="true"

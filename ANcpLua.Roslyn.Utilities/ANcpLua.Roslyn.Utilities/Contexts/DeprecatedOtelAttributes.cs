@@ -1,6 +1,9 @@
 // This file contains deprecated attribute names as dictionary keys - they're needed
 // for analyzers to detect these deprecated attributes in user code.
 
+using System;
+using System.Collections.Generic;
+
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
 /// <summary>
@@ -13,7 +16,7 @@ namespace ANcpLua.Roslyn.Utilities.Contexts;
 ///         <see href="https://opentelemetry.io/docs/specs/semconv/" />
 ///     </para>
 ///     <para>
-///         <b>Last Synchronized:</b> December 2025 (Schema v1.38.0)
+///         <b>Last Synchronized:</b> February 2026 (Schema v1.40.0)
 ///     </para>
 ///     <para>
 ///         <b>How to Update:</b>
@@ -35,7 +38,8 @@ internal
     ///     Deprecated attribute names mapped to replacements.
     /// </summary>
     public static readonly Dictionary<string, (string Replacement, string Version)> Renames =
-        new() {
+        new()
+        {
             ["gen_ai.system"] = ("gen_ai.provider.name", "1.37.0"),
             ["gen_ai.usage.prompt_tokens"] = ("gen_ai.usage.input_tokens", "1.27.0"),
             ["gen_ai.usage.completion_tokens"] = ("gen_ai.usage.output_tokens", "1.27.0"),
@@ -63,14 +67,34 @@ internal
             ["faas.execution"] = ("faas.invocation_id", "1.19.0"),
             ["faas.id"] = ("cloud.resource_id", "1.19.0"),
             ["messaging.kafka.client_id"] = ("messaging.client.id", "1.21.0"),
-            ["messaging.rocketmq.client_id"] = ("messaging.client.id", "1.21.0")
+            ["messaging.rocketmq.client_id"] = ("messaging.client.id", "1.21.0"),
+
+            // v1.39.0 deprecations
+            ["peer.service"] = ("service.peer.name", "1.39.0"),
+            ["process.open_file_descriptor.count"] = ("process.unix.file_descriptor.count", "1.39.0"),
+            ["rpc.client.duration"] = ("rpc.client.call.duration", "1.39.0"),
+            ["rpc.server.duration"] = ("rpc.server.call.duration", "1.39.0"),
+            ["rpc.grpc.request.metadata"] = ("rpc.request.metadata", "1.39.0"),
+            ["rpc.grpc.response.metadata"] = ("rpc.response.metadata", "1.39.0"),
+            ["rpc.connect_rpc.request.metadata"] = ("rpc.request.metadata", "1.39.0"),
+            ["rpc.connect_rpc.response.metadata"] = ("rpc.response.metadata", "1.39.0"),
+            ["rpc.grpc.status_code"] = ("rpc.response.status_code", "1.39.0"),
+            ["rpc.connect_rpc.error_code"] = ("rpc.response.status_code", "1.39.0"),
+            ["rpc.jsonrpc.error_code"] = ("rpc.response.status_code", "1.39.0"),
+
+            // v1.40.0 deprecations
+            ["rpc.system"] = ("rpc.system.name", "1.40.0"),
+            ["rpc.jsonrpc.request_id"] = ("jsonrpc.request.id", "1.40.0"),
+            ["rpc.jsonrpc.version"] = ("jsonrpc.protocol.version", "1.40.0"),
+            ["system.memory.shared"] = ("system.memory.linux.shared", "1.40.0")
         };
 
     /// <summary>
     ///     Known attribute key patterns used in OpenTelemetry APIs.
     /// </summary>
     public static readonly HashSet<string> AttributeKeyPatterns =
-        new(StringComparer.OrdinalIgnoreCase) {
+        new(StringComparer.OrdinalIgnoreCase)
+        {
             "SetAttribute",
             "AddTag",
             "SetTag",

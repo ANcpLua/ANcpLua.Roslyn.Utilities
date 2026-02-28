@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
@@ -68,7 +69,7 @@ internal static class ReportFormatter
         }
 
         var diagnostics = run.Results.SelectMany(static r => r.Diagnostics).ToList();
-        sb.AppendLine($"─── DIAGNOSTICS ({diagnostics.Count}) ───");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"─── DIAGNOSTICS ({diagnostics.Count}) ───");
         if (diagnostics.Count is 0)
             sb.AppendLine("  (none)");
         else
@@ -78,12 +79,12 @@ internal static class ReportFormatter
         sb.AppendLine();
 
         var outputs = run.Results.SelectMany(static r => r.GeneratedSources).ToList();
-        sb.AppendLine($"─── GENERATED OUTPUTS ({outputs.Count}) ───");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"─── GENERATED OUTPUTS ({outputs.Count}) ───");
         if (outputs.Count is 0)
             sb.AppendLine("  ⚠ No files generated");
         else
             foreach (var output in outputs)
-                sb.AppendLine($"  📄 {output.HintName} ({output.SourceText.Length} chars)");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"  📄 {output.HintName} ({output.SourceText.Length} chars)");
 
         return sb.ToString().TrimEnd();
     }
@@ -121,7 +122,7 @@ internal static class ReportFormatter
     {
         StringBuilder sb = new();
         sb.AppendLine();
-        sb.AppendLine($"Content mismatch in '{hintName}' ({(exactMatch ? "exact" : "contains")} match)");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Content mismatch in '{hintName}' ({(exactMatch ? "exact" : "contains")} match)");
         sb.AppendLine();
 
         if (exactMatch)
@@ -135,8 +136,8 @@ internal static class ReportFormatter
         }
         else
         {
-            sb.AppendLine($"Expected to find: \"{Truncate(expected, 100)}\"");
-            sb.AppendLine($"In content of {actual.Length} characters");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"Expected to find: \"{Truncate(expected, 100)}\"");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"In content of {actual.Length} characters");
         }
 
         return sb.ToString();
@@ -265,7 +266,10 @@ internal static class ReportFormatter
     /// <param name="s">The string to truncate.</param>
     /// <param name="max">The maximum length before truncation.</param>
     /// <returns>The original string if within limit, otherwise truncated with "..." appended.</returns>
-    private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max] + "...";
+    private static string Truncate(string s, int max)
+    {
+        return s.Length <= max ? s : s[..max] + "...";
+    }
 }
 
 /// <summary>
@@ -311,9 +315,9 @@ internal static class ViolationFormatter
         StringBuilder sb = new();
         foreach (var group in violations.GroupBy(static v => v.StepName))
         {
-            sb.AppendLine($"  Step '{group.Key}':");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  Step '{group.Key}':");
             foreach (var v in group)
-                sb.AppendLine($"    ✗ {v.ForbiddenType.Name} at {v.Path}");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"    ✗ {v.ForbiddenType.Name} at {v.Path}");
         }
 
         return sb.ToString();
@@ -353,11 +357,11 @@ internal static class ViolationFormatter
     public static string FormatIssueBlock(int issueNumber, IGrouping<string, ForbiddenTypeViolation> group)
     {
         StringBuilder sb = new();
-        sb.AppendLine($"--- ISSUE {issueNumber} (CRITICAL): Forbidden Type Cached in '{group.Key}' ---");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"--- ISSUE {issueNumber} (CRITICAL): Forbidden Type Cached in '{group.Key}' ---");
         sb.AppendLine("  Detail: Caching ISymbol/Compilation/SyntaxNode causes IDE performance degradation.");
         sb.AppendLine("  Recommendation: Store only simple, equatable data (prefer 'record').");
         foreach (var violation in group)
-            sb.AppendLine($"    - {violation.ForbiddenType.FullName} at {violation.Path}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"    - {violation.ForbiddenType.FullName} at {violation.Path}");
         sb.AppendLine();
         return sb.ToString();
     }

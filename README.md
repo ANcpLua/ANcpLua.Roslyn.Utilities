@@ -11,12 +11,12 @@ Utilities for Roslyn analyzers and source generators.
 
 ## Packages
 
-| Package | Purpose |
-|---------|---------|
-| `ANcpLua.Roslyn.Utilities` | Core utilities (DLL reference) |
-| `ANcpLua.Roslyn.Utilities.Sources` | Source-only package (embeds as `internal` in analyzers/generators) |
-| `ANcpLua.Roslyn.Utilities.Polyfills` | Source-only polyfills for `netstandard2.0` (no Roslyn dependency) |
-| `ANcpLua.Roslyn.Utilities.Testing` | Testing framework for Roslyn tooling |
+| Package                              | Purpose                                                            |
+|--------------------------------------|--------------------------------------------------------------------|
+| `ANcpLua.Roslyn.Utilities`           | Core utilities (DLL reference)                                     |
+| `ANcpLua.Roslyn.Utilities.Sources`   | Source-only package (embeds as `internal` in analyzers/generators) |
+| `ANcpLua.Roslyn.Utilities.Polyfills` | Source-only polyfills for `netstandard2.0` (no Roslyn dependency)  |
+| `ANcpLua.Roslyn.Utilities.Testing`   | Testing framework for Roslyn tooling                               |
 
 ## Installation
 
@@ -38,15 +38,15 @@ dotnet add package ANcpLua.Roslyn.Utilities.Testing
 
 The `.Polyfills` and `.Sources` packages include polyfills for modern C# features on `netstandard2.0`:
 
-| Polyfill | What it enables | Opt-out property |
-|----------|-----------------|------------------|
-| `Index` / `Range` | `array[^1]`, `array[1..3]` syntax | `InjectIndexRangeOnLegacy` |
-| `IsExternalInit` | `record` types and `init` properties | `InjectIsExternalInitOnLegacy` |
-| Nullable attributes | `[NotNull]`, `[MaybeNull]`, etc. | `InjectNullabilityAttributesOnLegacy` |
-| Trim/AOT attributes | `[RequiresUnreferencedCode]`, etc. | `InjectTrimAttributesOnLegacy` |
-| `TimeProvider` | Testable time abstraction | `InjectTimeProviderPolyfill` |
-| `Lock` | `System.Threading.Lock` polyfill | `InjectLockPolyfill` |
-| String extensions | `string.Contains(StringComparison)` | `InjectStringExtensionsPolyfill` |
+| Polyfill            | What it enables                      | Opt-out property                      |
+|---------------------|--------------------------------------|---------------------------------------|
+| `Index` / `Range`   | `array[^1]`, `array[1..3]` syntax    | `InjectIndexRangeOnLegacy`            |
+| `IsExternalInit`    | `record` types and `init` properties | `InjectIsExternalInitOnLegacy`        |
+| Nullable attributes | `[NotNull]`, `[MaybeNull]`, etc.     | `InjectNullabilityAttributesOnLegacy` |
+| Trim/AOT attributes | `[RequiresUnreferencedCode]`, etc.   | `InjectTrimAttributesOnLegacy`        |
+| `TimeProvider`      | Testable time abstraction            | `InjectTimeProviderPolyfill`          |
+| `Lock`              | `System.Threading.Lock` polyfill     | `InjectLockPolyfill`                  |
+| String extensions   | `string.Contains(StringComparison)`  | `InjectStringExtensionsPolyfill`      |
 
 All polyfills are enabled by default. Set any property to `false` to opt out, or disable all with:
 

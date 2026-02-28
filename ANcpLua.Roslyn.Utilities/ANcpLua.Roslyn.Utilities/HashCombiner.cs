@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -237,9 +241,15 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="HashCode" />
-    public readonly int ToHashCode() => HashCode;
+    public readonly int ToHashCode()
+    {
+        return HashCode;
+    }
 
-    private static uint RotateLeft(uint value, int bits) => value << bits | value >> 32 - bits;
+    private static uint RotateLeft(uint value, int bits)
+    {
+        return value << bits | value >> 32 - bits;
+    }
 }
 
 /// <summary>
@@ -288,7 +298,10 @@ internal
     /// </remarks>
     /// <seealso cref="ToEquatableArray{T}(ImmutableArray{T})" />
     /// <seealso cref="EquatableArray{T}" />
-    public static EquatableArray<T> ToEquatableArray<T>(this IEnumerable<T> source) where T : IEquatable<T> => source.ToImmutableArray().AsEquatableArray();
+    public static EquatableArray<T> ToEquatableArray<T>(this IEnumerable<T> source) where T : IEquatable<T>
+    {
+        return source.ToImmutableArray().AsEquatableArray();
+    }
 
     /// <summary>
     ///     Converts an immutable array to an <see cref="EquatableArray{T}" /> for value-based equality.
@@ -305,7 +318,10 @@ internal
     /// </remarks>
     /// <seealso cref="ToEquatableArray{T}(IEnumerable{T})" />
     /// <seealso cref="EquatableArray{T}" />
-    public static EquatableArray<T> ToEquatableArray<T>(this ImmutableArray<T> source) where T : IEquatable<T> => source.AsEquatableArray();
+    public static EquatableArray<T> ToEquatableArray<T>(this ImmutableArray<T> source) where T : IEquatable<T>
+    {
+        return source.AsEquatableArray();
+    }
 
     /// <summary>
     ///     Compares two immutable arrays for sequence equality using the default equality comparer.

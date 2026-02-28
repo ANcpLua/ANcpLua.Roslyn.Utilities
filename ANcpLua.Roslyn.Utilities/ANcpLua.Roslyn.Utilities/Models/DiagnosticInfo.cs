@@ -1,6 +1,7 @@
 // Copyright (c) ANcpLua. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Models;
@@ -54,7 +55,10 @@ internal
     /// <param name="token">The syntax token whose location will be used for the diagnostic.</param>
     /// <param name="arg0">The single argument to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0) => new(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxToken token, object? arg0)
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(token), new EquatableMessageArgs([arg0]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument from a syntax node.
@@ -63,7 +67,10 @@ internal
     /// <param name="node">The syntax node whose location will be used for the diagnostic.</param>
     /// <param name="arg0">The single argument to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0) => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, object? arg0)
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([arg0]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments from a syntax node.
@@ -72,7 +79,10 @@ internal
     /// <param name="node">The syntax node whose location will be used for the diagnostic.</param>
     /// <param name="args">The arguments to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args) => new(descriptor, LocationInfo.From(node), new EquatableMessageArgs([..args]));
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, SyntaxNode node, params object?[] args)
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(node), new EquatableMessageArgs([..args]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with no arguments from a location.
@@ -80,7 +90,10 @@ internal
     /// <param name="descriptor">The diagnostic descriptor defining the diagnostic metadata.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance with empty message arguments.</returns>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location) => new(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location)
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(location), EquatableMessageArgs.Empty);
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with multiple arguments from a location.
@@ -89,7 +102,10 @@ internal
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="args">The arguments to format into the diagnostic message.</param>
     /// <returns>A new <see cref="DiagnosticInfo" /> instance.</returns>
-    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location, params object?[] args) => new(descriptor, LocationInfo.From(location), new EquatableMessageArgs([..args]));
+    public static DiagnosticInfo Create(DiagnosticDescriptor descriptor, Location location, params object?[] args)
+    {
+        return new DiagnosticInfo(descriptor, LocationInfo.From(location), new EquatableMessageArgs([..args]));
+    }
 
     /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> from a symbol with multiple arguments.
@@ -119,8 +135,10 @@ internal
     ///     A <see cref="Diagnostic" /> instance that can be reported via
     ///     <see cref="SourceProductionContext.ReportDiagnostic(Diagnostic)" /> or similar methods.
     /// </returns>
-    public Diagnostic ToDiagnostic() =>
-        MessageArgs.IsEmpty
+    public Diagnostic ToDiagnostic()
+    {
+        return MessageArgs.IsEmpty
             ? Diagnostic.Create(Descriptor, Location.ToLocation())
             : Diagnostic.Create(Descriptor, Location.ToLocation(), [.. MessageArgs.Args]);
+    }
 }

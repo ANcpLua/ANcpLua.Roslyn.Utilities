@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -10,10 +11,18 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         Method naming mirrors <see cref="DiagnosticFlow{T}" /> for consistency:
 ///     </para>
 ///     <list type="bullet">
-///         <item><description><see cref="Select{T,TNext}" /> — transforms the value (map).</description></item>
-///         <item><description><see cref="Then{T,TNext}" /> — chains a result-producing function (bind).</description></item>
-///         <item><description><see cref="Where{T}" /> — filters with a predicate.</description></item>
-///         <item><description><see cref="Tap{T}(Result{T},Action{T})" /> — executes a side effect.</description></item>
+///         <item>
+///             <description><see cref="Select{T,TNext}" /> — transforms the value (map).</description>
+///         </item>
+///         <item>
+///             <description><see cref="Then{T,TNext}" /> — chains a result-producing function (bind).</description>
+///         </item>
+///         <item>
+///             <description><see cref="Where{T}" /> — filters with a predicate.</description>
+///         </item>
+///         <item>
+///             <description><see cref="Tap{T}(Result{T},Action{T})" /> — executes a side effect.</description>
+///         </item>
 ///     </list>
 /// </remarks>
 #if ANCPLUA_ROSLYN_PUBLIC
@@ -24,12 +33,16 @@ internal
     static class ResultExtensions
 {
     /// <summary>Transforms the value if successful (map).</summary>
-    public static Result<TNext> Select<T, TNext>(this Result<T> result, Func<T, TNext> selector) =>
-        result.IsOk ? Result<TNext>.Ok(selector(result.Value)) : Result<TNext>.Fail(result.Error);
+    public static Result<TNext> Select<T, TNext>(this Result<T> result, Func<T, TNext> selector)
+    {
+        return result.IsOk ? Result<TNext>.Ok(selector(result.Value)) : Result<TNext>.Fail(result.Error);
+    }
 
     /// <summary>Chains a result-producing function if successful (bind/flatMap).</summary>
-    public static Result<TNext> Then<T, TNext>(this Result<T> result, Func<T, Result<TNext>> next) =>
-        result.IsOk ? next(result.Value) : Result<TNext>.Fail(result.Error);
+    public static Result<TNext> Then<T, TNext>(this Result<T> result, Func<T, Result<TNext>> next)
+    {
+        return result.IsOk ? next(result.Value) : Result<TNext>.Fail(result.Error);
+    }
 
     /// <summary>Executes a side effect if successful, returning the original result.</summary>
     public static Result<T> Tap<T>(this Result<T> result, Action<T> action)
@@ -39,16 +52,22 @@ internal
     }
 
     /// <summary>Filters the result, failing if the predicate returns <c>false</c>.</summary>
-    public static Result<T> Where<T>(this Result<T> result, Func<T, bool> predicate, Error errorIfFalse) =>
-        result.IsOk && !predicate(result.Value) ? Result<T>.Fail(errorIfFalse) : result;
+    public static Result<T> Where<T>(this Result<T> result, Func<T, bool> predicate, Error errorIfFalse)
+    {
+        return result.IsOk && !predicate(result.Value) ? Result<T>.Fail(errorIfFalse) : result;
+    }
 
     /// <summary>Gets the value or a fallback if failed.</summary>
-    public static T ValueOr<T>(this Result<T> result, T fallback) =>
-        result.IsOk ? result.Value : fallback;
+    public static T ValueOr<T>(this Result<T> result, T fallback)
+    {
+        return result.IsOk ? result.Value : fallback;
+    }
 
     /// <summary>Gets the value or computes a fallback from the error.</summary>
-    public static T ValueOr<T>(this Result<T> result, Func<Error, T> fallback) =>
-        result.IsOk ? result.Value : fallback(result.Error);
+    public static T ValueOr<T>(this Result<T> result, Func<Error, T> fallback)
+    {
+        return result.IsOk ? result.Value : fallback(result.Error);
+    }
 
     // ── Async extensions ─────────────────────────────────────────────
 

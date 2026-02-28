@@ -23,24 +23,30 @@ internal
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is ArgumentNullException; otherwise, <c>false</c>.</returns>
-    public static bool IsArgumentNullException(ITypeSymbol? type) =>
-        type?.ToDisplayString() is "System.ArgumentNullException" or "ArgumentNullException";
+    public static bool IsArgumentNullException(ITypeSymbol? type)
+    {
+        return type?.ToDisplayString() is "System.ArgumentNullException" or "ArgumentNullException";
+    }
 
     /// <summary>
     ///     Determines whether the type represents <see cref="System.ArgumentException" />.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is ArgumentException; otherwise, <c>false</c>.</returns>
-    public static bool IsArgumentException(ITypeSymbol? type) =>
-        type?.ToDisplayString() is "System.ArgumentException" or "ArgumentException";
+    public static bool IsArgumentException(ITypeSymbol? type)
+    {
+        return type?.ToDisplayString() is "System.ArgumentException" or "ArgumentException";
+    }
 
     /// <summary>
     ///     Determines whether the type represents <see cref="System.ArgumentOutOfRangeException" />.
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is ArgumentOutOfRangeException; otherwise, <c>false</c>.</returns>
-    public static bool IsArgumentOutOfRangeException(ITypeSymbol? type) =>
-        type?.ToDisplayString() is "System.ArgumentOutOfRangeException" or "ArgumentOutOfRangeException";
+    public static bool IsArgumentOutOfRangeException(ITypeSymbol? type)
+    {
+        return type?.ToDisplayString() is "System.ArgumentOutOfRangeException" or "ArgumentOutOfRangeException";
+    }
 
     /// <summary>
     ///     Determines whether the type represents any argument exception type
@@ -48,6 +54,8 @@ internal
     /// </summary>
     /// <param name="type">The type symbol to check.</param>
     /// <returns><c>true</c> if the type is any argument exception; otherwise, <c>false</c>.</returns>
-    public static bool IsAnyArgumentException(ITypeSymbol? type) =>
-        IsArgumentException(type) || IsArgumentNullException(type) || IsArgumentOutOfRangeException(type);
+    public static bool IsAnyArgumentException(ITypeSymbol? type)
+    {
+        return IsArgumentException(type) || IsArgumentNullException(type) || IsArgumentOutOfRangeException(type);
+    }
 }

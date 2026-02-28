@@ -1,3 +1,7 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -63,7 +67,9 @@ internal
     /// </example>
     /// <seealso cref="EqualsIgnoreCase" />
     public static bool EqualsOrdinal(this string? value, string? other)
-        => string.Equals(value, other, StringComparison.Ordinal);
+    {
+        return string.Equals(value, other, StringComparison.Ordinal);
+    }
 
     /// <summary>
     ///     Determines whether this string equals another using case-insensitive ordinal comparison.
@@ -90,7 +96,9 @@ internal
     /// </example>
     /// <seealso cref="EqualsOrdinal" />
     public static bool EqualsIgnoreCase(this string? value, string? other)
-        => string.Equals(value, other, StringComparison.OrdinalIgnoreCase);
+    {
+        return string.Equals(value, other, StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     ///     Determines whether this string equals any of the specified values using ordinal comparison.
@@ -592,7 +600,9 @@ internal
     /// <seealso cref="IsNullOrWhiteSpace" />
     /// <seealso cref="HasValue" />
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value)
-        => string.IsNullOrEmpty(value);
+    {
+        return string.IsNullOrEmpty(value);
+    }
 
     /// <summary>
     ///     Determines whether this string is <c>null</c>, empty, or consists only of white-space characters.
@@ -613,7 +623,9 @@ internal
     /// <seealso cref="IsNullOrEmpty" />
     /// <seealso cref="HasContent" />
     public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value)
-        => string.IsNullOrWhiteSpace(value);
+    {
+        return string.IsNullOrWhiteSpace(value);
+    }
 
     /// <summary>
     ///     Determines whether this string is not <c>null</c> and not empty.
@@ -636,7 +648,9 @@ internal
     /// <seealso cref="IsNullOrEmpty" />
     /// <seealso cref="HasContent" />
     public static bool HasValue([NotNullWhen(true)] this string? value)
-        => !string.IsNullOrEmpty(value);
+    {
+        return !string.IsNullOrEmpty(value);
+    }
 
     /// <summary>
     ///     Determines whether this string has meaningful content (not null, not empty, not just whitespace).
@@ -662,7 +676,9 @@ internal
     /// <seealso cref="IsNullOrWhiteSpace" />
     /// <seealso cref="HasValue" />
     public static bool HasContent([NotNullWhen(true)] this string? value)
-        => !string.IsNullOrWhiteSpace(value);
+    {
+        return !string.IsNullOrWhiteSpace(value);
+    }
 
     /// <summary>
     ///     Returns <c>null</c> if the string is empty, otherwise returns the string.
@@ -684,7 +700,9 @@ internal
     /// </example>
     /// <seealso cref="NullIfWhiteSpace" />
     public static string? NullIfEmpty(this string? value)
-        => string.IsNullOrEmpty(value) ? null : value;
+    {
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
 
     /// <summary>
     ///     Returns <c>null</c> if the string is empty or whitespace, otherwise returns the string.
@@ -701,7 +719,9 @@ internal
     /// </example>
     /// <seealso cref="NullIfEmpty" />
     public static string? NullIfWhiteSpace(this string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value;
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
 
     // ========== Truncation ==========
 

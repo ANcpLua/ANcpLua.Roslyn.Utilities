@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -95,7 +98,9 @@ internal
     /// <seealso cref="GetOrDefault{TKey,TValue}(IDictionary{TKey,TValue},TKey,TValue)" />
     public static TValue? GetOrNull<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         where TValue : class
-        => dictionary.TryGetValue(key, out var value) ? value : null;
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : null;
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or <c>null</c> if not found.
@@ -110,7 +115,9 @@ internal
     /// <seealso cref="GetOrNull{TKey,TValue}(IDictionary{TKey,TValue},TKey)" />
     public static TValue? GetOrNull<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key)
         where TValue : class
-        => dictionary.TryGetValue(key, out var value) ? value : null;
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : null;
+    }
 
     // ========== Dictionary Extensions (Value Types) ==========
 
@@ -133,7 +140,9 @@ internal
     /// </example>
     public static TValue? GetValueOrNull<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         where TValue : struct
-        => dictionary.TryGetValue(key, out var value) ? value : null;
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : null;
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or <c>null</c> if not found.
@@ -148,7 +157,9 @@ internal
     /// </returns>
     public static TValue? GetValueOrNull<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key)
         where TValue : struct
-        => dictionary.TryGetValue(key, out var value) ? value : null;
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : null;
+    }
 
     // ========== Dictionary Extensions (Default Value) ==========
 
@@ -171,8 +182,11 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="GetOrNull{TKey,TValue}(IDictionary{TKey,TValue},TKey)" />
-    public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
-        => dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+    public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
+        TValue defaultValue)
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or a default value if not found.
@@ -186,8 +200,11 @@ internal
     ///     The value associated with <paramref name="key" /> if found;
     ///     otherwise, <paramref name="defaultValue" />.
     /// </returns>
-    public static TValue GetOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
-        => dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+    public static TValue GetOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key,
+        TValue defaultValue)
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or computes a default using a factory if not found.
@@ -212,8 +229,11 @@ internal
     /// var config = cache.GetOrElse(key, () => LoadExpensiveConfig());
     /// </code>
     /// </example>
-    public static TValue GetOrElse<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
-        => dictionary.TryGetValue(key, out var value) ? value : factory();
+    public static TValue GetOrElse<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
+        Func<TValue> factory)
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : factory();
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or computes a default using a factory if not found.
@@ -227,8 +247,11 @@ internal
     ///     The value associated with <paramref name="key" /> if found;
     ///     otherwise, the result of <paramref name="factory" />.
     /// </returns>
-    public static TValue GetOrElse<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
-        => dictionary.TryGetValue(key, out var value) ? value : factory();
+    public static TValue GetOrElse<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key,
+        Func<TValue> factory)
+    {
+        return dictionary.TryGetValue(key, out var value) ? value : factory();
+    }
 
     // ========== 8-bit Integer Parsing ==========
 
@@ -238,7 +261,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed byte if successful; otherwise, <c>null</c>.</returns>
     public static byte? TryParseByte(this string? value)
-        => byte.TryParse(value, out var result) ? result : null;
+    {
+        return byte.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 8-bit integer, returning a default on failure.
@@ -247,7 +272,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed byte if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static byte TryParseByte(this string? value, byte defaultValue)
-        => byte.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return byte.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a signed 8-bit integer.
@@ -255,7 +282,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed sbyte if successful; otherwise, <c>null</c>.</returns>
     public static sbyte? TryParseSByte(this string? value)
-        => sbyte.TryParse(value, out var result) ? result : null;
+    {
+        return sbyte.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a signed 8-bit integer, returning a default on failure.
@@ -264,7 +293,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed sbyte if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static sbyte TryParseSByte(this string? value, sbyte defaultValue)
-        => sbyte.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return sbyte.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== 16-bit Integer Parsing ==========
 
@@ -274,7 +305,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed short if successful; otherwise, <c>null</c>.</returns>
     public static short? TryParseInt16(this string? value)
-        => short.TryParse(value, out var result) ? result : null;
+    {
+        return short.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a signed 16-bit integer, returning a default on failure.
@@ -283,7 +316,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed short if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static short TryParseInt16(this string? value, short defaultValue)
-        => short.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return short.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 16-bit integer.
@@ -291,7 +326,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed ushort if successful; otherwise, <c>null</c>.</returns>
     public static ushort? TryParseUInt16(this string? value)
-        => ushort.TryParse(value, out var result) ? result : null;
+    {
+        return ushort.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 16-bit integer, returning a default on failure.
@@ -300,7 +337,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed ushort if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static ushort TryParseUInt16(this string? value, ushort defaultValue)
-        => ushort.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return ushort.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== 32-bit Integer Parsing ==========
 
@@ -320,7 +359,9 @@ internal
     /// </code>
     /// </example>
     public static int? TryParseInt32(this string? value)
-        => int.TryParse(value, out var result) ? result : null;
+    {
+        return int.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a signed 32-bit integer, returning a default on failure.
@@ -334,7 +375,9 @@ internal
     /// </code>
     /// </example>
     public static int TryParseInt32(this string? value, int defaultValue)
-        => int.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return int.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 32-bit integer.
@@ -342,7 +385,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed uint if successful; otherwise, <c>null</c>.</returns>
     public static uint? TryParseUInt32(this string? value)
-        => uint.TryParse(value, out var result) ? result : null;
+    {
+        return uint.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 32-bit integer, returning a default on failure.
@@ -351,7 +396,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed uint if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static uint TryParseUInt32(this string? value, uint defaultValue)
-        => uint.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return uint.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== 64-bit Integer Parsing ==========
 
@@ -361,7 +408,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed long if successful; otherwise, <c>null</c>.</returns>
     public static long? TryParseInt64(this string? value)
-        => long.TryParse(value, out var result) ? result : null;
+    {
+        return long.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a signed 64-bit integer, returning a default on failure.
@@ -370,7 +419,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed long if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static long TryParseInt64(this string? value, long defaultValue)
-        => long.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return long.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 64-bit integer.
@@ -378,7 +429,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed ulong if successful; otherwise, <c>null</c>.</returns>
     public static ulong? TryParseUInt64(this string? value)
-        => ulong.TryParse(value, out var result) ? result : null;
+    {
+        return ulong.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an unsigned 64-bit integer, returning a default on failure.
@@ -387,7 +440,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed ulong if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static ulong TryParseUInt64(this string? value, ulong defaultValue)
-        => ulong.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return ulong.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== Floating-Point Parsing ==========
 
@@ -397,7 +452,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed float if successful; otherwise, <c>null</c>.</returns>
     public static float? TryParseSingle(this string? value)
-        => float.TryParse(value, out var result) ? result : null;
+    {
+        return float.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a single-precision floating-point number, returning a default on failure.
@@ -406,7 +463,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed float if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static float TryParseSingle(this string? value, float defaultValue)
-        => float.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return float.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a double-precision floating-point number.
@@ -414,7 +473,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed number if successful; otherwise, <c>null</c>.</returns>
     public static double? TryParseDouble(this string? value)
-        => double.TryParse(value, out var result) ? result : null;
+    {
+        return double.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a double-precision floating-point number, returning a default on failure.
@@ -423,7 +484,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed number if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static double TryParseDouble(this string? value, double defaultValue)
-        => double.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return double.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a decimal number.
@@ -431,7 +494,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed decimal if successful; otherwise, <c>null</c>.</returns>
     public static decimal? TryParseDecimal(this string? value)
-        => decimal.TryParse(value, out var result) ? result : null;
+    {
+        return decimal.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a decimal number, returning a default on failure.
@@ -440,7 +505,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed decimal if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static decimal TryParseDecimal(this string? value, decimal defaultValue)
-        => decimal.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return decimal.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== Boolean and Character Parsing ==========
 
@@ -460,7 +527,9 @@ internal
     /// </code>
     /// </example>
     public static bool? TryParseBool(this string? value)
-        => bool.TryParse(value, out var result) ? result : null;
+    {
+        return bool.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a boolean, returning a default on failure.
@@ -469,7 +538,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed boolean if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static bool TryParseBool(this string? value, bool defaultValue)
-        => bool.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return bool.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a single character.
@@ -482,7 +553,9 @@ internal
     ///     </para>
     /// </remarks>
     public static char? TryParseChar(this string? value)
-        => char.TryParse(value, out var result) ? result : null;
+    {
+        return char.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a single character, returning a default on failure.
@@ -491,7 +564,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed character if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static char TryParseChar(this string? value, char defaultValue)
-        => char.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return char.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== GUID Parsing ==========
 
@@ -506,7 +581,9 @@ internal
     /// </code>
     /// </example>
     public static Guid? TryParseGuid(this string? value)
-        => Guid.TryParse(value, out var result) ? result : null;
+    {
+        return Guid.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="Guid" />, returning a default on failure.
@@ -515,7 +592,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed GUID if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static Guid TryParseGuid(this string? value, Guid defaultValue)
-        => Guid.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return Guid.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== Enum Parsing ==========
 
@@ -536,7 +615,9 @@ internal
     /// </example>
     public static TEnum? TryParseEnum<TEnum>(this string? value, bool ignoreCase = false)
         where TEnum : struct, Enum
-        => Enum.TryParse<TEnum>(value, ignoreCase, out var result) ? result : null;
+    {
+        return Enum.TryParse<TEnum>(value, ignoreCase, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as an enum value, returning a default on failure.
@@ -553,7 +634,9 @@ internal
     /// </example>
     public static TEnum TryParseEnum<TEnum>(this string? value, TEnum defaultValue, bool ignoreCase = false)
         where TEnum : struct, Enum
-        => Enum.TryParse<TEnum>(value, ignoreCase, out var result) ? result : defaultValue;
+    {
+        return Enum.TryParse<TEnum>(value, ignoreCase, out var result) ? result : defaultValue;
+    }
 
     // ========== Date/Time Parsing ==========
 
@@ -563,7 +646,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed date/time if successful; otherwise, <c>null</c>.</returns>
     public static DateTime? TryParseDateTime(this string? value)
-        => DateTime.TryParse(value, out var result) ? result : null;
+    {
+        return DateTime.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="DateTime" />, returning a default on failure.
@@ -572,7 +657,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed date/time if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static DateTime TryParseDateTime(this string? value, DateTime defaultValue)
-        => DateTime.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return DateTime.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="DateTimeOffset" />.
@@ -580,7 +667,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed date/time offset if successful; otherwise, <c>null</c>.</returns>
     public static DateTimeOffset? TryParseDateTimeOffset(this string? value)
-        => DateTimeOffset.TryParse(value, out var result) ? result : null;
+    {
+        return DateTimeOffset.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="DateTimeOffset" />, returning a default on failure.
@@ -589,7 +678,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed date/time offset if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static DateTimeOffset TryParseDateTimeOffset(this string? value, DateTimeOffset defaultValue)
-        => DateTimeOffset.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return DateTimeOffset.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="TimeSpan" />.
@@ -597,7 +688,9 @@ internal
     /// <param name="value">The string to parse.</param>
     /// <returns>The parsed time span if successful; otherwise, <c>null</c>.</returns>
     public static TimeSpan? TryParseTimeSpan(this string? value)
-        => TimeSpan.TryParse(value, out var result) ? result : null;
+    {
+        return TimeSpan.TryParse(value, out var result) ? result : null;
+    }
 
     /// <summary>
     ///     Attempts to parse the string as a <see cref="TimeSpan" />, returning a default on failure.
@@ -606,7 +699,9 @@ internal
     /// <param name="defaultValue">The value to return if parsing fails.</param>
     /// <returns>The parsed time span if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static TimeSpan TryParseTimeSpan(this string? value, TimeSpan defaultValue)
-        => TimeSpan.TryParse(value, out var result) ? result : defaultValue;
+    {
+        return TimeSpan.TryParse(value, out var result) ? result : defaultValue;
+    }
 
     // ========== Collection Safe Access ==========
 
@@ -627,7 +722,9 @@ internal
     /// </example>
     /// <seealso cref="ElementAtOrDefault{T}(IList{T},int,T)" />
     public static T? ElementAtOrNull<T>(this IList<T> list, int index) where T : class
-        => index >= 0 && index < list.Count ? list[index] : null;
+    {
+        return index >= 0 && index < list.Count ? list[index] : null;
+    }
 
     /// <summary>
     ///     Gets the element at the specified index, or <c>null</c> if the index is out of bounds.
@@ -639,7 +736,9 @@ internal
     ///     The element at <paramref name="index" /> if within bounds; otherwise, <c>null</c>.
     /// </returns>
     public static T? ElementAtOrNull<T>(this IReadOnlyList<T> list, int index) where T : class
-        => index >= 0 && index < list.Count ? list[index] : null;
+    {
+        return index >= 0 && index < list.Count ? list[index] : null;
+    }
 
     /// <summary>
     ///     Gets the value type element at the specified index, or <c>null</c> if the index is out of bounds.
@@ -652,7 +751,9 @@ internal
     ///     otherwise, <c>null</c>.
     /// </returns>
     public static T? ValueAtOrNull<T>(this IList<T> list, int index) where T : struct
-        => index >= 0 && index < list.Count ? list[index] : null;
+    {
+        return index >= 0 && index < list.Count ? list[index] : null;
+    }
 
     /// <summary>
     ///     Gets the value type element at the specified index, or <c>null</c> if the index is out of bounds.
@@ -665,7 +766,9 @@ internal
     ///     otherwise, <c>null</c>.
     /// </returns>
     public static T? ValueAtOrNull<T>(this IReadOnlyList<T> list, int index) where T : struct
-        => index >= 0 && index < list.Count ? list[index] : null;
+    {
+        return index >= 0 && index < list.Count ? list[index] : null;
+    }
 
     /// <summary>
     ///     Gets the element at the specified index, or a default value if the index is out of bounds.
@@ -684,7 +787,9 @@ internal
     /// </code>
     /// </example>
     public static T ElementAtOrDefault<T>(this IList<T> list, int index, T defaultValue)
-        => index >= 0 && index < list.Count ? list[index] : defaultValue;
+    {
+        return index >= 0 && index < list.Count ? list[index] : defaultValue;
+    }
 
     /// <summary>
     ///     Gets the element at the specified index, or a default value if the index is out of bounds.
@@ -698,5 +803,7 @@ internal
     ///     otherwise, <paramref name="defaultValue" />.
     /// </returns>
     public static T ElementAtOrDefault<T>(this IReadOnlyList<T> list, int index, T defaultValue)
-        => index >= 0 && index < list.Count ? list[index] : defaultValue;
+    {
+        return index >= 0 && index < list.Count ? list[index] : defaultValue;
+    }
 }

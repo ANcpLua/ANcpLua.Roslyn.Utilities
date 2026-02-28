@@ -1,6 +1,7 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Generation;
 
-internal static partial class GenerationHelpers {
+internal static class GenerationHelpers
+{
     public const string BindingFlagsAll =
         "global::System.Reflection.BindingFlags.Public | " +
         "global::System.Reflection.BindingFlags.NonPublic | " +
@@ -8,8 +9,12 @@ internal static partial class GenerationHelpers {
         "global::System.Reflection.BindingFlags.Static";
 
     public static string StringLiteral(string value)
-        => SymbolDisplay.FormatLiteral(value, true);
+    {
+        return SymbolDisplay.FormatLiteral(value, true);
+    }
 
     public static string GetTypeOf(string fullyQualifiedType)
-        => $"typeof({fullyQualifiedType})";
+    {
+        return $"typeof({fullyQualifiedType})";
+    }
 }

@@ -389,7 +389,7 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsImmutable" />
-    public  bool IsFrozen(ITypeSymbol? type)
+    public bool IsFrozen(ITypeSymbol? type)
     {
         if (type is not INamedTypeSymbol named)
             return false;
@@ -519,12 +519,14 @@ internal
     /// <summary>
     ///     Determines whether the specified type definition is a known single-element collection type.
     /// </summary>
-    public bool IsSingleElementCollectionType(ISymbol original) =>
-        MatchesAny(original,
+    public bool IsSingleElementCollectionType(ISymbol original)
+    {
+        return MatchesAny(original,
             IEnumerableOfT, ICollectionOfT, IListOfT, IReadOnlyCollection, IReadOnlyList,
             ISet, IReadOnlySet, List, HashSet, Queue, Stack, LinkedList,
             ImmutableArray, ImmutableList, ImmutableHashSet, FrozenSet,
             Span, ReadOnlySpan, Memory, ReadOnlyMemory, ArraySegment);
+    }
 
     /// <summary>
     ///     Checks if the specified type matches any of the provided candidate types.

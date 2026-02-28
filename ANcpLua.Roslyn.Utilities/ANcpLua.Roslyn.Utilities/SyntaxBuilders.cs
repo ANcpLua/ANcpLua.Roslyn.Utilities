@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -11,7 +12,7 @@ public
 #else
 internal
 #endif
-    static partial class SyntaxBuilders
+    static class SyntaxBuilders
 {
     /// <summary>Builds an extension method invocation: <c>receiver.MethodName(args)</c>.</summary>
     public static InvocationExpressionSyntax ExtensionCall(
@@ -54,14 +55,18 @@ internal
     }
 
     /// <summary>Builds a <c>nameof(expression)</c> invocation.</summary>
-    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression) =>
-        SyntaxFactory.InvocationExpression(
+    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression)
+    {
+        return SyntaxFactory.InvocationExpression(
             SyntaxFactory.IdentifierName("nameof"),
             SyntaxFactory.ArgumentList(
                 SyntaxFactory.SingletonSeparatedList(
                     SyntaxFactory.Argument(expression))));
+    }
 
     /// <summary>Builds a <c>nameof(name)</c> invocation.</summary>
-    public static InvocationExpressionSyntax NameOf(string name) =>
-        NameOf(SyntaxFactory.IdentifierName(name));
+    public static InvocationExpressionSyntax NameOf(string name)
+    {
+        return NameOf(SyntaxFactory.IdentifierName(name));
+    }
 }

@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeRefactorings;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
 
@@ -59,7 +59,6 @@ internal static class SolutionRefactoringTestReferences
 public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     where TRefactoring : CodeRefactoringProvider, new()
 {
-
     private readonly AdhocWorkspace _workspace = new();
 
     /// <summary>
@@ -108,8 +107,8 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken);
 
         var matchingAction = actions.FirstOrDefault(a => a.Title == refactoringTitle)
-            ?? throw new InvalidOperationException(
-                $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
+                             ?? throw new InvalidOperationException(
+                                 $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
 
         var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken);
 
@@ -121,10 +120,8 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
             var normalizedExpected = expectedContent.ReplaceLineEndings();
 
             if (actual != normalizedExpected)
-            {
                 throw new InvalidOperationException(
                     $"Document '{fileName}' did not match expected content.\n\nExpected:\n{normalizedExpected}\n\nActual:\n{actual}");
-            }
         }
     }
 
@@ -170,8 +167,8 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken);
 
         var matchingAction = actions.FirstOrDefault(a => a.Title == refactoringTitle)
-            ?? throw new InvalidOperationException(
-                $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
+                             ?? throw new InvalidOperationException(
+                                 $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
 
         var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken);
 
@@ -186,10 +183,8 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
                 var normalizedExpected = expectedContent.ReplaceLineEndings();
 
                 if (actual != normalizedExpected)
-                {
                     throw new InvalidOperationException(
                         $"Document '{projectName}/{fileName}' did not match expected content.\n\nExpected:\n{normalizedExpected}\n\nActual:\n{actual}");
-                }
             }
         }
     }
@@ -223,10 +218,8 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var actions = await GetRefactoringsForDocumentAsync(documents, triggerFile, triggerText, cancellationToken);
 
         if (actions.Length > 0)
-        {
             throw new InvalidOperationException(
                 $"Expected no refactorings but found: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
-        }
     }
 
     private Solution CreateSolution(IEnumerable<(string name, string source)> documents)
@@ -273,10 +266,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     private static TextSpan GetSpan(SourceText text, string textToFind)
     {
         var start = text.ToString().IndexOf(textToFind, StringComparison.Ordinal);
-        if (start < 0)
-        {
-            throw new ArgumentException($"Text '{textToFind}' not found in document");
-        }
+        if (start < 0) throw new ArgumentException($"Text '{textToFind}' not found in document");
 
         return new TextSpan(start, textToFind.Length);
     }

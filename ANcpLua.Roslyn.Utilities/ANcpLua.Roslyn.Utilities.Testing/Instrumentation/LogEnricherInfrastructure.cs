@@ -6,25 +6,13 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace ANcpLua.Roslyn.Utilities.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
 
 /// <summary>
-///     Base class for log enrichers that extract context from <see cref="Activity.Current"/>.
+///     Base class for log enrichers that extract context from <see cref="Activity.Current" />.
 /// </summary>
 public abstract class ActivityLogEnricher : ILogEnricher
 {
-    /// <summary>
-    ///     Override to define which Activity tags should be added to logs.
-    /// </summary>
-    protected abstract IEnumerable<ActivityTagMapping> GetTagMappings();
-
-    /// <summary>
-    ///     Override for custom enrichment logic beyond tag mappings.
-    /// </summary>
-    protected virtual void EnrichFromActivity(IEnrichmentTagCollector collector, Activity activity)
-    {
-    }
-
     public void Enrich(IEnrichmentTagCollector collector)
     {
         var activity = Activity.Current;
@@ -35,16 +23,23 @@ public abstract class ActivityLogEnricher : ILogEnricher
         {
             var value = activity.GetTagItem(mapping.ActivityTagName);
             if (value is not null)
-            {
                 collector.Add(mapping.LogTagName, value);
-            }
-            else if (mapping.DefaultValue is not null)
-            {
-                collector.Add(mapping.LogTagName, mapping.DefaultValue);
-            }
+            else if (mapping.DefaultValue is not null) collector.Add(mapping.LogTagName, mapping.DefaultValue);
         }
 
         EnrichFromActivity(collector, activity);
+    }
+
+    /// <summary>
+    ///     Override to define which Activity tags should be added to logs.
+    /// </summary>
+    protected abstract IEnumerable<ActivityTagMapping> GetTagMappings();
+
+    /// <summary>
+    ///     Override for custom enrichment logic beyond tag mappings.
+    /// </summary>
+    protected virtual void EnrichFromActivity(IEnrichmentTagCollector collector, Activity activity)
+    {
     }
 }
 
@@ -57,8 +52,10 @@ public readonly record struct ActivityTagMapping(
     object? DefaultValue = null)
 {
     /// <summary>Creates a mapping where Activity and log tag names are the same.</summary>
-    public static ActivityTagMapping Same(string tagName, object? defaultValue = null) =>
-        new(tagName, tagName, defaultValue);
+    public static ActivityTagMapping Same(string tagName, object? defaultValue = null)
+    {
+        return new ActivityTagMapping(tagName, tagName, defaultValue);
+    }
 }
 
 /// <summary>
@@ -85,14 +82,17 @@ public sealed class TraceContextEnricher : ILogEnricher
 /// </summary>
 public sealed class GenAiContextEnricher : ActivityLogEnricher
 {
-    protected override IEnumerable<ActivityTagMapping> GetTagMappings() =>
-    [
-        new(SpanAttributes.GenAiProviderName, LogTags.GenAiProvider),
-        new(SpanAttributes.GenAiRequestModel, LogTags.GenAiModel),
-        new(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation),
-        new(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens),
-        new(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens)
-    ];
+    protected override IEnumerable<ActivityTagMapping> GetTagMappings()
+    {
+        return
+        [
+            new ActivityTagMapping(SpanAttributes.GenAiProviderName, LogTags.GenAiProvider),
+            new ActivityTagMapping(SpanAttributes.GenAiRequestModel, LogTags.GenAiModel),
+            new ActivityTagMapping(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation),
+            new ActivityTagMapping(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens),
+            new ActivityTagMapping(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens)
+        ];
+    }
 }
 
 /// <summary>
@@ -100,9 +100,9 @@ public sealed class GenAiContextEnricher : ActivityLogEnricher
 /// </summary>
 public sealed class ServiceIdentityEnricher : ILogEnricher
 {
+    private readonly string _instanceId;
     private readonly string _serviceName;
     private readonly string _serviceVersion;
-    private readonly string _instanceId;
 
     public ServiceIdentityEnricher(string serviceName, string serviceVersion, string? instanceId = null)
     {
@@ -155,11 +155,11 @@ public sealed class EnricherBuilder
     /// <summary>Adds all GenAI tags.</summary>
     public EnricherBuilder WithGenAiTags()
     {
-        _mappings.Add(new(SpanAttributes.GenAiProviderName, LogTags.GenAiProvider));
-        _mappings.Add(new(SpanAttributes.GenAiRequestModel, LogTags.GenAiModel));
-        _mappings.Add(new(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation));
-        _mappings.Add(new(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens));
-        _mappings.Add(new(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiProviderName, LogTags.GenAiProvider));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiRequestModel, LogTags.GenAiModel));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens));
         return this;
     }
 
@@ -171,13 +171,19 @@ public sealed class EnricherBuilder
     }
 
     /// <summary>Builds the enricher.</summary>
-    public ILogEnricher Build() => new DelegatingEnricher([.. _mappings], _customEnrichment);
+    public ILogEnricher Build()
+    {
+        return new DelegatingEnricher([.. _mappings], _customEnrichment);
+    }
 
     private sealed class DelegatingEnricher(
         IEnumerable<ActivityTagMapping> mappings,
         Action<IEnrichmentTagCollector, Activity>? customEnrichment) : ActivityLogEnricher
     {
-        protected override IEnumerable<ActivityTagMapping> GetTagMappings() => mappings;
+        protected override IEnumerable<ActivityTagMapping> GetTagMappings()
+        {
+            return mappings;
+        }
 
         protected override void EnrichFromActivity(IEnrichmentTagCollector collector, Activity activity)
         {
@@ -192,15 +198,26 @@ public sealed class EnricherBuilder
 public static class Enrichers
 {
     /// <summary>Creates a new enricher builder.</summary>
-    public static EnricherBuilder Builder() => new();
+    public static EnricherBuilder Builder()
+    {
+        return new EnricherBuilder();
+    }
 
     /// <summary>Creates a trace context enricher.</summary>
-    public static ILogEnricher TraceContext() => new TraceContextEnricher();
+    public static ILogEnricher TraceContext()
+    {
+        return new TraceContextEnricher();
+    }
 
     /// <summary>Creates a GenAI context enricher.</summary>
-    public static ILogEnricher GenAiContext() => new GenAiContextEnricher();
+    public static ILogEnricher GenAiContext()
+    {
+        return new GenAiContextEnricher();
+    }
 
     /// <summary>Creates a service identity enricher.</summary>
-    public static ILogEnricher ServiceIdentity(string name, string version, string? instanceId = null) =>
-        new ServiceIdentityEnricher(name, version, instanceId);
+    public static ILogEnricher ServiceIdentity(string name, string version, string? instanceId = null)
+    {
+        return new ServiceIdentityEnricher(name, version, instanceId);
+    }
 }

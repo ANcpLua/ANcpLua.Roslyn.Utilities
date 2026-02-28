@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -72,7 +76,9 @@ internal
     /// <seealso cref="SelectMany{T,TResult}(T?, Func{T,TResult?})" />
     public static TResult? Select<T, TResult>(this T? value, Func<T, TResult> selector)
         where T : class
-        => value is not null ? selector(value) : default;
+    {
+        return value is not null ? selector(value) : default;
+    }
 
     /// <summary>
     ///     Transforms a nullable reference value using a selector that also returns nullable.
@@ -100,7 +106,9 @@ internal
     public static TResult? SelectMany<T, TResult>(this T? value, Func<T, TResult?> selector)
         where T : class
         where TResult : class
-        => value is not null ? selector(value) : default;
+    {
+        return value is not null ? selector(value) : default;
+    }
 
     /// <summary>
     ///     Filters a nullable value based on a predicate.
@@ -124,7 +132,9 @@ internal
     /// <seealso cref="Select{T,TResult}(T?, Func{T,TResult})" />
     public static T? Where<T>(this T? value, Func<T, bool> predicate)
         where T : class
-        => value is not null && predicate(value) ? value : null;
+    {
+        return value is not null && predicate(value) ? value : null;
+    }
 
     /// <summary>
     ///     Executes an action if the value is not <c>null</c>.
@@ -179,7 +189,9 @@ internal
     /// </example>
     /// <seealso cref="OrElse{T}(T?, Func{T})" />
     public static T Or<T>(this T? value, T defaultValue) where T : class
-        => value ?? defaultValue;
+    {
+        return value ?? defaultValue;
+    }
 
     /// <summary>
     ///     Returns the value if not <c>null</c>, otherwise computes a default using the factory.
@@ -203,7 +215,9 @@ internal
     /// </example>
     /// <seealso cref="Or{T}(T?, T)" />
     public static T OrElse<T>(this T? value, Func<T> factory) where T : class
-        => value ?? factory();
+    {
+        return value ?? factory();
+    }
 
     /// <summary>
     ///     Throws an exception if the value is <c>null</c>.
@@ -221,7 +235,9 @@ internal
     /// <seealso cref="Or{T}(T?, T)" />
     [return: NotNull]
     public static T OrThrow<T>(this T? value, Func<Exception> exceptionFactory) where T : class
-        => value ?? throw exceptionFactory();
+    {
+        return value ?? throw exceptionFactory();
+    }
 
     /// <summary>
     ///     Converts a nullable reference to a single-element or empty sequence.
@@ -271,7 +287,9 @@ internal
         this T? value,
         Func<T, TResult> some,
         Func<TResult> none) where T : class
-        => value is not null ? some(value) : none();
+    {
+        return value is not null ? some(value) : none();
+    }
 
     // ========== Nullable Value Type Extensions ==========
 
@@ -294,7 +312,9 @@ internal
     /// </example>
     public static TResult? Select<T, TResult>(this T? value, Func<T, TResult> selector)
         where T : struct
-        => value.HasValue ? selector(value.Value) : default;
+    {
+        return value.HasValue ? selector(value.Value) : default;
+    }
 
     /// <summary>
     ///     Transforms a nullable value type using a selector that returns nullable.
@@ -310,7 +330,9 @@ internal
     public static TResult? SelectMany<T, TResult>(this T? value, Func<T, TResult?> selector)
         where T : struct
         where TResult : struct
-        => value.HasValue ? selector(value.Value) : null;
+    {
+        return value.HasValue ? selector(value.Value) : null;
+    }
 
     /// <summary>
     ///     Filters a nullable value type based on a predicate.
@@ -329,7 +351,9 @@ internal
     /// </example>
     public static T? Where<T>(this T? value, Func<T, bool> predicate)
         where T : struct
-        => value.HasValue && predicate(value.Value) ? value : null;
+    {
+        return value.HasValue && predicate(value.Value) ? value : null;
+    }
 
     /// <summary>
     ///     Executes an action if the nullable value type has a value.
@@ -360,7 +384,9 @@ internal
     /// </code>
     /// </example>
     public static T Or<T>(this T? value, T defaultValue) where T : struct
-        => value ?? defaultValue;
+    {
+        return value ?? defaultValue;
+    }
 
     /// <summary>
     ///     Returns the value if it has a value, otherwise computes a default using the factory.
@@ -372,7 +398,9 @@ internal
     ///     The <paramref name="value" /> if it has a value; otherwise, the result of <paramref name="factory" />.
     /// </returns>
     public static T OrElse<T>(this T? value, Func<T> factory) where T : struct
-        => value ?? factory();
+    {
+        return value ?? factory();
+    }
 
     /// <summary>
     ///     Converts a nullable value type to a single-element or empty sequence.
@@ -401,7 +429,9 @@ internal
         this T? value,
         Func<T, TResult> some,
         Func<TResult> none) where T : struct
-        => value.HasValue ? some(value.Value) : none();
+    {
+        return value.HasValue ? some(value.Value) : none();
+    }
 
     // ========== Conversion Helpers ==========
 
@@ -417,7 +447,9 @@ internal
     /// </code>
     /// </example>
     public static bool HasValue<T>(this T? value) where T : class
-        => value is not null;
+    {
+        return value is not null;
+    }
 
     /// <summary>
     ///     Returns <c>null</c> if the value equals the specified sentinel value.
@@ -444,7 +476,9 @@ internal
     /// </code>
     /// </example>
     public static T? NullIf<T>(this T value, T sentinel) where T : class
-        => EqualityComparer<T>.Default.Equals(value, sentinel) ? null : value;
+    {
+        return EqualityComparer<T>.Default.Equals(value, sentinel) ? null : value;
+    }
 
     /// <summary>
     ///     Returns <c>null</c> if the value type equals the specified sentinel value.
@@ -462,5 +496,7 @@ internal
     /// </code>
     /// </example>
     public static T? NullIfValue<T>(this T value, T sentinel) where T : struct
-        => EqualityComparer<T>.Default.Equals(value, sentinel) ? null : value;
+    {
+        return EqualityComparer<T>.Default.Equals(value, sentinel) ? null : value;
+    }
 }

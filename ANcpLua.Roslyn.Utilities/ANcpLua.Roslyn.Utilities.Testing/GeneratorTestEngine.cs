@@ -187,7 +187,11 @@ internal sealed class GeneratorTestEngine
     {
         private readonly SourceText _text = SourceText.From(text, Encoding.UTF8);
         public override string Path { get; } = path;
-        public override SourceText GetText(CancellationToken cancellationToken = default) => _text;
+
+        public override SourceText GetText(CancellationToken cancellationToken = default)
+        {
+            return _text;
+        }
     }
 }
 
@@ -243,9 +247,15 @@ internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrem
         return this;
     }
 
-    public Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken = default) => _engine.CreateCompilationAsync(cancellationToken);
+    public Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken = default)
+    {
+        return _engine.CreateCompilationAsync(cancellationToken);
+    }
 
-    public Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default) => WithSource(source).CreateCompilationAsync(cancellationToken);
+    public Task<CSharpCompilation> CreateCompilationAsync(string source, CancellationToken cancellationToken = default)
+    {
+        return WithSource(source).CreateCompilationAsync(cancellationToken);
+    }
 
     public static GeneratorDriver CreateDriver(bool trackSteps)
     {
@@ -258,9 +268,14 @@ internal sealed class GeneratorTestEngine<TGenerator> where TGenerator : IIncrem
         return this;
     }
 
-    public GeneratorDriver CreateDriver() => _engine.CreateDriver();
+    public GeneratorDriver CreateDriver()
+    {
+        return _engine.CreateDriver();
+    }
 
     internal Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
-        CancellationToken cancellationToken = default) =>
-        _engine.RunTwiceAsync(cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        return _engine.RunTwiceAsync(cancellationToken);
+    }
 }

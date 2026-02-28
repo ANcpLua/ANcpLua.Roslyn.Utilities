@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -63,7 +64,7 @@ public static class LogAssert
 
         var sb = new StringBuilder();
         foreach (var r in logs)
-            sb.AppendLine($"  {r.Level}: {r.Message}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  {r.Level}: {r.Message}");
         return sb.ToString();
     }
 
@@ -203,24 +204,30 @@ public static class LogAssert
     /// </summary>
     /// <param name="collector">The log collector to validate.</param>
     /// <returns>The same <see cref="FakeLogCollector" /> instance for fluent chaining.</returns>
-    public static FakeLogCollector ShouldHaveNoErrors(this FakeLogCollector collector) =>
-        collector.ShouldNotHaveLevel(LogLevel.Error);
+    public static FakeLogCollector ShouldHaveNoErrors(this FakeLogCollector collector)
+    {
+        return collector.ShouldNotHaveLevel(LogLevel.Error);
+    }
 
     /// <summary>
     ///     Asserts that no warnings were logged.
     /// </summary>
     /// <param name="collector">The log collector to validate.</param>
     /// <returns>The same <see cref="FakeLogCollector" /> instance for fluent chaining.</returns>
-    public static FakeLogCollector ShouldHaveNoWarnings(this FakeLogCollector collector) =>
-        collector.ShouldNotHaveLevel(LogLevel.Warning);
+    public static FakeLogCollector ShouldHaveNoWarnings(this FakeLogCollector collector)
+    {
+        return collector.ShouldNotHaveLevel(LogLevel.Warning);
+    }
 
     /// <summary>
     ///     Asserts that no errors or warnings were logged.
     /// </summary>
     /// <param name="collector">The log collector to validate.</param>
     /// <returns>The same <see cref="FakeLogCollector" /> instance for fluent chaining.</returns>
-    public static FakeLogCollector ShouldBeClean(this FakeLogCollector collector) =>
-        collector.ShouldHaveNoErrors().ShouldHaveNoWarnings();
+    public static FakeLogCollector ShouldBeClean(this FakeLogCollector collector)
+    {
+        return collector.ShouldHaveNoErrors().ShouldHaveNoWarnings();
+    }
 
     // =========================================================================
     // Combined Assertions

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -62,7 +65,9 @@ internal
     /// </example>
     /// <seealso cref="AsValue{T}(object?)" />
     public static T? As<T>(this object? obj) where T : class
-        => obj as T;
+    {
+        return obj as T;
+    }
 
     /// <summary>
     ///     Safely casts an object to the specified value type.
@@ -90,7 +95,9 @@ internal
     /// </example>
     /// <seealso cref="As{T}(object?)" />
     public static T? AsValue<T>(this object? obj) where T : struct
-        => obj is T value ? value : null;
+    {
+        return obj is T value ? value : null;
+    }
 
     /// <summary>
     ///     Checks if an object is of a specific type and returns the cast result.
@@ -180,9 +187,11 @@ internal
     /// <seealso cref="As{T}(object?)" />
     [return: NotNull]
     public static T CastTo<T>(this object? obj)
-        => obj is T result
+    {
+        return obj is T result
             ? result
             : throw new InvalidCastException($"Cannot cast {obj?.GetType().Name ?? "null"} to {typeof(T).Name}.");
+    }
 
     // ========== Reflection Helpers ==========
 
@@ -373,5 +382,7 @@ internal
     /// </example>
     /// <seealso cref="IsOneOf{T}(T, T[])" />
     public static bool IsNotOneOf<T>(this T obj, params T[] values)
-        => !obj.IsOneOf(values);
+    {
+        return !obj.IsOneOf(values);
+    }
 }

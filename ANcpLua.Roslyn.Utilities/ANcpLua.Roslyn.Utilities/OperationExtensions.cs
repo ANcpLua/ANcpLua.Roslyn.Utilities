@@ -1,12 +1,25 @@
-using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using CSharpParseOptions = Microsoft.CodeAnalysis.CSharp.CSharpParseOptions;
+using IMethodSymbol = Microsoft.CodeAnalysis.IMethodSymbol;
+using INamedTypeSymbol = Microsoft.CodeAnalysis.INamedTypeSymbol;
+using IOperation = Microsoft.CodeAnalysis.IOperation;
+using ISymbol = Microsoft.CodeAnalysis.ISymbol;
+using ITypeSymbol = Microsoft.CodeAnalysis.ITypeSymbol;
+using LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using OperationKind = Microsoft.CodeAnalysis.OperationKind;
+using RefKind = Microsoft.CodeAnalysis.RefKind;
+using SymbolEqualityComparer = Microsoft.CodeAnalysis.SymbolEqualityComparer;
 
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Provides extension methods for working with <see cref="IOperation" /> instances.
+///     Provides extension methods for working with <see cref="Microsoft.CodeAnalysis.IOperation" /> instances.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -47,7 +60,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         </item>
 ///     </list>
 /// </remarks>
-/// <seealso cref="IOperation" />
+/// <seealso cref="Microsoft.CodeAnalysis.IOperation" />
 /// <seealso cref="InvocationExtensions" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public
@@ -114,7 +127,10 @@ internal
     ///     <c>true</c> if an ancestor of type <typeparamref name="T" /> exists; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="FindAncestor{T}" />
-    public static bool IsDescendantOf<T>(this IOperation operation) where T : class, IOperation => operation.FindAncestor<T>() is not null;
+    public static bool IsDescendantOf<T>(this IOperation operation) where T : class, IOperation
+    {
+        return operation.FindAncestor<T>() is not null;
+    }
 
     /// <summary>
     ///     Determines whether the operation is inside a <c>nameof</c> expression.
@@ -252,8 +268,10 @@ internal
                 return symbol is { IsStatic: true };
             }
             else if (member is FieldDeclarationSyntax)
+            {
                 return
                     true; // Field initializers are in static context if the field is static, but default to true for safety
+            }
 
         return false;
     }
@@ -332,7 +350,10 @@ internal
     ///     or <c>null</c> if the operation has no type.
     /// </returns>
     /// <seealso cref="UnwrapAllConversions" />
-    public static ITypeSymbol? GetActualType(this IOperation operation) => operation.UnwrapAllConversions().Type;
+    public static ITypeSymbol? GetActualType(this IOperation operation)
+    {
+        return operation.UnwrapAllConversions().Type;
+    }
 
     /// <summary>
     ///     Determines whether the operation represents a constant zero value.
@@ -346,7 +367,10 @@ internal
     /// </returns>
     /// <seealso cref="IsConstantNull" />
     /// <seealso cref="IsConstant" />
-    public static bool IsConstantZero(this IOperation operation) => operation is { ConstantValue: { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m } };
+    public static bool IsConstantZero(this IOperation operation)
+    {
+        return operation is { ConstantValue: { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m } };
+    }
 
     /// <summary>
     ///     Determines whether the operation represents a constant <c>null</c> value.
@@ -358,17 +382,26 @@ internal
     /// </returns>
     /// <seealso cref="IsConstantZero" />
     /// <seealso cref="IsConstant" />
-    public static bool IsConstantNull(this IOperation operation) => operation is { ConstantValue: { HasValue: true, Value: null } };
+    public static bool IsConstantNull(this IOperation operation)
+    {
+        return operation is { ConstantValue: { HasValue: true, Value: null } };
+    }
 
     /// <summary>
     ///     Checks if the operation is of the specified kind.
     /// </summary>
-    public static bool IsKind(this IOperation operation, OperationKind kind) => operation.Kind == kind;
+    public static bool IsKind(this IOperation operation, OperationKind kind)
+    {
+        return operation.Kind == kind;
+    }
 
     /// <summary>
     ///     Checks if the operation represents a constant null value.
     /// </summary>
-    public static bool IsNull(this IOperation operation) => operation.IsConstantNull();
+    public static bool IsNull(this IOperation operation)
+    {
+        return operation.IsConstantNull();
+    }
 
     /// <summary>
     ///     Checks if the operation represents a constant with the specified value.
@@ -561,7 +594,10 @@ internal
     ///     <c>true</c> if any descendant of type <typeparamref name="T" /> exists; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="DescendantsOfType{T}" />
-    public static bool ContainsOperation<T>(this IOperation operation) where T : IOperation => operation.DescendantsOfType<T>().Any();
+    public static bool ContainsOperation<T>(this IOperation operation) where T : IOperation
+    {
+        return operation.DescendantsOfType<T>().Any();
+    }
 
     /// <summary>
     ///     Determines whether the operation is inside a loop construct.
@@ -688,7 +724,10 @@ internal
     ///     <see cref="IUsingDeclarationOperation" />; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="IsInsideUsingStatement" />
-    public static bool IsUsingStatement(this IOperation operation) => operation is IUsingOperation or IUsingDeclarationOperation;
+    public static bool IsUsingStatement(this IOperation operation)
+    {
+        return operation is IUsingOperation or IUsingDeclarationOperation;
+    }
 
     /// <summary>
     ///     Determines whether the operation is inside a using statement or declaration.
@@ -723,7 +762,10 @@ internal
     /// </returns>
     /// <seealso cref="GetContainingMethod" />
     /// <seealso cref="FindAncestor{T}" />
-    public static IBlockOperation? GetContainingBlock(this IOperation operation) => operation.FindAncestor<IBlockOperation>();
+    public static IBlockOperation? GetContainingBlock(this IOperation operation)
+    {
+        return operation.FindAncestor<IBlockOperation>();
+    }
 
     /// <summary>
     ///     Determines whether the operation is the target of an assignment.
@@ -793,14 +835,30 @@ internal
     /// <returns>
     ///     A string representing the operation:
     ///     <list type="bullet">
-    ///         <item><description>For local references: the local variable name</description></item>
-    ///         <item><description>For parameter references: the parameter name</description></item>
-    ///         <item><description>For property references: the property name</description></item>
-    ///         <item><description>For field references: the field name</description></item>
-    ///         <item><description>For method invocations: the method name with "()"</description></item>
-    ///         <item><description>For string literals: the quoted string value</description></item>
-    ///         <item><description>For numeric literals: the string representation</description></item>
-    ///         <item><description>For other operations: the fallback value</description></item>
+    ///         <item>
+    ///             <description>For local references: the local variable name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For parameter references: the parameter name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For property references: the property name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For field references: the field name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For method invocations: the method name with "()"</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For string literals: the quoted string value</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For numeric literals: the string representation</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For other operations: the fallback value</description>
+    ///         </item>
     ///     </list>
     /// </returns>
     /// <remarks>
@@ -848,12 +906,24 @@ internal
     /// <returns>
     ///     The name of the source:
     ///     <list type="bullet">
-    ///         <item><description>For method invocations: the method name</description></item>
-    ///         <item><description>For property references: the property name</description></item>
-    ///         <item><description>For field references: the field name</description></item>
-    ///         <item><description>For local/parameter references: the variable name</description></item>
-    ///         <item><description>For conversions: recursively gets the source name</description></item>
-    ///         <item><description>For other operations: <c>null</c></description></item>
+    ///         <item>
+    ///             <description>For method invocations: the method name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For property references: the property name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For field references: the field name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For local/parameter references: the variable name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For conversions: recursively gets the source name</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>For other operations: <c>null</c></description>
+    ///         </item>
     ///     </list>
     /// </returns>
     /// <remarks>

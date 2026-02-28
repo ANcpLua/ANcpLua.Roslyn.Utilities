@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -36,10 +40,10 @@ namespace ANcpLua.Roslyn.Utilities;
 /// // Extract DisplayAttribute.Name
 /// var displayName = property.GetAttributeNamedArgument&lt;string&gt;(
 ///     "System.ComponentModel.DataAnnotations.DisplayAttribute", "Name") ?? property.Name;
-///
+/// 
 /// // Extract JsonDerivedTypeAttribute constructor argument
 /// var derivedType = attribute.GetConstructorArgument&lt;INamedTypeSymbol&gt;(0);
-///
+/// 
 /// // Check if property has a specific attribute value
 /// if (property.TryGetAttributeNamedArgument&lt;bool&gt;("MyAttribute", "IsRequired", out var isRequired) &amp;&amp; isRequired)
 /// {
@@ -99,7 +103,8 @@ internal
     ///     <c>true</c> if the argument exists and can be converted to <typeparamref name="T" />;
     ///     otherwise, <c>false</c>.
     /// </returns>
-    public static bool TryGetConstructorArgument<T>(this AttributeData attribute, int index, [NotNullWhen(true)] out T? value)
+    public static bool TryGetConstructorArgument<T>(this AttributeData attribute, int index,
+        [NotNullWhen(true)] out T? value)
     {
         value = default;
 
@@ -127,7 +132,9 @@ internal
     /// <param name="attribute">The attribute data.</param>
     /// <returns>The number of constructor arguments, or 0 if none exist.</returns>
     public static int GetConstructorArgumentCount(this AttributeData attribute)
-        => attribute.ConstructorArguments.IsDefaultOrEmpty ? 0 : attribute.ConstructorArguments.Length;
+    {
+        return attribute.ConstructorArguments.IsDefaultOrEmpty ? 0 : attribute.ConstructorArguments.Length;
+    }
 
     // ========== AttributeData Named Arguments ==========
 
@@ -174,7 +181,8 @@ internal
     ///     <c>true</c> if the named argument exists and can be converted to <typeparamref name="T" />;
     ///     otherwise, <c>false</c>.
     /// </returns>
-    public static bool TryGetNamedArgument<T>(this AttributeData attribute, string name, [NotNullWhen(true)] out T? value)
+    public static bool TryGetNamedArgument<T>(this AttributeData attribute, string name,
+        [NotNullWhen(true)] out T? value)
     {
         value = default;
 
@@ -250,7 +258,8 @@ internal
     ///     "System.Text.Json.Serialization.JsonDerivedTypeAttribute", 0);
     /// </code>
     /// </example>
-    public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName, int index)
+    public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName,
+        int index)
     {
         var attribute = symbol.GetAttribute(fullyQualifiedAttributeName);
         return attribute is null ? default : attribute.GetConstructorArgument<T>(index);
@@ -268,7 +277,8 @@ internal
     ///     The argument value, or <c>default</c> if the attribute doesn't exist,
     ///     the index is out of range, or the value cannot be cast.
     /// </returns>
-    public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, ITypeSymbol? attributeType, int index, bool inherits = true)
+    public static T? GetAttributeConstructorArgument<T>(this ISymbol symbol, ITypeSymbol? attributeType, int index,
+        bool inherits = true)
     {
         var attribute = symbol.GetAttribute(attributeType, inherits);
         return attribute is null ? default : attribute.GetConstructorArgument<T>(index);
@@ -318,7 +328,8 @@ internal
     ///     "System.ComponentModel.DataAnnotations.DisplayAttribute", "Name") ?? property.Name;
     /// </code>
     /// </example>
-    public static T? GetAttributeNamedArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName, string argumentName)
+    public static T? GetAttributeNamedArgument<T>(this ISymbol symbol, string fullyQualifiedAttributeName,
+        string argumentName)
     {
         var attribute = symbol.GetAttribute(fullyQualifiedAttributeName);
         return attribute is null ? default : attribute.GetNamedArgument<T>(argumentName);
@@ -392,7 +403,8 @@ internal
     /// </example>
     public static ImmutableArray<T> GetConstructorArgumentArray<T>(this AttributeData attribute, int index)
     {
-        if (attribute.ConstructorArguments.IsDefaultOrEmpty || index < 0 || index >= attribute.ConstructorArguments.Length)
+        if (attribute.ConstructorArguments.IsDefaultOrEmpty || index < 0 ||
+            index >= attribute.ConstructorArguments.Length)
             return ImmutableArray<T>.Empty;
 
         var typedConstant = attribute.ConstructorArguments[index];

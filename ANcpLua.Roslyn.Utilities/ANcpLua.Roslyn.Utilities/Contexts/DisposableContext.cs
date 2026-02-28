@@ -201,7 +201,10 @@ internal
     /// </returns>
     /// <seealso cref="IsDisposable" />
     /// <seealso cref="IsAsyncDisposable" />
-    public bool IsSyncDisposable(ITypeSymbol? type) => type is not null && IDisposable is not null && type.Implements(IDisposable);
+    public bool IsSyncDisposable(ITypeSymbol? type)
+    {
+        return type is not null && IDisposable is not null && type.Implements(IDisposable);
+    }
 
     /// <summary>
     ///     Determines whether the specified type implements <c>IAsyncDisposable</c>.
@@ -212,7 +215,10 @@ internal
     /// </returns>
     /// <seealso cref="IsDisposable" />
     /// <seealso cref="IsSyncDisposable" />
-    public bool IsAsyncDisposable(ITypeSymbol? type) => type is not null && IAsyncDisposable is not null && type.Implements(IAsyncDisposable);
+    public bool IsAsyncDisposable(ITypeSymbol? type)
+    {
+        return type is not null && IAsyncDisposable is not null && type.Implements(IAsyncDisposable);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.IO.Stream" />.
@@ -222,7 +228,10 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.IO.Stream" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsStream(ITypeSymbol? type) => type is not null && Stream is not null && type.IsOrInheritsFrom(Stream);
+    public bool IsStream(ITypeSymbol? type)
+    {
+        return type is not null && Stream is not null && type.IsOrInheritsFrom(Stream);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.IO.TextReader" /> or
@@ -233,10 +242,12 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.IO.TextReader" /> or
     ///     <see cref="System.IO.TextWriter" />; otherwise, <c>false</c>.
     /// </returns>
-    public bool IsTextReaderOrWriter(ITypeSymbol? type) =>
-        type is not null &&
-        ((TextReader is not null && type.IsOrInheritsFrom(TextReader)) ||
-         (TextWriter is not null && type.IsOrInheritsFrom(TextWriter)));
+    public bool IsTextReaderOrWriter(ITypeSymbol? type)
+    {
+        return type is not null &&
+               ((TextReader is not null && type.IsOrInheritsFrom(TextReader)) ||
+                (TextWriter is not null && type.IsOrInheritsFrom(TextWriter)));
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbConnection" />.
@@ -248,7 +259,10 @@ internal
     /// </returns>
     /// <seealso cref="IsDbCommand" />
     /// <seealso cref="IsDbDataReader" />
-    public bool IsDbConnection(ITypeSymbol? type) => type is not null && DbConnection is not null && type.IsOrInheritsFrom(DbConnection);
+    public bool IsDbConnection(ITypeSymbol? type)
+    {
+        return type is not null && DbConnection is not null && type.IsOrInheritsFrom(DbConnection);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbCommand" />.
@@ -260,7 +274,10 @@ internal
     /// </returns>
     /// <seealso cref="IsDbConnection" />
     /// <seealso cref="IsDbDataReader" />
-    public bool IsDbCommand(ITypeSymbol? type) => type is not null && DbCommand is not null && type.IsOrInheritsFrom(DbCommand);
+    public bool IsDbCommand(ITypeSymbol? type)
+    {
+        return type is not null && DbCommand is not null && type.IsOrInheritsFrom(DbCommand);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Data.Common.DbDataReader" />.
@@ -272,7 +289,10 @@ internal
     /// </returns>
     /// <seealso cref="IsDbConnection" />
     /// <seealso cref="IsDbCommand" />
-    public bool IsDbDataReader(ITypeSymbol? type) => type is not null && DbDataReader is not null && type.IsOrInheritsFrom(DbDataReader);
+    public bool IsDbDataReader(ITypeSymbol? type)
+    {
+        return type is not null && DbDataReader is not null && type.IsOrInheritsFrom(DbDataReader);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Net.Http.HttpClient" />.
@@ -282,7 +302,10 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from <see cref="System.Net.Http.HttpClient" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsHttpClient(ITypeSymbol? type) => type is not null && HttpClient is not null && type.IsOrInheritsFrom(HttpClient);
+    public bool IsHttpClient(ITypeSymbol? type)
+    {
+        return type is not null && HttpClient is not null && type.IsOrInheritsFrom(HttpClient);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is a synchronization primitive
@@ -313,7 +336,10 @@ internal
     ///     <c>true</c> if <paramref name="type" /> equals <see cref="System.Threading.CancellationTokenSource" />; otherwise,
     ///     <c>false</c>.
     /// </returns>
-    public bool IsCancellationTokenSource(ITypeSymbol? type) => CancellationTokenSource is not null && type.IsEqualTo(CancellationTokenSource);
+    public bool IsCancellationTokenSource(ITypeSymbol? type)
+    {
+        return CancellationTokenSource is not null && type.IsEqualTo(CancellationTokenSource);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <see cref="System.Runtime.InteropServices.SafeHandle" />.
@@ -323,7 +349,10 @@ internal
     ///     <c>true</c> if <paramref name="type" /> is or inherits from
     ///     <see cref="System.Runtime.InteropServices.SafeHandle" />; otherwise, <c>false</c>.
     /// </returns>
-    public bool IsSafeHandle(ITypeSymbol? type) => type is not null && SafeHandle is not null && type.IsOrInheritsFrom(SafeHandle);
+    public bool IsSafeHandle(ITypeSymbol? type)
+    {
+        return type is not null && SafeHandle is not null && type.IsOrInheritsFrom(SafeHandle);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is disposable and should typically be disposed by the caller.

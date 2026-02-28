@@ -192,59 +192,92 @@ internal
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.Activity</c>.
     /// </summary>
-    public bool IsActivity(ITypeSymbol? type) => type is not null && Activity is not null && type.IsEqualTo(Activity);
+    public bool IsActivity(ITypeSymbol? type)
+    {
+        return type is not null && Activity is not null && type.IsEqualTo(Activity);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivitySource</c>.
     /// </summary>
-    public bool IsActivitySource(ITypeSymbol? type) => type is not null && ActivitySource is not null && type.IsEqualTo(ActivitySource);
+    public bool IsActivitySource(ITypeSymbol? type)
+    {
+        return type is not null && ActivitySource is not null && type.IsEqualTo(ActivitySource);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityKind</c>.
     /// </summary>
-    public bool IsActivityKind(ITypeSymbol? type) => type is not null && ActivityKind is not null && type.IsEqualTo(ActivityKind);
+    public bool IsActivityKind(ITypeSymbol? type)
+    {
+        return type is not null && ActivityKind is not null && type.IsEqualTo(ActivityKind);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityStatusCode</c>.
     /// </summary>
-    public bool IsActivityStatusCode(ITypeSymbol? type) => type is not null && ActivityStatusCode is not null && type.IsEqualTo(ActivityStatusCode);
+    public bool IsActivityStatusCode(ITypeSymbol? type)
+    {
+        return type is not null && ActivityStatusCode is not null && type.IsEqualTo(ActivityStatusCode);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityEvent</c>.
     /// </summary>
-    public bool IsActivityEvent(ITypeSymbol? type) => type is not null && ActivityEvent is not null && type.IsEqualTo(ActivityEvent);
+    public bool IsActivityEvent(ITypeSymbol? type)
+    {
+        return type is not null && ActivityEvent is not null && type.IsEqualTo(ActivityEvent);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityLink</c>.
     /// </summary>
-    public bool IsActivityLink(ITypeSymbol? type) => type is not null && ActivityLink is not null && type.IsEqualTo(ActivityLink);
+    public bool IsActivityLink(ITypeSymbol? type)
+    {
+        return type is not null && ActivityLink is not null && type.IsEqualTo(ActivityLink);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityContext</c>.
     /// </summary>
-    public bool IsActivityContext(ITypeSymbol? type) => type is not null && ActivityContext is not null && type.IsEqualTo(ActivityContext);
+    public bool IsActivityContext(ITypeSymbol? type)
+    {
+        return type is not null && ActivityContext is not null && type.IsEqualTo(ActivityContext);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityTraceFlags</c>.
     /// </summary>
-    public bool IsActivityTraceFlags(ITypeSymbol? type) => type is not null && ActivityTraceFlags is not null && type.IsEqualTo(ActivityTraceFlags);
+    public bool IsActivityTraceFlags(ITypeSymbol? type)
+    {
+        return type is not null && ActivityTraceFlags is not null && type.IsEqualTo(ActivityTraceFlags);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityListener</c>.
     /// </summary>
-    public bool IsActivityListener(ITypeSymbol? type) => type is not null && ActivityListener is not null && type.IsEqualTo(ActivityListener);
+    public bool IsActivityListener(ITypeSymbol? type)
+    {
+        return type is not null && ActivityListener is not null && type.IsEqualTo(ActivityListener);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.ActivityTagsCollection</c>.
     /// </summary>
-    public bool IsActivityTagsCollection(ITypeSymbol? type) => type is not null && ActivityTagsCollection is not null && type.IsEqualTo(ActivityTagsCollection);
+    public bool IsActivityTagsCollection(ITypeSymbol? type)
+    {
+        return type is not null && ActivityTagsCollection is not null && type.IsEqualTo(ActivityTagsCollection);
+    }
 
     // ── Metrics checks ───────────────────────────────────────────────────────
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.Metrics.Meter</c>.
     /// </summary>
-    public bool IsMeter(ITypeSymbol? type) => type is not null && Meter is not null && type.IsEqualTo(Meter);
+    public bool IsMeter(ITypeSymbol? type)
+    {
+        return type is not null && Meter is not null && type.IsEqualTo(Meter);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is any <c>Instrument&lt;T&gt;</c> derived metric instrument
@@ -266,79 +299,125 @@ internal
     /// <summary>
     ///     Determines whether the specified type is <c>Counter&lt;T&gt;</c>.
     /// </summary>
-    public bool IsCounter(ITypeSymbol? type) => IsSpecificInstrument(type, CounterOfT);
+    public bool IsCounter(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, CounterOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>Histogram&lt;T&gt;</c>.
     /// </summary>
-    public bool IsHistogram(ITypeSymbol? type) => IsSpecificInstrument(type, HistogramOfT);
+    public bool IsHistogram(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, HistogramOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>UpDownCounter&lt;T&gt;</c>.
     /// </summary>
-    public bool IsUpDownCounter(ITypeSymbol? type) => IsSpecificInstrument(type, UpDownCounterOfT);
+    public bool IsUpDownCounter(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, UpDownCounterOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>ObservableInstrument&lt;T&gt;</c>.
     /// </summary>
-    public bool IsObservableInstrument(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableInstrumentOfT);
+    public bool IsObservableInstrument(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, ObservableInstrumentOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>ObservableCounter&lt;T&gt;</c>.
     /// </summary>
-    public bool IsObservableCounter(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableCounterOfT);
+    public bool IsObservableCounter(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, ObservableCounterOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>ObservableGauge&lt;T&gt;</c>.
     /// </summary>
-    public bool IsObservableGauge(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableGaugeOfT);
+    public bool IsObservableGauge(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, ObservableGaugeOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>ObservableUpDownCounter&lt;T&gt;</c>.
     /// </summary>
-    public bool IsObservableUpDownCounter(ITypeSymbol? type) => IsSpecificInstrument(type, ObservableUpDownCounterOfT);
+    public bool IsObservableUpDownCounter(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, ObservableUpDownCounterOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>Gauge&lt;T&gt;</c>.
     /// </summary>
-    public bool IsGauge(ITypeSymbol? type) => IsSpecificInstrument(type, GaugeOfT);
+    public bool IsGauge(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, GaugeOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>Measurement&lt;T&gt;</c>.
     /// </summary>
-    public bool IsMeasurement(ITypeSymbol? type) => IsSpecificInstrument(type, MeasurementOfT);
+    public bool IsMeasurement(ITypeSymbol? type)
+    {
+        return IsSpecificInstrument(type, MeasurementOfT);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.Metrics.MeterListener</c>.
     /// </summary>
-    public bool IsMeterListener(ITypeSymbol? type) => type is not null && MeterListener is not null && type.IsEqualTo(MeterListener);
+    public bool IsMeterListener(ITypeSymbol? type)
+    {
+        return type is not null && MeterListener is not null && type.IsEqualTo(MeterListener);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.Metrics.IMeterFactory</c>.
     /// </summary>
-    public bool IsIMeterFactory(ITypeSymbol? type) => type is not null && IMeterFactory is not null && type.IsEqualTo(IMeterFactory);
+    public bool IsIMeterFactory(ITypeSymbol? type)
+    {
+        return type is not null && IMeterFactory is not null && type.IsEqualTo(IMeterFactory);
+    }
 
     // ── Diagnostics checks ───────────────────────────────────────────────────
 
     /// <summary>
     ///     Determines whether the specified type is <c>System.Diagnostics.TagList</c>.
     /// </summary>
-    public bool IsTagList(ITypeSymbol? type) => type is not null && TagList is not null && type.IsEqualTo(TagList);
+    public bool IsTagList(ITypeSymbol? type)
+    {
+        return type is not null && TagList is not null && type.IsEqualTo(TagList);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>System.Diagnostics.DiagnosticSource</c>.
     /// </summary>
-    public bool IsDiagnosticSource(ITypeSymbol? type) => type is not null && DiagnosticSource is not null && type.IsOrInheritsFrom(DiagnosticSource);
+    public bool IsDiagnosticSource(ITypeSymbol? type)
+    {
+        return type is not null && DiagnosticSource is not null && type.IsOrInheritsFrom(DiagnosticSource);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>System.Diagnostics.DiagnosticListener</c>.
     /// </summary>
-    public bool IsDiagnosticListener(ITypeSymbol? type) => type is not null && DiagnosticListener is not null && type.IsOrInheritsFrom(DiagnosticListener);
+    public bool IsDiagnosticListener(ITypeSymbol? type)
+    {
+        return type is not null && DiagnosticListener is not null && type.IsOrInheritsFrom(DiagnosticListener);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>System.Diagnostics.DistributedContextPropagator</c>.
     /// </summary>
-    public bool IsDistributedContextPropagator(ITypeSymbol? type) => type is not null && DistributedContextPropagator is not null && type.IsOrInheritsFrom(DistributedContextPropagator);
+    public bool IsDistributedContextPropagator(ITypeSymbol? type)
+    {
+        return type is not null && DistributedContextPropagator is not null &&
+               type.IsOrInheritsFrom(DistributedContextPropagator);
+    }
 
     // ── OpenTelemetry SDK checks ─────────────────────────────────────────────
 
@@ -346,55 +425,82 @@ internal
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.TracerProvider</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsTracerProvider(ITypeSymbol? type) => type is not null && TracerProvider is not null && type.IsOrInheritsFrom(TracerProvider);
+    public bool IsTracerProvider(ITypeSymbol? type)
+    {
+        return type is not null && TracerProvider is not null && type.IsOrInheritsFrom(TracerProvider);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Metrics.MeterProvider</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsMeterProvider(ITypeSymbol? type) => type is not null && MeterProvider is not null && type.IsOrInheritsFrom(MeterProvider);
+    public bool IsMeterProvider(ITypeSymbol? type)
+    {
+        return type is not null && MeterProvider is not null && type.IsOrInheritsFrom(MeterProvider);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.TracerProviderBuilder</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsTracerProviderBuilder(ITypeSymbol? type) => type is not null && TracerProviderBuilder is not null && type.IsOrInheritsFrom(TracerProviderBuilder);
+    public bool IsTracerProviderBuilder(ITypeSymbol? type)
+    {
+        return type is not null && TracerProviderBuilder is not null && type.IsOrInheritsFrom(TracerProviderBuilder);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Metrics.MeterProviderBuilder</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsMeterProviderBuilder(ITypeSymbol? type) => type is not null && MeterProviderBuilder is not null && type.IsOrInheritsFrom(MeterProviderBuilder);
+    public bool IsMeterProviderBuilder(ITypeSymbol? type)
+    {
+        return type is not null && MeterProviderBuilder is not null && type.IsOrInheritsFrom(MeterProviderBuilder);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Logs.LoggerProviderBuilder</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsLoggerProviderBuilder(ITypeSymbol? type) => type is not null && LoggerProviderBuilder is not null && type.IsOrInheritsFrom(LoggerProviderBuilder);
+    public bool IsLoggerProviderBuilder(ITypeSymbol? type)
+    {
+        return type is not null && LoggerProviderBuilder is not null && type.IsOrInheritsFrom(LoggerProviderBuilder);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>OpenTelemetry.Trace.Tracer</c>.
     ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
     /// </summary>
-    public bool IsTracer(ITypeSymbol? type) => type is not null && Tracer is not null && type.IsEqualTo(Tracer);
+    public bool IsTracer(ITypeSymbol? type)
+    {
+        return type is not null && Tracer is not null && type.IsEqualTo(Tracer);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.TelemetrySpan</c>.
     ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
     /// </summary>
-    public bool IsTelemetrySpan(ITypeSymbol? type) => type is not null && TelemetrySpan is not null && type.IsOrInheritsFrom(TelemetrySpan);
+    public bool IsTelemetrySpan(ITypeSymbol? type)
+    {
+        return type is not null && TelemetrySpan is not null && type.IsOrInheritsFrom(TelemetrySpan);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>OpenTelemetry.Trace.StatusCode</c>.
     ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
     /// </summary>
-    public bool IsStatusCode(ITypeSymbol? type) => type is not null && StatusCode is not null && type.IsEqualTo(StatusCode);
+    public bool IsStatusCode(ITypeSymbol? type)
+    {
+        return type is not null && StatusCode is not null && type.IsEqualTo(StatusCode);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Trace.Sampler</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsSampler(ITypeSymbol? type) => type is not null && Sampler is not null && type.IsOrInheritsFrom(Sampler);
+    public bool IsSampler(ITypeSymbol? type)
+    {
+        return type is not null && Sampler is not null && type.IsOrInheritsFrom(Sampler);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.BaseProcessor&lt;T&gt;</c>.
@@ -412,13 +518,19 @@ internal
     ///     Determines whether the specified type is or inherits from <c>OpenTelemetry.Resources.ResourceBuilder</c>.
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsResourceBuilder(ITypeSymbol? type) => type is not null && ResourceBuilder is not null && type.IsOrInheritsFrom(ResourceBuilder);
+    public bool IsResourceBuilder(ITypeSymbol? type)
+    {
+        return type is not null && ResourceBuilder is not null && type.IsOrInheritsFrom(ResourceBuilder);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is <c>OpenTelemetry.Baggage</c>.
     ///     Returns <c>false</c> if the OpenTelemetry API is not referenced.
     /// </summary>
-    public bool IsBaggage(ITypeSymbol? type) => type is not null && Baggage is not null && type.IsEqualTo(Baggage);
+    public bool IsBaggage(ITypeSymbol? type)
+    {
+        return type is not null && Baggage is not null && type.IsEqualTo(Baggage);
+    }
 
     // ── Composite checks ─────────────────────────────────────────────────────
 
@@ -426,33 +538,43 @@ internal
     ///     Determines whether the specified type is any tracing-related type
     ///     (<c>Activity</c>, <c>ActivitySource</c>, <c>ActivityEvent</c>, <c>ActivityLink</c>, <c>ActivityContext</c>).
     /// </summary>
-    public bool IsTracingType(ITypeSymbol? type) =>
-        IsActivity(type) || IsActivitySource(type) || IsActivityEvent(type) || IsActivityLink(type) || IsActivityContext(type);
+    public bool IsTracingType(ITypeSymbol? type)
+    {
+        return IsActivity(type) || IsActivitySource(type) || IsActivityEvent(type) || IsActivityLink(type) ||
+               IsActivityContext(type);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is any metrics-related type
     ///     (<c>Meter</c>, any <c>Instrument&lt;T&gt;</c> derivative, <c>Measurement&lt;T&gt;</c>, or <c>MeterListener</c>).
     /// </summary>
-    public bool IsMetricsType(ITypeSymbol? type) =>
-        IsMeter(type) || IsInstrument(type) || IsMeasurement(type) || IsMeterListener(type);
+    public bool IsMetricsType(ITypeSymbol? type)
+    {
+        return IsMeter(type) || IsInstrument(type) || IsMeasurement(type) || IsMeterListener(type);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is any observability infrastructure type
     ///     (tracing, metrics, diagnostics, or context propagation).
     /// </summary>
-    public bool IsObservabilityType(ITypeSymbol? type) =>
-        IsTracingType(type) || IsMetricsType(type) || IsDiagnosticSource(type) || IsDiagnosticListener(type) || IsDistributedContextPropagator(type);
+    public bool IsObservabilityType(ITypeSymbol? type)
+    {
+        return IsTracingType(type) || IsMetricsType(type) || IsDiagnosticSource(type) || IsDiagnosticListener(type) ||
+               IsDistributedContextPropagator(type);
+    }
 
     /// <summary>
     ///     Determines whether the specified type is any OpenTelemetry SDK type
     ///     (providers, builders, tracer, span, sampler, processor, resource builder, or baggage).
     ///     Returns <c>false</c> if the OpenTelemetry SDK is not referenced.
     /// </summary>
-    public bool IsOTelSdkType(ITypeSymbol? type) =>
-        IsTracerProvider(type) || IsMeterProvider(type) ||
-        IsTracerProviderBuilder(type) || IsMeterProviderBuilder(type) || IsLoggerProviderBuilder(type) ||
-        IsTracer(type) || IsTelemetrySpan(type) || IsStatusCode(type) ||
-        IsSampler(type) || IsBaseProcessor(type) || IsResourceBuilder(type) || IsBaggage(type);
+    public bool IsOTelSdkType(ITypeSymbol? type)
+    {
+        return IsTracerProvider(type) || IsMeterProvider(type) ||
+               IsTracerProviderBuilder(type) || IsMeterProviderBuilder(type) || IsLoggerProviderBuilder(type) ||
+               IsTracer(type) || IsTelemetrySpan(type) || IsStatusCode(type) ||
+               IsSampler(type) || IsBaseProcessor(type) || IsResourceBuilder(type) || IsBaggage(type);
+    }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
@@ -464,12 +586,17 @@ internal
         return SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, expected);
     }
 
-    private bool MatchesAnyInstrument(ISymbol original) =>
-        (CounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, CounterOfT)) ||
-        (HistogramOfT is not null && SymbolEqualityComparer.Default.Equals(original, HistogramOfT)) ||
-        (UpDownCounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, UpDownCounterOfT)) ||
-        (ObservableCounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, ObservableCounterOfT)) ||
-        (ObservableGaugeOfT is not null && SymbolEqualityComparer.Default.Equals(original, ObservableGaugeOfT)) ||
-        (ObservableUpDownCounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, ObservableUpDownCounterOfT)) ||
-        (GaugeOfT is not null && SymbolEqualityComparer.Default.Equals(original, GaugeOfT));
+    private bool MatchesAnyInstrument(ISymbol original)
+    {
+        return (CounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, CounterOfT)) ||
+               (HistogramOfT is not null && SymbolEqualityComparer.Default.Equals(original, HistogramOfT)) ||
+               (UpDownCounterOfT is not null && SymbolEqualityComparer.Default.Equals(original, UpDownCounterOfT)) ||
+               (ObservableCounterOfT is not null &&
+                SymbolEqualityComparer.Default.Equals(original, ObservableCounterOfT)) ||
+               (ObservableGaugeOfT is not null &&
+                SymbolEqualityComparer.Default.Equals(original, ObservableGaugeOfT)) ||
+               (ObservableUpDownCounterOfT is not null &&
+                SymbolEqualityComparer.Default.Equals(original, ObservableUpDownCounterOfT)) ||
+               (GaugeOfT is not null && SymbolEqualityComparer.Default.Equals(original, GaugeOfT));
+    }
 }

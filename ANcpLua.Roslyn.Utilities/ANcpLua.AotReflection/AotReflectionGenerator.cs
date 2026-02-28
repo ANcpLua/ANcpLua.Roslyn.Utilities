@@ -1,12 +1,18 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿using ANcpLua.Analyzers.AotReflection.Extraction;
+using ANcpLua.Analyzers.AotReflection.Generation;
+
+namespace ANcpLua.Analyzers.AotReflection;
 
 [Generator]
-public sealed partial class AotReflectionGenerator : IIncrementalGenerator {
-    public void Initialize(IncrementalGeneratorInitializationContext context) {
+public sealed class AotReflectionGenerator : IIncrementalGenerator
+{
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
         var typeFlows = context.SyntaxProvider.ForAttributeWithMetadataName(
             "ANcpLua.Analyzers.AotReflection.AotReflectionAttribute",
             static (node, _) => node is TypeDeclarationSyntax,
-            static (syntaxContext, cancellationToken) => TypeExtractor.ExtractTypeModel(syntaxContext, cancellationToken));
+            static (syntaxContext, cancellationToken) =>
+                TypeExtractor.ExtractTypeModel(syntaxContext, cancellationToken));
 
         var types = typeFlows.ReportAndStop(context);
 

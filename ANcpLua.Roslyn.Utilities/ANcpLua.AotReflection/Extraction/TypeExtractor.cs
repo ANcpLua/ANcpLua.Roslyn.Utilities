@@ -1,17 +1,20 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿using ANcpLua.Analyzers.AotReflection.Models;
 
-internal static partial class TypeExtractor {
+namespace ANcpLua.Analyzers.AotReflection.Extraction;
+
+internal static class TypeExtractor
+{
     public static DiagnosticFlow<TypeModel> ExtractTypeModel(
         GeneratorAttributeSyntaxContext context,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (context.TargetSymbol is not INamedTypeSymbol typeSymbol ||
-            context.TargetNode is not TypeDeclarationSyntax typeDeclaration) {
+            context.TargetNode is not TypeDeclarationSyntax typeDeclaration)
             return DiagnosticFlow.Fail<TypeModel>(DiagnosticInfo.Create(
                 DiagnosticDescriptors.InvalidTarget,
                 context.TargetNode));
-        }
 
         var typeMatch = Match.Type().Class();
         var structMatch = Match.Type().Struct();
@@ -28,7 +31,8 @@ internal static partial class TypeExtractor {
 
         var options = AotReflectionOptions.From(context.Attributes);
 
-        return baseFlow.Then(tuple => {
+        return baseFlow.Then(tuple =>
+        {
             var (symbol, declarations) = tuple;
 
             var propertiesFlow = options.IncludeProperties
@@ -50,7 +54,8 @@ internal static partial class TypeExtractor {
             var membersFlow = DiagnosticFlow.Zip(propertiesFlow, methodsFlow, fieldsFlow);
             var allMembersFlow = DiagnosticFlow.Zip(membersFlow, constructorsFlow);
 
-            return allMembersFlow.Select(members => {
+            return allMembersFlow.Select(members =>
+            {
                 var (memberTuple, constructors) = members;
                 var (properties, methods, fields) = memberTuple;
 
@@ -60,7 +65,8 @@ internal static partial class TypeExtractor {
 
                 var interfaces = symbol.AllInterfaces.Length is 0
                     ? default
-                    : symbol.AllInterfaces.Select(@interface => @interface.GetFullyQualifiedName()).ToArray().ToEquatableArray();
+                    : symbol.AllInterfaces.Select(@interface => @interface.GetFullyQualifiedName()).ToArray()
+                        .ToEquatableArray();
 
                 var baseType = symbol.BaseType is null || symbol.BaseType.SpecialType == SpecialType.System_Object
                     ? null

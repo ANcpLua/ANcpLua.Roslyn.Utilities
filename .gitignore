@@ -1,3 +1,6 @@
+# MCP config (contains tokens)
+.mcp.json
+
 # Build outputs
 bin/
 obj/
@@ -14,10 +17,6 @@ artifacts/
 .DS_Store
 Thumbs.db
 
-# Agent session artifacts
-.eight-gates/
-.smart/
-
 # NuGet
 *.nupkg
 *.snupkg
@@ -28,8 +27,15 @@ nupkgs/
 TestResults/
 *.trx
 
+# Local scratch files
+*.png
+*.sh
+async-showcase.md
+watch_*
+
 # DocFX
 docs/_site/
 docs/api/*.yml
 docs/api/*.md
 !docs/api/toc.yml
+.claude/worktrees/

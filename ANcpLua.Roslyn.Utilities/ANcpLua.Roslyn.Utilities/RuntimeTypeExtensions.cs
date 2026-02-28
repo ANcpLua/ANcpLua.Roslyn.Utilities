@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -35,8 +37,10 @@ internal
     ///     Returns <c>false</c> for non-generic <see cref="Task" />. Use <see cref="IsTaskLike" />
     ///     to match both generic and non-generic task types.
     /// </remarks>
-    public static bool IsGenericTask(this Type type) =>
-        type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>);
+    public static bool IsGenericTask(this Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>);
+    }
 
     /// <summary>
     ///     Determines whether the type is a closed generic <see cref="ValueTask{TResult}" />.
@@ -49,8 +53,10 @@ internal
     ///     Returns <c>false</c> for non-generic <see cref="ValueTask" />. Use <see cref="IsTaskLike" />
     ///     to match both generic and non-generic task types.
     /// </remarks>
-    public static bool IsGenericValueTask(this Type type) =>
-        type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTask<>);
+    public static bool IsGenericValueTask(this Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTask<>);
+    }
 
     /// <summary>
     ///     Determines whether the type is any of the common task types:
@@ -63,11 +69,13 @@ internal
     ///     This is useful when building handler registries that need to determine whether
     ///     a method is async based on its return type.
     /// </remarks>
-    public static bool IsTaskLike(this Type type) =>
-        type == typeof(Task) ||
-        type == typeof(ValueTask) ||
-        type.IsGenericTask() ||
-        type.IsGenericValueTask();
+    public static bool IsTaskLike(this Type type)
+    {
+        return type == typeof(Task) ||
+               type == typeof(ValueTask) ||
+               type.IsGenericTask() ||
+               type.IsGenericValueTask();
+    }
 
     /// <summary>
     ///     Gets the result type from a <see cref="Task{TResult}" /> or <see cref="ValueTask{TResult}" /> type.
@@ -81,10 +89,12 @@ internal
     ///     Returns <c>null</c> for non-generic <see cref="Task" />, non-generic <see cref="ValueTask" />,
     ///     and all non-task types.
     /// </remarks>
-    public static Type? GetTaskResultType(this Type type) =>
-        type.IsGenericTask() || type.IsGenericValueTask()
+    public static Type? GetTaskResultType(this Type type)
+    {
+        return type.IsGenericTask() || type.IsGenericValueTask()
             ? type.GetGenericArguments()[0]
             : null;
+    }
 
     /// <summary>
     ///     Determines whether the type implements a specific open generic interface.
@@ -112,10 +122,8 @@ internal
     public static bool ImplementsOpenGeneric(this Type type, Type openGenericInterface)
     {
         foreach (var iface in type.GetInterfaces())
-        {
             if (iface.IsGenericType && iface.GetGenericTypeDefinition() == openGenericInterface)
                 return true;
-        }
 
         return false;
     }
@@ -153,10 +161,8 @@ internal
         var results = new List<Type>();
 
         foreach (var iface in interfaces)
-        {
             if (iface.IsGenericType && iface.GetGenericTypeDefinition() == openGenericInterface)
                 results.Add(iface);
-        }
 
         return results.ToArray();
     }

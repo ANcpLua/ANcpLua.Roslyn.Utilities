@@ -67,7 +67,10 @@ internal
     ///     <paramref name="node" />.
     /// </returns>
     /// <seealso cref="From(Location)" />
-    public static LocationInfo From(SyntaxNode node) => From(node.GetLocation());
+    public static LocationInfo From(SyntaxNode node)
+    {
+        return From(node.GetLocation());
+    }
 
     /// <summary>
     ///     Creates a <see cref="LocationInfo" /> from a <see cref="SyntaxToken" />.
@@ -78,7 +81,10 @@ internal
     ///     <paramref name="token" />.
     /// </returns>
     /// <seealso cref="From(Location)" />
-    public static LocationInfo From(SyntaxToken token) => From(token.GetLocation());
+    public static LocationInfo From(SyntaxToken token)
+    {
+        return From(token.GetLocation());
+    }
 
     /// <summary>
     ///     Converts this <see cref="LocationInfo" /> back to a <see cref="Location" />.
@@ -89,5 +95,8 @@ internal
     /// <remarks>
     ///     The returned location is suitable for use in diagnostic reporting.
     /// </remarks>
-    public Location ToLocation() => Location.Create(Path, Span, LineSpan);
+    public Location ToLocation()
+    {
+        return Location.Create(Path, Span, LineSpan);
+    }
 }

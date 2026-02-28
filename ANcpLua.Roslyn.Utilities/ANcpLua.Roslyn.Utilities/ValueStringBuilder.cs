@@ -1,5 +1,6 @@
 // Licensed under the MIT License.
 
+using System;
 using System.Buffers;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -108,11 +109,17 @@ internal
     ///     Returns the current contents as a trimmed string.
     /// </summary>
     /// <returns>The trimmed string representation.</returns>
-    public readonly string ToTrimString() => new(_span[.._pos].Trim().ToArray());
+    public readonly string ToTrimString()
+    {
+        return new(_span[.._pos].Trim().ToArray());
+    }
 
     /// <summary>
     ///     Returns the current contents as a string.
     /// </summary>
     /// <returns>The string representation.</returns>
-    public override readonly string ToString() => new(_span[.._pos].ToArray());
+    public readonly override string ToString()
+    {
+        return new(_span[.._pos].ToArray());
+    }
 }

@@ -1,15 +1,15 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace ANcpLua.Roslyn.Utilities.CodeFixes;
+namespace ANcpLua.Roslyn.Utilities.Testing.CodeFixes;
 
 /// <summary>
-/// Extensions for manipulating syntax modifier lists.
+///     Extensions for manipulating syntax modifier lists.
 /// </summary>
 public static class SyntaxModifierExtensions
 {
     /// <summary>
-    /// Ensures a modifier is present at the specified position.
+    ///     Ensures a modifier is present at the specified position.
     /// </summary>
     public static SyntaxTokenList EnsureModifier(
         this SyntaxTokenList modifiers,
@@ -30,7 +30,7 @@ public static class SyntaxModifierExtensions
     }
 
     /// <summary>
-    /// Removes a modifier from the list if present.
+    ///     Removes a modifier from the list if present.
     /// </summary>
     public static SyntaxTokenList RemoveModifier(this SyntaxTokenList modifiers, SyntaxKind kind)
     {
@@ -41,10 +41,8 @@ public static class SyntaxModifierExtensions
     private static int GetAccessibilityEndIndex(SyntaxTokenList modifiers)
     {
         for (var i = 0; i < modifiers.Count; i++)
-        {
             if (!IsAccessibilityModifier(modifiers[i].Kind()))
                 return i;
-        }
         return modifiers.Count;
     }
 
@@ -54,22 +52,27 @@ public static class SyntaxModifierExtensions
         return index >= 0 ? index : modifiers.Count;
     }
 
-    private static bool IsAccessibilityModifier(SyntaxKind kind) =>
-        kind is SyntaxKind.PublicKeyword or SyntaxKind.PrivateKeyword or
-               SyntaxKind.ProtectedKeyword or SyntaxKind.InternalKeyword;
+    private static bool IsAccessibilityModifier(SyntaxKind kind)
+    {
+        return kind is SyntaxKind.PublicKeyword or SyntaxKind.PrivateKeyword or
+            SyntaxKind.ProtectedKeyword or SyntaxKind.InternalKeyword;
+    }
 }
 
 /// <summary>
-/// Position to insert a modifier.
+///     Position to insert a modifier.
 /// </summary>
 public enum ModifierPosition
 {
     /// <summary>At the start of the modifier list.</summary>
     Start,
+
     /// <summary>After accessibility modifiers (public/private/protected/internal).</summary>
     AfterAccessibility,
+
     /// <summary>Before the partial keyword.</summary>
     BeforePartial,
+
     /// <summary>At the end of the modifier list.</summary>
     End
 }

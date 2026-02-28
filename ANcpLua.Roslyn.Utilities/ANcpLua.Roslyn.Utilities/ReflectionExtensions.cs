@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
@@ -111,17 +112,17 @@ internal
     /// closedMethod.InvokeUnwrapped(handlerInstance, message);
     /// </code>
     /// </example>
-    public static MethodInfo GetMethodFromGenericDefinition(this Type specializedType, MethodInfo genericMethodDefinition)
+    public static MethodInfo GetMethodFromGenericDefinition(this Type specializedType,
+        MethodInfo genericMethodDefinition)
     {
 #if NET6_0_OR_GREATER
         return (MethodInfo)specializedType.GetMemberWithSameMetadataDefinitionAs(genericMethodDefinition);
 #else
-        const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+        const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static |
+                                 BindingFlags.Instance;
         foreach (var m in specializedType.GetMethods(all))
-        {
             if (m.MetadataToken == genericMethodDefinition.MetadataToken)
                 return m;
-        }
 
         throw new MissingMethodException(specializedType.FullName, genericMethodDefinition.Name);
 #endif

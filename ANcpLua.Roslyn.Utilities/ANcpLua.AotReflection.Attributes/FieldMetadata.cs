@@ -1,8 +1,9 @@
-namespace ANcpLua.Analyzers.AotReflection;
-
 using System.Reflection;
 
-public sealed class FieldMetadata {
+namespace ANcpLua.Analyzers.AotReflection;
+
+public sealed class FieldMetadata
+{
     public string Name { get; set; } = string.Empty;
 
     public Type Type { get; set; } = null!;

@@ -1,8 +1,11 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Models;
 
-internal static partial class AccessibilityExtensions {
+internal static class AccessibilityExtensions
+{
     public static string ToAccessibilityString(this Accessibility accessibility)
-        => accessibility switch {
+    {
+        return accessibility switch
+        {
             Accessibility.Public => "public",
             Accessibility.Private => "private",
             Accessibility.Internal => "internal",
@@ -11,4 +14,5 @@ internal static partial class AccessibilityExtensions {
             Accessibility.ProtectedOrInternal => "protected internal",
             _ => "private"
         };
+    }
 }

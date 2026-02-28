@@ -1,10 +1,14 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿using ANcpLua.Analyzers.AotReflection.Models;
 
-internal static partial class FieldExtractor {
+namespace ANcpLua.Analyzers.AotReflection.Extraction;
+
+internal static class FieldExtractor
+{
     public static DiagnosticFlow<EquatableArray<FieldModel>> ExtractFields(
         INamedTypeSymbol type,
         AotReflectionOptions options,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
         var fields = new List<FieldModel>();
         var diagnostics = new List<DiagnosticInfo>();
         var constMatch = Match.Field().Const();
@@ -13,24 +17,17 @@ internal static partial class FieldExtractor {
             ? type.GetAllMembers()
             : type.GetMembers();
 
-        foreach (var member in members) {
+        foreach (var member in members)
+        {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (member is not IFieldSymbol field) {
-                continue;
-            }
+            if (member is not IFieldSymbol field) continue;
 
-            if (field.IsImplicitlyDeclared) {
-                continue;
-            }
+            if (field.IsImplicitlyDeclared) continue;
 
-            if (field.AssociatedSymbol is not null) {
-                continue;
-            }
+            if (field.AssociatedSymbol is not null) continue;
 
-            if (!options.IncludePrivate && field.DeclaredAccessibility != Accessibility.Public) {
-                continue;
-            }
+            if (!options.IncludePrivate && field.DeclaredAccessibility != Accessibility.Public) continue;
 
             var isConst = constMatch.Matches(field) || field.IsConst;
             var constValue = isConst && field.HasConstantValue
@@ -38,20 +35,18 @@ internal static partial class FieldExtractor {
                 : null;
 
             fields.Add(new FieldModel(
-                Name: field.Name,
-                TypeFullyQualified: field.Type.GetFullyQualifiedName(),
-                ContainingTypeFullyQualified: type.GetFullyQualifiedName(),
-                IsStatic: field.IsStatic,
-                IsReadOnly: field.IsReadOnly,
-                IsConst: isConst,
-                ConstValue: constValue,
-                Accessibility: field.DeclaredAccessibility.ToAccessibilityString()));
+                field.Name,
+                field.Type.GetFullyQualifiedName(),
+                type.GetFullyQualifiedName(),
+                field.IsStatic,
+                field.IsReadOnly,
+                isConst,
+                constValue,
+                field.DeclaredAccessibility.ToAccessibilityString()));
         }
 
         var flow = DiagnosticFlow.Ok(fields.Count is 0 ? default : fields.ToArray().ToEquatableArray());
-        foreach (var diagnostic in diagnostics) {
-            flow = flow.Warn(diagnostic);
-        }
+        foreach (var diagnostic in diagnostics) flow = flow.Warn(diagnostic);
 
         return flow;
     }

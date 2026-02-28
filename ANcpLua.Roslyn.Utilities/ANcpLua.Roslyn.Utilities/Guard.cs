@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -51,7 +55,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     _name = name ?? throw new ArgumentNullException(nameof(name));
 ///     _service = service ?? throw new ArgumentNullException(nameof(service));
 /// }
-///
+/// 
 /// // After: Clean, expressive guards
 /// public void Process(string? name, IService? service)
 /// {
@@ -93,7 +97,9 @@ internal
     /// </code>
     /// </example>
     public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value ?? throw new ArgumentNullException(paramName);
+    {
+        return value ?? throw new ArgumentNullException(paramName);
+    }
 
     /// <summary>
     ///     Returns the value if not <c>null</c>, otherwise returns the specified default value.
@@ -116,7 +122,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, Func{T})" />
     public static T NotNullOrElse<T>(T? value, T defaultValue) where T : class
-        => value ?? defaultValue;
+    {
+        return value ?? defaultValue;
+    }
 
     /// <summary>
     ///     Returns the value if not <c>null</c>, otherwise computes a default using the factory.
@@ -145,7 +153,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, T)" />
     public static T NotNullOrElse<T>(T? value, Func<T> factory) where T : class
-        => value ?? factory();
+    {
+        return value ?? factory();
+    }
 
     /// <summary>
     ///     Returns the value if it has a value, otherwise returns the specified default value.
@@ -168,7 +178,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, Func{T})" />
     public static T NotNullOrElse<T>(T? value, T defaultValue) where T : struct
-        => value ?? defaultValue;
+    {
+        return value ?? defaultValue;
+    }
 
     /// <summary>
     ///     Returns the value if it has a value, otherwise computes a default using the factory.
@@ -194,7 +206,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, T)" />
     public static T NotNullOrElse<T>(T? value, Func<T> factory) where T : struct
-        => value ?? factory();
+    {
+        return value ?? factory();
+    }
 
     /// <summary>
     ///     Validates that a string is not <c>null</c> or empty and returns it.
@@ -214,7 +228,8 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static string NotNullOrEmpty([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    public static string NotNullOrEmpty([NotNull] string? value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (value is null)
             throw new ArgumentNullException(paramName);
@@ -241,7 +256,8 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static string NotNullOrWhiteSpace([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    public static string NotNullOrWhiteSpace([NotNull] string? value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (value is null)
             throw new ArgumentNullException(paramName);
@@ -266,7 +282,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrEmptyOrElse(string?, Func{string})" />
     public static string NotNullOrEmptyOrElse(string? value, string defaultValue)
-        => value is { Length: > 0 } ? value : defaultValue;
+    {
+        return value is { Length: > 0 } ? value : defaultValue;
+    }
 
     /// <summary>
     ///     Returns the string if not <c>null</c> or empty, otherwise computes a default using the factory.
@@ -287,7 +305,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrEmptyOrElse(string?, string)" />
     public static string NotNullOrEmptyOrElse(string? value, Func<string> factory)
-        => value is { Length: > 0 } ? value : factory();
+    {
+        return value is { Length: > 0 } ? value : factory();
+    }
 
     /// <summary>
     ///     Returns the string if not <c>null</c>, empty, or whitespace, otherwise returns the specified default value.
@@ -307,7 +327,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrWhiteSpaceOrElse(string?, Func{string})" />
     public static string NotNullOrWhiteSpaceOrElse(string? value, string defaultValue)
-        => value is not null && !string.IsNullOrWhiteSpace(value) ? value : defaultValue;
+    {
+        return value is not null && !string.IsNullOrWhiteSpace(value) ? value : defaultValue;
+    }
 
     /// <summary>
     ///     Returns the string if not <c>null</c>, empty, or whitespace, otherwise computes a default using the factory.
@@ -328,7 +350,9 @@ internal
     /// </example>
     /// <seealso cref="NotNullOrWhiteSpaceOrElse(string?, string)" />
     public static string NotNullOrWhiteSpaceOrElse(string? value, Func<string> factory)
-        => value is not null && !string.IsNullOrWhiteSpace(value) ? value : factory();
+    {
+        return value is not null && !string.IsNullOrWhiteSpace(value) ? value : factory();
+    }
 
     /// <summary>
     ///     Validates that a collection is not <c>null</c> or empty and returns it.
@@ -382,7 +406,8 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static T InRange<T>(T value, T min, T max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    public static T InRange<T>(T value, T min, T max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
         where T : IComparable<T>
     {
         if (value.CompareTo(min) < 0 || value.CompareTo(max) > 0)
@@ -411,7 +436,8 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static int ValidIndex(int index, int count, [CallerArgumentExpression(nameof(index))] string? paramName = null)
+    public static int ValidIndex(int index, int count,
+        [CallerArgumentExpression(nameof(index))] string? paramName = null)
     {
         if (index < 0 || index >= count)
             throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
@@ -506,7 +532,8 @@ internal
         NotNull(value, paramName);
 
         if (value.Length != length)
-            throw new ArgumentException($"String must be exactly {length} characters. Actual: {value.Length}.", paramName);
+            throw new ArgumentException($"String must be exactly {length} characters. Actual: {value.Length}.",
+                paramName);
 
         return value;
     }
@@ -521,7 +548,10 @@ internal
     /// </param>
     /// <returns>The validated string.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is <c>null</c>.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is shorter than <paramref name="minLength" />.</exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="value" /> is shorter than <paramref name="minLength" />
+    ///     .
+    /// </exception>
     /// <example>
     ///     <code>
     /// public void SetPassword(string password)
@@ -539,7 +569,8 @@ internal
         NotNull(value, paramName);
 
         if (value.Length < minLength)
-            throw new ArgumentException($"String must be at least {minLength} characters. Actual: {value.Length}.", paramName);
+            throw new ArgumentException($"String must be at least {minLength} characters. Actual: {value.Length}.",
+                paramName);
 
         return value;
     }
@@ -572,7 +603,8 @@ internal
         NotNull(value, paramName);
 
         if (value.Length > maxLength)
-            throw new ArgumentException($"String must not exceed {maxLength} characters. Actual: {value.Length}.", paramName);
+            throw new ArgumentException($"String must not exceed {maxLength} characters. Actual: {value.Length}.",
+                paramName);
 
         return value;
     }
@@ -607,7 +639,8 @@ internal
         NotNull(value, paramName);
 
         if (value.Length < minLength || value.Length > maxLength)
-            throw new ArgumentException($"String length must be between {minLength} and {maxLength}. Actual: {value.Length}.", paramName);
+            throw new ArgumentException(
+                $"String length must be between {minLength} and {maxLength}. Actual: {value.Length}.", paramName);
 
         return value;
     }
@@ -640,10 +673,8 @@ internal
     {
         var seen = new HashSet<T>();
         foreach (var item in value)
-        {
             if (!seen.Add(item))
                 throw new ArgumentException($"Duplicate value found: {item}", paramName);
-        }
     }
 
     /// <summary>
@@ -672,10 +703,8 @@ internal
     {
         var seen = new HashSet<T>(comparer);
         foreach (var item in value)
-        {
             if (!seen.Add(item))
                 throw new ArgumentException($"Duplicate value found: {item}", paramName);
-        }
     }
 
     /// <summary>
@@ -699,10 +728,8 @@ internal
 
         var seen = new HashSet<T>();
         foreach (var item in value)
-        {
             if (!seen.Add(item))
                 throw new ArgumentException($"Duplicate value found: {item}", paramName);
-        }
 
         return value;
     }
@@ -730,10 +757,8 @@ internal
 
         var seen = new HashSet<T>(comparer);
         foreach (var item in value)
-        {
             if (!seen.Add(item))
                 throw new ArgumentException($"Duplicate value found: {item}", paramName);
-        }
 
         return value;
     }
@@ -836,7 +861,8 @@ internal
 #else
         if (!Enum.IsDefined(typeof(T), value))
 #endif
-            throw new ArgumentOutOfRangeException(paramName, value, $"Undefined enum value for {typeof(T).Name}: {value}");
+            throw new ArgumentOutOfRangeException(paramName, value,
+                $"Undefined enum value for {typeof(T).Name}: {value}");
 
         return value;
     }
@@ -1063,10 +1089,8 @@ internal
         string? paramName = null)
     {
         foreach (var item in allowed)
-        {
             if (EqualityComparer<T>.Default.Equals(value, item))
                 return value;
-        }
 
         var allowedStr = string.Join(", ", allowed);
         throw new ArgumentException($"Value must be one of: [{allowedStr}]. Actual: {value}.", paramName);
@@ -1122,13 +1146,12 @@ internal
         string? paramName = null)
     {
         foreach (var item in disallowed)
-        {
             if (EqualityComparer<T>.Default.Equals(value, item))
             {
                 var disallowedStr = string.Join(", ", disallowed);
-                throw new ArgumentException($"Value must not be one of: [{disallowedStr}]. Actual: {value}.", paramName);
+                throw new ArgumentException($"Value must not be one of: [{disallowedStr}]. Actual: {value}.",
+                    paramName);
             }
-        }
 
         return value;
     }
@@ -1168,63 +1191,80 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotZero(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value is 0
+    {
+        return value is 0
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is not negative and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotNegative(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < 0
+    {
+        return value < 0
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is positive (greater than zero) and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Positive(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= 0
+    {
+        return value <= 0
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is not greater than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int NotGreaterThan(int value, int max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value > max
+    public static int NotGreaterThan(int value, int max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is not less than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int NotLessThan(int value, int min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < min
+    public static int NotLessThan(int value, int min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is less than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LessThan(int value, int max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value >= max
+    {
+        return value >= max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that an integer is greater than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GreaterThan(int value, int min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= min
+    public static int GreaterThan(int value, int min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
             : value;
+    }
 
     #endregion
 
@@ -1235,63 +1275,81 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotZero(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value is 0L
+    {
+        return value is 0L
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is not negative and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotNegative(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < 0L
+    {
+        return value < 0L
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is positive (greater than zero) and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Positive(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= 0L
+    {
+        return value <= 0L
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is not greater than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long NotGreaterThan(long value, long max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value > max
+    public static long NotGreaterThan(long value, long max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is not less than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long NotLessThan(long value, long min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < min
+    public static long NotLessThan(long value, long min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is less than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long LessThan(long value, long max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value >= max
+    public static long LessThan(long value, long max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value >= max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a long is greater than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long GreaterThan(long value, long min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= min
+    public static long GreaterThan(long value, long min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
             : value;
+    }
 
     #endregion
 
@@ -1302,9 +1360,11 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotZero(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value is 0.0
+    {
+        return value is 0.0
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is not negative and returns it.
@@ -1312,9 +1372,11 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotNegative(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value >= 0.0) // Handles NaN correctly
+    {
+        return !(value >= 0.0) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is positive (greater than zero) and returns it.
@@ -1322,67 +1384,85 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double Positive(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value > 0.0) // Handles NaN correctly
+    {
+        return !(value > 0.0) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is not greater than the specified maximum and returns it.
     /// </summary>
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double NotGreaterThan(double value, double max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value <= max) // Handles NaN correctly
+    public static double NotGreaterThan(double value, double max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return !(value <= max) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is not less than the specified minimum and returns it.
     /// </summary>
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double NotLessThan(double value, double min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value >= min) // Handles NaN correctly
+    public static double NotLessThan(double value, double min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return !(value >= min) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is less than the specified maximum and returns it.
     /// </summary>
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double LessThan(double value, double max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value < max) // Handles NaN correctly
+    public static double LessThan(double value, double max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return !(value < max) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is greater than the specified minimum and returns it.
     /// </summary>
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double GreaterThan(double value, double min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => !(value > min) // Handles NaN correctly
+    public static double GreaterThan(double value, double min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return !(value > min) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is not NaN and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotNaN(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => double.IsNaN(value)
+    {
+        return double.IsNaN(value)
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be NaN.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a double is finite (not NaN or infinity) and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double Finite(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => double.IsNaN(value) || double.IsInfinity(value)
+    {
+        return double.IsNaN(value) || double.IsInfinity(value)
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be finite.")
             : value;
+    }
 
     #endregion
 
@@ -1423,10 +1503,8 @@ internal
         NotNullOrEmpty(value, paramName);
 
         foreach (var invalidChar in InvalidFileNameChars)
-        {
             if (value.IndexOf(invalidChar) != -1)
                 throw new ArgumentException($"Invalid character '{invalidChar}' in file name: {value}", paramName);
-        }
 
         return value;
     }
@@ -1470,10 +1548,8 @@ internal
         NotNullOrEmpty(value, paramName);
 
         foreach (var invalidChar in InvalidPathChars)
-        {
             if (value.IndexOf(invalidChar) != -1)
                 throw new ArgumentException($"Invalid character '{invalidChar}' in path: {value}", paramName);
-        }
 
         return value;
     }
@@ -1611,9 +1687,11 @@ internal
     /// </code>
     /// </example>
     public static Guid NotEmpty(Guid value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value == Guid.Empty
+    {
+        return value == Guid.Empty
             ? throw new ArgumentException("Guid cannot be empty.", paramName)
             : value;
+    }
 
     #endregion
 
@@ -1661,7 +1739,10 @@ internal
     /// </param>
     /// <returns>The validated type.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="type" /> is <c>null</c>.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="type" /> is not assignable to <typeparamref name="T" />.</exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="type" /> is not assignable to <typeparamref name="T" />
+    ///     .
+    /// </exception>
     public static Type AssignableTo<T>(
         [NotNull] Type? type,
         [CallerArgumentExpression(nameof(type))]
@@ -1685,7 +1766,10 @@ internal
     /// </param>
     /// <returns>The validated type.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="type" /> is <c>null</c>.</exception>
-    /// <exception cref="ArgumentException">Thrown when <typeparamref name="T" /> is not assignable to <paramref name="type" />.</exception>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <typeparamref name="T" /> is not assignable to <paramref name="type" />
+    ///     .
+    /// </exception>
     public static Type AssignableFrom<T>(
         [NotNull] Type? type,
         [CallerArgumentExpression(nameof(type))]
@@ -1708,63 +1792,81 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotZero(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value == 0m
+    {
+        return value == 0m
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is not negative and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotNegative(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < 0m
+    {
+        return value < 0m
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is positive (greater than zero) and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal Positive(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= 0m
+    {
+        return value <= 0m
             ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is not greater than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static decimal NotGreaterThan(decimal value, decimal max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value > max
+    public static decimal NotGreaterThan(decimal value, decimal max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is not less than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static decimal NotLessThan(decimal value, decimal min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value < min
+    public static decimal NotLessThan(decimal value, decimal min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is less than the specified maximum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static decimal LessThan(decimal value, decimal max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value >= max
+    public static decimal LessThan(decimal value, decimal max,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value >= max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
             : value;
+    }
 
     /// <summary>
     ///     Validates that a decimal is greater than the specified minimum and returns it.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static decimal GreaterThan(decimal value, decimal min, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        => value <= min
+    public static decimal GreaterThan(decimal value, decimal min,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
             : value;
+    }
 
     #endregion
 }

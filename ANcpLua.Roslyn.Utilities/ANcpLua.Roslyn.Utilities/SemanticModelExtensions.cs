@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -43,8 +45,10 @@ internal
     /// <seealso cref="AllConstant" />
     /// <seealso cref="GetConstantValueOrDefault{T}" />
     public static bool IsConstant(this SemanticModel model, SyntaxNode node,
-        CancellationToken cancellationToken = default) =>
-        model.GetConstantValue(node, cancellationToken).HasValue;
+        CancellationToken cancellationToken = default)
+    {
+        return model.GetConstantValue(node, cancellationToken).HasValue;
+    }
 
     /// <summary>
     ///     Checks if all syntax nodes in a collection represent compile-time constant values.

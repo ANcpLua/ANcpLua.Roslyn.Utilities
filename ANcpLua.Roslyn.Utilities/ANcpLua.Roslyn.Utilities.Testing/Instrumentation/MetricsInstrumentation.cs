@@ -7,7 +7,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace ANcpLua.Roslyn.Utilities.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
 
 /// <summary>
 ///     OpenTelemetry metric instrument kinds.
@@ -20,27 +20,39 @@ namespace ANcpLua.Roslyn.Utilities.Instrumentation;
 ///             <description>Use Case</description>
 ///         </listheader>
 ///         <item>
-///             <term><see cref="Counter"/></term>
+///             <term>
+///                 <see cref="Counter" />
+///             </term>
 ///             <description>Monotonic sum: requests, errors, bytes sent</description>
 ///         </item>
 ///         <item>
-///             <term><see cref="UpDownCounter"/></term>
+///             <term>
+///                 <see cref="UpDownCounter" />
+///             </term>
 ///             <description>Non-monotonic sum: active connections, queue depth</description>
 ///         </item>
 ///         <item>
-///             <term><see cref="Histogram"/></term>
+///             <term>
+///                 <see cref="Histogram" />
+///             </term>
 ///             <description>Distribution: latency, request size</description>
 ///         </item>
 ///         <item>
-///             <term><see cref="Gauge"/></term>
+///             <term>
+///                 <see cref="Gauge" />
+///             </term>
 ///             <description>Current value (pull): CPU, memory, pool size</description>
 ///         </item>
 ///         <item>
-///             <term><see cref="ObservableCounter"/></term>
+///             <term>
+///                 <see cref="ObservableCounter" />
+///             </term>
 ///             <description>Monotonic sum (pull): total GC collections</description>
 ///         </item>
 ///         <item>
-///             <term><see cref="ObservableUpDownCounter"/></term>
+///             <term>
+///                 <see cref="ObservableUpDownCounter" />
+///             </term>
 ///             <description>Non-monotonic sum (pull): thread count</description>
 ///         </item>
 ///     </list>
@@ -67,7 +79,7 @@ public enum MetricKind
 }
 
 /// <summary>
-///     Factory for creating <see cref="Meter"/> with OTel conventions.
+///     Factory for creating <see cref="Meter" /> with OTel conventions.
 /// </summary>
 public static class MeterFactory
 {
@@ -137,7 +149,7 @@ public static class MetricUnits
 }
 
 /// <summary>
-///     Extension methods for <see cref="Meter"/> with convention-based naming.
+///     Extension methods for <see cref="Meter" /> with convention-based naming.
 /// </summary>
 public static class MeterExtensions
 {
@@ -152,8 +164,10 @@ public static class MeterExtensions
         string baseName,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateCounter<T>($"{meter.Name}.{baseName}", unit, description);
+        where T : struct
+    {
+        return meter.CreateCounter<T>($"{meter.Name}.{baseName}", unit, description);
+    }
 
     /// <summary>Creates a non-monotonic counter with standard naming.</summary>
     /// <remarks>Use for: active connections, queue depth, in-flight requests.</remarks>
@@ -162,8 +176,10 @@ public static class MeterExtensions
         string baseName,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateUpDownCounter<T>($"{meter.Name}.{baseName}", unit, description);
+        where T : struct
+    {
+        return meter.CreateUpDownCounter<T>($"{meter.Name}.{baseName}", unit, description);
+    }
 
     /// <summary>Creates a histogram with standard naming.</summary>
     /// <remarks>Use for: latency, request size, batch size distributions.</remarks>
@@ -172,8 +188,10 @@ public static class MeterExtensions
         string baseName,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateHistogram<T>($"{meter.Name}.{baseName}", unit, description);
+        where T : struct
+    {
+        return meter.CreateHistogram<T>($"{meter.Name}.{baseName}", unit, description);
+    }
 
     // =========================================================================
     // Pull Instruments (callback invoked on collection)
@@ -187,8 +205,10 @@ public static class MeterExtensions
         Func<T> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 
     /// <summary>Creates an observable gauge with tags.</summary>
     public static ObservableGauge<T> CreateGauge<T>(
@@ -197,8 +217,10 @@ public static class MeterExtensions
         Func<Measurement<T>> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 
     /// <summary>Creates an observable gauge with multiple measurements.</summary>
     public static ObservableGauge<T> CreateGauge<T>(
@@ -207,8 +229,10 @@ public static class MeterExtensions
         Func<IEnumerable<Measurement<T>>> observeValues,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValues, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableGauge($"{meter.Name}.{baseName}", observeValues, unit, description);
+    }
 
     /// <summary>Creates an observable counter (monotonic, pull) with standard naming.</summary>
     /// <remarks>Use for: total GC collections, total CPU time, total page faults.</remarks>
@@ -218,8 +242,10 @@ public static class MeterExtensions
         Func<T> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 
     /// <summary>Creates an observable counter with tags.</summary>
     public static ObservableCounter<T> CreateObservableCounter<T>(
@@ -228,8 +254,10 @@ public static class MeterExtensions
         Func<Measurement<T>> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 
     /// <summary>Creates an observable up-down counter (non-monotonic, pull) with standard naming.</summary>
     /// <remarks>Use for: thread count, handle count, connection pool size.</remarks>
@@ -239,8 +267,10 @@ public static class MeterExtensions
         Func<T> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableUpDownCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableUpDownCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 
     /// <summary>Creates an observable up-down counter with tags.</summary>
     public static ObservableUpDownCounter<T> CreateObservableUpDownCounter<T>(
@@ -249,8 +279,10 @@ public static class MeterExtensions
         Func<Measurement<T>> observeValue,
         string unit,
         string description)
-        where T : struct =>
-        meter.CreateObservableUpDownCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+        where T : struct
+    {
+        return meter.CreateObservableUpDownCounter($"{meter.Name}.{baseName}", observeValue, unit, description);
+    }
 }
 
 /// <summary>
@@ -260,7 +292,10 @@ public readonly struct MetricTags
 {
     private readonly TagList _tags;
 
-    private MetricTags(TagList tags) => _tags = tags;
+    private MetricTags(TagList tags)
+    {
+        _tags = tags;
+    }
 
     /// <summary>Creates an empty tag builder.</summary>
     public static MetricTags Empty => new([]);
@@ -313,10 +348,16 @@ public readonly struct MetricTags
     }
 
     /// <summary>Converts to TagList for use with instruments.</summary>
-    public TagList ToTagList() => _tags;
+    public TagList ToTagList()
+    {
+        return _tags;
+    }
 
     /// <summary>Implicit conversion to TagList.</summary>
-    public static implicit operator TagList(MetricTags tags) => tags._tags;
+    public static implicit operator TagList(MetricTags tags)
+    {
+        return tags._tags;
+    }
 }
 
 /// <summary>
@@ -370,7 +411,10 @@ public readonly struct ActiveTracker : IDisposable
     }
 
     /// <summary>Decrements the counter if not null.</summary>
-    public void Dispose() => _counter?.Add(-1, _tags);
+    public void Dispose()
+    {
+        _counter?.Add(-1, _tags);
+    }
 }
 
 /// <summary>
@@ -385,8 +429,10 @@ public static class InstrumentExtensions
     /// </summary>
     public static DurationRecorder RecordDuration(
         this Histogram<double>? histogram,
-        TagList tags = default) =>
-        new(histogram, tags);
+        TagList tags = default)
+    {
+        return new DurationRecorder(histogram, tags);
+    }
 
     /// <summary>
     ///     Creates a scoped duration recorder with MetricTags.
@@ -394,8 +440,10 @@ public static class InstrumentExtensions
     /// </summary>
     public static DurationRecorder RecordDuration(
         this Histogram<double>? histogram,
-        MetricTags tags) =>
-        new(histogram, tags.ToTagList());
+        MetricTags tags)
+    {
+        return new DurationRecorder(histogram, tags.ToTagList());
+    }
 
     /// <summary>
     ///     Creates a scoped active tracker that increments on enter, decrements on dispose.
@@ -403,8 +451,10 @@ public static class InstrumentExtensions
     /// </summary>
     public static ActiveTracker TrackActive(
         this UpDownCounter<long>? counter,
-        TagList tags = default) =>
-        new(counter, tags);
+        TagList tags = default)
+    {
+        return new ActiveTracker(counter, tags);
+    }
 
     /// <summary>
     ///     Creates a scoped active tracker with MetricTags.
@@ -412,8 +462,10 @@ public static class InstrumentExtensions
     /// </summary>
     public static ActiveTracker TrackActive(
         this UpDownCounter<long>? counter,
-        MetricTags tags) =>
-        new(counter, tags.ToTagList());
+        MetricTags tags)
+    {
+        return new ActiveTracker(counter, tags.ToTagList());
+    }
 }
 
 /// <summary>
@@ -422,16 +474,28 @@ public static class InstrumentExtensions
 public static class SystemMetricCallbacks
 {
     /// <summary>Returns GC heap size in bytes.</summary>
-    public static long GetGcHeapSize() => GC.GetTotalMemory(forceFullCollection: false);
+    public static long GetGcHeapSize()
+    {
+        return GC.GetTotalMemory(false);
+    }
 
     /// <summary>Returns Gen0 collection count.</summary>
-    public static long GetGen0Collections() => GC.CollectionCount(0);
+    public static long GetGen0Collections()
+    {
+        return GC.CollectionCount(0);
+    }
 
     /// <summary>Returns Gen1 collection count.</summary>
-    public static long GetGen1Collections() => GC.CollectionCount(1);
+    public static long GetGen1Collections()
+    {
+        return GC.CollectionCount(1);
+    }
 
     /// <summary>Returns Gen2 collection count.</summary>
-    public static long GetGen2Collections() => GC.CollectionCount(2);
+    public static long GetGen2Collections()
+    {
+        return GC.CollectionCount(2);
+    }
 
     /// <summary>Returns thread pool thread count.</summary>
     public static int GetThreadPoolThreadCount()
@@ -442,5 +506,8 @@ public static class SystemMetricCallbacks
     }
 
     /// <summary>Returns working set in bytes.</summary>
-    public static long GetWorkingSet() => Environment.WorkingSet;
+    public static long GetWorkingSet()
+    {
+        return Environment.WorkingSet;
+    }
 }

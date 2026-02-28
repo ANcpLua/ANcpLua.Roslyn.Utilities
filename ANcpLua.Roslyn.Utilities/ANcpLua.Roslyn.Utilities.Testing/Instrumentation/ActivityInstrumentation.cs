@@ -6,23 +6,23 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ANcpLua.Roslyn.Utilities.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
 
 /// <summary>
 ///     OTel schema versions for telemetry evolution.
 /// </summary>
 public static class OTelSchema
 {
-    public const string V1_29_0 = "https://opentelemetry.io/schemas/1.29.0";
-    public const string V1_30_0 = "https://opentelemetry.io/schemas/1.30.0";
-    public const string V1_39_0 = "https://opentelemetry.io/schemas/1.39.0";
+    public const string V1290 = "https://opentelemetry.io/schemas/1.29.0";
+    public const string V1300 = "https://opentelemetry.io/schemas/1.30.0";
+    public const string V1390 = "https://opentelemetry.io/schemas/1.39.0";
 
     /// <summary>Current recommended schema version.</summary>
-    public const string Current = V1_39_0;
+    public const string Current = V1390;
 }
 
 /// <summary>
-///     Factory for creating <see cref="ActivitySource"/> with OTel conventions.
+///     Factory for creating <see cref="ActivitySource" /> with OTel conventions.
 /// </summary>
 public static class ActivitySourceFactory
 {
@@ -109,7 +109,7 @@ public static class SpanAttributes
 }
 
 /// <summary>
-///     Extension methods for <see cref="Activity"/> with OTel conventions.
+///     Extension methods for <see cref="Activity" /> with OTel conventions.
 ///     All methods accept nullable Activity since ActivitySource.StartActivity() can return null.
 /// </summary>
 public static class ActivityExtensions
@@ -261,8 +261,10 @@ public static class ActivityExtensions
 
     /// <summary>Checks if activity has GenAI attributes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool HasGenAiAttributes(this Activity? activity) =>
-        activity?.GetTagItem(SpanAttributes.GenAiProviderName) is not null;
+    public static bool HasGenAiAttributes(this Activity? activity)
+    {
+        return activity?.GetTagItem(SpanAttributes.GenAiProviderName) is not null;
+    }
 
     /// <summary>Gets total token count from GenAI attributes.</summary>
     public static long GetTotalTokens(this Activity? activity)
@@ -282,23 +284,33 @@ public static class ActivityExtensions
 /// </summary>
 public readonly struct ScopedActivity : IDisposable
 {
-    private readonly Activity? _activity;
+    public ScopedActivity(Activity? activity)
+    {
+        Activity = activity;
+    }
 
-    public ScopedActivity(Activity? activity) => _activity = activity;
-
-    public Activity? Activity => _activity;
+    public Activity? Activity { get; }
 
     /// <summary>Marks the activity as successful.</summary>
-    public void SetSuccess() => _activity?.SetOk();
+    public void SetSuccess()
+    {
+        Activity?.SetOk();
+    }
 
     /// <summary>Records an exception and marks the activity as failed.</summary>
-    public void SetException(Exception exception) => _activity?.RecordException(exception);
+    public void SetException(Exception exception)
+    {
+        Activity?.RecordException(exception);
+    }
 
-    public void Dispose() => _activity?.Dispose();
+    public void Dispose()
+    {
+        Activity?.Dispose();
+    }
 }
 
 /// <summary>
-///     Extension methods for <see cref="ActivitySource"/>.
+///     Extension methods for <see cref="ActivitySource" />.
 /// </summary>
 public static class ActivitySourceExtensions
 {

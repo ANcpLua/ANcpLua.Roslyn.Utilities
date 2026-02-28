@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -25,7 +28,10 @@ internal
     sealed record Error(string Code, string Message)
 {
     /// <inheritdoc />
-    public override string ToString() => $"{Code}: {Message}";
+    public override string ToString()
+    {
+        return $"{Code}: {Message}";
+    }
 }
 
 /// <summary>
@@ -65,14 +71,14 @@ internal
 /// // Success
 /// Result&lt;int&gt; ok = Result&lt;int&gt;.Ok(42);
 /// Result&lt;int&gt; okImplicit = 42;
-///
+/// 
 /// // Failure
 /// Result&lt;int&gt; fail = Result&lt;int&gt;.Fail(new Error("invalid", "Bad input"));
 /// Result&lt;int&gt; failImplicit = new Error("invalid", "Bad input");
-///
+/// 
 /// // Pattern match
 /// string msg = ok.Match(v =&gt; $"Got {v}", e =&gt; e.Message);
-///
+/// 
 /// // Railway composition
 /// Result&lt;string&gt; pipeline = ok
 ///     .Where(x =&gt; x &gt; 0, new Error("negative", "Must be positive"))
@@ -87,16 +93,16 @@ internal
 #endif
     readonly struct Result<T> : IEquatable<Result<T>>
 {
-    readonly T? _value;
-    readonly Error? _error;
+    private readonly T? _value;
+    private readonly Error? _error;
 
-    Result(T value)
+    private Result(T value)
     {
         _value = value;
         _error = null;
     }
 
-    Result(Error error)
+    private Result(Error error)
     {
         _value = default;
         _error = Guard.NotNull(error);
@@ -117,23 +123,37 @@ internal
     /// <summary>Gets the error.</summary>
     /// <exception cref="InvalidOperationException">The result is successful.</exception>
     public Error Error => _error
-        ?? throw new InvalidOperationException("Result is successful.");
+                          ?? throw new InvalidOperationException("Result is successful.");
 
     /// <summary>Creates a successful result.</summary>
-    public static Result<T> Ok(T value) => new(value);
+    public static Result<T> Ok(T value)
+    {
+        return new Result<T>(value);
+    }
 
     /// <summary>Creates a failed result.</summary>
-    public static Result<T> Fail(Error error) => new(error);
+    public static Result<T> Fail(Error error)
+    {
+        return new Result<T>(error);
+    }
 
     /// <summary>Implicitly converts a value to a successful result.</summary>
-    public static implicit operator Result<T>(T value) => Ok(value);
+    public static implicit operator Result<T>(T value)
+    {
+        return Ok(value);
+    }
 
     /// <summary>Implicitly converts an error to a failed result.</summary>
-    public static implicit operator Result<T>(Error error) => Fail(error);
+    public static implicit operator Result<T>(Error error)
+    {
+        return Fail(error);
+    }
 
     /// <summary>Pattern-matches on the result, returning a value of <typeparamref name="TResult" />.</summary>
-    public TResult Match<TResult>(Func<T, TResult> ok, Func<Error, TResult> fail) =>
-        IsOk ? ok(_value!) : fail(_error!);
+    public TResult Match<TResult>(Func<T, TResult> ok, Func<Error, TResult> fail)
+    {
+        return IsOk ? ok(_value!) : fail(_error!);
+    }
 
     /// <summary>Pattern-matches on the result with side effects.</summary>
     public void Match(Action<T> ok, Action<Error> fail)
@@ -143,27 +163,43 @@ internal
     }
 
     /// <inheritdoc />
-    public bool Equals(Result<T> other) =>
-        IsOk == other.IsOk &&
-        (IsOk
-            ? EqualityComparer<T>.Default.Equals(_value!, other._value!)
-            : _error!.Equals(other._error!));
+    public bool Equals(Result<T> other)
+    {
+        return IsOk == other.IsOk &&
+               (IsOk
+                   ? EqualityComparer<T>.Default.Equals(_value!, other._value!)
+                   : _error!.Equals(other._error!));
+    }
 
     /// <inheritdoc />
-    public override bool Equals(object? obj) => obj is Result<T> other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is Result<T> other && Equals(other);
+    }
 
     /// <inheritdoc />
-    public override int GetHashCode() =>
-        IsOk ? EqualityComparer<T>.Default.GetHashCode(_value!) : _error!.GetHashCode();
+    public override int GetHashCode()
+    {
+        return IsOk ? EqualityComparer<T>.Default.GetHashCode(_value!) : _error!.GetHashCode();
+    }
 
     /// <inheritdoc />
-    public override string ToString() => IsOk ? $"Ok({_value})" : $"Fail({_error})";
+    public override string ToString()
+    {
+        return IsOk ? $"Ok({_value})" : $"Fail({_error})";
+    }
 
     /// <summary>Equality operator.</summary>
-    public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
+    public static bool operator ==(Result<T> left, Result<T> right)
+    {
+        return left.Equals(right);
+    }
 
     /// <summary>Inequality operator.</summary>
-    public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
+    public static bool operator !=(Result<T> left, Result<T> right)
+    {
+        return !left.Equals(right);
+    }
 }
 
 /// <summary>
@@ -177,18 +213,28 @@ internal
     static class Result
 {
     /// <summary>Creates a successful result.</summary>
-    public static Result<T> Ok<T>(T value) => Result<T>.Ok(value);
+    public static Result<T> Ok<T>(T value)
+    {
+        return Result<T>.Ok(value);
+    }
 
     /// <summary>Creates a failed result.</summary>
-    public static Result<T> Fail<T>(Error error) => Result<T>.Fail(error);
+    public static Result<T> Fail<T>(Error error)
+    {
+        return Result<T>.Fail(error);
+    }
 
     /// <summary>Creates a result from a nullable reference, failing if <c>null</c>.</summary>
-    public static Result<T> FromNullable<T>(T? value, Error errorIfNull) where T : class =>
-        value is not null ? Result<T>.Ok(value) : Result<T>.Fail(errorIfNull);
+    public static Result<T> FromNullable<T>(T? value, Error errorIfNull) where T : class
+    {
+        return value is not null ? Result<T>.Ok(value) : Result<T>.Fail(errorIfNull);
+    }
 
     /// <summary>Creates a result from a nullable value type, failing if <c>null</c>.</summary>
-    public static Result<T> FromNullable<T>(T? value, Error errorIfNull) where T : struct =>
-        value.HasValue ? Result<T>.Ok(value.Value) : Result<T>.Fail(errorIfNull);
+    public static Result<T> FromNullable<T>(T? value, Error errorIfNull) where T : struct
+    {
+        return value.HasValue ? Result<T>.Ok(value.Value) : Result<T>.Fail(errorIfNull);
+    }
 
     /// <summary>Wraps a function that may throw, catching exceptions as failures.</summary>
     public static Result<T> Try<T>(Func<T> action, Func<Exception, Error> onError)

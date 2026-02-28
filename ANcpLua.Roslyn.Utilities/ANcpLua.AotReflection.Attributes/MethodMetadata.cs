@@ -1,8 +1,9 @@
-namespace ANcpLua.Analyzers.AotReflection;
-
 using System.Reflection;
 
-public sealed class MethodMetadata {
+namespace ANcpLua.Analyzers.AotReflection;
+
+public sealed class MethodMetadata
+{
     public string Name { get; set; } = string.Empty;
 
     public Type ReturnType { get; set; } = null!;

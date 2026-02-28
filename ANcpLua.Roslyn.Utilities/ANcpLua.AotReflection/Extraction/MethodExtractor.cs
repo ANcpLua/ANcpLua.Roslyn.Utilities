@@ -1,10 +1,14 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿using ANcpLua.Analyzers.AotReflection.Models;
 
-internal static partial class MethodExtractor {
+namespace ANcpLua.Analyzers.AotReflection.Extraction;
+
+internal static class MethodExtractor
+{
     public static DiagnosticFlow<EquatableArray<MethodModel>> ExtractMethods(
         INamedTypeSymbol type,
         AotReflectionOptions options,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
         var methods = new List<MethodModel>();
         var diagnostics = new List<DiagnosticInfo>();
         var constructorMatch = Match.Method().Constructor();
@@ -16,34 +20,24 @@ internal static partial class MethodExtractor {
             ? type.GetAllMembers()
             : type.GetMembers();
 
-        foreach (var member in members) {
+        foreach (var member in members)
+        {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (member is not IMethodSymbol method) {
-                continue;
-            }
+            if (member is not IMethodSymbol method) continue;
 
-            if (method.IsImplicitlyDeclared) {
-                continue;
-            }
+            if (method.IsImplicitlyDeclared) continue;
 
-            if (constructorMatch.Matches(method) || finalizerMatch.Matches(method)) {
-                continue;
-            }
+            if (constructorMatch.Matches(method) || finalizerMatch.Matches(method)) continue;
 
-            if (method.AssociatedSymbol is not null) {
-                continue;
-            }
+            if (method.AssociatedSymbol is not null) continue;
 
-            if (method.MethodKind != MethodKind.Ordinary) {
-                continue;
-            }
+            if (method.MethodKind != MethodKind.Ordinary) continue;
 
-            if (!options.IncludePrivate && method.DeclaredAccessibility != Accessibility.Public) {
-                continue;
-            }
+            if (!options.IncludePrivate && method.DeclaredAccessibility != Accessibility.Public) continue;
 
-            if (genericMatch.Matches(method)) {
+            if (genericMatch.Matches(method))
+            {
                 diagnostics.Add(DiagnosticInfo.Create(
                     DiagnosticDescriptors.GenericMethodNotSupported,
                     method,
@@ -54,22 +48,20 @@ internal static partial class MethodExtractor {
             var parameters = ParameterExtractor.ExtractParameters(method, cancellationToken);
 
             methods.Add(new MethodModel(
-                Name: method.Name,
-                ReturnTypeFullyQualified: method.ReturnType.GetFullyQualifiedName(),
-                ContainingTypeFullyQualified: type.GetFullyQualifiedName(),
-                Parameters: parameters,
-                IsStatic: method.IsStatic,
-                IsAsync: method.IsAsync,
-                IsExtension: extensionMatch.Matches(method),
-                IsGeneric: method.IsGenericMethod,
-                ReturnsVoid: method.ReturnsVoid,
-                Accessibility: method.DeclaredAccessibility.ToAccessibilityString()));
+                method.Name,
+                method.ReturnType.GetFullyQualifiedName(),
+                type.GetFullyQualifiedName(),
+                parameters,
+                method.IsStatic,
+                method.IsAsync,
+                extensionMatch.Matches(method),
+                method.IsGenericMethod,
+                method.ReturnsVoid,
+                method.DeclaredAccessibility.ToAccessibilityString()));
         }
 
         var flow = DiagnosticFlow.Ok(methods.Count is 0 ? default : methods.ToArray().ToEquatableArray());
-        foreach (var diagnostic in diagnostics) {
-            flow = flow.Warn(diagnostic);
-        }
+        foreach (var diagnostic in diagnostics) flow = flow.Warn(diagnostic);
 
         return flow;
     }

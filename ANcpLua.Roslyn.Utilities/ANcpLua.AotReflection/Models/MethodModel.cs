@@ -1,6 +1,6 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Models;
 
-internal readonly partial record struct MethodModel(
+internal readonly record struct MethodModel(
     string Name,
     string ReturnTypeFullyQualified,
     string ContainingTypeFullyQualified,

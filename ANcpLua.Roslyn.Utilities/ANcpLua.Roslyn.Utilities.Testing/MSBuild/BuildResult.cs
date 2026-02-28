@@ -304,7 +304,10 @@ public sealed record BuildResult(
     /// <seealso cref="GetErrors" />
     /// <seealso cref="GetWarnings" />
     /// <seealso cref="SarifFileRunResult" />
-    public IEnumerable<SarifFileRunResult> GetAllDiagnostics() => SarifFile?.AllResults() ?? [];
+    public IEnumerable<SarifFileRunResult> GetAllDiagnostics()
+    {
+        return SarifFile?.AllResults() ?? [];
+    }
 
     /// <summary>
     ///     Gets all error diagnostics from the SARIF file.
@@ -424,7 +427,10 @@ public sealed class SarifFileRunResult
     ///     Returns a string representation of this result.
     /// </summary>
     /// <returns>A string in the format "level:ruleId message".</returns>
-    public override string ToString() => $"{Level}:{RuleId} {Message}";
+    public override string ToString()
+    {
+        return $"{Level}:{RuleId} {Message}";
+    }
 }
 
 /// <summary>
@@ -444,7 +450,10 @@ public sealed class SarifFileRunResultMessage
     ///     Returns the message text.
     /// </summary>
     /// <returns>The <see cref="Text" /> value, or an empty string if <see cref="Text" /> is <see langword="null" />.</returns>
-    public override string ToString() => Text ?? "";
+    public override string ToString()
+    {
+        return Text ?? "";
+    }
 }
 
 /// <summary>

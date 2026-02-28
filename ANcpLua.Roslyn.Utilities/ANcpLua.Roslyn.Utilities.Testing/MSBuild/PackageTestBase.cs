@@ -43,19 +43,19 @@ namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 /// public class MyPackageTests : PackageTestBase&lt;NuGetPackageFixture&gt;
 /// {
 ///     private readonly NuGetPackageFixture _fixture;
-///
+/// 
 ///     public MyPackageTests(NuGetPackageFixture fixture)
 ///     {
 ///         _fixture = fixture;
 ///     }
-///
+/// 
 ///     [Fact]
 ///     public async Task BuildSimpleProject()
 ///     {
 ///         var result = await QuickBuild("public class Foo { }");
 ///         result.ShouldSucceed();
 ///     }
-///
+/// 
 ///     [Fact]
 ///     public async Task BuildLibraryWithProperties()
 ///     {
@@ -63,10 +63,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 ///             "public class Bar { }",
 ///             Tfm.Net80,
 ///             (Prop.Nullable, Val.Enable));
-///
+/// 
 ///         result.ShouldSucceed();
 ///     }
-///
+/// 
 ///     [Fact]
 ///     public async Task BuildExecutable()
 ///     {
@@ -82,12 +82,6 @@ public abstract class PackageTestBase<TFixture>
     where TFixture : class
 {
     /// <summary>
-    ///     Gets the test fixture for managing package and SDK resources.
-    /// </summary>
-    /// <value>The fixture instance provided by the test framework.</value>
-    protected TFixture Fixture { get; }
-
-    /// <summary>
     ///     Creates a new <see cref="PackageTestBase{TFixture}" /> with the provided fixture.
     /// </summary>
     /// <param name="fixture">The fixture instance for test resource management.</param>
@@ -98,6 +92,12 @@ public abstract class PackageTestBase<TFixture>
     {
         Fixture = fixture;
     }
+
+    /// <summary>
+    ///     Gets the test fixture for managing package and SDK resources.
+    /// </summary>
+    /// <value>The fixture instance provided by the test framework.</value>
+    protected TFixture Fixture { get; }
 
     /// <summary>
     ///     Creates a new <see cref="PackageProjectBuilder" /> with the fixture's package configuration.
@@ -117,8 +117,10 @@ public abstract class PackageTestBase<TFixture>
         FullPath packageDirectory,
         string packageName,
         string packageVersion,
-        PackageImportStyle importStyle = PackageImportStyle.SdkElement) =>
-        new PackageProjectBuilder(testOutputHelper, packageDirectory, packageName, packageVersion, importStyle);
+        PackageImportStyle importStyle = PackageImportStyle.SdkElement)
+    {
+        return new PackageProjectBuilder(testOutputHelper, packageDirectory, packageName, packageVersion, importStyle);
+    }
 
     /// <summary>
     ///     Quickly builds a project with minimal configuration for library testing.
@@ -149,8 +151,10 @@ public abstract class PackageTestBase<TFixture>
     protected virtual Task<BuildResult> QuickBuild(
         string code,
         string tfm = Tfm.Net100,
-        params (string Key, string Value)[] extraProps) =>
+        params (string Key, string Value)[] extraProps)
+    {
         throw new NotImplementedException();
+    }
 
     /// <summary>
     ///     Builds a library project with the provided source code.
@@ -178,8 +182,10 @@ public abstract class PackageTestBase<TFixture>
     protected virtual Task<BuildResult> BuildLibrary(
         string code,
         string tfm = Tfm.Net100,
-        params (string Key, string Value)[] extraProps) =>
+        params (string Key, string Value)[] extraProps)
+    {
         throw new NotImplementedException();
+    }
 
     /// <summary>
     ///     Builds an executable project with the provided source code.
@@ -207,8 +213,10 @@ public abstract class PackageTestBase<TFixture>
     protected virtual Task<BuildResult> BuildExe(
         string code,
         string tfm = Tfm.Net100,
-        params (string Key, string Value)[] extraProps) =>
+        params (string Key, string Value)[] extraProps)
+    {
         throw new NotImplementedException();
+    }
 }
 
 /// <summary>
@@ -250,11 +258,6 @@ public abstract class PackageTestBase<TFixture>
 public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture>
 {
     /// <summary>
-    ///     The test output helper for logging build output.
-    /// </summary>
-    protected ITestOutputHelper? TestOutputHelper { get; }
-
-    /// <summary>
     ///     Creates a new <see cref="NuGetPackageTestBase" /> with fixture and optional output helper.
     /// </summary>
     /// <param name="fixture">The <see cref="NuGetPackageFixture" /> for test resource management.</param>
@@ -264,6 +267,11 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     {
         TestOutputHelper = testOutputHelper;
     }
+
+    /// <summary>
+    ///     The test output helper for logging build output.
+    /// </summary>
+    protected ITestOutputHelper? TestOutputHelper { get; }
 
     /// <summary>
     ///     Quickly builds a project with the fixture's package configuration.
@@ -311,8 +319,10 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     protected override Task<BuildResult> BuildLibrary(
         string code,
         string tfm = Tfm.Net100,
-        params (string Key, string Value)[] extraProps) =>
-        QuickBuild(code, tfm, extraProps);
+        params (string Key, string Value)[] extraProps)
+    {
+        return QuickBuild(code, tfm, extraProps);
+    }
 
     /// <summary>
     ///     Builds an executable project with the fixture's package configuration.

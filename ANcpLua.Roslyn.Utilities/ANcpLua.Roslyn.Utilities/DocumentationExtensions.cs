@@ -1,9 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -126,9 +132,11 @@ internal
         CultureInfo? preferredCulture = null,
         bool expandIncludes = false,
         bool expandInheritdoc = false,
-        CancellationToken cancellationToken = default) =>
-        GetDocumentationComment(symbol, null, compilation, preferredCulture, expandIncludes,
+        CancellationToken cancellationToken = default)
+    {
+        return GetDocumentationComment(symbol, null, compilation, preferredCulture, expandIncludes,
             expandInheritdoc, cancellationToken);
+    }
 
     /// <summary>
     ///     Gets the plain text summary from a symbol's documentation, with whitespace normalized.
@@ -168,17 +176,11 @@ internal
 
         string xmlText;
         if (raw is { Length: > 0 } nonEmpty)
-        {
             xmlText = nonEmpty;
-        }
         else if (IsEligibleForAutomaticInheritdoc(symbol))
-        {
             xmlText = "<doc><inheritdoc/></doc>";
-        }
         else
-        {
             return string.Empty;
-        }
 
         var element = TryParseXElement(xmlText, LoadOptions.PreserveWhitespace);
         if (element is null)
@@ -287,12 +289,14 @@ internal
 
         return TrySelectNodes(document, xpathValue) ?? [];
 
-        static string? ResolveXPath(XObject element, XAttribute? pathAttribute) =>
-            pathAttribute?.Value is { Length: > 0 } path
+        static string? ResolveXPath(XObject element, XAttribute? pathAttribute)
+        {
+            return pathAttribute?.Value is { Length: > 0 } path
                 ? NormalizePath(path)
                 : element.Parent is { } parent
                     ? BuildXPathForElement(parent)
                     : null;
+        }
 
         static ISymbol? GetCandidateSymbol(ISymbol memberSymbol)
         {
@@ -330,7 +334,10 @@ internal
             return true;
         }
 
-        static string NormalizePath(string path) => path.StartsWith("/", StringComparison.Ordinal) ? $"/*{path}" : path;
+        static string NormalizePath(string path)
+        {
+            return path.StartsWith("/", StringComparison.Ordinal) ? $"/*{path}" : path;
+        }
 
         static string BuildXPathForElement(XElement element)
         {
@@ -401,7 +408,8 @@ internal
 
         XContainer temp = new XElement("temp");
         temp.Add(node);
-        var copy = temp.LastNode ?? throw new InvalidOperationException("Failed to copy XML node - LastNode was null after Add");
+        var copy = temp.LastNode ??
+                   throw new InvalidOperationException("Failed to copy XML node - LastNode was null after Add");
         temp.RemoveNodes();
 
         Debug.Assert(copy != node);
@@ -462,10 +470,8 @@ internal
             using var reader = XmlReader.Create(new StringReader(xml),
                 new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment });
             while (reader.Read())
-            {
                 if (reader.NodeType == XmlNodeType.Element && reader.LocalName == elementName)
                     return reader.ReadElementContentAsString();
-            }
 
             return null;
         }
@@ -499,9 +505,11 @@ internal
         }
     }
 
-    private static bool ElementNameIs(XElement element, string name) =>
-        string.IsNullOrEmpty(element.Name.NamespaceName) &&
-        DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
+    private static bool ElementNameIs(XElement element, string name)
+    {
+        return string.IsNullOrEmpty(element.Name.NamespaceName) &&
+               DocumentationXmlNames.ElementEquals(element.Name.LocalName, name);
+    }
 }
 
 /// <summary>
@@ -565,7 +573,10 @@ file static class DocumentationXmlNames
     /// <returns>
     ///     <c>true</c> if the element names are equal (ignoring case); otherwise, <c>false</c>.
     /// </returns>
-    public static bool ElementEquals(string name1, string name2) => string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+    public static bool ElementEquals(string name1, string name2)
+    {
+        return string.Equals(name1, name2, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 /// <summary>
@@ -583,5 +594,8 @@ file readonly ref struct VisitedScope
         _symbol = symbol;
     }
 
-    public void Dispose() => _set.Remove(_symbol);
+    public void Dispose()
+    {
+        _set.Remove(_symbol);
+    }
 }

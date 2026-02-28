@@ -1,3 +1,4 @@
+using System.Globalization;
 using ANcpLua.Roslyn.Utilities.Testing.Analysis;
 using Microsoft.CodeAnalysis;
 
@@ -43,7 +44,10 @@ internal static class AssertionHelpers
     ///     </list>
     /// </remarks>
     /// <seealso cref="FormatList(IEnumerable{string})" />
-    public static string FormatList<T>(IEnumerable<T> items, Func<T, string> selector) => FormatList(items.Select(selector));
+    public static string FormatList<T>(IEnumerable<T> items, Func<T, string> selector)
+    {
+        return FormatList(items.Select(selector));
+    }
 
     /// <summary>
     ///     Formats a collection of strings as a bracketed, comma-separated list.
@@ -143,7 +147,7 @@ internal static class AssertionHelpers
         var loc = d.Location.IsInSource
             ? $" @{d.Location.GetMappedLineSpan().StartLinePosition.Line + 1}:{d.Location.GetMappedLineSpan().StartLinePosition.Character + 1}"
             : "";
-        return $"  {icon} {d.Id}{loc}: {d.GetMessage()}";
+        return $"  {icon} {d.Id}{loc}: {d.GetMessage(CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>
@@ -165,7 +169,10 @@ internal static class AssertionHelpers
     /// </remarks>
     /// <seealso cref="FormatDiagnosticLine" />
     /// <seealso cref="FormatErrorList" />
-    public static string FormatDiagnosticList(IEnumerable<Diagnostic> diagnostics) => string.Join("\n", diagnostics.Select(FormatDiagnosticLine));
+    public static string FormatDiagnosticList(IEnumerable<Diagnostic> diagnostics)
+    {
+        return string.Join("\n", diagnostics.Select(FormatDiagnosticLine));
+    }
 
     /// <summary>
     ///     Formats only error-severity diagnostics as a newline-separated list.
@@ -193,7 +200,7 @@ internal static class AssertionHelpers
     {
         return string.Join("\n", diagnostics
             .Where(static d => d.Severity == DiagnosticSeverity.Error)
-            .Select(static d => $"  ✗ {d.Id}: {d.GetMessage()}"));
+            .Select(static d => $"  ✗ {d.Id}: {d.GetMessage(CultureInfo.InvariantCulture)}"));
     }
 
     /// <summary>
@@ -228,7 +235,9 @@ internal static class AssertionHelpers
             var breakdown = s.FormatBreakdown();
             var hint = s.Modified > 0
                 ? " (output equality broken — model lacks IEquatable<T>)"
-                : s.New > 0 ? " (new outputs appeared)" : " (outputs removed)";
+                : s.New > 0
+                    ? " (new outputs appeared)"
+                    : " (outputs removed)";
             return $"  ✗ {s.StepName}: {breakdown}{hint}";
         }));
     }
@@ -275,7 +284,10 @@ internal static class StepFormatter
     ///     </list>
     /// </remarks>
     /// <seealso cref="GeneratorStepAnalysis" />
-    public static string FormatBreakdown(GeneratorStepAnalysis step) => $"C:{step.Cached} U:{step.Unchanged} | M:{step.Modified} N:{step.New} R:{step.Removed}";
+    public static string FormatBreakdown(GeneratorStepAnalysis step)
+    {
+        return $"C:{step.Cached} U:{step.Unchanged} | M:{step.Modified} N:{step.New} R:{step.Removed}";
+    }
 
     /// <summary>
     ///     Formats a single step as a detailed status line with annotations.
@@ -311,7 +323,7 @@ internal static class StepFormatter
     {
         var tracked = requiredSteps?.Contains(step.StepName) == true ? "[Tracked]" : "";
         var forbidden = step.HasForbiddenTypes ? "[!]" : "";
-        var icon = step.IsCachedSuccessfully ? (step.IsTrulyCached ? "[OK]" : "[OK*]") : "[FAIL]";
+        var icon = step.IsCachedSuccessfully ? step.IsTrulyCached ? "[OK]" : "[OK*]" : "[FAIL]";
         return $"  {icon} {step.StepName} {tracked}{forbidden} | {FormatBreakdown(step)}";
     }
 
@@ -344,8 +356,8 @@ internal static class StepFormatter
     public static string FormatStepIssue(int issueNumber, GeneratorStepAnalysis step)
     {
         StringBuilder sb = new();
-        sb.AppendLine($"--- ISSUE {issueNumber}: Step Not Cached '{step.StepName}' ---");
-        sb.AppendLine($"  Breakdown: {FormatBreakdown(step)}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"--- ISSUE {issueNumber}: Step Not Cached '{step.StepName}' ---");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"  Breakdown: {FormatBreakdown(step)}");
         sb.AppendLine(step.HasForbiddenTypes
             ? "  Cause: Forbidden Roslyn types cached."
             : "  Fix: Ensure output model has value equality.");

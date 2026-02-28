@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -189,7 +191,10 @@ internal
     /// </example>
     /// <seealso cref="GetPublicTypes(IAssemblySymbol)" />
     /// <seealso cref="GetAllTypes" />
-    public static IEnumerable<INamedTypeSymbol> GetTypesRecursive(this IAssemblySymbol assembly) => assembly.GlobalNamespace.GetAllTypes();
+    public static IEnumerable<INamedTypeSymbol> GetTypesRecursive(this IAssemblySymbol assembly)
+    {
+        return assembly.GlobalNamespace.GetAllTypes();
+    }
 
     /// <summary>
     ///     Gets all public types in the assembly that are visible outside the assembly.

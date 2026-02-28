@@ -1,8 +1,13 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿using ANcpLua.Analyzers.AotReflection.Models;
 
-internal static partial class ClassMetadataGenerator {
-    public static void WriteClassMetadata(IndentedStringBuilder sb, TypeModel type) {
-        sb.AppendLine("public static global::ANcpLua.Analyzers.AotReflection.ClassMetadata Metadata { get; } = new global::ANcpLua.Analyzers.AotReflection.ClassMetadata");
+namespace ANcpLua.Analyzers.AotReflection.Generation;
+
+internal static class ClassMetadataGenerator
+{
+    public static void WriteClassMetadata(IndentedStringBuilder sb, TypeModel type)
+    {
+        sb.AppendLine(
+            "public static global::ANcpLua.Analyzers.AotReflection.ClassMetadata Metadata { get; } = new global::ANcpLua.Analyzers.AotReflection.ClassMetadata");
         sb.BeginBlock();
 
         sb.AppendLine($"Type = {GenerationHelpers.GetTypeOf(type.FullyQualifiedName)},");
@@ -21,7 +26,8 @@ internal static partial class ClassMetadataGenerator {
         sb.EndBlock("};");
     }
 
-    public static void WriteConvenienceMethods(IndentedStringBuilder sb, TypeModel type) {
+    public static void WriteConvenienceMethods(IndentedStringBuilder sb, TypeModel type)
+    {
         WriteGetPropertyValue(sb, type);
         WriteSetPropertyValue(sb, type);
 
@@ -36,12 +42,15 @@ internal static partial class ClassMetadataGenerator {
         sb.EndBlock();
     }
 
-    private static void WriteGetPropertyValue(IndentedStringBuilder sb, TypeModel type) {
+    private static void WriteGetPropertyValue(IndentedStringBuilder sb, TypeModel type)
+    {
         sb.AppendLine("public static object? GetPropertyValue(object instance, string name)");
         sb.BeginBlock();
 
-        if (type.Properties.IsEmpty || !type.Properties.Any(static property => property.HasGetter)) {
-            sb.AppendLine("throw new global::System.ArgumentException(\"No readable properties available.\", nameof(name));");
+        if (type.Properties.IsEmpty || !type.Properties.Any(static property => property.HasGetter))
+        {
+            sb.AppendLine(
+                "throw new global::System.ArgumentException(\"No readable properties available.\", nameof(name));");
             sb.EndBlock();
             return;
         }
@@ -49,10 +58,9 @@ internal static partial class ClassMetadataGenerator {
         sb.AppendLine("return name switch");
         sb.BeginBlock();
 
-        foreach (var property in type.Properties) {
-            if (!property.HasGetter) {
-                continue;
-            }
+        foreach (var property in type.Properties)
+        {
+            if (!property.HasGetter) continue;
 
             var access = property.IsStatic
                 ? $"{property.ContainingTypeFullyQualified}.{property.Name}"
@@ -66,12 +74,16 @@ internal static partial class ClassMetadataGenerator {
         sb.EndBlock();
     }
 
-    private static void WriteSetPropertyValue(IndentedStringBuilder sb, TypeModel type) {
+    private static void WriteSetPropertyValue(IndentedStringBuilder sb, TypeModel type)
+    {
         sb.AppendLine("public static void SetPropertyValue(object instance, string name, object? value)");
         sb.BeginBlock();
 
-        if (type.Properties.IsEmpty || !type.Properties.Any(static property => property.HasSetter && !property.IsInitOnly)) {
-            sb.AppendLine("throw new global::System.ArgumentException(\"No writable properties available.\", nameof(name));");
+        if (type.Properties.IsEmpty ||
+            !type.Properties.Any(static property => property.HasSetter && !property.IsInitOnly))
+        {
+            sb.AppendLine(
+                "throw new global::System.ArgumentException(\"No writable properties available.\", nameof(name));");
             sb.EndBlock();
             return;
         }
@@ -79,10 +91,9 @@ internal static partial class ClassMetadataGenerator {
         sb.AppendLine("switch (name)");
         sb.BeginBlock();
 
-        foreach (var property in type.Properties) {
-            if (!property.HasSetter || property.IsInitOnly) {
-                continue;
-            }
+        foreach (var property in type.Properties)
+        {
+            if (!property.HasSetter || property.IsInitOnly) continue;
 
             var target = property.IsStatic
                 ? $"{property.ContainingTypeFullyQualified}.{property.Name}"

@@ -1,52 +1,52 @@
 <Project>
-  <!--
-      ═══════════════════════════════════════════════════════════════════════════
-      ANcpLua.Roslyn.Utilities - Directory.Packages.props
-      ═══════════════════════════════════════════════════════════════════════════
-
-      Version.props is a COPY - sync manually with SDK.
-      This file only declares WHICH packages are used, not their versions.
-    -->
-  <!-- Import centralized versions from symlinked Version.props -->
-  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-  </PropertyGroup>
-  <ItemGroup Label="Roslyn">
-    <!-- Core Roslyn packages -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
-    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="Analyzers">
-    <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(RoslynAnalyzersVersion)" />
-    <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="Testing">
-    <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)" />
-    <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)" />
-    <PackageVersion Include="Meziantou.Framework.Threading" Version="$(MeziantouThreadingVersion)" />
-    <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(AnalyzerTestingVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(AnalyzerTestingVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="$(AnalyzerTestingVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)" />
-    <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)" />
-    <PackageVersion Include="Basic.Reference.Assemblies.NetStandard20" Version="$(BasicReferenceAssembliesVersion)" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitV3Version)" />
-    <PackageVersion Include="xunit.v3.assert" Version="$(XunitV3Version)" />
-    <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="MSBuild Testing">
-    <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)" />
-    <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
-  </ItemGroup>
+    <!--
+        ═══════════════════════════════════════════════════════════════════════════
+        ANcpLua.Roslyn.Utilities - Directory.Packages.props
+        ═══════════════════════════════════════════════════════════════════════════
+  
+        Version.props is a COPY - sync manually with SDK.
+        This file only declares WHICH packages are used, not their versions.
+      -->
+    <!-- Import centralized versions from symlinked Version.props -->
+    <Import Project="$(MSBuildThisFileDirectory)Version.props"/>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    </PropertyGroup>
+    <ItemGroup Label="Roslyn">
+        <!-- Core Roslyn packages -->
+        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)"/>
+        <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="$(MicrosoftExtensionsVersion)"/>
+        <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="$(MicrosoftExtensionsVersion)"/>
+    </ItemGroup>
+    <ItemGroup Label="Analyzers">
+        <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(RoslynAnalyzersVersion)"/>
+        <PackageVersion Include="Meziantou.Analyzer" Version="$(MeziantouAnalyzerVersion)"/>
+    </ItemGroup>
+    <ItemGroup Label="Testing">
+        <PackageVersion Include="Meziantou.Framework.FullPath" Version="$(MeziantouFullPathVersion)"/>
+        <PackageVersion Include="Meziantou.Framework.TemporaryDirectory" Version="$(MeziantouTemporaryDirectoryVersion)"/>
+        <PackageVersion Include="Meziantou.Framework.Threading" Version="$(MeziantouThreadingVersion)"/>
+        <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(AnalyzerTestingVersion)"/>
+        <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="$(BasicReferenceAssembliesVersion)"/>
+        <PackageVersion Include="Basic.Reference.Assemblies.NetStandard20" Version="$(BasicReferenceAssembliesVersion)"/>
+        <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitV3Version)"/>
+        <PackageVersion Include="xunit.v3.assert" Version="$(XunitV3Version)"/>
+        <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)"/>
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)"/>
+    </ItemGroup>
+    <ItemGroup Label="MSBuild Testing">
+        <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)"/>
+        <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
+    </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Models;
 
-internal readonly partial record struct ParameterModel(
+internal readonly record struct ParameterModel(
     string Name,
     string TypeFullyQualified,
     bool IsNullable,

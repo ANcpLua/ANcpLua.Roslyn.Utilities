@@ -1,6 +1,6 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Models;
 
-internal readonly partial record struct ConstructorModel(
+internal readonly record struct ConstructorModel(
     string ContainingTypeFullyQualified,
     EquatableArray<ParameterModel> Parameters,
     string Accessibility)

@@ -2,20 +2,21 @@
 
 **Test utilities for Roslyn analyzers and source generators.** Target: `net10.0`.
 
-This library provides comprehensive testing infrastructure for Roslyn tooling, including generator validation, analyzer testing, MSBuild integration testing, and dynamic compilation.
+This library provides comprehensive testing infrastructure for Roslyn tooling, including generator validation, analyzer
+testing, MSBuild integration testing, and dynamic compilation.
 
 ---
 
 ## Quick Reference
 
-| Category | Key Types |
-|----------|-----------|
-| **Generator Testing** | `Test<TGenerator>`, `GeneratorResult`, `GeneratorTestEngine<TGenerator>` |
-| **Analyzer Testing** | `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer, TCodeFix>` |
-| **MSBuild Testing** | `ProjectBuilder`, `BuildResult`, `BuildResultAssertions` |
-| **Dynamic Compilation** | `Compile`, `CompileResult`, `CompileResultAssertions` |
-| **Log Testing** | `LogAssert` |
-| **Configuration** | `TestConfiguration` |
+| Category                | Key Types                                                                |
+|-------------------------|--------------------------------------------------------------------------|
+| **Generator Testing**   | `Test<TGenerator>`, `GeneratorResult`, `GeneratorTestEngine<TGenerator>` |
+| **Analyzer Testing**    | `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer, TCodeFix>`            |
+| **MSBuild Testing**     | `ProjectBuilder`, `BuildResult`, `BuildResultAssertions`                 |
+| **Dynamic Compilation** | `Compile`, `CompileResult`, `CompileResultAssertions`                    |
+| **Log Testing**         | `LogAssert`                                                              |
+| **Configuration**       | `TestConfiguration`                                                      |
 
 ---
 

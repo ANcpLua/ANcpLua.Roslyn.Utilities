@@ -107,9 +107,6 @@ public enum PackageImportStyle
 /// <seealso cref="NuGetPackageFixture" />
 public sealed class PackageProjectBuilder : ProjectBuilder
 {
-    private readonly FullPath _packageDirectory;
-    private readonly string _packageName;
-    private readonly string _packageVersion;
     private readonly List<XElement> _additionalProjectElements = [];
     private PackageImportStyle _importStyle;
 
@@ -120,7 +117,10 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     /// <param name="packageDirectory">The directory containing NuGet packages.</param>
     /// <param name="packageName">The package name (e.g., "ANcpLua.NET.Sdk").</param>
     /// <param name="packageVersion">The package version (e.g., "1.0.0").</param>
-    /// <param name="defaultImportStyle">The default SDK import style. Defaults to <see cref="PackageImportStyle.SdkElement" />.</param>
+    /// <param name="defaultImportStyle">
+    ///     The default SDK import style. Defaults to <see cref="PackageImportStyle.SdkElement" />
+    ///     .
+    /// </param>
     /// <remarks>
     ///     <list type="bullet">
     ///         <item>
@@ -144,9 +144,9 @@ public sealed class PackageProjectBuilder : ProjectBuilder
         PackageImportStyle defaultImportStyle = PackageImportStyle.SdkElement)
         : base(testOutputHelper)
     {
-        _packageDirectory = packageDirectory;
-        _packageName = packageName;
-        _packageVersion = packageVersion;
+        PackageDirectory = packageDirectory;
+        PackageName = packageName;
+        PackageVersion = packageVersion;
         _importStyle = defaultImportStyle;
 
         ProjectFilename = "TestPackage.csproj";
@@ -154,11 +154,11 @@ public sealed class PackageProjectBuilder : ProjectBuilder
         WithNuGetConfig($"""
                          <configuration>
                              <config>
-                                 <add key="globalPackagesFolder" value="{_packageDirectory}/packages" />
+                                 <add key="globalPackagesFolder" value="{PackageDirectory}/packages" />
                              </config>
                              <packageSources>
                                  <clear />
-                                 <add key="PackageSource" value="{_packageDirectory}" />
+                                 <add key="PackageSource" value="{PackageDirectory}" />
                                  <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
                              </packageSources>
                          </configuration>
@@ -172,19 +172,179 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     ///     Gets the package directory path.
     /// </summary>
     /// <value>The full path to the package directory.</value>
-    public FullPath PackageDirectory => _packageDirectory;
+    public FullPath PackageDirectory { get; }
 
     /// <summary>
     ///     Gets the package name.
     /// </summary>
     /// <value>The name of the package being tested.</value>
-    public string PackageName => _packageName;
+    public string PackageName { get; }
 
     /// <summary>
     ///     Gets the package version.
     /// </summary>
     /// <value>The version of the package being tested.</value>
-    public string PackageVersion => _packageVersion;
+    public string PackageVersion { get; }
+
+    /// <summary>
+    ///     Generates the .csproj file from the configured properties, packages, and SDK settings.
+    /// </summary>
+    /// <remarks>
+    ///     This method is called automatically during build operations and generates the project file
+    ///     with the appropriate SDK import style and additional elements.
+    /// </remarks>
+    protected override void GenerateCsprojFile()
+    {
+        var rootSdkName = _importStyle == PackageImportStyle.ProjectElement
+            ? $"{PackageName}/{PackageVersion}"
+            : RootSdk;
+        var innerSdkXmlElement = _importStyle == PackageImportStyle.SdkElement
+            ? GetSdkElementContent(PackageName)
+            : string.Empty;
+
+        var propertiesElement = new XElement("PropertyGroup");
+        foreach (var prop in Properties)
+            propertiesElement.Add(new XElement(prop.Key, prop.Value));
+
+        var packagesElement = new XElement("ItemGroup");
+        foreach (var package in NuGetPackages)
+            packagesElement.Add(new XElement("PackageReference",
+                new XAttribute("Include", package.Name),
+                new XAttribute("Version", package.Version)));
+
+        var hasExplicitOutputType = Properties.Any(p => p.Key == Prop.OutputType);
+        var defaultOutputType = hasExplicitOutputType ? "" : "<OutputType>exe</OutputType>";
+
+        var content = $"""
+                       <Project Sdk="{rootSdkName}">
+                           {innerSdkXmlElement}
+                           <PropertyGroup>
+                               {defaultOutputType}
+                               <ErrorLog>{SarifFileName},version=2.1</ErrorLog>
+                               <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+                           </PropertyGroup>
+                           {propertiesElement}
+                           {packagesElement}
+                           {string.Join('\n', _additionalProjectElements.Select(static e => e.ToString()))}
+                       </Project>
+                       """;
+
+        AddFile(ProjectFilename ?? "TestPackage.csproj", content);
+    }
+
+    /// <summary>
+    ///     Executes a dotnet command with retry logic for SDK resolution failures.
+    /// </summary>
+    /// <param name="command">The dotnet command to execute.</param>
+    /// <param name="arguments">Optional additional arguments.</param>
+    /// <param name="environmentVariables">Optional environment variables.</param>
+    /// <returns>A task representing the build result.</returns>
+    /// <remarks>
+    ///     This implementation adds retry logic to handle transient SDK resolution failures
+    ///     (MSB4236, restore errors) by automatically retrying with exponential backoff.
+    /// </remarks>
+    public override async Task<BuildResult> ExecuteDotnetCommandAsync(
+        string command,
+        string[]? arguments = null,
+        (string Name, string Value)[]? environmentVariables = null)
+    {
+        BuildCount++;
+
+        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion))
+        {
+            WorkingDirectory = Directory.FullPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+        psi.ArgumentList.Add(command);
+
+        var dashDashIndex = arguments is not null ? Array.IndexOf(arguments, "--") : -1;
+        if (command == "run")
+        {
+            psi.ArgumentList.Add("--project");
+            psi.ArgumentList.Add(ProjectFilename ?? "TestPackage.csproj");
+
+            if (dashDashIndex >= 0 && arguments is not null)
+            {
+                for (var i = 0; i < dashDashIndex; i++)
+                    psi.ArgumentList.Add(arguments[i]);
+                psi.ArgumentList.Add("/bl");
+                for (var i = dashDashIndex; i < arguments.Length; i++)
+                    psi.ArgumentList.Add(arguments[i]);
+            }
+            else
+            {
+                if (arguments is not null)
+                    foreach (var arg in arguments)
+                        psi.ArgumentList.Add(arg);
+                psi.ArgumentList.Add("/bl");
+            }
+        }
+        else
+        {
+            if (arguments is not null)
+                foreach (var arg in arguments)
+                    psi.ArgumentList.Add(arg);
+            psi.ArgumentList.Add("/bl");
+        }
+
+        psi.Environment.Remove("CI");
+        psi.Environment.Remove("DOTNET_ENVIRONMENT");
+        foreach (var kvp in psi.Environment.ToArray())
+            if (kvp.Key.StartsWith("GITHUB", StringComparison.Ordinal) ||
+                kvp.Key.StartsWith("MSBuild", StringComparison.OrdinalIgnoreCase) ||
+                kvp.Key.StartsWith("RUNNER_", StringComparison.Ordinal))
+                psi.Environment.Remove(kvp.Key);
+
+        psi.Environment["MSBUILDLOGALLENVIRONMENTVARIABLES"] = "true";
+        psi.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(psi.FileName);
+        psi.Environment["DOTNET_ROOT_X64"] = Path.GetDirectoryName(psi.FileName);
+        psi.Environment["DOTNET_HOST_PATH"] = psi.FileName;
+        psi.Environment["NUGET_HTTP_CACHE_PATH"] = PackageDirectory / "http-cache";
+        psi.Environment["NUGET_PACKAGES"] = PackageDirectory / "packages";
+        psi.Environment["NUGET_SCRATCH"] = PackageDirectory / "nuget-scratch";
+        psi.Environment["NUGET_PLUGINS_CACHE_PATH"] = PackageDirectory / "nuget-plugins-cache";
+
+        if (environmentVariables is not null)
+            foreach (var env in environmentVariables)
+                psi.Environment[env.Name] = env.Value;
+
+        var result = await psi.RunAsTaskAsync();
+
+        // Retry logic for SDK resolution failures
+        const int maxRetries = 5;
+        for (var retry = 0; retry < maxRetries && result.ExitCode is not 0; retry++)
+            if (result.Output.Any(static line =>
+                    line.Text.Contains("error MSB4236", StringComparison.Ordinal) ||
+                    line.Text.Contains("The project file may be invalid or missing targets required for restore",
+                        StringComparison.Ordinal)))
+            {
+                await Task.Delay(100 * (1 << retry));
+                result = await psi.RunAsTaskAsync();
+            }
+            else
+            {
+                break;
+            }
+
+        var sarifPath = Directory.FullPath / SarifFileName;
+        SarifFile? sarif = null;
+        if (File.Exists(sarifPath))
+        {
+            var bytes = await File.ReadAllBytesAsync(sarifPath);
+            sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
+        }
+
+        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
+
+        return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent);
+    }
+
+    private string GetSdkElementContent(string packageName)
+    {
+        return $"""<Sdk Name="{packageName}" Version="{PackageVersion}" />""";
+    }
 
     #region Fluent methods (covariant returns)
 
@@ -378,7 +538,7 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     public void AddDirectoryBuildPropsFile(string postSdkContent, string preSdkContent = "", string? packageName = null)
     {
         var sdk = _importStyle == PackageImportStyle.SdkElementDirectoryBuildProps
-            ? GetSdkElementContent(packageName ?? _packageName)
+            ? GetSdkElementContent(packageName ?? PackageName)
             : string.Empty;
 
         var content = $"""
@@ -454,164 +614,4 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     }
 
     #endregion
-
-    /// <summary>
-    ///     Generates the .csproj file from the configured properties, packages, and SDK settings.
-    /// </summary>
-    /// <remarks>
-    ///     This method is called automatically during build operations and generates the project file
-    ///     with the appropriate SDK import style and additional elements.
-    /// </remarks>
-    protected override void GenerateCsprojFile()
-    {
-        var rootSdkName = _importStyle == PackageImportStyle.ProjectElement
-            ? $"{_packageName}/{_packageVersion}"
-            : RootSdk;
-        var innerSdkXmlElement = _importStyle == PackageImportStyle.SdkElement
-            ? GetSdkElementContent(_packageName)
-            : string.Empty;
-
-        var propertiesElement = new XElement("PropertyGroup");
-        foreach (var prop in Properties)
-            propertiesElement.Add(new XElement(prop.Key, prop.Value));
-
-        var packagesElement = new XElement("ItemGroup");
-        foreach (var package in NuGetPackages)
-            packagesElement.Add(new XElement("PackageReference",
-                new XAttribute("Include", package.Name),
-                new XAttribute("Version", package.Version)));
-
-        var hasExplicitOutputType = Properties.Any(p => p.Key == Prop.OutputType);
-        var defaultOutputType = hasExplicitOutputType ? "" : "<OutputType>exe</OutputType>";
-
-        var content = $"""
-                       <Project Sdk="{rootSdkName}">
-                           {innerSdkXmlElement}
-                           <PropertyGroup>
-                               {defaultOutputType}
-                               <ErrorLog>{SarifFileName},version=2.1</ErrorLog>
-                               <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-                           </PropertyGroup>
-                           {propertiesElement}
-                           {packagesElement}
-                           {string.Join('\n', _additionalProjectElements.Select(static e => e.ToString()))}
-                       </Project>
-                       """;
-
-        AddFile(ProjectFilename ?? "TestPackage.csproj", content);
-    }
-
-    /// <summary>
-    ///     Executes a dotnet command with retry logic for SDK resolution failures.
-    /// </summary>
-    /// <param name="command">The dotnet command to execute.</param>
-    /// <param name="arguments">Optional additional arguments.</param>
-    /// <param name="environmentVariables">Optional environment variables.</param>
-    /// <returns>A task representing the build result.</returns>
-    /// <remarks>
-    ///     This implementation adds retry logic to handle transient SDK resolution failures
-    ///     (MSB4236, restore errors) by automatically retrying with exponential backoff.
-    /// </remarks>
-    public override async Task<BuildResult> ExecuteDotnetCommandAsync(
-        string command,
-        string[]? arguments = null,
-        (string Name, string Value)[]? environmentVariables = null)
-    {
-        BuildCount++;
-
-        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion))
-        {
-            WorkingDirectory = Directory.FullPath,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false
-        };
-        psi.ArgumentList.Add(command);
-
-        var dashDashIndex = arguments is not null ? Array.IndexOf(arguments, "--") : -1;
-        if (command == "run")
-        {
-            psi.ArgumentList.Add("--project");
-            psi.ArgumentList.Add(ProjectFilename ?? "TestPackage.csproj");
-
-            if (dashDashIndex >= 0 && arguments is not null)
-            {
-                for (var i = 0; i < dashDashIndex; i++)
-                    psi.ArgumentList.Add(arguments[i]);
-                psi.ArgumentList.Add("/bl");
-                for (var i = dashDashIndex; i < arguments.Length; i++)
-                    psi.ArgumentList.Add(arguments[i]);
-            }
-            else
-            {
-                if (arguments is not null)
-                    foreach (var arg in arguments)
-                        psi.ArgumentList.Add(arg);
-                psi.ArgumentList.Add("/bl");
-            }
-        }
-        else
-        {
-            if (arguments is not null)
-                foreach (var arg in arguments)
-                    psi.ArgumentList.Add(arg);
-            psi.ArgumentList.Add("/bl");
-        }
-
-        psi.Environment.Remove("CI");
-        psi.Environment.Remove("DOTNET_ENVIRONMENT");
-        foreach (var kvp in psi.Environment.ToArray())
-            if (kvp.Key.StartsWith("GITHUB", StringComparison.Ordinal) ||
-                kvp.Key.StartsWith("MSBuild", StringComparison.OrdinalIgnoreCase) ||
-                kvp.Key.StartsWith("RUNNER_", StringComparison.Ordinal))
-                psi.Environment.Remove(kvp.Key);
-
-        psi.Environment["MSBUILDLOGALLENVIRONMENTVARIABLES"] = "true";
-        psi.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(psi.FileName);
-        psi.Environment["DOTNET_ROOT_X64"] = Path.GetDirectoryName(psi.FileName);
-        psi.Environment["DOTNET_HOST_PATH"] = psi.FileName;
-        psi.Environment["NUGET_HTTP_CACHE_PATH"] = _packageDirectory / "http-cache";
-        psi.Environment["NUGET_PACKAGES"] = _packageDirectory / "packages";
-        psi.Environment["NUGET_SCRATCH"] = _packageDirectory / "nuget-scratch";
-        psi.Environment["NUGET_PLUGINS_CACHE_PATH"] = _packageDirectory / "nuget-plugins-cache";
-
-        if (environmentVariables is not null)
-            foreach (var env in environmentVariables)
-                psi.Environment[env.Name] = env.Value;
-
-        var result = await psi.RunAsTaskAsync();
-
-        // Retry logic for SDK resolution failures
-        const int maxRetries = 5;
-        for (var retry = 0; retry < maxRetries && result.ExitCode is not 0; retry++)
-        {
-            if (result.Output.Any(static line =>
-                line.Text.Contains("error MSB4236", StringComparison.Ordinal) ||
-                line.Text.Contains("The project file may be invalid or missing targets required for restore",
-                    StringComparison.Ordinal)))
-            {
-                await Task.Delay(100 * (1 << retry));
-                result = await psi.RunAsTaskAsync();
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        var sarifPath = Directory.FullPath / SarifFileName;
-        SarifFile? sarif = null;
-        if (File.Exists(sarifPath))
-        {
-            var bytes = await File.ReadAllBytesAsync(sarifPath);
-            sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
-        }
-
-        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
-
-        return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent);
-    }
-
-    private string GetSdkElementContent(string packageName) =>
-        $"""<Sdk Name="{packageName}" Version="{_packageVersion}" />""";
 }

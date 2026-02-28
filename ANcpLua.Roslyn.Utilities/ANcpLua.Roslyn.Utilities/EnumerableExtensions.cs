@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -55,7 +60,7 @@ internal
             yield return result;
     }
 
-     /// <summary>
+    /// <summary>
     ///     Returns the source enumerable, or an empty sequence if the source is <c>null</c>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
@@ -66,7 +71,10 @@ internal
     /// </returns>
     /// <seealso cref="ToImmutableArrayOrEmpty{T}" />
     /// <seealso cref="IsNullOrEmpty{T}" />
-    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source) => source ?? [];
+    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source ?? [];
+    }
 
     /// <summary>
     ///     Converts the source sequence to an <see cref="ImmutableArray" />,
@@ -79,7 +87,10 @@ internal
     ///     or <see cref="ImmutableArray{T}.Empty" /> if <paramref name="source" /> is <c>null</c>.
     /// </returns>
     /// <seealso cref="OrEmpty{T}" />
-    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source) => source is null ? ImmutableArray<T>.Empty : [..source];
+    public static ImmutableArray<T> ToImmutableArrayOrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source is null ? ImmutableArray<T>.Empty : [..source];
+    }
 
     /// <summary>
     ///     Determines whether the enumerable is <c>null</c> or contains no elements.
@@ -91,7 +102,10 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="OrEmpty{T}" />
-    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? source) => source is null || !source.Any();
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? source)
+    {
+        return source is null || !source.Any();
+    }
 
     /// <summary>
     ///     Determines whether the enumerable contains duplicate elements using the default equality comparer.
@@ -186,7 +200,7 @@ internal
     /// {
     ///     // Report diagnostic: duplicate parameter names
     /// }
-    ///
+    /// 
     /// // Check for duplicate file paths (case-insensitive)
     /// var files = new[] { "File.txt", "file.TXT", "other.cs" };
     /// bool hasDupes = files.HasDuplicates(f => f.ToLowerInvariant()); // true
@@ -465,7 +479,7 @@ internal
     /// var uniqueMethods = typeSymbol.GetMembers()
     ///     .OfType&lt;IMethodSymbol&gt;()
     ///     .DistinctBy(m => m.Name);
-    ///
+    /// 
     /// // Remove duplicate diagnostics by location
     /// var uniqueDiagnostics = diagnostics.DistinctBy(d => d.Location);
     /// </code>
@@ -638,7 +652,10 @@ internal
     ///     A string that consists of the elements of <paramref name="source" /> delimited by
     ///     <paramref name="separator" />.
     /// </returns>
-    public static string JoinToString<T>(this IEnumerable<T> source, string separator = ", ") => string.Join(separator, source);
+    public static string JoinToString<T>(this IEnumerable<T> source, string separator = ", ")
+    {
+        return string.Join(separator, source);
+    }
 
     /// <summary>
     ///     Returns all elements except the last <paramref name="count" /> elements.
@@ -943,7 +960,10 @@ internal
     /// </returns>
     /// <seealso cref="AllNull{T1,T2}" />
     /// <seealso cref="AllNotNull{T1,T2}" />
-    public static bool AnyNotNull<T1, T2>(this (T1?, T2?) tuple) => tuple.Item1 is not null || tuple.Item2 is not null;
+    public static bool AnyNotNull<T1, T2>(this (T1?, T2?) tuple)
+    {
+        return tuple.Item1 is not null || tuple.Item2 is not null;
+    }
 
     /// <summary>
     ///     Determines whether any element in the 3-tuple is not <c>null</c>.
@@ -958,7 +978,10 @@ internal
     /// </returns>
     /// <seealso cref="AllNull{T1,T2,T3}" />
     /// <seealso cref="AllNotNull{T1,T2,T3}" />
-    public static bool AnyNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple) => tuple.Item1 is not null || tuple.Item2 is not null || tuple.Item3 is not null;
+    public static bool AnyNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
+    {
+        return tuple.Item1 is not null || tuple.Item2 is not null || tuple.Item3 is not null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 2-tuple are <c>null</c>.
@@ -972,7 +995,10 @@ internal
     /// </returns>
     /// <seealso cref="AnyNotNull{T1,T2}" />
     /// <seealso cref="AllNotNull{T1,T2}" />
-    public static bool AllNull<T1, T2>(this (T1?, T2?) tuple) => tuple.Item1 is null && tuple.Item2 is null;
+    public static bool AllNull<T1, T2>(this (T1?, T2?) tuple)
+    {
+        return tuple.Item1 is null && tuple.Item2 is null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 3-tuple are <c>null</c>.
@@ -987,7 +1013,10 @@ internal
     /// </returns>
     /// <seealso cref="AnyNotNull{T1,T2,T3}" />
     /// <seealso cref="AllNotNull{T1,T2,T3}" />
-    public static bool AllNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple) => tuple.Item1 is null && tuple.Item2 is null && tuple.Item3 is null;
+    public static bool AllNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
+    {
+        return tuple.Item1 is null && tuple.Item2 is null && tuple.Item3 is null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 2-tuple are not <c>null</c>.
@@ -1001,7 +1030,10 @@ internal
     /// </returns>
     /// <seealso cref="AnyNotNull{T1,T2}" />
     /// <seealso cref="AllNull{T1,T2}" />
-    public static bool AllNotNull<T1, T2>(this (T1?, T2?) tuple) => tuple.Item1 is not null && tuple.Item2 is not null;
+    public static bool AllNotNull<T1, T2>(this (T1?, T2?) tuple)
+    {
+        return tuple.Item1 is not null && tuple.Item2 is not null;
+    }
 
     /// <summary>
     ///     Determines whether all elements in the 3-tuple are not <c>null</c>.
@@ -1016,7 +1048,10 @@ internal
     /// </returns>
     /// <seealso cref="AnyNotNull{T1,T2,T3}" />
     /// <seealso cref="AllNull{T1,T2,T3}" />
-    public static bool AllNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple) => tuple.Item1 is not null && tuple.Item2 is not null && tuple.Item3 is not null;
+    public static bool AllNotNull<T1, T2, T3>(this (T1?, T2?, T3?) tuple)
+    {
+        return tuple.Item1 is not null && tuple.Item2 is not null && tuple.Item3 is not null;
+    }
 
     /// <summary>
     ///     Enumerates the elements of a 2-tuple as an <see cref="IEnumerable{T}" />.

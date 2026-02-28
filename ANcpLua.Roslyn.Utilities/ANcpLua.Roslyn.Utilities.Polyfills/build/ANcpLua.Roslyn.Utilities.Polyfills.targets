@@ -15,96 +15,96 @@
 -->
 <Project>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       DEFAULT VALUES - All polyfills enabled by default (self-gate via #if)
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <PropertyGroup>
-    <InjectAllPolyfillsOnLegacy Condition="'$(InjectAllPolyfillsOnLegacy)' == ''">true</InjectAllPolyfillsOnLegacy>
-  </PropertyGroup>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DEFAULT VALUES - All polyfills enabled by default (self-gate via #if)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <PropertyGroup>
+        <InjectAllPolyfillsOnLegacy Condition="'$(InjectAllPolyfillsOnLegacy)' == ''">true</InjectAllPolyfillsOnLegacy>
+    </PropertyGroup>
 
-  <!-- Individual polyfill defaults (follow the bundle unless explicitly overridden) -->
-  <PropertyGroup>
-    <InjectTrimAttributesOnLegacy Condition="'$(InjectTrimAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectTrimAttributesOnLegacy>
-    <InjectNullabilityAttributesOnLegacy Condition="'$(InjectNullabilityAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectNullabilityAttributesOnLegacy>
-    <InjectIsExternalInitOnLegacy Condition="'$(InjectIsExternalInitOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectIsExternalInitOnLegacy>
-    <InjectRequiredMemberOnLegacy Condition="'$(InjectRequiredMemberOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectRequiredMemberOnLegacy>
-    <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectCallerAttributesOnLegacy>
-    <InjectCompilerFeatureRequiredOnLegacy Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectCompilerFeatureRequiredOnLegacy>
-    <InjectSetsRequiredMembersOnLegacy Condition="'$(InjectSetsRequiredMembersOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectSetsRequiredMembersOnLegacy>
-    <InjectParamCollectionOnLegacy Condition="'$(InjectParamCollectionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectParamCollectionOnLegacy>
-    <InjectUnreachableExceptionOnLegacy Condition="'$(InjectUnreachableExceptionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectUnreachableExceptionOnLegacy>
-    <InjectExperimentalAttributeOnLegacy Condition="'$(InjectExperimentalAttributeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectExperimentalAttributeOnLegacy>
-    <InjectIndexRangeOnLegacy Condition="'$(InjectIndexRangeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectIndexRangeOnLegacy>
-    <InjectStackTraceHiddenOnLegacy Condition="'$(InjectStackTraceHiddenOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectStackTraceHiddenOnLegacy>
-    <InjectLockPolyfill Condition="'$(InjectLockPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectLockPolyfill>
-    <InjectTimeProviderPolyfill Condition="'$(InjectTimeProviderPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectTimeProviderPolyfill>
-    <InjectStringExtensionsPolyfill Condition="'$(InjectStringExtensionsPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectStringExtensionsPolyfill>
-  </PropertyGroup>
+    <!-- Individual polyfill defaults (follow the bundle unless explicitly overridden) -->
+    <PropertyGroup>
+        <InjectTrimAttributesOnLegacy Condition="'$(InjectTrimAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectTrimAttributesOnLegacy>
+        <InjectNullabilityAttributesOnLegacy Condition="'$(InjectNullabilityAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectNullabilityAttributesOnLegacy>
+        <InjectIsExternalInitOnLegacy Condition="'$(InjectIsExternalInitOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectIsExternalInitOnLegacy>
+        <InjectRequiredMemberOnLegacy Condition="'$(InjectRequiredMemberOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectRequiredMemberOnLegacy>
+        <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectCallerAttributesOnLegacy>
+        <InjectCompilerFeatureRequiredOnLegacy Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectCompilerFeatureRequiredOnLegacy>
+        <InjectSetsRequiredMembersOnLegacy Condition="'$(InjectSetsRequiredMembersOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectSetsRequiredMembersOnLegacy>
+        <InjectParamCollectionOnLegacy Condition="'$(InjectParamCollectionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectParamCollectionOnLegacy>
+        <InjectUnreachableExceptionOnLegacy Condition="'$(InjectUnreachableExceptionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectUnreachableExceptionOnLegacy>
+        <InjectExperimentalAttributeOnLegacy Condition="'$(InjectExperimentalAttributeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectExperimentalAttributeOnLegacy>
+        <InjectIndexRangeOnLegacy Condition="'$(InjectIndexRangeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectIndexRangeOnLegacy>
+        <InjectStackTraceHiddenOnLegacy Condition="'$(InjectStackTraceHiddenOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectStackTraceHiddenOnLegacy>
+        <InjectLockPolyfill Condition="'$(InjectLockPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectLockPolyfill>
+        <InjectTimeProviderPolyfill Condition="'$(InjectTimeProviderPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectTimeProviderPolyfill>
+        <InjectStringExtensionsPolyfill Condition="'$(InjectStringExtensionsPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectStringExtensionsPolyfill>
+    </PropertyGroup>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       CONDITIONAL EXCLUSION
-       Remove polyfill contentFiles from Compile when opted out.
-       ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         CONDITIONAL EXCLUSION
+         Remove polyfill contentFiles from Compile when opted out.
+         ═══════════════════════════════════════════════════════════════════════ -->
 
-  <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TrimAttributes/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TrimAttributes/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('DiagnosticAttributes/'))" />
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('NullabilityAttributes/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('DiagnosticAttributes/'))"/>
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('NullabilityAttributes/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectIsExternalInitOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IsExternalInit.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectIsExternalInitOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IsExternalInit.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectRequiredMemberOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('RequiredMemberAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectRequiredMemberOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('RequiredMemberAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectCallerAttributesOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CallerArgumentExpressionAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectCallerAttributesOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CallerArgumentExpressionAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CompilerFeatureRequiredAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CompilerFeatureRequiredAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectSetsRequiredMembersOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('SetsRequiredMembersAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectSetsRequiredMembersOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('SetsRequiredMembersAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectParamCollectionOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('ParamCollectionAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectParamCollectionOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('ParamCollectionAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectStackTraceHiddenOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Diagnostics/StackTraceHiddenAttribute.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectStackTraceHiddenOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Diagnostics/StackTraceHiddenAttribute.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Exceptions/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Exceptions/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Experimental/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Experimental/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectIndexRangeOnLegacy)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IndexRange/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectIndexRangeOnLegacy)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IndexRange/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectLockPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Lock.cs'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectLockPolyfill)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Lock.cs'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectTimeProviderPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TimeProvider/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectTimeProviderPolyfill)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TimeProvider/'))"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectStringExtensionsPolyfill)' == 'false'">
-    <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('StringExtensions/'))" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(InjectStringExtensionsPolyfill)' == 'false'">
+        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('StringExtensions/'))"/>
+    </ItemGroup>
 
 </Project>

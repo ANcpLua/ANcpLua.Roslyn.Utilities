@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -165,13 +168,13 @@ internal
     /// {
     ///     // Analyze async-specific patterns
     /// }
-    ///
+    /// 
     /// // Check for static members
     /// if (memberDeclaration.HasModifier(SyntaxKind.StaticKeyword))
     /// {
     ///     // Apply static member rules
     /// }
-    ///
+    /// 
     /// // Check for virtual methods that could be overridden
     /// if (methodDeclaration.HasModifier(SyntaxKind.VirtualKeyword) ||
     ///     methodDeclaration.HasModifier(SyntaxKind.AbstractKeyword))
@@ -181,7 +184,10 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="IsPartial" />
-    public static bool HasModifier(this MemberDeclarationSyntax member, SyntaxKind kind) => member.Modifiers.Any(kind);
+    public static bool HasModifier(this MemberDeclarationSyntax member, SyntaxKind kind)
+    {
+        return member.Modifiers.Any(kind);
+    }
 
     /// <summary>
     ///     Checks if a type declaration has the partial modifier.
@@ -198,7 +204,10 @@ internal
     /// </remarks>
     /// <seealso cref="HasModifier" />
     /// <seealso cref="IsPrimaryConstructorType" />
-    public static bool IsPartial(this TypeDeclarationSyntax type) => type.Modifiers.Any(SyntaxKind.PartialKeyword);
+    public static bool IsPartial(this TypeDeclarationSyntax type)
+    {
+        return type.Modifiers.Any(SyntaxKind.PartialKeyword);
+    }
 
     /// <summary>
     ///     Checks if a type declaration is a primary constructor type.
@@ -233,9 +242,11 @@ internal
     ///     </list>
     /// </remarks>
     /// <seealso cref="IsPartial" />
-    public static bool IsPrimaryConstructorType(this TypeDeclarationSyntax type) =>
-        type is ClassDeclarationSyntax or StructDeclarationSyntax or RecordDeclarationSyntax
-        && type.ParameterList is not null;
+    public static bool IsPrimaryConstructorType(this TypeDeclarationSyntax type)
+    {
+        return type is ClassDeclarationSyntax or StructDeclarationSyntax or RecordDeclarationSyntax
+               && type.ParameterList is not null;
+    }
 
     /// <summary>
     ///     Gets the name token location for a type declaration.
@@ -251,7 +262,10 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetNameLocation(MethodDeclarationSyntax)" />
-    public static Location GetNameLocation(this TypeDeclarationSyntax type) => type.Identifier.GetLocation();
+    public static Location GetNameLocation(this TypeDeclarationSyntax type)
+    {
+        return type.Identifier.GetLocation();
+    }
 
     /// <summary>
     ///     Gets the name token location for a method declaration.
@@ -267,7 +281,10 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetNameLocation(TypeDeclarationSyntax)" />
-    public static Location GetNameLocation(this MethodDeclarationSyntax method) => method.Identifier.GetLocation();
+    public static Location GetNameLocation(this MethodDeclarationSyntax method)
+    {
+        return method.Identifier.GetLocation();
+    }
 
     // ========== Code Fix Helpers ==========
 
@@ -333,8 +350,10 @@ internal
     /// <seealso cref="CreateExtensionMethodCall(ExpressionSyntax, string, ExpressionSyntax[])" />
     public static InvocationExpressionSyntax CreateExtensionMethodCall(
         this ExpressionSyntax receiver,
-        string methodName) =>
-        receiver.CreateExtensionMethodCall(methodName, []);
+        string methodName)
+    {
+        return receiver.CreateExtensionMethodCall(methodName, []);
+    }
 
     /// <summary>
     ///     Adds the <c>static</c> modifier to an anonymous function (lambda or delegate).
@@ -349,9 +368,17 @@ internal
     ///         This method handles all types of anonymous functions:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description><see cref="SimpleLambdaExpressionSyntax" />: <c>x => x + 1</c></description></item>
-    ///         <item><description><see cref="ParenthesizedLambdaExpressionSyntax" />: <c>(x, y) => x + y</c></description></item>
-    ///         <item><description><see cref="AnonymousMethodExpressionSyntax" />: <c>delegate(int x) { return x; }</c></description></item>
+    ///         <item>
+    ///             <description><see cref="SimpleLambdaExpressionSyntax" />: <c>x => x + 1</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><see cref="ParenthesizedLambdaExpressionSyntax" />: <c>(x, y) => x + y</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <see cref="AnonymousMethodExpressionSyntax" />: <c>delegate(int x) { return x; }</c>
+    ///             </description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         The method preserves existing modifiers and adds <c>static</c> at the beginning.
@@ -406,8 +433,10 @@ internal
     /// <returns>
     ///     <c>true</c> if the function has the <c>static</c> modifier; otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsStatic(this AnonymousFunctionExpressionSyntax lambda) =>
-        lambda.Modifiers.Any(SyntaxKind.StaticKeyword);
+    public static bool IsStatic(this AnonymousFunctionExpressionSyntax lambda)
+    {
+        return lambda.Modifiers.Any(SyntaxKind.StaticKeyword);
+    }
 
     /// <summary>
     ///     Checks if a local function has the <c>static</c> modifier.
@@ -416,8 +445,10 @@ internal
     /// <returns>
     ///     <c>true</c> if the function has the <c>static</c> modifier; otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsStatic(this LocalFunctionStatementSyntax localFunction) =>
-        localFunction.Modifiers.Any(SyntaxKind.StaticKeyword);
+    public static bool IsStatic(this LocalFunctionStatementSyntax localFunction)
+    {
+        return localFunction.Modifiers.Any(SyntaxKind.StaticKeyword);
+    }
 
     // ========== Code Generation Helpers ==========
 
@@ -439,11 +470,27 @@ internal
     ///         This method recursively handles composite type names:
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description>Arrays: <c>"int[]"</c> becomes <c>"global::System.Int32[]"</c></description></item>
-    ///         <item><description>Nullable reference types: <c>"Order?"</c> becomes <c>"global::Order?"</c></description></item>
-    ///         <item><description>Generic types: <c>"Task&lt;string&gt;"</c> becomes <c>"global::System.Threading.Tasks.Task&lt;global::System.String&gt;"</c></description></item>
-    ///         <item><description>Nested generics: <c>"Dictionary&lt;string, List&lt;int&gt;&gt;"</c> is handled correctly</description></item>
-    ///         <item><description>Type parameters: <c>"T"</c> is returned as <c>"T"</c> when present in <paramref name="typeParameterNames" /></description></item>
+    ///         <item>
+    ///             <description>Arrays: <c>"int[]"</c> becomes <c>"global::System.Int32[]"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Nullable reference types: <c>"Order?"</c> becomes <c>"global::Order?"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Generic types: <c>"Task&lt;string&gt;"</c> becomes
+    ///                 <c>"global::System.Threading.Tasks.Task&lt;global::System.String&gt;"</c>
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Nested generics: <c>"Dictionary&lt;string, List&lt;int&gt;&gt;"</c> is handled correctly</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Type parameters: <c>"T"</c> is returned as <c>"T"</c> when present in
+    ///                 <paramref name="typeParameterNames" />
+    ///             </description>
+    ///         </item>
     ///     </list>
     ///     <para>
     ///         <b>C# keyword mappings:</b> <c>string</c> -> <c>System.String</c>, <c>int</c> -> <c>System.Int32</c>,
@@ -457,12 +504,12 @@ internal
     /// "int".ToGlobalTypeName()              // "global::System.Int32"
     /// "void".ToGlobalTypeName()             // "void"
     /// "MyApp.Order".ToGlobalTypeName()      // "global::MyApp.Order"
-    ///
+    /// 
     /// // Composite types
     /// "int[]".ToGlobalTypeName()            // "global::System.Int32[]"
     /// "Order?".ToGlobalTypeName()           // "global::Order?"
     /// "Task&lt;string&gt;".ToGlobalTypeName()     // "global::Task&lt;global::System.String&gt;"
-    ///
+    /// 
     /// // With type parameters
     /// var typeParams = new[] { "T", "TResult" };
     /// "Task&lt;TResult&gt;".ToGlobalTypeName(typeParams)  // "global::Task&lt;TResult&gt;"
@@ -476,13 +523,9 @@ internal
 
         // Check if this is a type parameter (T, TResult, etc.)
         if (typeParameterNames is not null)
-        {
             for (var i = 0; i < typeParameterNames.Count; i++)
-            {
                 if (string.Equals(typeName, typeParameterNames[i], StringComparison.Ordinal))
                     return typeName;
-            }
-        }
 
         // Handle array types (e.g., "string[]", "int[][]")
         if (typeName.EndsWithOrdinal("[]"))
@@ -572,7 +615,6 @@ internal
         var start = 0;
 
         for (var i = 0; i < argsContent.Length; i++)
-        {
             switch (argsContent[i])
             {
                 case '<':
@@ -586,7 +628,6 @@ internal
                     start = i + 1;
                     break;
             }
-        }
 
         if (start < argsContent.Length)
             args.Add(argsContent[start..].Trim());

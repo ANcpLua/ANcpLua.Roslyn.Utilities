@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities.Testing;
@@ -10,15 +11,20 @@ internal static partial class TextUtilities
     /// <summary>
     ///     Normalizes a file path by converting backslashes to forward slashes.
     /// </summary>
-    public static string NormalizePath(string? path) => (path ?? string.Empty).Replace('\\', '/').Trim();
+    public static string NormalizePath(string? path)
+    {
+        return (path ?? string.Empty).Replace('\\', '/').Trim();
+    }
 
     /// <summary>
     ///     Normalizes whitespace by collapsing multiple spaces into one.
     /// </summary>
-    public static string NormalizeWhitespace(string? input) =>
-        string.IsNullOrWhiteSpace(input)
+    public static string NormalizeWhitespace(string? input)
+    {
+        return string.IsNullOrWhiteSpace(input)
             ? string.Empty
             : WhitespaceRegex().Replace(input, " ").Trim();
+    }
 
     /// <summary>
     ///     Finds the first index where two strings differ.
@@ -44,8 +50,8 @@ internal static partial class TextUtilities
         const string expectedLabel = "Expected: ";
         const string actualLabel = "Actual:   ";
         StringBuilder sb = new();
-        sb.AppendLine($"{indent}{expectedLabel}{quotedExpected}");
-        sb.AppendLine($"{indent}{actualLabel}{quotedActual}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"{indent}{expectedLabel}{quotedExpected}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"{indent}{actualLabel}{quotedActual}");
         sb.Append(indent).Append(new string(' ', actualLabel.Length + index)).AppendLine("^");
         return sb.ToString().TrimEnd();
     }
@@ -77,7 +83,7 @@ internal static partial class TextUtilities
         var actualLine = line < actualLines.Length ? actualLines[line] : "(end of actual)";
 
         var col = Math.Max(0, diffIndex - count) + 1;
-        sb.AppendLine($"Difference at line {line + 1}, character {col}:");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Difference at line {line + 1}, character {col}:");
         sb.AppendLine(BuildCaretBlock(expectedLine, actualLine, "  "));
         sb.AppendLine("\nContext in generated file:");
         var start = Math.Max(0, line - contextLines);
@@ -87,7 +93,7 @@ internal static partial class TextUtilities
         for (var i = start; i <= end; i++)
         {
             var marker = i == line ? "-> " : "   ";
-            if (i < actualLines.Length) sb.AppendLine($"{marker}{actualLines[i]}");
+            if (i < actualLines.Length) sb.AppendLine(CultureInfo.InvariantCulture, $"{marker}{actualLines[i]}");
         }
 
         sb.AppendLine("------------------------------");
@@ -128,8 +134,8 @@ internal static partial class TextUtilities
         if (index < 0) index = Math.Min(expectedLine.Length, actualLine.Length);
 
         StringBuilder sb = new();
-        sb.AppendLine($"Expected: {expectedLine}");
-        sb.AppendLine($"Actual:   {actualLine}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Expected: {expectedLine}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Actual:   {actualLine}");
         sb.AppendLine(new string('-', "Actual:   ".Length + index) + "^");
         return sb.ToString().TrimEnd();
     }

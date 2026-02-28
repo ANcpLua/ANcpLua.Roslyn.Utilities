@@ -1,11 +1,14 @@
+using System.Reflection;
+
 namespace ANcpLua.Analyzers.AotReflection;
 
 #if NET6_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
-using System.Reflection;
 
-public sealed class PropertyMetadata {
+
+public sealed class PropertyMetadata
+{
 #if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicProperties |

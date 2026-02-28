@@ -7,43 +7,33 @@ using Xunit;
 namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting;
 
 /// <summary>
-/// Fast integration test base using in-memory TestServer.
-/// Use for most API tests that don't require real network I/O.
+///     Fast integration test base using in-memory TestServer.
+///     Use for most API tests that don't require real network I/O.
 /// </summary>
 /// <typeparam name="TProgram">The web application's Program class.</typeparam>
 public abstract class IntegrationTestBase<TProgram> : IClassFixture<WebApplicationFactory<TProgram>>, IAsyncLifetime
     where TProgram : class
 {
-    private readonly WebApplicationFactory<TProgram> _factory;
+    /// <summary>
+    ///     Creates a new integration test base.
+    /// </summary>
+    /// <param name="factory">The WebApplicationFactory provided by xUnit fixture.</param>
+    protected IntegrationTestBase(WebApplicationFactory<TProgram> factory)
+    {
+        Factory = factory.WithWebHostBuilder(builder => { builder.ConfigureTestServices(ConfigureTestServices); });
+    }
 
     /// <summary>The configured WebApplicationFactory.</summary>
-    protected WebApplicationFactory<TProgram> Factory => _factory;
+    protected WebApplicationFactory<TProgram> Factory { get; }
 
     /// <summary>HTTP client for making requests to the test server.</summary>
     protected HttpClient Client { get; private set; } = null!;
 
     /// <summary>
-    /// Fake log collector for asserting log output.
-    /// Available after <see cref="InitializeAsync"/> completes.
+    ///     Fake log collector for asserting log output.
+    ///     Available after <see cref="InitializeAsync" /> completes.
     /// </summary>
     protected FakeLogCollector? Logs { get; private set; }
-
-    /// <summary>
-    /// Creates a new integration test base.
-    /// </summary>
-    /// <param name="factory">The WebApplicationFactory provided by xUnit fixture.</param>
-    protected IntegrationTestBase(WebApplicationFactory<TProgram> factory)
-    {
-        _factory = factory.WithWebHostBuilder(builder => { builder.ConfigureTestServices(ConfigureTestServices); });
-    }
-
-    /// <summary>
-    /// Override to configure test services. Default adds fake logging.
-    /// </summary>
-    protected virtual void ConfigureTestServices(IServiceCollection services)
-    {
-        services.AddFakeLogging();
-    }
 
     /// <inheritdoc />
     public virtual ValueTask InitializeAsync()
@@ -59,5 +49,13 @@ public abstract class IntegrationTestBase<TProgram> : IClassFixture<WebApplicati
         Client.Dispose();
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    ///     Override to configure test services. Default adds fake logging.
+    /// </summary>
+    protected virtual void ConfigureTestServices(IServiceCollection services)
+    {
+        services.AddFakeLogging();
     }
 }

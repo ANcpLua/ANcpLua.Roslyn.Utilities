@@ -1,3 +1,4 @@
+using System.Globalization;
 using ANcpLua.Roslyn.Utilities.Testing.Formatting;
 using Microsoft.CodeAnalysis;
 
@@ -380,11 +381,9 @@ public sealed class GeneratorResult : IDisposable
         {
             var observedNames = report.ObservableSteps.Select(static s => s.StepName).ToList();
             foreach (var required in stepNames)
-            {
                 if (!observedNames.Any(name => MatchesStepName(name, required)))
                     Fail($"Required pipeline step not found: '{required}'",
                         $"Available steps: {AssertionHelpers.FormatList(observedNames)}");
-            }
         }
 
         return this;
@@ -394,9 +393,11 @@ public sealed class GeneratorResult : IDisposable
     ///     Checks if a step name matches a required name using prefix matching.
     ///     Supports hierarchical names: "Flow" matches "Flow" and "Flow.Get".
     /// </summary>
-    private static bool MatchesStepName(string stepName, string required) =>
-        stepName.Equals(required, StringComparison.Ordinal) ||
-        stepName.StartsWith(required + ".", StringComparison.Ordinal);
+    private static bool MatchesStepName(string stepName, string required)
+    {
+        return stepName.Equals(required, StringComparison.Ordinal) ||
+               stepName.StartsWith(required + ".", StringComparison.Ordinal);
+    }
 
     /// <summary>
     ///     Asserts that the generator produced a diagnostic with the specified ID.
@@ -574,12 +575,12 @@ public sealed class GeneratorResult : IDisposable
         if (_failures.Count is 0) return;
 
         var sb = new StringBuilder();
-        sb.AppendLine($"Generator '{_generatorType.Name}' failed {_failures.Count} assertion(s):");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Generator '{_generatorType.Name}' failed {_failures.Count} assertion(s):");
         sb.AppendLine();
 
         for (var i = 0; i < _failures.Count; i++)
         {
-            sb.AppendLine($"─── FAILURE {i + 1} ───");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"─── FAILURE {i + 1} ───");
             sb.AppendLine(_failures[i]);
             sb.AppendLine();
         }

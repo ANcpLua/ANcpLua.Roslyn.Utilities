@@ -1,3 +1,5 @@
+using System;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -54,5 +56,8 @@ internal
 
     /// <inheritdoc />
     /// <returns>Always returns <c>null</c>.</returns>
-    public object? GetService(Type serviceType) => null;
+    public object? GetService(Type serviceType)
+    {
+        return null;
+    }
 }

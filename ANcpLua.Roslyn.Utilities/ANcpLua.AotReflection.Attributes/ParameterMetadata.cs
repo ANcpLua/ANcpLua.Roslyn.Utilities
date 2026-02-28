@@ -1,6 +1,7 @@
 namespace ANcpLua.Analyzers.AotReflection;
 
-public sealed class ParameterMetadata {
+public sealed class ParameterMetadata
+{
     public string Name { get; set; } = string.Empty;
 
     public Type Type { get; set; } = null!;

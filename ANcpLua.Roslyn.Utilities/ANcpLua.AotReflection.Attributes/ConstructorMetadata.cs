@@ -1,8 +1,9 @@
-namespace ANcpLua.Analyzers.AotReflection;
-
 using System.Reflection;
 
-public sealed class ConstructorMetadata {
+namespace ANcpLua.Analyzers.AotReflection;
+
+public sealed class ConstructorMetadata
+{
     public ParameterMetadata[] Parameters { get; set; } = Array.Empty<ParameterMetadata>();
 
     public string Accessibility { get; set; } = "public";

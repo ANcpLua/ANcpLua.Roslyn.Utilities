@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -164,7 +166,8 @@ internal
             return false;
 
         var cachedType = Get(type);
-        return cachedType is not null && SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, cachedType.OriginalDefinition);
+        return cachedType is not null &&
+               SymbolEqualityComparer.Default.Equals(symbol.OriginalDefinition, cachedType.OriginalDefinition);
     }
 
     /// <summary>
@@ -190,7 +193,8 @@ internal
 
         foreach (var attr in symbol.GetAttributes())
             if (attr.AttributeClass is not null &&
-                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition, attrSymbol.OriginalDefinition))
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition,
+                    attrSymbol.OriginalDefinition))
                 return true;
 
         return false;
@@ -213,7 +217,8 @@ internal
 
         foreach (var attr in symbol.GetAttributes())
             if (attr.AttributeClass is not null &&
-                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition, attrSymbol.OriginalDefinition))
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition,
+                    attrSymbol.OriginalDefinition))
                 return attr;
 
         return null;
@@ -235,7 +240,8 @@ internal
 
         foreach (var attr in symbol.GetAttributes())
             if (attr.AttributeClass is not null &&
-                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition, attrSymbol.OriginalDefinition))
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass.OriginalDefinition,
+                    attrSymbol.OriginalDefinition))
                 yield return attr;
     }
 

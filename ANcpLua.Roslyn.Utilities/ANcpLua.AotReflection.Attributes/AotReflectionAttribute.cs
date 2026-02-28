@@ -1,7 +1,8 @@
 namespace ANcpLua.Analyzers.AotReflection;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
-public sealed class AotReflectionAttribute : Attribute {
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+public sealed class AotReflectionAttribute : Attribute
+{
     public bool IncludeProperties { get; set; } = true;
     public bool IncludeMethods { get; set; } = true;
     public bool IncludeFields { get; set; } = false;

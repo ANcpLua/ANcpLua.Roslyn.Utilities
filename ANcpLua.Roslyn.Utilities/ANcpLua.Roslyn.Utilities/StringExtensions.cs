@@ -1,5 +1,8 @@
+using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -58,10 +61,13 @@ internal
     ///         The enumerator handles both <c>\n</c> and <c>\r\n</c> line endings correctly.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="SplitLines(ReadOnlySpan{char})" />
+    /// <seealso cref="SplitLines(string)" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this string str) => new(str.AsSpan());
+    public static LineSplitEnumerator SplitLines(this string str)
+    {
+        return new LineSplitEnumerator(str.AsSpan());
+    }
 
     /// <summary>
     ///     Splits a character span into lines without allocating intermediate string arrays.
@@ -82,7 +88,10 @@ internal
     /// <seealso cref="SplitLines(string)" />
     /// <seealso cref="LineSplitEnumerator" />
     /// <seealso cref="LineSplitEntry" />
-    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str) => new(str);
+    public static LineSplitEnumerator SplitLines(this ReadOnlySpan<char> str)
+    {
+        return new LineSplitEnumerator(str);
+    }
 
     /// <summary>
     ///     Converts a string to PascalCase by making the first character uppercase.
@@ -288,7 +297,6 @@ internal
     public static string TrimBlankLines(this string text)
     {
         text = text ?? throw new ArgumentNullException(nameof(text));
-
         var lines = text.NormalizeLineEndings().Split(NewLineSeparator, StringSplitOptions.None);
         var result = new StringBuilder();
         var first = true;
@@ -413,10 +421,12 @@ internal
     ///     A string with all whitespace collapsed to single spaces and trimmed.
     ///     Returns <see cref="string.Empty" /> if input is null or whitespace.
     /// </returns>
-    public static string NormalizeWhitespace(this string? input) =>
-        string.IsNullOrWhiteSpace(input)
+    public static string NormalizeWhitespace(this string? input)
+    {
+        return string.IsNullOrWhiteSpace(input)
             ? string.Empty
             : WhitespaceRegex().Replace(input, " ").Trim();
+    }
 
     /// <summary>
     ///     Sanitizes a string for use as a C# identifier by replacing non-alphanumeric characters with underscores.
@@ -462,10 +472,12 @@ internal
     /// </summary>
     /// <param name="typeFqn">The fully-qualified type name.</param>
     /// <returns>The type name without the global:: prefix.</returns>
-    public static string StripGlobalPrefix(this string typeFqn) =>
-        typeFqn.StartsWith(GlobalPrefix, StringComparison.Ordinal)
+    public static string StripGlobalPrefix(this string typeFqn)
+    {
+        return typeFqn.StartsWith(GlobalPrefix, StringComparison.Ordinal)
             ? typeFqn[GlobalPrefix.Length..]
             : typeFqn;
+    }
 
     /// <summary>
     ///     Normalizes a type name by removing all <c>global::</c> prefixes (including inside generics)
@@ -621,10 +633,12 @@ internal
     /// <param name="value">The string to process.</param>
     /// <param name="suffix">The suffix to remove.</param>
     /// <returns>The string without the suffix if it was present; otherwise, the original string.</returns>
-    public static string StripSuffix(this string value, string suffix) =>
-        value.EndsWith(suffix, StringComparison.Ordinal)
+    public static string StripSuffix(this string value, string suffix)
+    {
+        return value.EndsWith(suffix, StringComparison.Ordinal)
             ? value[..^suffix.Length]
             : value;
+    }
 
     /// <summary>
     ///     Strips a prefix from the start of a string if present.
@@ -632,10 +646,12 @@ internal
     /// <param name="value">The string to process.</param>
     /// <param name="prefix">The prefix to remove.</param>
     /// <returns>The string without the prefix if it was present; otherwise, the original string.</returns>
-    public static string StripPrefix(this string value, string prefix) =>
-        value.StartsWith(prefix, StringComparison.Ordinal)
+    public static string StripPrefix(this string value, string prefix)
+    {
+        return value.StartsWith(prefix, StringComparison.Ordinal)
             ? value[prefix.Length..]
             : value;
+    }
 
     // ========== Hash Utilities ==========
 
@@ -681,11 +697,13 @@ internal
     /// <remarks>
     ///     Escapes backslashes, double quotes, and newlines which are special characters in DOT labels.
     /// </remarks>
-    public static string EscapeDotLabel(this string label) =>
-        label
+    public static string EscapeDotLabel(this string label)
+    {
+        return label
             .Replace("\\", "\\\\")
             .Replace("\"", "\\\"")
             .Replace("\n", "\\n");
+    }
 
     /// <summary>
     ///     Escapes a string for use as a label in Mermaid diagram format.
@@ -696,14 +714,19 @@ internal
     ///     Encodes double quotes as HTML entities and newlines as HTML line breaks,
     ///     which Mermaid renderers interpret correctly.
     /// </remarks>
-    public static string EscapeMermaidLabel(this string label) =>
-        label
+    public static string EscapeMermaidLabel(this string label)
+    {
+        return label
             .Replace("\"", "&quot;")
             .Replace("\n", "<br/>");
+    }
 
     private static readonly Regex WhitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
 
-    private static Regex WhitespaceRegex() => WhitespaceRegexInstance;
+    private static Regex WhitespaceRegex()
+    {
+        return WhitespaceRegexInstance;
+    }
 
     /// <summary>
     ///     A zero-allocation enumerator for splitting strings into lines.
@@ -750,7 +773,10 @@ internal
         /// <remarks>
         ///     This method enables the use of this enumerator directly in a foreach statement.
         /// </remarks>
-        public readonly LineSplitEnumerator GetEnumerator() => this;
+        public readonly LineSplitEnumerator GetEnumerator()
+        {
+            return this;
+        }
 
         /// <summary>
         ///     Advances the enumerator to the next line in the span.
@@ -866,6 +892,9 @@ internal
         /// <returns>
         ///     A <see cref="ReadOnlySpan{T}" /> of <see cref="char" /> containing the line content.
         /// </returns>
-        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry) => entry.Line;
+        public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry)
+        {
+            return entry.Line;
+        }
     }
 }

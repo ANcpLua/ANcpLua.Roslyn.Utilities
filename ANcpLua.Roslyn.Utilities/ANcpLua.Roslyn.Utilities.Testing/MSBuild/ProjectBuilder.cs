@@ -71,52 +71,52 @@ public class ProjectBuilder : IAsyncDisposable
     /// <summary>
     ///     The temporary directory for the project files.
     /// </summary>
-    protected readonly TemporaryDirectory Directory;
+    protected TemporaryDirectory Directory { get; }
 
     /// <summary>
     ///     Path to the GitHub step summary file for CI simulation.
     /// </summary>
-    protected readonly FullPath GithubStepSummaryFile;
+    protected FullPath GithubStepSummaryFile { get; }
 
     /// <summary>
     ///     The NuGet package references configured for this project.
     /// </summary>
-    protected readonly List<NuGetReference> NuGetPackages = [];
+    protected List<NuGetReference> NuGetPackages { get; } = [];
 
     /// <summary>
     ///     The MSBuild properties configured for this project.
     /// </summary>
-    protected readonly List<(string Key, string Value)> Properties = [];
+    protected List<(string Key, string Value)> Properties { get; } = [];
 
     /// <summary>
     ///     The source files to be added to the project.
     /// </summary>
-    protected readonly List<(string Name, string Content)> SourceFiles = [];
+    protected List<(string Name, string Content)> SourceFiles { get; } = [];
 
     /// <summary>
     ///     The test output helper for logging, if provided.
     /// </summary>
-    protected readonly ITestOutputHelper? TestOutputHelper;
+    protected ITestOutputHelper? TestOutputHelper { get; }
 
     /// <summary>
     ///     Counter for the number of build operations performed.
     /// </summary>
-    protected int BuildCount;
+    protected int BuildCount { get; set; }
 
     /// <summary>
     ///     The project filename (defaults to "TestProject.csproj").
     /// </summary>
-    protected string? ProjectFilename = "TestProject.csproj";
+    protected string? ProjectFilename { get; set; } = "TestProject.csproj";
 
     /// <summary>
     ///     The root SDK for the project (defaults to "Microsoft.NET.Sdk").
     /// </summary>
-    protected string RootSdk = "Microsoft.NET.Sdk";
+    protected string RootSdk { get; set; } = "Microsoft.NET.Sdk";
 
     /// <summary>
     ///     The .NET SDK version to use for builds.
     /// </summary>
-    protected NetSdkVersion SdkVersion = NetSdkVersion.Net100;
+    protected NetSdkVersion SdkVersion { get; set; } = NetSdkVersion.Net100;
 
     /// <summary>
     ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
@@ -236,7 +236,10 @@ public class ProjectBuilder : IAsyncDisposable
     ///     The step summary file is populated when builds are run with <see cref="GitHubEnvironmentVariables" />.
     /// </remarks>
     /// <seealso cref="GitHubEnvironmentVariables" />
-    public string? GetGitHubStepSummaryContent() => File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
+    public string? GetGitHubStepSummaryContent()
+    {
+        return File.Exists(GithubStepSummaryFile) ? File.ReadAllText(GithubStepSummaryFile) : null;
+    }
 
     /// <summary>
     ///     Adds a file with the specified content to the project directory.

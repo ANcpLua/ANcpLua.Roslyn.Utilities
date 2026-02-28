@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,13 +58,13 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="CompileResultAssertions" />
 public sealed class Compile
 {
-    private readonly List<SyntaxTree> _sources = [];
     private readonly HashSet<MetadataReference> _references = [];
+    private readonly List<SyntaxTree> _sources = [];
+    private bool _allowUnsafe;
     private string _assemblyName = "DynamicAssembly";
+    private OptimizationLevel _optimization = OptimizationLevel.Debug;
     private OutputKind _outputKind = OutputKind.DynamicallyLinkedLibrary;
     private CSharpParseOptions _parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest);
-    private OptimizationLevel _optimization = OptimizationLevel.Debug;
-    private bool _allowUnsafe;
 
     private Compile()
     {
@@ -76,13 +77,19 @@ public sealed class Compile
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <returns>A new <see cref="Compile" /> instance configured with the source.</returns>
-    public static Compile Source(string code) => new Compile().WithSource(code);
+    public static Compile Source(string code)
+    {
+        return new Compile().WithSource(code);
+    }
 
     /// <summary>
     ///     Creates an empty compiler for configuration.
     /// </summary>
     /// <returns>A new empty <see cref="Compile" /> instance.</returns>
-    public static Compile Empty() => new();
+    public static Compile Empty()
+    {
+        return new Compile();
+    }
 
     /// <summary>
     ///     Adds source code to the compilation.
@@ -366,28 +373,40 @@ public sealed class CompileResult
     /// </summary>
     /// <param name="errorId">The diagnostic ID to check for (e.g., "CS0246").</param>
     /// <returns><see langword="true" /> if an error exists; otherwise, <see langword="false" />.</returns>
-    public bool HasError(string errorId) => Errors.Any(e => e.Id == errorId);
+    public bool HasError(string errorId)
+    {
+        return Errors.Any(e => e.Id == errorId);
+    }
 
     /// <summary>
     ///     Checks if the compilation has a warning with the specified ID.
     /// </summary>
     /// <param name="warningId">The diagnostic ID to check for (e.g., "CS8618").</param>
     /// <returns><see langword="true" /> if a warning exists; otherwise, <see langword="false" />.</returns>
-    public bool HasWarning(string warningId) => Warnings.Any(w => w.Id == warningId);
+    public bool HasWarning(string warningId)
+    {
+        return Warnings.Any(w => w.Id == warningId);
+    }
 
     /// <summary>
     ///     Checks if a type exists in the compiled assembly.
     /// </summary>
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns><see langword="true" /> if the type exists; otherwise, <see langword="false" />.</returns>
-    public bool ContainsType(string typeName) => Assembly?.GetType(typeName) is not null;
+    public bool ContainsType(string typeName)
+    {
+        return Assembly?.GetType(typeName) is not null;
+    }
 
     /// <summary>
     ///     Gets a type from the compiled assembly.
     /// </summary>
     /// <param name="name">The fully qualified type name.</param>
     /// <returns>The type, or <see langword="null" /> if not found.</returns>
-    public Type? GetType(string name) => Assembly?.GetType(name);
+    public Type? GetType(string name)
+    {
+        return Assembly?.GetType(name);
+    }
 
     /// <summary>
     ///     Gets a type from the compiled assembly, throws if not found.
@@ -395,8 +414,10 @@ public sealed class CompileResult
     /// <param name="name">The fully qualified type name.</param>
     /// <returns>The type.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the type is not found.</exception>
-    public Type GetRequiredType(string name) =>
-        GetType(name) ?? throw new InvalidOperationException($"Type '{name}' not found in compiled assembly");
+    public Type GetRequiredType(string name)
+    {
+        return GetType(name) ?? throw new InvalidOperationException($"Type '{name}' not found in compiled assembly");
+    }
 
     /// <summary>
     ///     Creates an instance of a type from the compiled assembly.
@@ -404,7 +425,10 @@ public sealed class CompileResult
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns>The created instance, or <see langword="null" /> if creation failed.</returns>
     [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
-    public object? CreateInstance(string typeName) => Assembly?.CreateInstance(typeName);
+    public object? CreateInstance(string typeName)
+    {
+        return Assembly?.CreateInstance(typeName);
+    }
 
     /// <summary>
     ///     Creates an instance of a type from the compiled assembly.
@@ -413,7 +437,10 @@ public sealed class CompileResult
     /// <param name="typeName">The fully qualified type name.</param>
     /// <returns>The created instance, or <see langword="null" /> if creation failed.</returns>
     [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
-    public T? CreateInstance<T>(string typeName) where T : class => CreateInstance(typeName) as T;
+    public T? CreateInstance<T>(string typeName) where T : class
+    {
+        return CreateInstance(typeName) as T;
+    }
 
     /// <summary>
     ///     Creates an instance of a type, throws if null.
@@ -423,8 +450,11 @@ public sealed class CompileResult
     /// <returns>The created instance.</returns>
     /// <exception cref="InvalidOperationException">Thrown when instance creation fails.</exception>
     [RequiresUnreferencedCode("Uses Assembly.CreateInstance which requires runtime type information.")]
-    public T CreateRequiredInstance<T>(string typeName) where T : class =>
-        CreateInstance<T>(typeName) ?? throw new InvalidOperationException($"Failed to create instance of '{typeName}'");
+    public T CreateRequiredInstance<T>(string typeName) where T : class
+    {
+        return CreateInstance<T>(typeName) ??
+               throw new InvalidOperationException($"Failed to create instance of '{typeName}'");
+    }
 
     /// <summary>
     ///     Formats all diagnostics for display.
@@ -437,7 +467,7 @@ public sealed class CompileResult
 
         var sb = new StringBuilder();
         foreach (var d in Diagnostics)
-            sb.AppendLine($"  {d.Severity}: {d.Id} - {d.GetMessage()}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  {d.Severity}: {d.Id} - {d.GetMessage(CultureInfo.InvariantCulture)}");
         return sb.ToString();
     }
 
@@ -454,6 +484,7 @@ public sealed class CompileResult
                 sb.AppendLine();
             sb.Append(tree.GetText());
         }
+
         return sb.ToString();
     }
 

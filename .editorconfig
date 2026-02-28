@@ -1,0 +1,5 @@
+root = true
+
+[*.cs]
+# Treat ALL diagnostics as errors — compiler, analyzers, IDE, style
+dotnet_analyzer_diagnostic.severity = error

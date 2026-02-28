@@ -1,17 +1,19 @@
-﻿namespace ANcpLua.Analyzers.AotReflection;
+﻿namespace ANcpLua.Analyzers.AotReflection.Extraction;
 
-internal static partial class LiteralFormatter {
-    public static string? FormatConstant(object? value, ITypeSymbol? type) {
-        if (value is null) {
-            return "null";
-        }
+internal static class LiteralFormatter
+{
+    public static string? FormatConstant(object? value, ITypeSymbol? type)
+    {
+        if (value is null) return "null";
 
-        if (type is INamedTypeSymbol { TypeKind: TypeKind.Enum }) {
+        if (type is INamedTypeSymbol { TypeKind: TypeKind.Enum })
+        {
             var underlying = Convert.ToInt64(value, CultureInfo.InvariantCulture);
             return $"({type.GetFullyQualifiedName()}){underlying}";
         }
 
-        return value switch {
+        return value switch
+        {
             string s => $"\"{EscapeString(s)}\"",
             char c => $"'{EscapeChar(c)}'",
             bool b => b ? "true" : "false",
@@ -30,21 +32,25 @@ internal static partial class LiteralFormatter {
         };
     }
 
-    public static string? GetDefaultValueLiteral(IParameterSymbol parameter, CancellationToken cancellationToken) {
-        var syntax = parameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as ParameterSyntax;
+    public static string? GetDefaultValueLiteral(IParameterSymbol parameter, CancellationToken cancellationToken)
+    {
+        var syntax =
+            parameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as ParameterSyntax;
         var fromSyntax = syntax?.Default?.Value.ToString().Trim();
-        if (!string.IsNullOrWhiteSpace(fromSyntax)) {
-            return fromSyntax;
-        }
+        if (!string.IsNullOrWhiteSpace(fromSyntax)) return fromSyntax;
 
         return FormatConstant(parameter.ExplicitDefaultValue, parameter.Type);
     }
 
     private static string EscapeString(string value)
-        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    {
+        return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+    }
 
     private static string EscapeChar(char value)
-        => value switch {
+    {
+        return value switch
+        {
             '\\' => "\\\\",
             '\'' => "\\'",
             '\n' => "\\n",
@@ -52,4 +58,5 @@ internal static partial class LiteralFormatter {
             '\t' => "\\t",
             _ => value.ToString()
         };
+    }
 }

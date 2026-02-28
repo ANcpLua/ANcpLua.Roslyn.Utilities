@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -19,7 +22,8 @@ internal
     ///     C# keyword aliases (e.g., "int").
     /// </remarks>
     private static readonly IReadOnlyDictionary<string, string> TryParseMappings =
-        new Dictionary<string, string>(StringComparer.Ordinal) {
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
             ["System.Int32"] = "TryParseInt32",
             ["int"] = "TryParseInt32",
             ["System.Int64"] = "TryParseInt64",
@@ -49,7 +53,8 @@ internal
     ///     Note: LastIndexOf is NOT included - no extension exists for it.
     /// </remarks>
     private static readonly HashSet<string> StringComparisonMethods =
-        new(StringComparer.Ordinal) {
+        new(StringComparer.Ordinal)
+        {
             "Equals",
             "StartsWith",
             "EndsWith",
@@ -61,7 +66,8 @@ internal
     ///     Maps StringComparison enum values to extension method suffixes.
     /// </summary>
     private static readonly IReadOnlyDictionary<string, string> StringComparisonSuffixes =
-        new Dictionary<string, string>(StringComparer.Ordinal) {
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
             ["Ordinal"] = "Ordinal",
             ["OrdinalIgnoreCase"] = "IgnoreCase",
             ["CurrentCulture"] = "CurrentCulture",
@@ -75,22 +81,28 @@ internal
     /// </summary>
     /// <param name="typeName">The fully-qualified type name or C# keyword alias.</param>
     /// <returns>The extension method name, or null if no mapping exists.</returns>
-    public static string? GetTryParseExtension(string typeName) =>
-        TryParseMappings.GetOrNull(typeName);
+    public static string? GetTryParseExtension(string typeName)
+    {
+        return TryParseMappings.GetOrNull(typeName);
+    }
 
     /// <summary>
     ///     Checks if a string method has StringComparison extension equivalents.
     /// </summary>
     /// <param name="methodName">The string method name (e.g., "Equals", "Contains").</param>
     /// <returns>True if the method has extension equivalents.</returns>
-    public static bool HasStringComparisonExtension(string methodName) =>
-        StringComparisonMethods.Contains(methodName);
+    public static bool HasStringComparisonExtension(string methodName)
+    {
+        return StringComparisonMethods.Contains(methodName);
+    }
 
     /// <summary>
     ///     Gets the extension method suffix for a StringComparison value.
     /// </summary>
     /// <param name="comparisonValue">The StringComparison enum member name.</param>
     /// <returns>The suffix to append to the method name, or null if not supported.</returns>
-    public static string? GetStringComparisonSuffix(string comparisonValue) =>
-        StringComparisonSuffixes.GetOrNull(comparisonValue);
+    public static string? GetStringComparisonSuffix(string comparisonValue)
+    {
+        return StringComparisonSuffixes.GetOrNull(comparisonValue);
+    }
 }

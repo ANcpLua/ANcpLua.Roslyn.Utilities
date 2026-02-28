@@ -3,10 +3,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 
-namespace ANcpLua.Roslyn.Utilities.CodeFixes;
+namespace ANcpLua.Roslyn.Utilities.Testing.CodeFixes;
 
 /// <summary>
-/// Base class for code fixes that transform a specific syntax node type.
+///     Base class for code fixes that transform a specific syntax node type.
 /// </summary>
 /// <typeparam name="TSyntax">The syntax node type to transform.</typeparam>
 public abstract class CodeFixProviderBase<TSyntax> : CodeFixProvider
@@ -26,7 +26,10 @@ public abstract class CodeFixProviderBase<TSyntax> : CodeFixProvider
         CancellationToken cancellationToken);
 
     /// <inheritdoc />
-    public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public sealed override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     /// <inheritdoc />
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
@@ -41,9 +44,9 @@ public abstract class CodeFixProviderBase<TSyntax> : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: Title,
-                createChangedDocument: ct => ApplyFixAsync(context.Document, root, node, diagnostic, ct),
-                equivalenceKey: Title),
+                Title,
+                ct => ApplyFixAsync(context.Document, root, node, diagnostic, ct),
+                Title),
             diagnostic);
     }
 

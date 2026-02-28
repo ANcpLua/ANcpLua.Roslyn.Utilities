@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -66,7 +68,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     <code>
 /// // Before: Verbose pattern
 /// context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation(), typeName));
-///
+/// 
 /// // After: Simplified extension
 /// context.ReportDiagnostic(Rule, node.GetLocation(), typeName);
 /// </code>
@@ -87,12 +89,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxNodeAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -100,11 +104,13 @@ internal
     /// <param name="context">The syntax node analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxNodeAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, and message arguments.
@@ -114,13 +120,15 @@ internal
     /// <param name="location">The primary location where the diagnostic should be reported.</param>
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxNodeAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, properties, and message
@@ -132,14 +140,16 @@ internal
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="properties">Custom properties to attach to the diagnostic for code fix use.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxNodeAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
         ImmutableDictionary<string, string?>? properties,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, properties, messageArgs));
+    }
 
     // ========== OperationAnalysisContext ==========
 
@@ -150,12 +160,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -163,11 +175,13 @@ internal
     /// <param name="context">The operation analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, and message arguments.
@@ -177,13 +191,15 @@ internal
     /// <param name="location">The primary location where the diagnostic should be reported.</param>
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, properties, and message
@@ -195,14 +211,16 @@ internal
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="properties">Custom properties to attach to the diagnostic for code fix use.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
         ImmutableDictionary<string, string?>? properties,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, properties, messageArgs));
+    }
 
     // ========== SymbolAnalysisContext ==========
 
@@ -213,12 +231,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SymbolAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -226,11 +246,13 @@ internal
     /// <param name="context">The symbol analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SymbolAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, and message arguments.
@@ -240,13 +262,15 @@ internal
     /// <param name="location">The primary location where the diagnostic should be reported.</param>
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SymbolAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor, location, additional locations, properties, and message
@@ -258,14 +282,16 @@ internal
     /// <param name="additionalLocations">Additional locations to associate with the diagnostic.</param>
     /// <param name="properties">Custom properties to attach to the diagnostic for code fix use.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SymbolAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
         IEnumerable<Location>? additionalLocations,
         ImmutableDictionary<string, string?>? properties,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, additionalLocations, properties, messageArgs));
+    }
 
     // ========== SyntaxTreeAnalysisContext ==========
 
@@ -276,12 +302,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxTreeAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -289,11 +317,13 @@ internal
     /// <param name="context">The syntax tree analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SyntaxTreeAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     // ========== SemanticModelAnalysisContext ==========
 
@@ -304,12 +334,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SemanticModelAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -317,11 +349,13 @@ internal
     /// <param name="context">The semantic model analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this SemanticModelAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     // ========== CodeBlockAnalysisContext ==========
 
@@ -332,12 +366,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this CodeBlockAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -345,11 +381,13 @@ internal
     /// <param name="context">The code block analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this CodeBlockAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 
     // ========== OperationBlockAnalysisContext ==========
 
@@ -360,12 +398,14 @@ internal
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
     /// <param name="messageArgs">Arguments to format into the diagnostic message.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationBlockAnalysisContext context,
         DiagnosticDescriptor descriptor,
         Location location,
-        params object[] messageArgs) =>
+        params object[] messageArgs)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location, messageArgs));
+    }
 
     /// <summary>
     ///     Reports a diagnostic with the specified descriptor and location.
@@ -373,9 +413,11 @@ internal
     /// <param name="context">The operation block analysis context.</param>
     /// <param name="descriptor">The diagnostic descriptor.</param>
     /// <param name="location">The location where the diagnostic should be reported.</param>
-        public static void ReportDiagnostic(
+    public static void ReportDiagnostic(
         this OperationBlockAnalysisContext context,
         DiagnosticDescriptor descriptor,
-        Location location) =>
+        Location location)
+    {
         context.ReportDiagnostic(Diagnostic.Create(descriptor, location));
+    }
 }

@@ -1,12 +1,12 @@
-namespace ANcpLua.Roslyn.Utilities.Analyzers;
-
 using Microsoft.CodeAnalysis.Diagnostics;
 
+namespace ANcpLua.Roslyn.Utilities.Analyzers;
+
 /// <summary>
-/// Base class for diagnostic analyzers that standardizes initialization.
-/// Automatically configures:
-/// - GeneratedCodeAnalysisFlags.None (don't analyze generated code)
-/// - EnableConcurrentExecution() for performance
+///     Base class for diagnostic analyzers that standardizes initialization.
+///     Automatically configures:
+///     - GeneratedCodeAnalysisFlags.None (don't analyze generated code)
+///     - EnableConcurrentExecution() for performance
 /// </summary>
 public abstract class DiagnosticAnalyzerBase : DiagnosticAnalyzer
 {
@@ -19,7 +19,7 @@ public abstract class DiagnosticAnalyzerBase : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// Register analysis actions. Called after standard configuration.
+    ///     Register analysis actions. Called after standard configuration.
     /// </summary>
     protected abstract void InitializeCore(AnalysisContext context);
 }

@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -55,8 +58,10 @@ internal
     /// <seealso cref="ToEquatableArray{T}" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EquatableArray<T> AsEquatableArray<T>(this ImmutableArray<T> array)
-        where T : IEquatable<T> =>
-        new(array);
+        where T : IEquatable<T>
+    {
+        return new EquatableArray<T>(array);
+    }
 
     /// <summary>
     ///     Creates an <see cref="EquatableArray{T}" /> from a given array.
@@ -84,8 +89,10 @@ internal
     /// <seealso cref="AsEquatableArray{T}" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static EquatableArray<T> ToEquatableArray<T>(this T[] array)
-        where T : IEquatable<T> =>
-        new(ImmutableCollectionsMarshal.AsImmutableArray(array));
+        where T : IEquatable<T>
+    {
+        return new(ImmutableCollectionsMarshal.AsImmutableArray(array));
+    }
 }
 
 /// <summary>
@@ -278,7 +285,10 @@ internal
     ///     <c>true</c> if <paramref name="obj" /> is an <see cref="EquatableArray{T}" /> and
     ///     is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object? obj) => obj is EquatableArray<T> other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is EquatableArray<T> other && Equals(other);
+    }
 
     /// <summary>
     ///     Returns a hash code for this <see cref="EquatableArray{T}" /> based on its elements.
@@ -317,7 +327,10 @@ internal
     /// </remarks>
     /// <seealso cref="Items" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ImmutableArray<T> AsImmutableArray() => _array is null ? ImmutableArray<T>.Empty : ImmutableCollectionsMarshal.AsImmutableArray(_array);
+    public ImmutableArray<T> AsImmutableArray()
+    {
+        return _array is null ? ImmutableArray<T>.Empty : ImmutableCollectionsMarshal.AsImmutableArray(_array);
+    }
 
     /// <summary>
     ///     Gets the underlying items as an <see cref="ImmutableArray{T}" />.
@@ -348,7 +361,10 @@ internal
     ///     The span provides efficient, bounds-checked access to the underlying elements.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> AsSpan() => new(_array);
+    public ReadOnlySpan<T> AsSpan()
+    {
+        return new(_array);
+    }
 
     /// <summary>
     ///     Copies the contents of this <see cref="EquatableArray{T}" /> to a new mutable array.
@@ -359,7 +375,10 @@ internal
     /// <remarks>
     ///     The returned array is a copy and can be safely mutated without affecting this instance.
     /// </remarks>
-    public T[] ToArray() => _array is null ? [] : [.. _array];
+    public T[] ToArray()
+    {
+        return _array is null ? [] : [.. _array];
+    }
 
     /// <summary>
     ///     Gets an <see cref="ImmutableArray{T}.Enumerator" /> to traverse items in the current array.
@@ -372,26 +391,38 @@ internal
     ///     The enumerator provides efficient, struct-based iteration.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ImmutableArray<T>.Enumerator GetEnumerator() => AsImmutableArray().GetEnumerator();
+    public ImmutableArray<T>.Enumerator GetEnumerator()
+    {
+        return AsImmutableArray().GetEnumerator();
+    }
 
     /// <summary>
     ///     Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => ((IEnumerable<T>)AsImmutableArray()).GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    {
+        return ((IEnumerable<T>)AsImmutableArray()).GetEnumerator();
+    }
 
     /// <summary>
     ///     Returns an enumerator that iterates through the collection.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)AsImmutableArray()).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)AsImmutableArray()).GetEnumerator();
+    }
 
     /// <summary>
     ///     Implicitly converts an <see cref="EquatableArray{T}" /> to an <see cref="ImmutableArray{T}" />.
     /// </summary>
     /// <param name="array">The <see cref="EquatableArray{T}" /> to convert.</param>
     /// <returns>An <see cref="ImmutableArray{T}" /> containing the same elements.</returns>
-    public static implicit operator ImmutableArray<T>(EquatableArray<T> array) => array.AsImmutableArray();
+    public static implicit operator ImmutableArray<T>(EquatableArray<T> array)
+    {
+        return array.AsImmutableArray();
+    }
 
     /// <summary>
     ///     Determines whether two <see cref="EquatableArray{T}" /> instances are equal.
@@ -403,7 +434,10 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Equals(EquatableArray{T})" />
-    public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right) => left.Equals(right);
+    public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)
+    {
+        return left.Equals(right);
+    }
 
     /// <summary>
     ///     Determines whether two <see cref="EquatableArray{T}" /> instances are not equal.
@@ -415,7 +449,10 @@ internal
     ///     otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="Equals(EquatableArray{T})" />
-    public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right) => !left.Equals(right);
+    public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)
+    {
+        return !left.Equals(right);
+    }
 }
 
 /// <summary>
@@ -608,8 +645,10 @@ internal
     /// </returns>
     /// <seealso cref="FirstOrDefault{T}(EquatableArray{T}, Func{T, bool})" />
     public static T? FirstOrDefault<T>(this EquatableArray<T> array)
-        where T : IEquatable<T> =>
-        array.IsEmpty ? default : array[0];
+        where T : IEquatable<T>
+    {
+        return array.IsEmpty ? default : array[0];
+    }
 
     /// <summary>
     ///     Returns the first element that matches the specified predicate, or a default value

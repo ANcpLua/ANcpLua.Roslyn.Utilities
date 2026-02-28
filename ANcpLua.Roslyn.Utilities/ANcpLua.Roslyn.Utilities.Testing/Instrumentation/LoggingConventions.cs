@@ -3,13 +3,14 @@
 // Production utilities for [LoggerMessage] source generation
 // =============================================================================
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace ANcpLua.Roslyn.Utilities.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
 
 /// <summary>
 ///     Standardized event ID ranges for structured logging.
-///     Use with <see cref="LoggerMessageAttribute"/> EventId parameter.
+///     Use with <see cref="LoggerMessageAttribute" /> EventId parameter.
 /// </summary>
 /// <remarks>
 ///     Event IDs provide stable identifiers for log correlation and alerting.
@@ -168,7 +169,7 @@ public static class LogScopes
     /// <summary>Creates a scope with trace context from the current Activity.</summary>
     public static IDisposable? BeginTraceScope(this ILogger logger)
     {
-        var activity = System.Diagnostics.Activity.Current;
+        var activity = Activity.Current;
         if (activity is null)
             return null;
 

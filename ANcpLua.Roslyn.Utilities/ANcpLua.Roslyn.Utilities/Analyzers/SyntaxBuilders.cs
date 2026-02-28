@@ -60,16 +60,20 @@ internal
     /// <summary>
     ///     Builds a nameof expression: nameof(expression)
     /// </summary>
-    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression) =>
-        SyntaxFactory.InvocationExpression(
+    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression)
+    {
+        return SyntaxFactory.InvocationExpression(
             SyntaxFactory.IdentifierName("nameof"),
             SyntaxFactory.ArgumentList(
                 SyntaxFactory.SingletonSeparatedList(
                     SyntaxFactory.Argument(expression))));
+    }
 
     /// <summary>
     ///     Builds a nameof expression: nameof(name)
     /// </summary>
-    public static InvocationExpressionSyntax NameOf(string name) =>
-        NameOf(SyntaxFactory.IdentifierName(name));
+    public static InvocationExpressionSyntax NameOf(string name)
+    {
+        return NameOf(SyntaxFactory.IdentifierName(name));
+    }
 }
