@@ -60,6 +60,9 @@ internal
 #endif
     static class Boxes
 {
+    private static readonly object[] CachedInt32 = CreateInt32Cache();
+    private static readonly object[] CachedChar = CreateCharCache();
+
     /// <summary>
     ///     A cached boxed <see cref="bool" /> value of <c>true</c>.
     /// </summary>
@@ -73,12 +76,12 @@ internal
     /// <summary>
     ///     A cached boxed <see cref="int" /> value of <c>0</c>.
     /// </summary>
-    public static readonly object BoxedInt32Zero = 0;
+    public static readonly object BoxedInt32Zero = CachedInt32[1]; // index 1 = value 0
 
     /// <summary>
     ///     A cached boxed <see cref="int" /> value of <c>1</c>.
     /// </summary>
-    public static readonly object BoxedInt32One = 1;
+    public static readonly object BoxedInt32One = CachedInt32[2]; // index 2 = value 1
 
     /// <summary>
     ///     A cached boxed <see cref="long" /> value of <c>0</c>.
@@ -129,9 +132,6 @@ internal
     ///     A cached boxed <see cref="float" /> value of <c>0.0f</c>.
     /// </summary>
     public static readonly object BoxedSingleZero = 0.0f;
-
-    private static readonly object[] CachedInt32 = CreateInt32Cache();
-    private static readonly object[] CachedChar = CreateCharCache();
 
     /// <summary>
     ///     Returns a cached boxed <see cref="bool" /> value.
@@ -185,7 +185,8 @@ internal
     public static object Box(double value)
     {
         // ReSharper disable once CompareOfFloatsByEqualityOperator
-        return value == 0.0 ? BoxedDoubleZero : value;
+        // Exclude -0.0: 1.0 / -0.0 == NegativeInfinity
+        return value == 0.0 && 1.0 / value != double.NegativeInfinity ? BoxedDoubleZero : value;
     }
 
     /// <summary>
@@ -274,7 +275,8 @@ internal
     public static object Box(float value)
     {
         // ReSharper disable once CompareOfFloatsByEqualityOperator
-        return value == 0.0f ? BoxedSingleZero : value;
+        // Exclude -0.0f: 1.0f / -0.0f == NegativeInfinity
+        return value == 0.0f && 1.0f / value != float.NegativeInfinity ? BoxedSingleZero : value;
     }
 
     /// <summary>

@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -64,9 +69,11 @@ internal
     private readonly TimeSpan _delay;
     private readonly Func<ImmutableArray<T>, CancellationToken, ValueTask> _processBatchAsync;
     private readonly IEqualityComparer<T>? _equalityComparer;
-    private readonly CancellationToken _cancellationToken;
     private readonly object _gate = new();
     private readonly Timer _timer;
+
+    private readonly CancellationTokenSource _disposeCts = new();
+    private readonly CancellationTokenSource _linkedCts;
 
     private List<T> _pendingItems = new();
     private TaskCompletionSource<bool>? _currentBatchTcs;
@@ -96,10 +103,17 @@ internal
         IEqualityComparer<T>? equalityComparer,
         CancellationToken cancellationToken)
     {
+        if (delay < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay), delay, "Delay must not be negative.");
+        }
+
         _delay = delay;
         _processBatchAsync = Guard.NotNull(processBatchAsync);
         _equalityComparer = equalityComparer;
-        _cancellationToken = cancellationToken;
+        _linkedCts = cancellationToken.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposeCts.Token)
+            : _disposeCts;
         _timer = new Timer(OnTimerFired, null, Timeout.Infinite, Timeout.Infinite);
     }
 
@@ -111,6 +125,11 @@ internal
     {
         lock (_gate)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
             _pendingItems.Add(item);
             RestartTimer();
         }
@@ -126,6 +145,11 @@ internal
 
         lock (_gate)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
             _pendingItems.AddRange(items);
             RestartTimer();
         }
@@ -154,13 +178,35 @@ internal
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        TaskCompletionSource<bool>? tcs;
+
+        lock (_gate)
         {
-            return;
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            tcs = _currentBatchTcs;
+            _pendingItems.Clear();
         }
 
-        _disposed = true;
+        // Cancel in-flight batch processing
+        _disposeCts.Cancel();
+
+        // Signal waiters that the queue was disposed
+        tcs?.TrySetCanceled();
+
         _timer.Dispose();
+
+        // Dispose the linked CTS only if it is a separate instance
+        if (!ReferenceEquals(_linkedCts, _disposeCts))
+        {
+            _linkedCts.Dispose();
+        }
+
+        _disposeCts.Dispose();
     }
 
     private void RestartTimer()
@@ -188,17 +234,20 @@ internal
 
     private async Task ProcessBatchAsync()
     {
-        if (_cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-
+        CancellationToken linkedToken;
         List<T> itemsToProcess;
         TaskCompletionSource<bool> tcs;
 
         lock (_gate)
         {
-            if (_pendingItems.Count == 0)
+            if (_disposed || _pendingItems.Count == 0)
+            {
+                return;
+            }
+
+            linkedToken = _linkedCts.Token;
+
+            if (linkedToken.IsCancellationRequested)
             {
                 return;
             }
@@ -224,18 +273,20 @@ internal
 
             if (batch.Length > 0)
             {
-                await _processBatchAsync(batch, _cancellationToken).ConfigureAwait(false);
+                await _processBatchAsync(batch, linkedToken).ConfigureAwait(false);
             }
 
             tcs.TrySetResult(true);
         }
-        catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (linkedToken.IsCancellationRequested)
         {
-            tcs.TrySetCanceled(_cancellationToken);
+            tcs.TrySetCanceled(linkedToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            tcs.TrySetException(ex);
+            // Complete with false instead of TrySetException to avoid
+            // UnobservedTaskException when the TCS Task is orphaned.
+            tcs.TrySetResult(false);
         }
     }
 }

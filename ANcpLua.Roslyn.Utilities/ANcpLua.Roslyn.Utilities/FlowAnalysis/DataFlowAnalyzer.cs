@@ -89,6 +89,15 @@ internal
     protected virtual bool AnalyzeUnreachableBlocks => false;
 
     /// <summary>
+    ///     Gets the maximum number of worklist iterations before the analysis is considered non-convergent.
+    /// </summary>
+    /// <remarks>
+    ///     Defaults to <c>blocks.Length * 10</c>. Override to increase for analyses with deep lattices.
+    ///     If the limit is exceeded, an <see cref="InvalidOperationException" /> is thrown.
+    /// </remarks>
+    protected virtual int GetMaxIterations(int blockCount) => blockCount * 10;
+
+    /// <summary>
     ///     Creates the initial (bottom) analysis data for the lattice.
     /// </summary>
     /// <returns>
@@ -218,9 +227,19 @@ internal
         // Stored data per block = accumulated entry state from predecessors.
         // AnalyzeBlock reads it via GetCurrentAnalysisData, returns exit state.
         // Exit state is propagated to successors and merged into their entry state.
+        var maxIterations = GetMaxIterations(blocks.Length);
+        var iterations = 0;
+
         while (worklist.Count > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (++iterations > maxIterations)
+            {
+                throw new InvalidOperationException(
+                    $"Data-flow analysis did not converge after {maxIterations} iterations. " +
+                    "This typically indicates a non-monotone lattice in a subclass Merge implementation.");
+            }
 
             var block = worklist.Dequeue();
             inWorklist[block.Ordinal] = false;
@@ -249,6 +268,10 @@ internal
             }
             else if (block.ConditionalSuccessor != null)
             {
+                // In Roslyn's CFG, a block may have only a ConditionalSuccessor and no FallThroughSuccessor.
+                // This occurs when the fallthrough path exits the region (e.g., throw/return in one branch).
+                // Since there is only a single outgoing edge, this is effectively a non-conditional branch;
+                // calling AnalyzeConditionalBranch would be incorrect as it expects two destination edges.
                 var data = AnalyzeNonConditionalBranch(block, blockOutput, cancellationToken);
                 MergeAndEnqueue(block.ConditionalSuccessor.Destination, data, worklist, inWorklist, cancellationToken);
             }
@@ -319,18 +342,21 @@ internal
             // Push this block again marked as processed (will be added to post-order after children)
             dfsStack.Push((block, true));
 
-            // Push successors (in reverse to maintain ordering)
+            // Push fallthrough first, then conditional. Since this is a LIFO stack,
+            // conditional is popped first, which means fallthrough is visited later and
+            // appears earlier in reverse post-order. This produces conventional RPO where
+            // fallthrough edges are processed before back-edges, improving convergence.
             var conditional = block.ConditionalSuccessor?.Destination;
             var fallThrough = block.FallThroughSuccessor?.Destination;
-
-            if (conditional != null && !visited[conditional.Ordinal])
-            {
-                dfsStack.Push((conditional, false));
-            }
 
             if (fallThrough != null && !visited[fallThrough.Ordinal])
             {
                 dfsStack.Push((fallThrough, false));
+            }
+
+            if (conditional != null && !visited[conditional.Ordinal])
+            {
+                dfsStack.Push((conditional, false));
             }
         }
 
