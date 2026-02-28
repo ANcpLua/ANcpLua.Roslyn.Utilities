@@ -709,8 +709,8 @@ internal
         if (string.IsNullOrWhiteSpace(str))
             return string.Empty;
 
-        if (str is ['"', .., '"'] || str.AsSpan().IndexOfAny(disallowed) < 0)
-            return str;
+        if (str is ['"', .., '"'] || str!.AsSpan().IndexOfAny(disallowed) < 0)
+            return str!;
 
         return str.DoubleQuote();
     }
@@ -743,8 +743,8 @@ internal
         if (string.IsNullOrWhiteSpace(str))
             return string.Empty;
 
-        if (str is ['\'', .., '\''] || str.AsSpan().IndexOfAny(disallowed) < 0)
-            return str;
+        if (str is ['\'', .., '\''] || str!.AsSpan().IndexOfAny(disallowed) < 0)
+            return str!;
 
         return str.SingleQuote();
     }
