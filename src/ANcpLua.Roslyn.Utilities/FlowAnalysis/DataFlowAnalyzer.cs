@@ -48,7 +48,7 @@ namespace ANcpLua.Roslyn.Utilities.FlowAnalysis;
 /// {
 ///     protected override HashSet&lt;ILocalSymbol&gt; GetEmptyAnalysisData()
 ///         =&gt; new(SymbolEqualityComparer.Default);
-///
+/// 
 ///     protected override HashSet&lt;ILocalSymbol&gt; Merge(
 ///         HashSet&lt;ILocalSymbol&gt; data1,
 ///         HashSet&lt;ILocalSymbol&gt; data2,
@@ -59,12 +59,12 @@ namespace ANcpLua.Roslyn.Utilities.FlowAnalysis;
 ///         result.IntersectWith(data2);
 ///         return result;
 ///     }
-///
+/// 
 ///     protected override bool IsEqual(
 ///         HashSet&lt;ILocalSymbol&gt; data1,
 ///         HashSet&lt;ILocalSymbol&gt; data2)
 ///         =&gt; data1.SetEquals(data2);
-///
+/// 
 ///     // ... implement remaining abstract members
 /// }
 /// </code>
@@ -95,7 +95,10 @@ internal
     ///     Defaults to <c>blocks.Length * 10</c>. Override to increase for analyses with deep lattices.
     ///     If the limit is exceeded, an <see cref="InvalidOperationException" /> is thrown.
     /// </remarks>
-    protected virtual int GetMaxIterations(int blockCount) => blockCount * 10;
+    protected virtual int GetMaxIterations(int blockCount)
+    {
+        return blockCount * 10;
+    }
 
     /// <summary>
     ///     Creates the initial (bottom) analysis data for the lattice.
@@ -119,7 +122,8 @@ internal
     /// <param name="block">The basic block to update.</param>
     /// <param name="data">The new analysis data to associate with the block.</param>
     /// <param name="cancellationToken">A token to observe for cancellation.</param>
-    protected abstract void SetCurrentAnalysisData(BasicBlock block, TBlockAnalysisData data, CancellationToken cancellationToken);
+    protected abstract void SetCurrentAnalysisData(BasicBlock block, TBlockAnalysisData data,
+        CancellationToken cancellationToken);
 
     /// <summary>
     ///     Applies the transfer function to a basic block, computing the analysis data at its exit
@@ -195,10 +199,7 @@ internal
         Guard.NotNull(cfg);
 
         var blocks = cfg.Blocks;
-        if (blocks.IsEmpty)
-        {
-            return;
-        }
+        if (blocks.IsEmpty) return;
 
         // Step 1: Compute reverse post-order via iterative DFS
         var rpo = ComputeReversePostOrder(blocks, cancellationToken);
@@ -215,13 +216,11 @@ internal
         var worklist = new Queue<BasicBlock>();
 
         foreach (var block in rpo)
-        {
             if (AnalyzeUnreachableBlocks || block.IsReachable)
             {
                 worklist.Enqueue(block);
                 inWorklist[block.Ordinal] = true;
             }
-        }
 
         // Step 4: Fixed-point iteration (push-based)
         // Stored data per block = accumulated entry state from predecessors.
@@ -235,11 +234,9 @@ internal
             cancellationToken.ThrowIfCancellationRequested();
 
             if (++iterations > maxIterations)
-            {
                 throw new InvalidOperationException(
                     $"Data-flow analysis did not converge after {maxIterations} iterations. " +
                     "This typically indicates a non-monotone lattice in a subclass Merge implementation.");
-            }
 
             var block = worklist.Dequeue();
             inWorklist[block.Ordinal] = false;
@@ -254,12 +251,14 @@ internal
                 var (whenTrue, whenFalse) = AnalyzeConditionalBranch(block, blockOutput, cancellationToken);
 
                 // ConditionKind is on the BasicBlock, not the branch — check it to map correctly
-                bool conditionIsWhenTrue = block.ConditionKind == ControlFlowConditionKind.WhenTrue;
+                var conditionIsWhenTrue = block.ConditionKind == ControlFlowConditionKind.WhenTrue;
                 var conditionalData = conditionIsWhenTrue ? whenTrue : whenFalse;
                 var fallThroughData = conditionIsWhenTrue ? whenFalse : whenTrue;
 
-                MergeAndEnqueue(block.ConditionalSuccessor.Destination, conditionalData, worklist, inWorklist, cancellationToken);
-                MergeAndEnqueue(block.FallThroughSuccessor.Destination, fallThroughData, worklist, inWorklist, cancellationToken);
+                MergeAndEnqueue(block.ConditionalSuccessor.Destination, conditionalData, worklist, inWorklist,
+                    cancellationToken);
+                MergeAndEnqueue(block.FallThroughSuccessor.Destination, fallThroughData, worklist, inWorklist,
+                    cancellationToken);
             }
             else if (block.FallThroughSuccessor != null)
             {
@@ -285,15 +284,9 @@ internal
         bool[] inWorklist,
         CancellationToken cancellationToken)
     {
-        if (destination == null)
-        {
-            return;
-        }
+        if (destination == null) return;
 
-        if (!AnalyzeUnreachableBlocks && !destination.IsReachable)
-        {
-            return;
-        }
+        if (!AnalyzeUnreachableBlocks && !destination.IsReachable) return;
 
         var currentData = GetCurrentAnalysisData(destination);
         var mergedData = Merge(currentData, data, cancellationToken);
@@ -332,10 +325,7 @@ internal
                 continue;
             }
 
-            if (visited[block.Ordinal])
-            {
-                continue;
-            }
+            if (visited[block.Ordinal]) continue;
 
             visited[block.Ordinal] = true;
 
@@ -349,15 +339,9 @@ internal
             var conditional = block.ConditionalSuccessor?.Destination;
             var fallThrough = block.FallThroughSuccessor?.Destination;
 
-            if (fallThrough != null && !visited[fallThrough.Ordinal])
-            {
-                dfsStack.Push((fallThrough, false));
-            }
+            if (fallThrough != null && !visited[fallThrough.Ordinal]) dfsStack.Push((fallThrough, false));
 
-            if (conditional != null && !visited[conditional.Ordinal])
-            {
-                dfsStack.Push((conditional, false));
-            }
+            if (conditional != null && !visited[conditional.Ordinal]) dfsStack.Push((conditional, false));
         }
 
         // Reverse to get RPO

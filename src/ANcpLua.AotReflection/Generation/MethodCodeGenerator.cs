@@ -2,7 +2,8 @@
 
 namespace ANcpLua.Analyzers.AotReflection.Generation;
 
-internal static class MethodCodeGenerator
+internal static class
+    MethodCodeGenerator
 {
     public static void WriteMethodMetadataArray(IndentedStringBuilder sb, TypeModel type)
     {
@@ -23,9 +24,9 @@ internal static class MethodCodeGenerator
 
             sb.AppendLine($"Name = {GenerationHelpers.StringLiteral(method.Name)},");
             sb.AppendLine($"ReturnType = {GenerationHelpers.GetTypeOf(method.ReturnTypeFullyQualified)},");
-            sb.AppendLine($"IsStatic = {method.IsStatic.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"IsAsync = {method.IsAsync.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"IsExtension = {method.IsExtension.ToString().ToLowerInvariant()},");
+            sb.AppendLine($"IsStatic = {GenerationHelpers.BooleanLiteral(method.IsStatic)},");
+            sb.AppendLine($"IsAsync = {GenerationHelpers.BooleanLiteral(method.IsAsync)},");
+            sb.AppendLine($"IsExtension = {GenerationHelpers.BooleanLiteral(method.IsExtension)},");
 
             WriteParameterMetadataArray(sb, method.Parameters);
 
@@ -86,8 +87,8 @@ internal static class MethodCodeGenerator
 
             sb.AppendLine($"Name = {GenerationHelpers.StringLiteral(parameter.Name)},");
             sb.AppendLine($"Type = {GenerationHelpers.GetTypeOf(parameter.TypeFullyQualified)},");
-            sb.AppendLine($"IsNullable = {parameter.IsNullable.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"HasDefaultValue = {parameter.HasDefaultValue.ToString().ToLowerInvariant()},");
+            sb.AppendLine($"IsNullable = {GenerationHelpers.BooleanLiteral(parameter.IsNullable)},");
+            sb.AppendLine($"HasDefaultValue = {GenerationHelpers.BooleanLiteral(parameter.HasDefaultValue)},");
 
             var defaultValue = parameter.HasDefaultValue && parameter.DefaultValueLiteral is not null
                 ? parameter.DefaultValueLiteral
@@ -121,9 +122,9 @@ internal static class MethodCodeGenerator
             ? $"{method.ContainingTypeFullyQualified}.{method.Name}"
             : $"(({method.ContainingTypeFullyQualified})obj!).{method.Name}";
 
-        if (method.ReturnsVoid) return $"(obj, args) => {{ {callTarget}({arguments}); return null; }}";
-
-        return $"(obj, args) => {callTarget}({arguments})";
+        return method.ReturnsVoid
+            ? $"(obj, args) => {{ {callTarget}({arguments}); return null; }}"
+            : $"(obj, args) => {callTarget}({arguments})";
     }
 
     private static string GetFactoryExpression(ConstructorModel constructor)

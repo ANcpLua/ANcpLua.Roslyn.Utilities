@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
 using ANcpLua.Roslyn.Utilities.Models;
 using Microsoft.CodeAnalysis;
 using InvalidOperationException = System.InvalidOperationException;
@@ -208,7 +203,7 @@ internal
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: (Exception?)null);
+                    return (Value: selector(value, cancellationToken), Exception: null);
                 }
                 catch (Exception exception)
                 {
@@ -380,7 +375,7 @@ internal
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: (Exception?)null);
+                    return (Value: selector(value, cancellationToken), Exception: null);
                 }
                 catch (Exception exception)
                 {

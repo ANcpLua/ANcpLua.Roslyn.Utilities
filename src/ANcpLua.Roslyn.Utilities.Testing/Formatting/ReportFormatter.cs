@@ -84,7 +84,8 @@ internal static class ReportFormatter
             sb.AppendLine("  ⚠ No files generated");
         else
             foreach (var output in outputs)
-                sb.AppendLine(CultureInfo.InvariantCulture, $"  📄 {output.HintName} ({output.SourceText.Length} chars)");
+                sb.AppendLine(CultureInfo.InvariantCulture,
+                    $"  📄 {output.HintName} ({output.SourceText.Length} chars)");
 
         return sb.ToString().TrimEnd();
     }
@@ -122,7 +123,8 @@ internal static class ReportFormatter
     {
         StringBuilder sb = new();
         sb.AppendLine();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"Content mismatch in '{hintName}' ({(exactMatch ? "exact" : "contains")} match)");
+        sb.AppendLine(CultureInfo.InvariantCulture,
+            $"Content mismatch in '{hintName}' ({(exactMatch ? "exact" : "contains")} match)");
         sb.AppendLine();
 
         if (exactMatch)
@@ -357,11 +359,13 @@ internal static class ViolationFormatter
     public static string FormatIssueBlock(int issueNumber, IGrouping<string, ForbiddenTypeViolation> group)
     {
         StringBuilder sb = new();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"--- ISSUE {issueNumber} (CRITICAL): Forbidden Type Cached in '{group.Key}' ---");
+        sb.AppendLine(CultureInfo.InvariantCulture,
+            $"--- ISSUE {issueNumber} (CRITICAL): Forbidden Type Cached in '{group.Key}' ---");
         sb.AppendLine("  Detail: Caching ISymbol/Compilation/SyntaxNode causes IDE performance degradation.");
         sb.AppendLine("  Recommendation: Store only simple, equatable data (prefer 'record').");
         foreach (var violation in group)
-            sb.AppendLine(CultureInfo.InvariantCulture, $"    - {violation.ForbiddenType.FullName} at {violation.Path}");
+            sb.AppendLine(CultureInfo.InvariantCulture,
+                $"    - {violation.ForbiddenType.FullName} at {violation.Path}");
         sb.AppendLine();
         return sb.ToString();
     }

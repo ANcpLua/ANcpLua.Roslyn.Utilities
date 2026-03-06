@@ -25,8 +25,8 @@ internal static class PropertyCodeGenerator
             sb.AppendLine($"Type = {GenerationHelpers.GetTypeOf(property.TypeFullyQualified)},");
             sb.AppendLine(
                 $"ReflectionInfo = {GenerationHelpers.GetTypeOf(property.ContainingTypeFullyQualified)}.GetProperty({GenerationHelpers.StringLiteral(property.Name)}, {GenerationHelpers.BindingFlagsAll}),");
-            sb.AppendLine($"IsStatic = {property.IsStatic.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"IsNullable = {property.IsNullable.ToString().ToLowerInvariant()},");
+            sb.AppendLine($"IsStatic = {GenerationHelpers.BooleanLiteral(property.IsStatic)},");
+            sb.AppendLine($"IsNullable = {GenerationHelpers.BooleanLiteral(property.IsNullable)},");
 
             sb.AppendLine($"Getter = {GetGetterExpression(property)},");
             sb.AppendLine($"Setter = {GetSetterExpression(property)}");
@@ -41,9 +41,9 @@ internal static class PropertyCodeGenerator
     {
         if (!property.HasGetter) return "null";
 
-        if (property.IsStatic) return $"_ => {property.ContainingTypeFullyQualified}.{property.Name}";
-
-        return $"obj => (({property.ContainingTypeFullyQualified})obj!).{property.Name}";
+        return property.IsStatic
+            ? $"_ => {property.ContainingTypeFullyQualified}.{property.Name}"
+            : $"obj => (({property.ContainingTypeFullyQualified})obj!).{property.Name}";
     }
 
     private static string GetSetterExpression(PropertyModel property)
@@ -52,9 +52,8 @@ internal static class PropertyCodeGenerator
 
         var castValue = $"({property.TypeFullyQualified})value!";
 
-        if (property.IsStatic)
-            return $"(_, value) => {property.ContainingTypeFullyQualified}.{property.Name} = {castValue}";
-
-        return $"(obj, value) => (({property.ContainingTypeFullyQualified})obj!).{property.Name} = {castValue}";
+        return property.IsStatic
+            ? $"(_, value) => {property.ContainingTypeFullyQualified}.{property.Name} = {castValue}"
+            : $"(obj, value) => (({property.ContainingTypeFullyQualified})obj!).{property.Name} = {castValue}";
     }
 }

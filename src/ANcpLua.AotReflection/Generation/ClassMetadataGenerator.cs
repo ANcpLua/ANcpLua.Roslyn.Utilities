@@ -13,10 +13,10 @@ internal static class ClassMetadataGenerator
         sb.AppendLine($"Type = {GenerationHelpers.GetTypeOf(type.FullyQualifiedName)},");
         sb.AppendLine($"Name = {GenerationHelpers.StringLiteral(type.Name)},");
         sb.AppendLine($"Namespace = {GenerationHelpers.StringLiteral(type.Namespace)},");
-        sb.AppendLine($"IsStatic = {type.IsStatic.ToString().ToLowerInvariant()},");
-        sb.AppendLine($"IsSealed = {type.IsSealed.ToString().ToLowerInvariant()},");
-        sb.AppendLine($"IsAbstract = {type.IsAbstract.ToString().ToLowerInvariant()},");
-        sb.AppendLine("BaseType = null,");
+        sb.AppendLine($"IsStatic = {GenerationHelpers.BooleanLiteral(type.IsStatic)},");
+        sb.AppendLine($"IsSealed = {GenerationHelpers.BooleanLiteral(type.IsSealed)},");
+        sb.AppendLine($"IsAbstract = {GenerationHelpers.BooleanLiteral(type.IsAbstract)},");
+        sb.AppendLine($"BaseType = {GetBaseTypeExpression(type.BaseTypeFullyQualified)},");
 
         PropertyCodeGenerator.WritePropertyMetadataArray(sb, type);
         MethodCodeGenerator.WriteMethodMetadataArray(sb, type);
@@ -24,6 +24,19 @@ internal static class ClassMetadataGenerator
         MethodCodeGenerator.WriteConstructorMetadataArray(sb, type);
 
         sb.EndBlock("};");
+    }
+
+    private static string GetBaseTypeExpression(string? baseTypeFullyQualified)
+    {
+        if (string.IsNullOrWhiteSpace(baseTypeFullyQualified))
+        {
+            return "null";
+        }
+
+        var baseType = baseTypeFullyQualified!; // non-null after IsNullOrWhiteSpace guard (netstandard2.0 lacks annotation)
+        var (namespaceName, typeName) = GenerationHelpers.GetNamespaceAndName(baseType);
+        return
+            $"new global::ANcpLua.Analyzers.AotReflection.ClassMetadata {{ Type = {GenerationHelpers.GetTypeOf(baseType)}, Name = {GenerationHelpers.StringLiteral(typeName)}, Namespace = {GenerationHelpers.StringLiteral(namespaceName)} }}";
     }
 
     public static void WriteConvenienceMethods(IndentedStringBuilder sb, TypeModel type)

@@ -128,17 +128,90 @@ public static class LogTags
     public const string DbOperation = "db.operation.name";
     public const string DbStatement = "db.query.text";
 
-    // GenAI (OTel semconv)
+    // GenAI — Core
     public const string GenAiProvider = "gen_ai.provider.name";
-    public const string GenAiModel = "gen_ai.request.model";
     public const string GenAiOperation = "gen_ai.operation.name";
+    public const string GenAiConversationId = "gen_ai.conversation.id";
+    public const string GenAiSystemInstructions = "gen_ai.system_instructions";
+
+    // GenAI — Agent
+    public const string GenAiAgentDescription = "gen_ai.agent.description";
+    public const string GenAiAgentId = "gen_ai.agent.id";
+    public const string GenAiAgentName = "gen_ai.agent.name";
+    public const string GenAiAgentVersion = "gen_ai.agent.version";
+
+    // GenAI — Request
+    public const string GenAiModel = "gen_ai.request.model";
+    public const string GenAiRequestMaxTokens = "gen_ai.request.max_tokens";
+    public const string GenAiRequestTemperature = "gen_ai.request.temperature";
+    public const string GenAiRequestTopP = "gen_ai.request.top_p";
+    public const string GenAiRequestTopK = "gen_ai.request.top_k";
+    public const string GenAiRequestFrequencyPenalty = "gen_ai.request.frequency_penalty";
+    public const string GenAiRequestPresencePenalty = "gen_ai.request.presence_penalty";
+    public const string GenAiRequestSeed = "gen_ai.request.seed";
+    public const string GenAiRequestStopSequences = "gen_ai.request.stop_sequences";
+    public const string GenAiRequestChoiceCount = "gen_ai.request.choice.count";
+    public const string GenAiRequestEncodingFormats = "gen_ai.request.encoding_formats";
+
+    // GenAI — Response
+    public const string GenAiResponseModel = "gen_ai.response.model";
+    public const string GenAiResponseId = "gen_ai.response.id";
+    public const string GenAiFinishReason = "gen_ai.response.finish_reasons";
+
+    // GenAI — Usage
     public const string GenAiInputTokens = "gen_ai.usage.input_tokens";
     public const string GenAiOutputTokens = "gen_ai.usage.output_tokens";
-    public const string GenAiFinishReason = "gen_ai.response.finish_reasons";
+    public const string GenAiCacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
+    public const string GenAiCacheCreationInputTokens = "gen_ai.usage.cache_creation.input_tokens";
+    public const string GenAiTokenType = "gen_ai.token.type";
+
+    // GenAI — Input/Output
+    public const string GenAiInputMessages = "gen_ai.input.messages";
+    public const string GenAiOutputMessages = "gen_ai.output.messages";
+    public const string GenAiOutputType = "gen_ai.output.type";
+
+    // GenAI — Tool
+    public const string GenAiToolCallArguments = "gen_ai.tool.call.arguments";
+    public const string GenAiToolCallId = "gen_ai.tool.call.id";
+    public const string GenAiToolCallResult = "gen_ai.tool.call.result";
+    public const string GenAiToolDefinitions = "gen_ai.tool.definitions";
+    public const string GenAiToolDescription = "gen_ai.tool.description";
+    public const string GenAiToolName = "gen_ai.tool.name";
+    public const string GenAiToolType = "gen_ai.tool.type";
+
+    // GenAI — Prompt
+    public const string GenAiPromptName = "gen_ai.prompt.name";
+
+    // GenAI — Retrieval
+    public const string GenAiRetrievalDocuments = "gen_ai.retrieval.documents";
+    public const string GenAiRetrievalQueryText = "gen_ai.retrieval.query.text";
+
+    // GenAI — Embeddings
+    public const string GenAiEmbeddingsDimensionCount = "gen_ai.embeddings.dimension.count";
+
+    // GenAI — Evaluation
+    public const string GenAiEvaluationExplanation = "gen_ai.evaluation.explanation";
+    public const string GenAiEvaluationName = "gen_ai.evaluation.name";
+    public const string GenAiEvaluationScoreLabel = "gen_ai.evaluation.score.label";
+    public const string GenAiEvaluationScoreValue = "gen_ai.evaluation.score.value";
+
+    // GenAI — Data Source
+    public const string GenAiDataSourceId = "gen_ai.data_source.id";
+
+    // GenAI — OpenAI vendor-specific
+    public const string GenAiOpenaiRequestResponseFormat = "gen_ai.openai.request.response_format";
+    public const string GenAiOpenaiRequestSeed = "gen_ai.openai.request.seed";
+    public const string GenAiOpenaiRequestServiceTier = "gen_ai.openai.request.service_tier";
+    public const string GenAiOpenaiResponseServiceTier = "gen_ai.openai.response.service_tier";
+    public const string GenAiOpenaiResponseSystemFingerprint = "gen_ai.openai.response.system_fingerprint";
 
     // Error
     public const string ErrorType = "error.type";
+
+    /// <summary>Deprecated in semconv v1.40.0. Use domain-specific error attributes instead.</summary>
+    [Obsolete("Deprecated in OTel semconv v1.40.0. Use domain-specific codes (e.g. feature_flag.error.message).")]
     public const string ErrorMessage = "error.message";
+
     public const string ExceptionType = "exception.type";
     public const string ExceptionMessage = "exception.message";
     public const string ExceptionStacktrace = "exception.stacktrace";

@@ -55,10 +55,9 @@ public sealed class ClassMetadata
         {
             if (!string.Equals(property.Name, name, StringComparison.Ordinal)) continue;
 
-            if (property.Getter is null)
-                throw new InvalidOperationException($"Property '{name}' does not have a getter.");
-
-            return property.Getter(property.IsStatic ? null : instance);
+            return property.Getter is null
+                ? throw new InvalidOperationException($"Property '{name}' does not have a getter.")
+                : property.Getter(property.IsStatic ? null : instance);
         }
 
         throw new ArgumentException("Unknown property name.", nameof(name));
@@ -90,10 +89,9 @@ public sealed class ClassMetadata
 
             if (method.Parameters.Length != args.Length) continue;
 
-            if (method.Invoker is null)
-                throw new InvalidOperationException($"Method '{name}' does not have an invoker.");
-
-            return method.Invoker(method.IsStatic ? null : instance, args);
+            return method.Invoker is null
+                ? throw new InvalidOperationException($"Method '{name}' does not have an invoker.")
+                : method.Invoker(method.IsStatic ? null : instance, args);
         }
 
         throw new ArgumentException("Unknown method name or parameter count.", nameof(name));
@@ -107,10 +105,9 @@ public sealed class ClassMetadata
         {
             if (constructor.Parameters.Length != args.Length) continue;
 
-            if (constructor.Factory is null)
-                throw new InvalidOperationException("Constructor does not have a factory.");
-
-            return constructor.Factory(args);
+            return constructor.Factory is null
+                ? throw new InvalidOperationException("Constructor does not have a factory.")
+                : constructor.Factory(args);
         }
 
         throw new ArgumentException("No matching constructor found.", nameof(args));

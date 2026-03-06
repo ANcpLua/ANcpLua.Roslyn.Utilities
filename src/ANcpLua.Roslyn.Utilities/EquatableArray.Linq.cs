@@ -13,6 +13,12 @@ namespace ANcpLua.Roslyn.Utilities;
 ///         These extension methods provide functional-style operations on <see cref="EquatableArray{T}" />
 ///         instances without requiring conversion to other collection types.
 ///     </para>
+///     <para>
+///         All methods use <see cref="EquatableArray{T}.AsSpan" /> for iteration, avoiding the
+///         <see cref="ImmutableArray{T}" /> enumerator roundtrip. The <see cref="ReadOnlySpan{T}" />
+///         constructor handles null backing arrays as empty spans, so empty-state checks are
+///         structurally unnecessary for query methods (the loop simply does not execute).
+///     </para>
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
@@ -112,6 +118,7 @@ internal
     /// </returns>
     /// <remarks>
     ///     This method uses deferred execution and yields elements one at a time.
+    ///     Cannot use span-based iteration because iterator state machines cannot capture ref structs.
     /// </remarks>
     public static IEnumerable<(T Item, int Index)> Indexed<T>(this EquatableArray<T> array)
         where T : IEquatable<T>
@@ -140,14 +147,21 @@ internal
         if (array.IsEmpty)
             return array;
 
-        var builder = ImmutableArray.CreateBuilder<T>();
-        foreach (var item in array)
-            if (predicate(item))
-                builder.Add(item);
+        var span = array.AsSpan();
+        var result = new T[span.Length];
+        var count = 0;
 
-        return builder.Count == array.Length
-            ? array // No items filtered, return original
-            : builder.ToImmutable().AsEquatableArray();
+        for (var i = 0; i < span.Length; i++)
+            if (predicate(span[i]))
+                result[count++] = span[i];
+
+        if (count == span.Length)
+            return array;
+        if (count == 0)
+            return default;
+
+        Array.Resize(ref result, count);
+        return result.ToEquatableArray();
     }
 
     /// <summary>
@@ -175,9 +189,10 @@ internal
         if (array.IsEmpty)
             return default;
 
-        var result = new TResult[array.Length];
-        for (var i = 0; i < array.Length; i++)
-            result[i] = selector(array[i]);
+        var span = array.AsSpan();
+        var result = new TResult[span.Length];
+        for (var i = 0; i < span.Length; i++)
+            result[i] = selector(span[i]);
 
         return result.ToEquatableArray();
     }
@@ -196,7 +211,8 @@ internal
     public static T? FirstOrDefault<T>(this EquatableArray<T> array)
         where T : IEquatable<T>
     {
-        return array.IsEmpty ? default : array[0];
+        var span = array.AsSpan();
+        return span.Length > 0 ? span[0] : default;
     }
 
     /// <summary>
@@ -216,9 +232,10 @@ internal
     public static T? FirstOrDefault<T>(this EquatableArray<T> array, Func<T, bool> predicate)
         where T : IEquatable<T>
     {
-        foreach (var item in array)
-            if (predicate(item))
-                return item;
+        var span = array.AsSpan();
+        for (var i = 0; i < span.Length; i++)
+            if (predicate(span[i]))
+                return span[i];
 
         return default;
     }
@@ -240,8 +257,9 @@ internal
     public static bool Any<T>(this EquatableArray<T> array, Func<T, bool> predicate)
         where T : IEquatable<T>
     {
-        foreach (var item in array)
-            if (predicate(item))
+        var span = array.AsSpan();
+        for (var i = 0; i < span.Length; i++)
+            if (predicate(span[i]))
                 return true;
 
         return false;
@@ -263,8 +281,9 @@ internal
     public static bool All<T>(this EquatableArray<T> array, Func<T, bool> predicate)
         where T : IEquatable<T>
     {
-        foreach (var item in array)
-            if (!predicate(item))
+        var span = array.AsSpan();
+        for (var i = 0; i < span.Length; i++)
+            if (!predicate(span[i]))
                 return false;
 
         return true;
@@ -289,8 +308,9 @@ internal
     public static bool Contains<T>(this EquatableArray<T> array, T item)
         where T : IEquatable<T>
     {
-        foreach (var element in array)
-            if (element.Equals(item))
+        var span = array.AsSpan();
+        for (var i = 0; i < span.Length; i++)
+            if (span[i].Equals(item))
                 return true;
 
         return false;
@@ -317,15 +337,19 @@ internal
         if (array.IsEmpty)
             return array;
 
+        var span = array.AsSpan();
         var seen = new HashSet<T>();
-        var builder = ImmutableArray.CreateBuilder<T>();
+        var result = new T[span.Length];
+        var count = 0;
 
-        foreach (var item in array)
-            if (seen.Add(item))
-                builder.Add(item);
+        for (var i = 0; i < span.Length; i++)
+            if (seen.Add(span[i]))
+                result[count++] = span[i];
 
-        return builder.Count == array.Length
-            ? array // No duplicates, return original
-            : builder.ToImmutable().AsEquatableArray();
+        if (count == span.Length)
+            return array;
+
+        Array.Resize(ref result, count);
+        return result.ToEquatableArray();
     }
 }

@@ -575,7 +575,8 @@ public sealed class GeneratorResult : IDisposable
         if (_failures.Count is 0) return;
 
         var sb = new StringBuilder();
-        sb.AppendLine(CultureInfo.InvariantCulture, $"Generator '{_generatorType.Name}' failed {_failures.Count} assertion(s):");
+        sb.AppendLine(CultureInfo.InvariantCulture,
+            $"Generator '{_generatorType.Name}' failed {_failures.Count} assertion(s):");
         sb.AppendLine();
 
         for (var i = 0; i < _failures.Count; i++)

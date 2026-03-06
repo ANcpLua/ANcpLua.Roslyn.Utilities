@@ -8,17 +8,17 @@
         <File Path="LICENSE"/>
     </Folder>
     <Folder Name="/src/">
-        <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj"/>
         <Project
-                Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj"/>
+                Path="src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj"/>
         <Project
-                Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj"/>
+                Path="src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj"/>
         <Project
-                Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj"/>
+                Path="src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj"/>
         <Project
-                Path="ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
-        <Project Path="ANcpLua.Roslyn.Utilities/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
+                Path="src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
+        <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
         <Project
-                Path="ANcpLua.Roslyn.Utilities/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
+                Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
     </Folder>
 </Solution>

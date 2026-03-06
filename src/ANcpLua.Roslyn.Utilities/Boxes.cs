@@ -156,11 +156,8 @@ internal
     public static object Box(int value)
     {
         // Cache range: -1 to 10 (index 0 to 11 in the array)
-        int index = value + 1;
-        if ((uint)index < (uint)CachedInt32.Length)
-        {
-            return CachedInt32[index];
-        }
+        var index = value + 1;
+        if ((uint)index < (uint)CachedInt32.Length) return CachedInt32[index];
 
         return value;
     }
@@ -287,10 +284,7 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static object Box(char value)
     {
-        if ((uint)value < (uint)CachedChar.Length)
-        {
-            return CachedChar[value];
-        }
+        if (value < (uint)CachedChar.Length) return CachedChar[value];
 
         return value;
     }
@@ -299,10 +293,7 @@ internal
     {
         // Cache values from -1 to 10 (12 entries)
         var cache = new object[12];
-        for (int i = 0; i < cache.Length; i++)
-        {
-            cache[i] = i - 1;
-        }
+        for (var i = 0; i < cache.Length; i++) cache[i] = i - 1;
 
         return cache;
     }
@@ -311,10 +302,7 @@ internal
     {
         // Cache ASCII characters 0-127
         var cache = new object[128];
-        for (int i = 0; i < cache.Length; i++)
-        {
-            cache[i] = (char)i;
-        }
+        for (var i = 0; i < cache.Length; i++) cache[i] = (char)i;
 
         return cache;
     }

@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities.Contexts;
@@ -409,11 +408,8 @@ internal
         if (ActionResult is not null && type.IsOrInheritsFrom(ActionResult))
             return true;
 
-        if (ActionResultOfT is not null && type is INamedTypeSymbol named &&
-            SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, ActionResultOfT))
-            return true;
-
-        return false;
+        return ActionResultOfT is not null && type is INamedTypeSymbol named &&
+               SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, ActionResultOfT);
     }
 
     private bool IsMinimalApiResult(ITypeSymbol type)

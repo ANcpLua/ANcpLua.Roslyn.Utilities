@@ -266,9 +266,9 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     private static TextSpan GetSpan(SourceText text, string textToFind)
     {
         var start = text.ToString().IndexOf(textToFind, StringComparison.Ordinal);
-        if (start < 0) throw new ArgumentException($"Text '{textToFind}' not found in document");
-
-        return new TextSpan(start, textToFind.Length);
+        return start < 0
+            ? throw new ArgumentException($"Text '{textToFind}' not found in document")
+            : new TextSpan(start, textToFind.Length);
     }
 
     private static async Task<ImmutableArray<CodeAction>> GetRefactoringsAsync(

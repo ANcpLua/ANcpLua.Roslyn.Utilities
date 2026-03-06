@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -248,7 +244,7 @@ internal
 
     private static uint RotateLeft(uint value, int bits)
     {
-        return value << bits | value >> 32 - bits;
+        return (value << bits) | (value >> (32 - bits));
     }
 }
 

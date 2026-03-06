@@ -69,6 +69,55 @@ public class ProjectBuilder : IAsyncDisposable
     protected const string SarifFileName = "BuildOutput.sarif";
 
     /// <summary>
+    ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
+    /// </summary>
+    /// <param name="testOutputHelper">
+    ///     Optional xUnit test output helper for logging build output and file contents during test execution.
+    ///     When provided, enables verbose logging of all files and build commands.
+    /// </param>
+    /// <remarks>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Creates a unique temporary directory for complete build isolation.</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward
+    ///                 policy.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Prepares a file for GitHub step summary simulation.</description>
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// // Without test output (silent mode)
+    /// await using var builder = new ProjectBuilder();
+    ///
+    /// // With xUnit test output for debugging
+    /// await using var builder = new ProjectBuilder(testOutputHelper);
+    /// </code>
+    /// </example>
+    public ProjectBuilder(ITestOutputHelper? testOutputHelper = null)
+    {
+        TestOutputHelper = testOutputHelper;
+        Directory = TemporaryDirectory.Create();
+        GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
+
+        // Create isolated global.json
+        Directory.CreateTextFile("global.json", """
+                                                {
+                                                  "sdk": {
+                                                    "rollForward": "latestMinor",
+                                                    "version": "10.0.100"
+                                                  }
+                                                }
+                                                """);
+    }
+
+    /// <summary>
     ///     The temporary directory for the project files.
     /// </summary>
     protected TemporaryDirectory Directory { get; }
@@ -117,55 +166,6 @@ public class ProjectBuilder : IAsyncDisposable
     ///     The .NET SDK version to use for builds.
     /// </summary>
     protected NetSdkVersion SdkVersion { get; set; } = NetSdkVersion.Net100;
-
-    /// <summary>
-    ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
-    /// </summary>
-    /// <param name="testOutputHelper">
-    ///     Optional xUnit test output helper for logging build output and file contents during test execution.
-    ///     When provided, enables verbose logging of all files and build commands.
-    /// </param>
-    /// <remarks>
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>Creates a unique temporary directory for complete build isolation.</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward
-    ///                 policy.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>Prepares a file for GitHub step summary simulation.</description>
-    ///         </item>
-    ///     </list>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// // Without test output (silent mode)
-    /// await using var builder = new ProjectBuilder();
-    ///
-    /// // With xUnit test output for debugging
-    /// await using var builder = new ProjectBuilder(testOutputHelper);
-    /// </code>
-    /// </example>
-    public ProjectBuilder(ITestOutputHelper? testOutputHelper = null)
-    {
-        TestOutputHelper = testOutputHelper;
-        Directory = TemporaryDirectory.Create();
-        GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
-
-        // Create isolated global.json
-        Directory.CreateTextFile("global.json", """
-                                                {
-                                                  "sdk": {
-                                                    "rollForward": "latestMinor",
-                                                    "version": "10.0.100"
-                                                  }
-                                                }
-                                                """);
-    }
 
     /// <summary>
     ///     Gets the root folder path of the temporary project directory.

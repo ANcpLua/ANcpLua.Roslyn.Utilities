@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -96,9 +92,10 @@ internal
     /// ProcessItem(Guard.NotNull(item));
     /// </code>
     /// </example>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value ?? throw new ArgumentNullException(paramName);
+        return value ?? ThrowArgumentNull<T>(paramName);
     }
 
     /// <summary>
@@ -228,13 +225,13 @@ internal
     /// }
     /// </code>
     /// </example>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string NotNullOrEmpty([NotNull] string? value,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
-        if (value is null)
-            throw new ArgumentNullException(paramName);
-        if (value.Length is 0)
-            throw new ArgumentException("Value cannot be empty.", paramName);
+        if (value is null) ThrowArgumentNull(paramName);
+        if (value.Length is 0) ThrowArgument("Value cannot be empty.", paramName);
         return value;
     }
 
@@ -256,13 +253,13 @@ internal
     /// }
     /// </code>
     /// </example>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string NotNullOrWhiteSpace([NotNull] string? value,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
-        if (value is null)
-            throw new ArgumentNullException(paramName);
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Value cannot be empty or whitespace.", paramName);
+        if (value is null) ThrowArgumentNull(paramName);
+        if (string.IsNullOrWhiteSpace(value)) ThrowArgument("Value cannot be empty or whitespace.", paramName);
         return value;
     }
 
@@ -407,7 +404,8 @@ internal
     /// </code>
     /// </example>
     public static T InRange<T>(T value, T min, T max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
         where T : IComparable<T>
     {
         if (value.CompareTo(min) < 0 || value.CompareTo(max) > 0)
@@ -436,11 +434,15 @@ internal
     /// }
     /// </code>
     /// </example>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int ValidIndex(int index, int count,
-        [CallerArgumentExpression(nameof(index))] string? paramName = null)
+        [CallerArgumentExpression(nameof(index))]
+        string? paramName = null)
     {
-        if (index < 0 || index >= count)
-            throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
+        // Single branch: (uint) cast makes negative values wrap to large positive,
+        // so both index < 0 and index >= count are caught by one unsigned comparison.
+        if ((uint)index >= (uint)count)
+            ThrowIndexOutOfRange(index, count, paramName);
         return index;
     }
 
@@ -462,6 +464,7 @@ internal
     /// }
     /// </code>
     /// </example>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void That(
         [DoesNotReturnIf(false)] bool condition,
         string message,
@@ -469,7 +472,7 @@ internal
         string? paramName = null)
     {
         if (!condition)
-            throw new ArgumentException(message, paramName);
+            ThrowArgument(message, paramName);
     }
 
     /// <summary>
@@ -902,10 +905,9 @@ internal
     {
         if (argument is null)
             throw new ArgumentNullException(paramName);
-        if (member is null)
-            throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName);
-
-        return member;
+        return member is null
+            ? throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName)
+            : member;
     }
 
     /// <summary>
@@ -938,10 +940,9 @@ internal
         where TParam : notnull
     {
         _ = argument;
-        if (member is null)
-            throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName);
-
-        return member;
+        return member is null
+            ? throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName)
+            : member;
     }
 
     #endregion
@@ -1224,7 +1225,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotGreaterThan(int value, int max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
@@ -1236,7 +1238,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotLessThan(int value, int min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
@@ -1259,7 +1262,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GreaterThan(int value, int min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
@@ -1308,7 +1312,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotGreaterThan(long value, long max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
@@ -1320,7 +1325,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotLessThan(long value, long min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
@@ -1332,7 +1338,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long LessThan(long value, long max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value >= max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
@@ -1344,7 +1351,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long GreaterThan(long value, long min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
@@ -1396,7 +1404,8 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotGreaterThan(double value, double max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return !(value <= max) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
@@ -1409,7 +1418,8 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotLessThan(double value, double min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return !(value >= min) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
@@ -1422,7 +1432,8 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double LessThan(double value, double max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return !(value < max) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
@@ -1435,7 +1446,8 @@ internal
     /// <remarks>NaN values will throw.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double GreaterThan(double value, double min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return !(value > min) // Handles NaN correctly
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
@@ -1524,10 +1536,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        if (value is null)
-            return null;
-
-        return ValidFileName(value, paramName);
+        return value is null ? null : ValidFileName(value, paramName);
     }
 
     /// <summary>
@@ -1563,10 +1572,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        if (value is null)
-            return null;
-
-        return ValidPath(value, paramName);
+        return value is null ? null : ValidPath(value, paramName);
     }
 
     /// <summary>
@@ -1663,10 +1669,9 @@ internal
     public static T NotDefault<T>(T value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
         where T : struct
     {
-        if (EqualityComparer<T>.Default.Equals(value, default))
-            throw new ArgumentException("Value cannot be default.", paramName);
-
-        return value;
+        return EqualityComparer<T>.Default.Equals(value, default)
+            ? throw new ArgumentException("Value cannot be default.", paramName)
+            : value;
     }
 
     /// <summary>
@@ -1723,10 +1728,9 @@ internal
     {
         NotNull(type, paramName);
 
-        if (Nullable.GetUnderlyingType(type) is not null)
-            throw new ArgumentException("Nullable types are not supported.", paramName);
-
-        return type;
+        return Nullable.GetUnderlyingType(type) is not null
+            ? throw new ArgumentException("Nullable types are not supported.", paramName)
+            : type;
     }
 
     /// <summary>
@@ -1750,10 +1754,9 @@ internal
     {
         NotNull(type, paramName);
 
-        if (!typeof(T).IsAssignableFrom(type))
-            throw new ArgumentException($"Type {type.Name} is not assignable to {typeof(T).Name}.", paramName);
-
-        return type;
+        return !typeof(T).IsAssignableFrom(type)
+            ? throw new ArgumentException($"Type {type.Name} is not assignable to {typeof(T).Name}.", paramName)
+            : type;
     }
 
     /// <summary>
@@ -1777,10 +1780,9 @@ internal
     {
         NotNull(type, paramName);
 
-        if (!type.IsAssignableFrom(typeof(T)))
-            throw new ArgumentException($"Type {typeof(T).Name} is not assignable to {type.Name}.", paramName);
-
-        return type;
+        return !type.IsAssignableFrom(typeof(T))
+            ? throw new ArgumentException($"Type {typeof(T).Name} is not assignable to {type.Name}.", paramName)
+            : type;
     }
 
     #endregion
@@ -1825,7 +1827,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotGreaterThan(decimal value, decimal max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value > max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
@@ -1837,7 +1840,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotLessThan(decimal value, decimal min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value < min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
@@ -1849,7 +1853,8 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal LessThan(decimal value, decimal max,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value >= max
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
@@ -1861,12 +1866,40 @@ internal
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal GreaterThan(decimal value, decimal min,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
     {
         return value <= min
             ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
             : value;
     }
+
+    #endregion
+
+    #region ThrowHelpers
+
+    // Cold-path throw methods: [NoInlining] keeps exception construction out of
+    // inlined Guard callsites, reducing JIT code size at every call.
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowArgumentNull(string? paramName)
+        => throw new ArgumentNullException(paramName);
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static T ThrowArgumentNull<T>(string? paramName)
+        => throw new ArgumentNullException(paramName);
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowArgument(string message, string? paramName)
+        => throw new ArgumentException(message, paramName);
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowIndexOutOfRange(int index, int count, string? paramName)
+        => throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
 
     #endregion
 }

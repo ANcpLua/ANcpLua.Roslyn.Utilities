@@ -17,6 +17,9 @@ internal
     private readonly char _separator;
     private bool _done;
 
+    /// <summary>
+    ///     Creates a tokenizer that splits <paramref name="span" /> on <paramref name="separator" />.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SpanTokenizer(ReadOnlySpan<char> span, char separator)
     {
@@ -26,8 +29,10 @@ internal
         Current = default;
     }
 
+    /// <summary>Gets the current token.</summary>
     public ReadOnlySpan<char> Current { get; private set; }
 
+    /// <summary>Advances to the next token. Returns <see langword="false" /> when exhausted.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
@@ -47,6 +52,7 @@ internal
         return true;
     }
 
+    /// <summary>Returns this instance as the enumerator (duck-typed <c>foreach</c> support).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SpanTokenizer GetEnumerator() => this;
 }

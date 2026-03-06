@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -474,10 +469,9 @@ internal
             namedType.TypeArguments.Length > 0)
             return namedType.TypeArguments[0];
 
-        if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
-            return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
-
-        return typeSymbol;
+        return typeSymbol.NullableAnnotation == NullableAnnotation.Annotated
+            ? typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
+            : typeSymbol;
     }
 
     /// <summary>
@@ -951,9 +945,8 @@ internal
     /// <seealso cref="SymbolExtensions.GetTypeParameters" />
     public static string? GetGenericParameterClause(this INamedTypeSymbol type)
     {
-        if (!type.IsGenericType)
-            return null;
-
-        return $"<{string.Join(", ", type.TypeParameters.Select(static p => p.Name))}>";
+        return type.IsGenericType
+            ? $"<{string.Join(", ", type.TypeParameters.Select(static p => p.Name))}>"
+            : null;
     }
 }

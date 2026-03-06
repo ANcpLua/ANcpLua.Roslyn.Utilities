@@ -10,7 +10,6 @@ internal static class ConstructorExtractor
         CancellationToken cancellationToken)
     {
         var constructors = new List<ConstructorModel>();
-        var diagnostics = new List<DiagnosticInfo>();
         var constructorMatch = Match.Method().Constructor();
 
         var members = options.IncludeInherited
@@ -37,9 +36,6 @@ internal static class ConstructorExtractor
                 method.DeclaredAccessibility.ToAccessibilityString()));
         }
 
-        var flow = DiagnosticFlow.Ok(constructors.Count is 0 ? default : constructors.ToArray().ToEquatableArray());
-        foreach (var diagnostic in diagnostics) flow = flow.Warn(diagnostic);
-
-        return flow;
+        return DiagnosticFlow.Ok(constructors.Count is 0 ? default : constructors.ToArray().ToEquatableArray());
     }
 }

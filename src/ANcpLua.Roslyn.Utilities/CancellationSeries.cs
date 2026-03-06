@@ -31,15 +31,15 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <example>
 ///     <code>
 /// using var series = new CancellationSeries();
-///
+/// 
 /// // First request
 /// var ct1 = series.CreateNext();
 /// await ProcessAsync(ct1);  // may be cancelled when...
-///
+/// 
 /// // Second request arrives — ct1 is now cancelled
 /// var ct2 = series.CreateNext();
 /// await ProcessAsync(ct2);
-///
+/// 
 /// // With a super token (e.g., application shutdown)
 /// using var series2 = new CancellationSeries(appShutdownToken);
 /// var ct = series2.CreateNext();
@@ -85,14 +85,14 @@ internal
     ///     The returned token will be cancelled if this token, the super token, or a subsequent
     ///     <see cref="CreateNext" /> call triggers cancellation.
     /// </param>
-    /// <returns>A new <see cref="CancellationToken" /> that will be cancelled on the next call to <see cref="CreateNext" /> or <see cref="Dispose" />.</returns>
+    /// <returns>
+    ///     A new <see cref="CancellationToken" /> that will be cancelled on the next call to <see cref="CreateNext" /> or
+    ///     <see cref="Dispose" />.
+    /// </returns>
     /// <exception cref="ObjectDisposedException">This instance has been disposed.</exception>
     public CancellationToken CreateNext(CancellationToken token = default)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(CancellationSeries));
-        }
+        if (_disposed) throw new ObjectDisposedException(nameof(CancellationSeries));
 
         // Cancel and dispose the previous CTS
         var previousCts = _currentCts;
@@ -118,10 +118,7 @@ internal
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
-        {
-            return;
-        }
+        if (_disposed) return;
 
         _disposed = true;
 

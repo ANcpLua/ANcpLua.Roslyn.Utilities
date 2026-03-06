@@ -73,21 +73,21 @@ internal static class TypeExtractor
                     : symbol.BaseType.GetFullyQualifiedName();
 
                 return new TypeModel(
-                    FullyQualifiedName: symbol.GetFullyQualifiedName(),
-                    Namespace: namespaceName,
-                    Name: symbol.Name,
-                    Accessibility: symbol.DeclaredAccessibility.ToAccessibilityString(),
-                    IsStatic: symbol.IsStatic,
-                    IsSealed: symbol.IsSealed,
-                    IsAbstract: symbol.IsAbstract,
-                    BaseTypeFullyQualified: baseType,
-                    Interfaces: interfaces,
-                    DeclarationChain: declarations,
-                    Properties: properties,
-                    Methods: methods,
-                    Fields: fields,
-                    Constructors: constructors,
-                    Options: options);
+                    symbol.GetFullyQualifiedName(),
+                    namespaceName,
+                    symbol.Name,
+                    symbol.DeclaredAccessibility.ToAccessibilityString(),
+                    symbol.IsStatic,
+                    symbol.IsSealed,
+                    symbol.IsAbstract,
+                    baseType,
+                    interfaces,
+                    declarations,
+                    properties,
+                    methods,
+                    fields,
+                    constructors,
+                    options);
             });
         });
     }

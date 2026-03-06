@@ -90,7 +90,10 @@ public sealed class GenAiContextEnricher : ActivityLogEnricher
             new ActivityTagMapping(SpanAttributes.GenAiRequestModel, LogTags.GenAiModel),
             new ActivityTagMapping(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation),
             new ActivityTagMapping(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens),
-            new ActivityTagMapping(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens)
+            new ActivityTagMapping(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens),
+            new ActivityTagMapping(SpanAttributes.GenAiUsageCacheReadInputTokens, LogTags.GenAiCacheReadInputTokens),
+            new ActivityTagMapping(SpanAttributes.GenAiUsageCacheCreationInputTokens, LogTags.GenAiCacheCreationInputTokens),
+            new ActivityTagMapping(SpanAttributes.GenAiAgentVersion, LogTags.GenAiAgentVersion)
         ];
     }
 }
@@ -160,6 +163,9 @@ public sealed class EnricherBuilder
         _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiOperationName, LogTags.GenAiOperation));
         _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageInputTokens, LogTags.GenAiInputTokens));
         _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageOutputTokens, LogTags.GenAiOutputTokens));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageCacheReadInputTokens, LogTags.GenAiCacheReadInputTokens));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiUsageCacheCreationInputTokens, LogTags.GenAiCacheCreationInputTokens));
+        _mappings.Add(new ActivityTagMapping(SpanAttributes.GenAiAgentVersion, LogTags.GenAiAgentVersion));
         return this;
     }
 

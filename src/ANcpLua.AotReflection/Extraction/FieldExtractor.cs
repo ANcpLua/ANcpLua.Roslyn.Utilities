@@ -10,7 +10,6 @@ internal static class FieldExtractor
         CancellationToken cancellationToken)
     {
         var fields = new List<FieldModel>();
-        var diagnostics = new List<DiagnosticInfo>();
         var constMatch = Match.Field().Const();
 
         var members = options.IncludeInherited
@@ -45,9 +44,6 @@ internal static class FieldExtractor
                 field.DeclaredAccessibility.ToAccessibilityString()));
         }
 
-        var flow = DiagnosticFlow.Ok(fields.Count is 0 ? default : fields.ToArray().ToEquatableArray());
-        foreach (var diagnostic in diagnostics) flow = flow.Warn(diagnostic);
-
-        return flow;
+        return DiagnosticFlow.Ok(fields.Count is 0 ? default : fields.ToArray().ToEquatableArray());
     }
 }

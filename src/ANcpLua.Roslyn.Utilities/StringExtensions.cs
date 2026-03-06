@@ -1,8 +1,5 @@
-using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -695,8 +692,10 @@ internal
     /// </summary>
     /// <param name="str">The string to conditionally quote.</param>
     /// <returns>The original string if already quoted or no disallowed chars found; otherwise double-quoted.</returns>
-    public static string DoubleQuoteIfNeeded(this string? str) =>
-        str.DoubleQuoteIfNeeded(' ');
+    public static string DoubleQuoteIfNeeded(this string? str)
+    {
+        return str.DoubleQuoteIfNeeded(' ');
+    }
 
     /// <summary>
     ///     Wraps the string in double quotes if it contains any of the specified disallowed characters.
@@ -720,8 +719,10 @@ internal
     /// </summary>
     /// <param name="str">The string to quote.</param>
     /// <returns>The double-quoted string.</returns>
-    public static string DoubleQuote(this string? str) =>
-        $"\"{str?.Replace("\"", "\\\"")}\"";
+    public static string DoubleQuote(this string? str)
+    {
+        return $"\"{str?.Replace("\"", "\\\"")}\"";
+    }
 
     /// <summary>
     ///     Wraps the string in single quotes if it contains any of the specified disallowed characters.
@@ -729,8 +730,10 @@ internal
     /// </summary>
     /// <param name="str">The string to conditionally quote.</param>
     /// <returns>The original string if already quoted or no disallowed chars found; otherwise single-quoted.</returns>
-    public static string SingleQuoteIfNeeded(this string? str) =>
-        str.SingleQuoteIfNeeded(' ');
+    public static string SingleQuoteIfNeeded(this string? str)
+    {
+        return str.SingleQuoteIfNeeded(' ');
+    }
 
     /// <summary>
     ///     Wraps the string in single quotes if it contains any of the specified disallowed characters.
@@ -754,24 +757,30 @@ internal
     /// </summary>
     /// <param name="str">The string to quote.</param>
     /// <returns>The single-quoted string.</returns>
-    public static string SingleQuote(this string? str) =>
-        $"'{str?.Replace("'", "\\'")}'";
+    public static string SingleQuote(this string? str)
+    {
+        return $"'{str?.Replace("'", "\\'")}'";
+    }
 
     /// <summary>
     ///     Checks whether the string is wrapped in double quotes.
     /// </summary>
     /// <param name="str">The string to check.</param>
     /// <returns><c>true</c> if the string starts and ends with a double quote.</returns>
-    public static bool IsDoubleQuoted([NotNullWhen(true)] this string? str) =>
-        str is ['"', .., '"'];
+    public static bool IsDoubleQuoted([NotNullWhen(true)] this string? str)
+    {
+        return str is ['"', .., '"'];
+    }
 
     /// <summary>
     ///     Checks whether the string is wrapped in single quotes.
     /// </summary>
     /// <param name="str">The string to check.</param>
     /// <returns><c>true</c> if the string starts and ends with a single quote.</returns>
-    public static bool IsSingleQuoted([NotNullWhen(true)] this string? str) =>
-        str is ['\'', .., '\''];
+    public static bool IsSingleQuoted([NotNullWhen(true)] this string? str)
+    {
+        return str is ['\'', .., '\''];
+    }
 
     // ========== Graph Label Escaping ==========
 

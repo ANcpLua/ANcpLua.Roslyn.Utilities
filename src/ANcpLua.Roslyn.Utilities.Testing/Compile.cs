@@ -467,7 +467,8 @@ public sealed class CompileResult
 
         var sb = new StringBuilder();
         foreach (var d in Diagnostics)
-            sb.AppendLine(CultureInfo.InvariantCulture, $"  {d.Severity}: {d.Id} - {d.GetMessage(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(CultureInfo.InvariantCulture,
+                $"  {d.Severity}: {d.Id} - {d.GetMessage(CultureInfo.InvariantCulture)}");
         return sb.ToString();
     }
 

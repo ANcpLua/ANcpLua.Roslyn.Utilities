@@ -1,20 +1,19 @@
-namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting;
-
-using System.Text;
 using Microsoft.Extensions.Logging.Testing;
 
+namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting;
+
 /// <summary>
-/// Extension methods for <see cref="FakeLogCollector"/> to simplify log assertions in tests.
+///     Extension methods for <see cref="FakeLogCollector" /> to simplify log assertions in tests.
 /// </summary>
 public static class FakeLoggerExtensions
 {
     /// <summary>
-    /// Retrieves all collected log entries as a single formatted string.
+    ///     Retrieves all collected log entries as a single formatted string.
     /// </summary>
-    /// <param name="source">The <see cref="FakeLogCollector"/> containing the log records.</param>
+    /// <param name="source">The <see cref="FakeLogCollector" /> containing the log records.</param>
     /// <param name="formatter">
-    /// An optional function to format each <see cref="FakeLogRecord"/>.
-    /// If null, defaults to "{Level} - {Message}" format.
+    ///     An optional function to format each <see cref="FakeLogRecord" />.
+    ///     If null, defaults to "{Level} - {Message}" format.
     /// </param>
     /// <returns>A string containing all log entries, each on a separate line.</returns>
     public static string GetFullLoggerText(
@@ -32,9 +31,9 @@ public static class FakeLoggerExtensions
     }
 
     /// <summary>
-    /// Asynchronously waits for a log condition to be satisfied within a specified timeout.
+    ///     Asynchronously waits for a log condition to be satisfied within a specified timeout.
     /// </summary>
-    /// <param name="source">The <see cref="FakeLogCollector"/> to monitor.</param>
+    /// <param name="source">The <see cref="FakeLogCollector" /> to monitor.</param>
     /// <param name="condition">A predicate that returns true when the expected condition is met.</param>
     /// <param name="timeout">The maximum time to wait. Defaults to 5 seconds.</param>
     /// <param name="pollInterval">The interval between checks. Defaults to 25ms.</param>
@@ -69,7 +68,7 @@ public static class FakeLoggerExtensions
     }
 
     /// <summary>
-    /// Asynchronously waits until a specified number of log entries matching a predicate have been collected.
+    ///     Asynchronously waits until a specified number of log entries matching a predicate have been collected.
     /// </summary>
     public static Task<bool> WaitForLogCountAsync(
         this FakeLogCollector source,

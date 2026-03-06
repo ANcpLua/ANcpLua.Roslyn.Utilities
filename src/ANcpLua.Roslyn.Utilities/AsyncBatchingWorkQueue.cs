@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -50,7 +45,7 @@ namespace ANcpLua.Roslyn.Utilities;
 ///     },
 ///     equalityComparer: StringComparer.OrdinalIgnoreCase,
 ///     cancellationToken: appShutdown);
-///
+/// 
 /// // Each change restarts the 500ms timer
 /// queue.AddWork("src/Program.cs");
 /// queue.AddWork("src/Helpers.cs");
@@ -104,9 +99,7 @@ internal
         CancellationToken cancellationToken)
     {
         if (delay < TimeSpan.Zero)
-        {
             throw new ArgumentOutOfRangeException(nameof(delay), delay, "Delay must not be negative.");
-        }
 
         _delay = delay;
         _processBatchAsync = Guard.NotNull(processBatchAsync);
@@ -125,10 +118,7 @@ internal
     {
         lock (_gate)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
 
             _pendingItems.Add(item);
             RestartTimer();
@@ -145,10 +135,7 @@ internal
 
         lock (_gate)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
 
             _pendingItems.AddRange(items);
             RestartTimer();
@@ -182,10 +169,7 @@ internal
 
         lock (_gate)
         {
-            if (_disposed)
-            {
-                return;
-            }
+            if (_disposed) return;
 
             _disposed = true;
             tcs = _currentBatchTcs;
@@ -201,30 +185,18 @@ internal
         _timer.Dispose();
 
         // Dispose the linked CTS only if it is a separate instance
-        if (!ReferenceEquals(_linkedCts, _disposeCts))
-        {
-            _linkedCts.Dispose();
-        }
+        if (!ReferenceEquals(_linkedCts, _disposeCts)) _linkedCts.Dispose();
 
         _disposeCts.Dispose();
     }
 
     private void RestartTimer()
     {
-        // Called under lock
-        if (_disposed)
-        {
-            return;
-        }
+        // Called under _gate lock. _timer.Dispose() only runs after _gate is released
+        // in Dispose(), so _timer is guaranteed alive here — no race is possible.
+        if (_disposed) return;
 
-        try
-        {
-            _timer.Change(_delay, Timeout.InfiniteTimeSpan);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Timer was disposed concurrently — ignore
-        }
+        _timer.Change(_delay, Timeout.InfiniteTimeSpan);
     }
 
     private void OnTimerFired(object? state)
@@ -240,17 +212,11 @@ internal
 
         lock (_gate)
         {
-            if (_disposed || _pendingItems.Count == 0)
-            {
-                return;
-            }
+            if (_disposed || _pendingItems.Count == 0) return;
 
             linkedToken = _linkedCts.Token;
 
-            if (linkedToken.IsCancellationRequested)
-            {
-                return;
-            }
+            if (linkedToken.IsCancellationRequested) return;
 
             itemsToProcess = _pendingItems;
             _pendingItems = new List<T>();
@@ -263,18 +229,11 @@ internal
         {
             ImmutableArray<T> batch;
             if (_equalityComparer != null)
-            {
                 batch = itemsToProcess.Distinct(_equalityComparer).ToImmutableArray();
-            }
             else
-            {
                 batch = itemsToProcess.ToImmutableArray();
-            }
 
-            if (batch.Length > 0)
-            {
-                await _processBatchAsync(batch, linkedToken).ConfigureAwait(false);
-            }
+            if (batch.Length > 0) await _processBatchAsync(batch, linkedToken).ConfigureAwait(false);
 
             tcs.TrySetResult(true);
         }
@@ -282,11 +241,12 @@ internal
         {
             tcs.TrySetCanceled(linkedToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Complete with false instead of TrySetException to avoid
-            // UnobservedTaskException when the TCS Task is orphaned.
-            tcs.TrySetResult(false);
+            // Propagate to callers of WaitUntilCurrentBatchCompletesAsync().
+            // Modern .NET (4.5+) does not crash on unobserved task exceptions,
+            // so orphaned TCS tasks are safe.
+            tcs.TrySetException(ex);
         }
     }
 }
@@ -311,7 +271,7 @@ internal
 ///         await RefreshAllAsync(ct);
 ///     },
 ///     cancellationToken: appShutdown);
-///
+/// 
 /// // Signal that work needs to happen
 /// queue.AddWork();
 /// </code>
@@ -338,7 +298,7 @@ internal
         TimeSpan delay,
         Func<ImmutableArray<VoidResult>, CancellationToken, ValueTask> processBatchAsync,
         CancellationToken cancellationToken)
-        : base(delay, processBatchAsync, equalityComparer: null, cancellationToken)
+        : base(delay, processBatchAsync, null, cancellationToken)
     {
     }
 

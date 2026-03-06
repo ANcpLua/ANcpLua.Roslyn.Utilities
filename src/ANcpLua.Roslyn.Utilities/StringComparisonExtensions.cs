@@ -1,7 +1,3 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -291,10 +287,7 @@ internal
     /// <seealso cref="StartsWithIgnoreCase" />
     public static bool StartsWithOrdinal(this string? value, string prefix)
     {
-        if (value is null)
-            return false;
-
-        return value.StartsWith(prefix, StringComparison.Ordinal);
+        return value is not null && value.StartsWith(prefix, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -317,10 +310,7 @@ internal
     /// <seealso cref="StartsWithOrdinal" />
     public static bool StartsWithIgnoreCase(this string? value, string prefix)
     {
-        if (value is null)
-            return false;
-
-        return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+        return value is not null && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -343,10 +333,7 @@ internal
     /// <seealso cref="EndsWithIgnoreCase" />
     public static bool EndsWithOrdinal(this string? value, string suffix)
     {
-        if (value is null)
-            return false;
-
-        return value.EndsWith(suffix, StringComparison.Ordinal);
+        return value is not null && value.EndsWith(suffix, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -369,10 +356,7 @@ internal
     /// <seealso cref="EndsWithOrdinal" />
     public static bool EndsWithIgnoreCase(this string? value, string suffix)
     {
-        if (value is null)
-            return false;
-
-        return value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
+        return value is not null && value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

@@ -23,9 +23,9 @@ internal static class FieldCodeGenerator
 
             sb.AppendLine($"Name = {GenerationHelpers.StringLiteral(field.Name)},");
             sb.AppendLine($"Type = {GenerationHelpers.GetTypeOf(field.TypeFullyQualified)},");
-            sb.AppendLine($"IsStatic = {field.IsStatic.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"IsReadOnly = {field.IsReadOnly.ToString().ToLowerInvariant()},");
-            sb.AppendLine($"IsConst = {field.IsConst.ToString().ToLowerInvariant()},");
+            sb.AppendLine($"IsStatic = {GenerationHelpers.BooleanLiteral(field.IsStatic)},");
+            sb.AppendLine($"IsReadOnly = {GenerationHelpers.BooleanLiteral(field.IsReadOnly)},");
+            sb.AppendLine($"IsConst = {GenerationHelpers.BooleanLiteral(field.IsConst)},");
 
             var constValue = field.IsConst && field.ConstValue is not null ? field.ConstValue : "null";
             sb.AppendLine($"ConstValue = {constValue},");
@@ -45,9 +45,9 @@ internal static class FieldCodeGenerator
     {
         if (field is { IsConst: true, ConstValue: not null }) return $"_ => {field.ConstValue}";
 
-        if (field.IsStatic) return $"_ => {field.ContainingTypeFullyQualified}.{field.Name}";
-
-        return $"obj => (({field.ContainingTypeFullyQualified})obj!).{field.Name}";
+        return field.IsStatic
+            ? $"_ => {field.ContainingTypeFullyQualified}.{field.Name}"
+            : $"obj => (({field.ContainingTypeFullyQualified})obj!).{field.Name}";
     }
 
     private static string GetSetterExpression(FieldModel field)

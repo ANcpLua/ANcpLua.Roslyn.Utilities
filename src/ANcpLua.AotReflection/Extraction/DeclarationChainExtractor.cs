@@ -26,10 +26,9 @@ internal static class DeclarationChainExtractor
 
         chain.Reverse();
 
-        if (diagnostics.Count > 0)
-            return DiagnosticFlow.Fail<EquatableArray<TypeDeclarationModel>>(diagnostics.ToArray());
-
-        return DiagnosticFlow.Ok(chain.Count is 0 ? default : chain.ToArray().ToEquatableArray());
+        return diagnostics.Count > 0
+            ? DiagnosticFlow.Fail<EquatableArray<TypeDeclarationModel>>(diagnostics.ToArray())
+            : DiagnosticFlow.Ok(chain.Count is 0 ? default : chain.ToArray().ToEquatableArray());
     }
 
     private static TypeDeclarationModel BuildModel(TypeDeclarationSyntax declaration)

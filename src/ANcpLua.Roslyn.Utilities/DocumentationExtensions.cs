@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -144,9 +138,7 @@ internal
     public static string? GetSummaryText(this ISymbol symbol, Compilation compilation, CancellationToken ct = default)
     {
         var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
-        if (string.IsNullOrEmpty(xml)) return null;
-
-        return TryReadElementText(xml, "summary")?.NormalizeWhitespace();
+        return string.IsNullOrEmpty(xml) ? null : TryReadElementText(xml, "summary")?.NormalizeWhitespace();
     }
 
     /// <summary>
@@ -155,9 +147,7 @@ internal
     public static string? GetRemarksText(this ISymbol symbol, Compilation compilation, CancellationToken ct = default)
     {
         var xml = symbol.GetDocumentationComment(compilation, expandInheritdoc: true, cancellationToken: ct);
-        if (string.IsNullOrEmpty(xml)) return null;
-
-        return TryReadElementText(xml, "remarks")?.NormalizeWhitespace();
+        return string.IsNullOrEmpty(xml) ? null : TryReadElementText(xml, "remarks")?.NormalizeWhitespace();
     }
 
     private static string GetDocumentationComment(

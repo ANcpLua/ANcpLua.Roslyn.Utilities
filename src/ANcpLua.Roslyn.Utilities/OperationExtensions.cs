@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -408,9 +404,7 @@ internal
     /// </summary>
     public static bool IsConstant<T>(this IOperation operation, T value)
     {
-        if (!operation.TryGetConstantValue<T>(out var actual))
-            return false;
-        return EqualityComparer<T>.Default.Equals(actual, value);
+        return operation.TryGetConstantValue<T>(out var actual) && EqualityComparer<T>.Default.Equals(actual, value);
     }
 
     /// <summary>
@@ -784,9 +778,7 @@ internal
             return ReferenceEquals(assignment.Target, operation);
         if (parent is ICompoundAssignmentOperation compound)
             return ReferenceEquals(compound.Target, operation);
-        if (parent is IIncrementOrDecrementOperation)
-            return true;
-        return false;
+        return parent is IIncrementOrDecrementOperation;
     }
 
     /// <summary>
@@ -820,9 +812,7 @@ internal
     /// <seealso cref="IsAssignmentTarget" />
     public static bool IsPassedByRef(this IOperation operation)
     {
-        if (operation.Parent is IArgumentOperation { Parameter: { RefKind: not RefKind.None } })
-            return true;
-        return false;
+        return operation.Parent is IArgumentOperation { Parameter: { RefKind: not RefKind.None } };
     }
 
     // ========== Human-Readable Name Extraction ==========

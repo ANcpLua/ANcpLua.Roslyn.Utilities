@@ -1,9 +1,6 @@
 // This file contains deprecated attribute names as dictionary keys - they're needed
 // for analyzers to detect these deprecated attributes in user code.
 
-using System;
-using System.Collections.Generic;
-
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
 /// <summary>
@@ -83,6 +80,7 @@ internal
             ["rpc.jsonrpc.error_code"] = ("rpc.response.status_code", "1.39.0"),
 
             // v1.40.0 deprecations
+            ["error.message"] = ("Use domain-specific codes (e.g. feature_flag.error.message)", "1.40.0"),
             ["rpc.system"] = ("rpc.system.name", "1.40.0"),
             ["rpc.jsonrpc.request_id"] = ("jsonrpc.request.id", "1.40.0"),
             ["rpc.jsonrpc.version"] = ("jsonrpc.protocol.version", "1.40.0"),
