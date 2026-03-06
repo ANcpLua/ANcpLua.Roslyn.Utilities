@@ -32,6 +32,7 @@
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces"/>
         <PackageReference Include="Microsoft.Bcl.HashCode"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <PackageReference Include="System.Threading.Channels"/>
     </ItemGroup>
 
     <ItemGroup>
