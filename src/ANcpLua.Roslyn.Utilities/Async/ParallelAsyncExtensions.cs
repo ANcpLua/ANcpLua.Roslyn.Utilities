@@ -138,4 +138,155 @@ internal
                 ExceptionDispatchInfo.Capture(failure).Throw();
         }
     }
+
+    /// <summary>
+    ///     Projects each element through <paramref name="selector" /> using
+    ///     <paramref name="degreeOfParallelism" /> concurrent workers backed by channels,
+    ///     yielding results in the <b>original source order</b>.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Unlike <see cref="SelectParallel{TSource,TResult}" /> which returns results
+    ///         in completion order, this method buffers out-of-order results and yields them
+    ///         only when all preceding items have been emitted.
+    ///     </para>
+    ///     <para>
+    ///         The reorder buffer is bounded by the number of in-flight items
+    ///         (<paramref name="degreeOfParallelism" /> × 2 channel capacity + workers),
+    ///         so memory usage stays proportional to concurrency, not source size.
+    ///     </para>
+    ///     <para>
+    ///         The first exception from any worker is captured and re-thrown with its original
+    ///         stack trace after all successfully completed results have been yielded.
+    ///     </para>
+    /// </remarks>
+    public static IAsyncEnumerable<TResult> SelectParallelOrdered<TSource, TResult>(
+        this IAsyncEnumerable<TSource> source,
+        int degreeOfParallelism,
+        Func<TSource, CancellationToken, ValueTask<TResult>> selector,
+        CancellationToken cancellationToken = default)
+    {
+        Guard.NotNull(source);
+        Guard.NotNull(selector);
+        if (degreeOfParallelism <= 0)
+            throw new ArgumentOutOfRangeException(nameof(degreeOfParallelism));
+
+        return CoreOrdered(source, degreeOfParallelism, selector, cancellationToken);
+
+        static async IAsyncEnumerable<TResult> CoreOrdered(
+            IAsyncEnumerable<TSource> source,
+            int degreeOfParallelism,
+            Func<TSource, CancellationToken, ValueTask<TResult>> selector,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var input = Channel.CreateBounded<(int Index, TSource Item)>(
+                new BoundedChannelOptions(degreeOfParallelism * 2)
+                {
+                    SingleWriter = true,
+                    SingleReader = false,
+                    FullMode = BoundedChannelFullMode.Wait
+                });
+
+            var output = Channel.CreateUnbounded<(int Index, TResult Result)>(
+                new UnboundedChannelOptions
+                {
+                    SingleWriter = false,
+                    SingleReader = true
+                });
+
+            Exception? failure = null;
+
+            var producer = Task.Run(async () =>
+            {
+                try
+                {
+                    var index = 0;
+                    await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+                        await input.Writer.WriteAsync((index++, item), cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                }
+                catch (Exception ex)
+                {
+                    Interlocked.CompareExchange(ref failure, ex, null);
+                }
+                finally
+                {
+                    input.Writer.TryComplete(failure);
+                }
+            }, CancellationToken.None);
+
+            var workers = new Task[degreeOfParallelism];
+            for (var w = 0; w < degreeOfParallelism; w++)
+            {
+                workers[w] = Task.Run(async () =>
+                {
+                    try
+                    {
+                        while (await input.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+                        {
+                            while (input.Reader.TryRead(out var entry))
+                            {
+                                var result = await selector(entry.Item, cancellationToken).ConfigureAwait(false);
+                                await output.Writer.WriteAsync((entry.Index, result), cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        Interlocked.CompareExchange(ref failure, ex, null);
+                    }
+                }, CancellationToken.None);
+            }
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await producer.ConfigureAwait(false);
+                    await Task.WhenAll(workers).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Interlocked.CompareExchange(ref failure, ex, null);
+                }
+                finally
+                {
+                    output.Writer.TryComplete(failure);
+                }
+            }, CancellationToken.None);
+
+            // Reorder buffer: hold results that arrived ahead of their turn
+            var pending = new SortedDictionary<int, TResult>();
+            var nextExpected = 0;
+
+            while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                while (output.Reader.TryRead(out var entry))
+                {
+                    pending[entry.Index] = entry.Result;
+
+                    // Flush consecutive items starting from nextExpected
+                    while (pending.TryGetValue(nextExpected, out var next))
+                    {
+                        pending.Remove(nextExpected);
+                        yield return next;
+                        nextExpected++;
+                    }
+                }
+            }
+
+            // Drain any remaining buffered items in order
+            foreach (var remaining in pending.Values)
+                yield return remaining;
+
+            if (failure is not null)
+                ExceptionDispatchInfo.Capture(failure).Throw();
+        }
+    }
 }
