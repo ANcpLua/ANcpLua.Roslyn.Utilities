@@ -10,5 +10,4 @@ internal readonly record struct MethodModel(
     bool IsExtension,
     bool IsGeneric,
     bool ReturnsVoid,
-    string Accessibility)
-    : IEquatable<MethodModel>;
+    string Accessibility);

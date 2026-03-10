@@ -95,7 +95,7 @@ internal
 
             accumulator = accumulator * 10 + digit;
 
-            var limit = negative ? (ulong)long.MaxValue + 1 : (ulong)long.MaxValue;
+            var limit = negative ? (ulong)long.MaxValue + 1 : long.MaxValue;
             if (accumulator > limit)
                 return false;
         }
@@ -187,7 +187,7 @@ internal
 
             accumulator = accumulator * 10 + digit;
 
-            var limit = negative ? (ulong)long.MaxValue + 1 : (ulong)long.MaxValue;
+            var limit = negative ? (ulong)long.MaxValue + 1 : long.MaxValue;
             if (accumulator > limit)
                 return false;
         }

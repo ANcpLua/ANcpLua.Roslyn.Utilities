@@ -6,7 +6,6 @@ using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
@@ -107,7 +106,7 @@ public sealed class AGUITestServer : IAsyncDisposable
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        Client?.Dispose();
+        Client.Dispose();
         if (_app is not null)
         {
             await _app.DisposeAsync().ConfigureAwait(false);

@@ -51,7 +51,9 @@ public sealed class FakeChatClient : IChatClient
     /// </summary>
     public string ModelId { get; set; } = "test-model";
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the metadata describing this client instance.
+    /// </summary>
     public ChatClientMetadata Metadata { get; set; } =
         new("FakeChatClient", new Uri("https://test.example.com"), "test-model");
 
@@ -112,7 +114,7 @@ public sealed class FakeChatClient : IChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        (_, IReadOnlyList<AIContent> contents, int messageCount) = CaptureAndProduce(messages, options);
+        (IReadOnlyList<AIContent> contents, int messageCount) = CaptureAndProduce(messages, options);
 
         ChatResponse response = new([new ChatMessage(ChatRole.Assistant, [.. contents])])
         {
@@ -129,7 +131,7 @@ public sealed class FakeChatClient : IChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        (_, IReadOnlyList<AIContent> contents, int messageCount) = CaptureAndProduce(messages, options);
+        (IReadOnlyList<AIContent> contents, int messageCount) = CaptureAndProduce(messages, options);
 
         List<AIContent> expanded = ExpandTextForStreaming(contents);
         UsageDetails usage = CreateUsage(messageCount);
@@ -162,7 +164,7 @@ public sealed class FakeChatClient : IChatClient
     {
     }
 
-    private (IList<ChatMessage> Messages, IReadOnlyList<AIContent> Contents, int MessageCount)
+    private (IReadOnlyList<AIContent> Contents, int MessageCount)
         CaptureAndProduce(IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
         IList<ChatMessage> messageList = messages as IList<ChatMessage> ?? messages.ToList();
@@ -173,7 +175,7 @@ public sealed class FakeChatClient : IChatClient
         RequestContext ctx = new(messageList, options, callIndex);
         IReadOnlyList<AIContent> contents = _contentFactory(ctx);
 
-        return (messageList, contents, messageList.Count);
+        return (contents, messageList.Count);
     }
 
     private static UsageDetails CreateUsage(int messageCount) =>

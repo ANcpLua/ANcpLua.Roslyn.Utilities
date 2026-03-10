@@ -157,9 +157,7 @@ internal
     {
         // Cache range: -1 to 10 (index 0 to 11 in the array)
         var index = value + 1;
-        if ((uint)index < (uint)CachedInt32.Length) return CachedInt32[index];
-
-        return value;
+        return (uint)index < (uint)CachedInt32.Length ? CachedInt32[index] : value;
     }
 
     /// <summary>
@@ -284,9 +282,7 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static object Box(char value)
     {
-        if (value < (uint)CachedChar.Length) return CachedChar[value];
-
-        return value;
+        return value < (uint)CachedChar.Length ? CachedChar[value] : value;
     }
 
     private static object[] CreateInt32Cache()

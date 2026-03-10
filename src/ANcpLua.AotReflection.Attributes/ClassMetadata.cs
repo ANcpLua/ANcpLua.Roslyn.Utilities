@@ -38,7 +38,7 @@ public sealed class ClassMetadata
         get => _properties;
         set
         {
-            _properties = value ?? Array.Empty<PropertyMetadata>();
+            _properties = value;
             foreach (var property in _properties) property.ClassMetadata = this;
         }
     }
@@ -81,8 +81,6 @@ public sealed class ClassMetadata
 
     public object? InvokeMethod(object? instance, string name, params object?[] args)
     {
-        args ??= Array.Empty<object?>();
-
         foreach (var method in Methods)
         {
             if (!string.Equals(method.Name, name, StringComparison.Ordinal)) continue;
@@ -99,8 +97,6 @@ public sealed class ClassMetadata
 
     public object CreateInstance(params object?[] args)
     {
-        args ??= Array.Empty<object?>();
-
         foreach (var constructor in Constructors)
         {
             if (constructor.Parameters.Length != args.Length) continue;

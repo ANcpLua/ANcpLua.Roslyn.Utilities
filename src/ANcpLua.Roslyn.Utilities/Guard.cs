@@ -674,10 +674,8 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        var seen = new HashSet<T>();
-        foreach (var item in value)
-            if (!seen.Add(item))
-                throw new ArgumentException($"Duplicate value found: {item}", paramName);
+        NotNull(value, paramName);
+        CheckNoDuplicates(value, null, paramName);
     }
 
     /// <summary>
@@ -704,10 +702,8 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        var seen = new HashSet<T>(comparer);
-        foreach (var item in value)
-            if (!seen.Add(item))
-                throw new ArgumentException($"Duplicate value found: {item}", paramName);
+        NotNull(value, paramName);
+        CheckNoDuplicates(value, comparer, paramName);
     }
 
     /// <summary>
@@ -726,14 +722,8 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        if (value is null)
-            throw new ArgumentNullException(paramName);
-
-        var seen = new HashSet<T>();
-        foreach (var item in value)
-            if (!seen.Add(item))
-                throw new ArgumentException($"Duplicate value found: {item}", paramName);
-
+        NotNull(value, paramName);
+        CheckNoDuplicates(value, null, paramName);
         return value;
     }
 
@@ -755,14 +745,8 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        if (value is null)
-            throw new ArgumentNullException(paramName);
-
-        var seen = new HashSet<T>(comparer);
-        foreach (var item in value)
-            if (!seen.Add(item))
-                throw new ArgumentException($"Duplicate value found: {item}", paramName);
-
+        NotNull(value, paramName);
+        CheckNoDuplicates(value, comparer, paramName);
         return value;
     }
 
@@ -974,14 +958,7 @@ internal
         [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0)
     {
-        var location = string.IsNullOrEmpty(filePath)
-            ? memberName
-            : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
-
-        throw new InvalidOperationException(
-            string.IsNullOrEmpty(message)
-                ? $"Unreachable code executed in {location}"
-                : $"{message} (in {location})");
+        ThrowInvalidOperation(BuildUnreachableMessage(message, memberName, filePath, lineNumber));
     }
 
     /// <summary>
@@ -1012,14 +989,7 @@ internal
         [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0)
     {
-        var location = string.IsNullOrEmpty(filePath)
-            ? memberName
-            : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
-
-        throw new InvalidOperationException(
-            string.IsNullOrEmpty(message)
-                ? $"Unreachable code executed in {location}"
-                : $"{message} (in {location})");
+        throw new InvalidOperationException(BuildUnreachableMessage(message, memberName, filePath, lineNumber));
     }
 
     /// <summary>
@@ -1047,17 +1017,7 @@ internal
         [CallerLineNumber] int lineNumber = 0)
     {
         if (condition)
-        {
-            var location = string.IsNullOrEmpty(filePath)
-                ? memberName
-                : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
-
-            var fullMessage = string.IsNullOrEmpty(message)
-                ? $"Unreachable code executed in {location}. Condition: {conditionExpression}"
-                : $"{message} (in {location}). Condition: {conditionExpression}";
-
-            throw new InvalidOperationException(fullMessage);
-        }
+            ThrowInvalidOperation($"{BuildUnreachableMessage(message, memberName, filePath, lineNumber)}. Condition: {conditionExpression}");
     }
 
     #endregion
@@ -1193,9 +1153,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotZero(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value is 0
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
-            : value;
+        if (value is 0)
+            ThrowOutOfRange(paramName, value, "Value cannot be zero.");
+        return value;
     }
 
     /// <summary>
@@ -1204,9 +1164,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int NotNegative(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value < 0
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
-            : value;
+        if (value < 0)
+            ThrowOutOfRange(paramName, value, "Value cannot be negative.");
+        return value;
     }
 
     /// <summary>
@@ -1215,9 +1175,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Positive(int value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value <= 0
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
-            : value;
+        if (value <= 0)
+            ThrowOutOfRange(paramName, value, "Value must be positive.");
+        return value;
     }
 
     /// <summary>
@@ -1228,9 +1188,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value > max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
-            : value;
+        if (value > max)
+            ThrowOutOfRange(paramName, value, $"Value must not be greater than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1241,9 +1201,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value < min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
-            : value;
+        if (value < min)
+            ThrowOutOfRange(paramName, value, $"Value must not be less than {min}.");
+        return value;
     }
 
     /// <summary>
@@ -1252,9 +1212,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LessThan(int value, int max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value >= max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
-            : value;
+        if (value >= max)
+            ThrowOutOfRange(paramName, value, $"Value must be less than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1265,9 +1225,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value <= min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
-            : value;
+        if (value <= min)
+            ThrowOutOfRange(paramName, value, $"Value must be greater than {min}.");
+        return value;
     }
 
     #endregion
@@ -1280,9 +1240,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotZero(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value is 0L
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
-            : value;
+        if (value is 0L)
+            ThrowOutOfRange(paramName, value, "Value cannot be zero.");
+        return value;
     }
 
     /// <summary>
@@ -1291,9 +1251,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long NotNegative(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value < 0L
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
-            : value;
+        if (value < 0L)
+            ThrowOutOfRange(paramName, value, "Value cannot be negative.");
+        return value;
     }
 
     /// <summary>
@@ -1302,9 +1262,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static long Positive(long value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value <= 0L
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
-            : value;
+        if (value <= 0L)
+            ThrowOutOfRange(paramName, value, "Value must be positive.");
+        return value;
     }
 
     /// <summary>
@@ -1315,9 +1275,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value > max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
-            : value;
+        if (value > max)
+            ThrowOutOfRange(paramName, value, $"Value must not be greater than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1328,9 +1288,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value < min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
-            : value;
+        if (value < min)
+            ThrowOutOfRange(paramName, value, $"Value must not be less than {min}.");
+        return value;
     }
 
     /// <summary>
@@ -1341,9 +1301,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value >= max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
-            : value;
+        if (value >= max)
+            ThrowOutOfRange(paramName, value, $"Value must be less than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1354,9 +1314,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value <= min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
-            : value;
+        if (value <= min)
+            ThrowOutOfRange(paramName, value, $"Value must be greater than {min}.");
+        return value;
     }
 
     #endregion
@@ -1369,9 +1329,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotZero(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value is 0.0
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
-            : value;
+        if (value is 0.0)
+            ThrowOutOfRange(paramName, value, "Value cannot be zero.");
+        return value;
     }
 
     /// <summary>
@@ -1381,9 +1341,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotNegative(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return !(value >= 0.0) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
-            : value;
+        if (!(value >= 0.0)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, "Value cannot be negative.");
+        return value;
     }
 
     /// <summary>
@@ -1393,9 +1353,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double Positive(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return !(value > 0.0) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
-            : value;
+        if (!(value > 0.0)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, "Value must be positive.");
+        return value;
     }
 
     /// <summary>
@@ -1407,9 +1367,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return !(value <= max) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
-            : value;
+        if (!(value <= max)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, $"Value must not be greater than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1421,9 +1381,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return !(value >= min) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
-            : value;
+        if (!(value >= min)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, $"Value must not be less than {min}.");
+        return value;
     }
 
     /// <summary>
@@ -1435,9 +1395,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return !(value < max) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
-            : value;
+        if (!(value < max)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, $"Value must be less than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1449,9 +1409,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return !(value > min) // Handles NaN correctly
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
-            : value;
+        if (!(value > min)) // Handles NaN correctly
+            ThrowOutOfRange(paramName, value, $"Value must be greater than {min}.");
+        return value;
     }
 
     /// <summary>
@@ -1460,9 +1420,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double NotNaN(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return double.IsNaN(value)
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be NaN.")
-            : value;
+        if (double.IsNaN(value))
+            ThrowOutOfRange(paramName, value, "Value cannot be NaN.");
+        return value;
     }
 
     /// <summary>
@@ -1471,9 +1431,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double Finite(double value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return double.IsNaN(value) || double.IsInfinity(value)
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be finite.")
-            : value;
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            ThrowOutOfRange(paramName, value, "Value must be finite.");
+        return value;
     }
 
     #endregion
@@ -1795,9 +1755,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotZero(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value == 0m
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be zero.")
-            : value;
+        if (value == 0m)
+            ThrowOutOfRange(paramName, value, "Value cannot be zero.");
+        return value;
     }
 
     /// <summary>
@@ -1806,9 +1766,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal NotNegative(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value < 0m
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value cannot be negative.")
-            : value;
+        if (value < 0m)
+            ThrowOutOfRange(paramName, value, "Value cannot be negative.");
+        return value;
     }
 
     /// <summary>
@@ -1817,9 +1777,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static decimal Positive(decimal value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        return value <= 0m
-            ? throw new ArgumentOutOfRangeException(paramName, value, "Value must be positive.")
-            : value;
+        if (value <= 0m)
+            ThrowOutOfRange(paramName, value, "Value must be positive.");
+        return value;
     }
 
     /// <summary>
@@ -1830,9 +1790,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value > max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be greater than {max}.")
-            : value;
+        if (value > max)
+            ThrowOutOfRange(paramName, value, $"Value must not be greater than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1843,9 +1803,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value < min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must not be less than {min}.")
-            : value;
+        if (value < min)
+            ThrowOutOfRange(paramName, value, $"Value must not be less than {min}.");
+        return value;
     }
 
     /// <summary>
@@ -1856,9 +1816,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value >= max
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be less than {max}.")
-            : value;
+        if (value >= max)
+            ThrowOutOfRange(paramName, value, $"Value must be less than {max}.");
+        return value;
     }
 
     /// <summary>
@@ -1869,9 +1829,9 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        return value <= min
-            ? throw new ArgumentOutOfRangeException(paramName, value, $"Value must be greater than {min}.")
-            : value;
+        if (value <= min)
+            ThrowOutOfRange(paramName, value, $"Value must be greater than {min}.");
+        return value;
     }
 
     #endregion
@@ -1900,6 +1860,36 @@ internal
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowIndexOutOfRange(int index, int count, string? paramName)
         => throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowOutOfRange(string? paramName, object? value, string message)
+        => throw new ArgumentOutOfRangeException(paramName, value, message);
+
+    [DoesNotReturn]
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowInvalidOperation(string message)
+        => throw new InvalidOperationException(message);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static string BuildUnreachableMessage(string? message, string memberName, string filePath, int lineNumber)
+    {
+        var location = string.IsNullOrEmpty(filePath)
+            ? memberName
+            : $"{memberName} ({Path.GetFileName(filePath)}:{lineNumber})";
+
+        return string.IsNullOrEmpty(message)
+            ? $"Unreachable code executed in {location}"
+            : $"{message} (in {location})";
+    }
+
+    private static void CheckNoDuplicates<T>(IEnumerable<T> source, IEqualityComparer<T>? comparer, string? paramName)
+    {
+        var seen = comparer is null ? new HashSet<T>() : new HashSet<T>(comparer);
+        foreach (var item in source)
+            if (!seen.Add(item))
+                ThrowArgument($"Duplicate value found: {item}", paramName);
+    }
 
     #endregion
 }

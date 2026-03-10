@@ -9,5 +9,4 @@ internal readonly record struct PropertyModel(
     bool HasGetter,
     bool HasSetter,
     bool IsInitOnly,
-    string Accessibility)
-    : IEquatable<PropertyModel>;
+    string Accessibility);

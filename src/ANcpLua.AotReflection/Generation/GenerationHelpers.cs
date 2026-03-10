@@ -25,9 +25,9 @@ internal static class GenerationHelpers
         var type = RemoveGlobalPrefix(fullyQualifiedType);
         var lastDotIndex = type.LastIndexOf('.');
 
-        if (lastDotIndex <= 0) return (string.Empty, type);
-
-        return (type.Substring(0, lastDotIndex), type.Substring(lastDotIndex + 1));
+        return lastDotIndex <= 0
+            ? (string.Empty, type)
+            : (type.Substring(0, lastDotIndex), type.Substring(lastDotIndex + 1));
     }
 
     public static string GetTypeOf(string fullyQualifiedType)

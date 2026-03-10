@@ -5,5 +5,4 @@ internal readonly record struct TypeDeclarationModel(
     string Keyword,
     string Modifiers,
     string TypeParameters,
-    EquatableArray<string> ConstraintClauses)
-    : IEquatable<TypeDeclarationModel>;
+    EquatableArray<string> ConstraintClauses);

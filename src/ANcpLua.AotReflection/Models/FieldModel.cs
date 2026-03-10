@@ -8,5 +8,4 @@ internal readonly record struct FieldModel(
     bool IsReadOnly,
     bool IsConst,
     string? ConstValue,
-    string Accessibility)
-    : IEquatable<FieldModel>;
+    string Accessibility);

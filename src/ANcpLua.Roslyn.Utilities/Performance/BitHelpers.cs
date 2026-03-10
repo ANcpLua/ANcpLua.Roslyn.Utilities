@@ -62,11 +62,8 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int TrailingZeroCount(uint value)
     {
-        if (value == 0)
-            return 32;
-
         // Isolate lowest set bit, then count bits below it
-        return PopCount((value & (uint)-(int)value) - 1);
+        return value == 0 ? 32 : PopCount((value & (uint)-(int)value) - 1);
     }
 
     /// <summary>

@@ -7,7 +7,6 @@ internal readonly record struct AotReflectionOptions(
     bool IncludeConstructors,
     bool IncludeInherited,
     bool IncludePrivate)
-    : IEquatable<AotReflectionOptions>
 {
     public static AotReflectionOptions Default => new(
         true,

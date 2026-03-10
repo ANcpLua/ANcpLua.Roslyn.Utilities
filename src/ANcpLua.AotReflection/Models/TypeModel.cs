@@ -15,5 +15,4 @@ internal readonly record struct TypeModel(
     EquatableArray<MethodModel> Methods,
     EquatableArray<FieldModel> Fields,
     EquatableArray<ConstructorModel> Constructors,
-    AotReflectionOptions Options)
-    : IEquatable<TypeModel>;
+    AotReflectionOptions Options);

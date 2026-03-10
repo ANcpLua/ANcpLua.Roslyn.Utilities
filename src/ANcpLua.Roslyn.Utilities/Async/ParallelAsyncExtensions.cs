@@ -38,9 +38,7 @@ internal
     {
         Guard.NotNull(source);
         Guard.NotNull(selector);
-        if (degreeOfParallelism <= 0)
-            throw new ArgumentOutOfRangeException(nameof(degreeOfParallelism));
-
+        Guard.Positive(degreeOfParallelism);
         return Core(source, degreeOfParallelism, selector, cancellationToken);
 
         static async IAsyncEnumerable<TResult> Core(
@@ -168,9 +166,7 @@ internal
     {
         Guard.NotNull(source);
         Guard.NotNull(selector);
-        if (degreeOfParallelism <= 0)
-            throw new ArgumentOutOfRangeException(nameof(degreeOfParallelism));
-
+        Guard.Positive(degreeOfParallelism);
         return CoreOrdered(source, degreeOfParallelism, selector, cancellationToken);
 
         static async IAsyncEnumerable<TResult> CoreOrdered(

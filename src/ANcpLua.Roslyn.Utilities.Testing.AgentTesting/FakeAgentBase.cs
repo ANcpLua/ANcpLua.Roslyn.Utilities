@@ -18,7 +18,7 @@ public abstract class FakeAgentBase : AIAgent
     protected override string? IdCore => GetType().Name;
 
     /// <inheritdoc/>
-    public override string? Description => $"Fake agent: {GetType().Name}";
+    public override string Description => $"Fake agent: {GetType().Name}";
 
     /// <summary>
     /// Override this to produce the streaming response for the agent.

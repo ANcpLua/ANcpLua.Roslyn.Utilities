@@ -1,5 +1,4 @@
 using System.Globalization;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ANcpLua.Analyzers.AotReflection.Extraction;
@@ -10,16 +9,13 @@ internal static class LiteralFormatter
     {
         if (value is null) return "null";
 
-        if (type is INamedTypeSymbol
+        return type is INamedTypeSymbol
             {
                 TypeKind: TypeKind.Enum,
                 EnumUnderlyingType: { } underlyingType
-            })
-        {
-            return FormatEnumConstant(value, type, underlyingType);
-        }
-
-        return FormatLiteral(value);
+            }
+            ? FormatEnumConstant(value, type, underlyingType)
+            : FormatLiteral(value);
     }
 
     public static string? GetDefaultValueLiteral(IParameterSymbol parameter, CancellationToken cancellationToken)
