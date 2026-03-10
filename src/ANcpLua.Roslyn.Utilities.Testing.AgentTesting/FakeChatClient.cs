@@ -108,6 +108,18 @@ public sealed class FakeChatClient : IChatClient
             return result as IReadOnlyList<AIContent> ?? [.. result];
         });
 
+    /// <summary>
+    /// Creates a fake that throws the specified exception on every call.
+    /// </summary>
+    public static FakeChatClient WithError(Exception exception) =>
+        new(_ => throw exception);
+
+    /// <summary>
+    /// Creates a fake that throws the specified exception type on every call.
+    /// </summary>
+    public static FakeChatClient WithError<TException>() where TException : Exception, new() =>
+        WithError(new TException());
+
     /// <inheritdoc/>
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -156,8 +168,13 @@ public sealed class FakeChatClient : IChatClient
     }
 
     /// <inheritdoc/>
-    public object? GetService(Type serviceType, object? serviceKey = null) =>
-        serviceType.IsInstanceOfType(this) ? this : null;
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        if (serviceType == typeof(ChatClientMetadata))
+            return Metadata;
+
+        return serviceType.IsInstanceOfType(this) ? this : null;
+    }
 
     /// <inheritdoc/>
     public void Dispose()

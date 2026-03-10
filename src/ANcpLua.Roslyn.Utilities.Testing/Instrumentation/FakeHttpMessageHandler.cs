@@ -48,7 +48,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
         string body,
         string contentType = "application/json")
     {
-        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, body, contentType, Times: null));
+        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, body, contentType, times: null));
         return this;
     }
 
@@ -57,7 +57,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
     /// </summary>
     public FakeHttpMessageHandler WithError(string urlPattern, HttpStatusCode statusCode)
     {
-        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, string.Empty, "text/plain", Times: null));
+        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, string.Empty, "text/plain", times: null));
         return this;
     }
 
@@ -119,14 +119,14 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
         HttpStatusCode statusCode,
         string body,
         string contentType,
-        int? Times)
+        int? times)
     {
         public string UrlPattern => urlPattern;
         public HttpStatusCode StatusCode => statusCode;
         public string Body => body;
         public string ContentType => contentType;
-        public int? Times => Times;
-        public int RemainingUses { get; set; } = Times ?? 0;
+        public int? Times => times;
+        public int RemainingUses { get; set; } = times ?? 0;
     }
 }
 

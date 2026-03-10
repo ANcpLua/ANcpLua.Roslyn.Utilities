@@ -49,7 +49,6 @@
     </ItemGroup>
 
     <ItemGroup Label="Agent Testing">
-        <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore"/>
         <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>
     </ItemGroup>
 
