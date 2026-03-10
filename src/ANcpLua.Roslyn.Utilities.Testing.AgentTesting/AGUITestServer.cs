@@ -60,7 +60,7 @@ public sealed class AGUITestServer : IAsyncDisposable
         JsonSerializerOptions? jsonOptions = null)
     {
         AGUITestServer server = new(agent, endpointPattern, configureBuilder, configureServices, jsonOptions);
-        await server.StartAsync();
+        await server.StartAsync().ConfigureAwait(false);
         return server;
     }
 
@@ -95,7 +95,7 @@ public sealed class AGUITestServer : IAsyncDisposable
         _app = builder.Build();
         _app.MapAGUI(EndpointPattern, _agent);
 
-        await _app.StartAsync();
+        await _app.StartAsync(CancellationToken.None).ConfigureAwait(false);
 
         TestServer testServer = _app.Services.GetRequiredService<IServer>() as TestServer
             ?? throw new InvalidOperationException("TestServer not found in services.");
@@ -110,7 +110,7 @@ public sealed class AGUITestServer : IAsyncDisposable
         Client?.Dispose();
         if (_app is not null)
         {
-            await _app.DisposeAsync();
+            await _app.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

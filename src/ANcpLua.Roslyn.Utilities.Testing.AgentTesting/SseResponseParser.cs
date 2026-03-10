@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 
+using System.Text;
 using System.Text.Json;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
@@ -16,7 +17,7 @@ public static class SseResponseParser
     /// Parses raw SSE response text into a list of <see cref="JsonElement"/> events.
     /// Each "data:" line is parsed as JSON. Multi-line data payloads are concatenated.
     /// </summary>
-    public static List<JsonElement> Parse(string responseContent)
+    public static IReadOnlyList<JsonElement> Parse(string responseContent)
     {
         List<JsonElement> events = [];
         using StringReader reader = new(responseContent);
@@ -52,8 +53,8 @@ public static class SseResponseParser
     /// <summary>
     /// Extracts all events of a specific type from parsed SSE events.
     /// </summary>
-    public static List<JsonElement> FilterByType(List<JsonElement> events, string eventType) =>
+    public static IReadOnlyList<JsonElement> FilterByType(IReadOnlyList<JsonElement> events, string eventType) =>
         events.Where(e =>
             e.TryGetProperty(TypeProperty, out JsonElement typeProp) &&
-            typeProp.GetString() == eventType).ToList();
+            string.Equals(typeProp.GetString(), eventType, StringComparison.Ordinal)).ToList();
 }

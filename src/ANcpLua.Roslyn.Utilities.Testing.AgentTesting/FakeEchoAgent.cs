@@ -41,7 +41,7 @@ public sealed class FakeEchoAgent(string? id = null, string? name = null, string
                 Role = ChatRole.Assistant,
                 AuthorName = Name ?? Id,
                 CreatedAt = TimeProvider.System.GetUtcNow(),
-                Contents = [new TextContent(echoText)]
+                Contents = [new TextContent(echoText)],
             };
 
             await Task.Yield();

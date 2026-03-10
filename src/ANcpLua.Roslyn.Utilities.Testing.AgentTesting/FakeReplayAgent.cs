@@ -11,12 +11,12 @@ namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 /// Each message is streamed content-by-content, preserving message IDs and structure.
 /// Useful for deterministic multi-turn testing and streaming composition validation.
 /// </summary>
-public sealed class FakeReplayAgent(List<ChatMessage>? messages = null, string? id = null, string? name = null) : FakeAgentBase
+public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null, string? id = null, string? name = null) : FakeAgentBase
 {
     /// <summary>
     /// The pre-recorded messages to replay. Empty if none provided.
     /// </summary>
-    public List<ChatMessage> Messages { get; } = ValidateNoDuplicateIds(messages) ?? [];
+    public IReadOnlyList<ChatMessage> Messages { get; } = ValidateNoDuplicateIds(messages) ?? [];
 
     /// <inheritdoc/>
     protected override string? IdCore => id ?? base.IdCore;
@@ -35,7 +35,7 @@ public sealed class FakeReplayAgent(List<ChatMessage>? messages = null, string? 
     /// Converts plain text strings into <see cref="ChatMessage"/> instances
     /// with word-level content splitting for realistic streaming simulation.
     /// </summary>
-    public static List<ChatMessage> ToChatMessages(params string[] texts) =>
+    public static IReadOnlyList<ChatMessage> ToChatMessages(params string[] texts) =>
         texts.Select(static text =>
         {
             if (string.IsNullOrEmpty(text))
@@ -80,7 +80,7 @@ public sealed class FakeReplayAgent(List<ChatMessage>? messages = null, string? 
                     MessageId = message.MessageId,
                     ResponseId = responseId,
                     Role = message.Role,
-                    Contents = [content]
+                    Contents = [content],
                 };
             }
 
@@ -88,7 +88,7 @@ public sealed class FakeReplayAgent(List<ChatMessage>? messages = null, string? 
         }
     }
 
-    private static List<ChatMessage>? ValidateNoDuplicateIds(List<ChatMessage>? candidateMessages)
+    private static IReadOnlyList<ChatMessage>? ValidateNoDuplicateIds(IReadOnlyList<ChatMessage>? candidateMessages)
     {
         if (candidateMessages is null)
         {
@@ -98,7 +98,7 @@ public sealed class FakeReplayAgent(List<ChatMessage>? messages = null, string? 
         string? previousId = null;
         foreach (ChatMessage message in candidateMessages)
         {
-            if (previousId is not null && previousId == message.MessageId)
+            if (previousId is not null && string.Equals(previousId, message.MessageId, StringComparison.Ordinal))
             {
                 throw new ArgumentException("Duplicate consecutive message IDs are not allowed.", nameof(candidateMessages));
             }

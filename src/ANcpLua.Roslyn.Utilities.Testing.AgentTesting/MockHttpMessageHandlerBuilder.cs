@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 
 using System.Net;
+using System.Text;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
@@ -103,7 +104,7 @@ public sealed class MockHttpMessageHandlerBuilder
             return Task.FromResult(new HttpResponseMessage
             {
                 StatusCode = statusCode,
-                Content = new StringContent(content, Encoding.UTF8, contentType)
+                Content = new StringContent(content, Encoding.UTF8, contentType),
             });
         }
     }

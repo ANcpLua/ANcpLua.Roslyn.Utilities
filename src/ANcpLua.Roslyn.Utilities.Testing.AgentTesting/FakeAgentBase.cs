@@ -71,7 +71,7 @@ public abstract class FakeAgentBase : AIAgent
         AgentRunOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (AgentResponseUpdate update in StreamResponseAsync(messages, options, cancellationToken))
+        await foreach (AgentResponseUpdate update in StreamResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
         {
             yield return update;
         }
@@ -95,7 +95,7 @@ public abstract class FakeAgentBase : AIAgent
             {
                 MessageId = messageId,
                 Role = ChatRole.Assistant,
-                Contents = [new TextContent(chunk)]
+                Contents = [new TextContent(chunk)],
             };
 
             await Task.Yield();
@@ -111,41 +111,6 @@ public abstract class FakeAgentBase : AIAgent
         [JsonConstructor]
         public FakeSession(AgentSessionStateBag stateBag) : base(stateBag)
         {
-        }
-    }
-}
-
-/// <summary>
-/// A simple fake agent that streams deterministic text chunks.
-/// Useful for basic streaming integration tests.
-/// </summary>
-public sealed class FakeTextStreamingAgent(params string[] chunks) : FakeAgentBase
-{
-    /// <inheritdoc/>
-    protected override IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        AgentRunOptions? options,
-        CancellationToken cancellationToken) =>
-        StreamChunksAsync(chunks, cancellationToken);
-}
-
-/// <summary>
-/// A fake agent that streams multiple messages (different message IDs) in one turn.
-/// </summary>
-public sealed class FakeMultiMessageAgent(params string[][] messageChunks) : FakeAgentBase
-{
-    /// <inheritdoc/>
-    protected override async IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        AgentRunOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        foreach (string[] chunks in messageChunks)
-        {
-            await foreach (AgentResponseUpdate update in StreamChunksAsync(chunks, cancellationToken))
-            {
-                yield return update;
-            }
         }
     }
 }

@@ -110,7 +110,7 @@ public static class ChatMessageExtensions
     /// Converts plain text strings into <see cref="ChatMessage"/> instances
     /// with word-level content streaming.
     /// </summary>
-    public static List<ChatMessage> ToChatMessages(
+    public static IReadOnlyList<ChatMessage> ToChatMessages(
         this IEnumerable<string> messages,
         string? authorName = null) =>
         messages.Select(text => new ChatMessage(ChatRole.Assistant, text.ToContentStream().ToList())
