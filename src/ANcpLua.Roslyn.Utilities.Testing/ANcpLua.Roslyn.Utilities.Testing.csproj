@@ -48,6 +48,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
     </ItemGroup>
 
+    <ItemGroup Label="Agent Testing">
+        <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore"/>
+    </ItemGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
     </ItemGroup>
