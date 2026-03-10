@@ -33,6 +33,11 @@
         <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
     </ItemGroup>
 
+    <ItemGroup Label="Agent Testing">
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore"/>
+    </ItemGroup>
+
     <ItemGroup Label="MSBuild Testing">
         <PackageReference Include="Meziantou.Framework"/>
         <PackageReference Include="Meziantou.Framework.Threading"/>
