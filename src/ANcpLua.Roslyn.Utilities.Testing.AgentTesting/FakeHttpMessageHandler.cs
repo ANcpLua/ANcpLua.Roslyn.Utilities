@@ -1,6 +1,7 @@
+#pragma warning disable MA0004, MA0006, MA0007, MA0016, MA0041, MA0048, MA0076
 using System.Net;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
 ///     Configurable <see cref="HttpMessageHandler"/> that returns canned responses

@@ -1,8 +1,9 @@
+#pragma warning disable MA0004, MA0006, MA0007, MA0016, MA0041, MA0048, MA0076
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Xunit;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.Instrumentation;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
 ///     Captures completed <see cref="Activity"/> instances from named
@@ -40,7 +41,7 @@ public sealed class ActivityCollector : IDisposable
         _listener = new ActivityListener
         {
             ShouldListenTo = ShouldListen,
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity => _activities.Add(activity)
         };
 

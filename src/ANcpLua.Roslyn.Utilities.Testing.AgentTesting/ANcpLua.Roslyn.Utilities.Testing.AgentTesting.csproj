@@ -16,7 +16,12 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
         <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore"/>
         <PackageReference Include="xunit.v3.extensibility.core"/>
+        <PackageReference Include="xunit.v3.assert"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Text"/>
     </ItemGroup>
 
     <ItemGroup Label="Analyzers">
