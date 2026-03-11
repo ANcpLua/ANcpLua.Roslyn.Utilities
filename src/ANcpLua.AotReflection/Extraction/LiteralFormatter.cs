@@ -1,6 +1,3 @@
-using System.Globalization;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace ANcpLua.Analyzers.AotReflection.Extraction;
 
 internal static class LiteralFormatter

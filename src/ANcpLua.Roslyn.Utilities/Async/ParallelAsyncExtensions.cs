@@ -36,7 +36,7 @@ internal
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        source = Guard.NotNull(source);
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
         return Core(source, degreeOfParallelism, selector, cancellationToken);
@@ -164,7 +164,7 @@ internal
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        source = Guard.NotNull(source);
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
         return CoreOrdered(source, degreeOfParallelism, selector, cancellationToken);
