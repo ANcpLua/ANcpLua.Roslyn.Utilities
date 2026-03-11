@@ -532,7 +532,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
 
         if (value.Length != length)
             throw new ArgumentException($"String must be exactly {length} characters. Actual: {value.Length}.",
@@ -569,7 +569,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
 
         if (value.Length < minLength)
             throw new ArgumentException($"String must be at least {minLength} characters. Actual: {value.Length}.",
@@ -603,7 +603,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
 
         if (value.Length > maxLength)
             throw new ArgumentException($"String must not exceed {maxLength} characters. Actual: {value.Length}.",
@@ -639,7 +639,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
 
         if (value.Length < minLength || value.Length > maxLength)
             throw new ArgumentException(
@@ -674,7 +674,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
         CheckNoDuplicates(value, null, paramName);
     }
 
@@ -702,7 +702,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
         CheckNoDuplicates(value, comparer, paramName);
     }
 
@@ -722,7 +722,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
         CheckNoDuplicates(value, null, paramName);
         return value;
     }
@@ -745,7 +745,7 @@ internal
         [CallerArgumentExpression(nameof(value))]
         string? paramName = null)
     {
-        NotNull(value, paramName);
+        if (value is null) throw new ArgumentNullException(paramName ?? nameof(value));
         CheckNoDuplicates(value, comparer, paramName);
         return value;
     }

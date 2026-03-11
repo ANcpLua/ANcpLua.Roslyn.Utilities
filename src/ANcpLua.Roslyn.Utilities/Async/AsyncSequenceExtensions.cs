@@ -22,7 +22,7 @@ internal
         this IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         var list = new List<T>();
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             list.Add(item);
@@ -36,7 +36,7 @@ internal
         this IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         var list = new List<T>();
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             list.Add(item);
@@ -51,7 +51,7 @@ internal
         Action<T> onNext,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         Guard.NotNull(onNext);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -69,7 +69,7 @@ internal
         Func<T, CancellationToken, ValueTask> onNext,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         Guard.NotNull(onNext);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -87,7 +87,7 @@ internal
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where T : class
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -104,7 +104,7 @@ internal
         int size,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
 
         var buffer = new List<T>(size);
@@ -131,7 +131,7 @@ internal
         this IAsyncEnumerable<IEnumerable<T>> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
 
         await foreach (var batch in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -151,7 +151,7 @@ internal
         Func<TSource, CancellationToken, IAsyncEnumerable<TResult>> selector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         Guard.NotNull(selector);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))

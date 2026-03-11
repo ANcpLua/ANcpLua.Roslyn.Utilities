@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Channels;
@@ -36,7 +37,7 @@ internal
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        source = Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
         return Core(source, degreeOfParallelism, selector, cancellationToken);
@@ -164,7 +165,7 @@ internal
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        source = Guard.NotNull(source);
+        if (source is null) throw new ArgumentNullException(nameof(source));
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
         return CoreOrdered(source, degreeOfParallelism, selector, cancellationToken);

@@ -131,7 +131,7 @@ internal
     /// <param name="items">The items to enqueue.</param>
     public void AddWork(IEnumerable<T> items)
     {
-        Guard.NotNull(items);
+        if (items is null) throw new ArgumentNullException(nameof(items));
 
         lock (_gate)
         {
