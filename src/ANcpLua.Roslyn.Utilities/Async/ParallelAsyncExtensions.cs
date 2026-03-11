@@ -1,3 +1,4 @@
+#if !NETSTANDARD
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -287,3 +288,4 @@ internal
         }
     }
 }
+#endif
