@@ -1,32 +1,12 @@
 <Project>
-  <!--
-    ═══════════════════════════════════════════════════════════════════════════
-    CENTRALIZED PACKAGE VERSIONS - Single Source of Truth
-    ═══════════════════════════════════════════════════════════════════════════
-
-    This file is the source of truth for all package versions.
-    Edit this file directly when bumping versions.
-
-    This file defines ALL shared package versions used across:
-    - ANcpLua.NET.Sdk (this SDK)
-    - ANcpLua.Roslyn.Utilities (via symlink)
-    - ANcpLua.Analyzers (via symlink)
-
-    USAGE IN CONSUMING PROJECTS' Directory.Packages.props:
-      <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)"/>
-  -->
   <PropertyGroup Label="SDK Version (Auto-generated)">
     <ANcpSdkPackageVersion>999.9.9</ANcpSdkPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label=".NET SDK">
-    <DotNetSdkVersion>10.0.103</DotNetSdkVersion>
+    <DotNetSdkVersion>10.0.200</DotNetSdkVersion>
     <DotNetSdkRollForward>latestMinor</DotNetSdkRollForward>
   </PropertyGroup>
 
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       ROSLYN / CODE ANALYSIS
-       Used by: SDK, Roslyn.Utilities, Analyzers
-       ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Roslyn">
     <RoslynVersion>5.0.0</RoslynVersion>
     <RoslynAnalyzersVersion>3.11.0</RoslynAnalyzersVersion>
@@ -150,7 +130,7 @@
   <PropertyGroup Label="Build Tools">
     <NuGetVersion>7.3.0</NuGetVersion>
     <MSBuildStructuredLoggerVersion>2.3.113</MSBuildStructuredLoggerVersion>
-    <MicrosoftSourceLinkVersion>10.0.103</MicrosoftSourceLinkVersion>
+    <MicrosoftSourceLinkVersion>10.0.200</MicrosoftSourceLinkVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>1.0.1</MicrosoftDeploymentDotNetReleasesVersion>
   </PropertyGroup>
 
