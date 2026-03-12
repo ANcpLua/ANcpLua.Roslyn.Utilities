@@ -150,7 +150,7 @@
        Used by: Roslyn.Utilities.Testing (Agent test infrastructure)
        ═══════════════════════════════════════════════════════════════════════ -->
   <PropertyGroup Label="Microsoft.Agents">
-    <MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>1.0.0-preview.260304.1</MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>
+    <MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>1.0.0-preview.260311.1</MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>
   </PropertyGroup>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
