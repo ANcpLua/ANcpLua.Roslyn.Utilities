@@ -28,12 +28,10 @@ internal static class ClassMetadataGenerator
 
     private static string GetBaseTypeExpression(string? baseTypeFullyQualified)
     {
-        if (string.IsNullOrWhiteSpace(baseTypeFullyQualified))
-        {
-            return "null";
-        }
+        if (string.IsNullOrWhiteSpace(baseTypeFullyQualified)) return "null";
 
-        var baseType = baseTypeFullyQualified!; // non-null after IsNullOrWhiteSpace guard (netstandard2.0 lacks annotation)
+        var baseType =
+            baseTypeFullyQualified!; // non-null after IsNullOrWhiteSpace guard (netstandard2.0 lacks annotation)
         var (namespaceName, typeName) = GenerationHelpers.GetNamespaceAndName(baseType);
         return
             $"new global::ANcpLua.Analyzers.AotReflection.ClassMetadata {{ Type = {GenerationHelpers.GetTypeOf(baseType)}, Name = {GenerationHelpers.StringLiteral(typeName)}, Namespace = {GenerationHelpers.StringLiteral(namespaceName)} }}";

@@ -68,10 +68,8 @@ internal
     public static bool IsAscii(ReadOnlySpan<byte> span)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (span[i] > 127)
                 return false;
-        }
 
         return true;
     }

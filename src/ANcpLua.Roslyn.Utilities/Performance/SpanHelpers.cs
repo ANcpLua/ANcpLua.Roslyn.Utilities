@@ -20,10 +20,8 @@ internal
     {
         var count = 0;
         for (var i = 0; i < span.Length; i++)
-        {
             if (span[i] == value)
                 count++;
-        }
 
         return count;
     }
@@ -36,10 +34,8 @@ internal
     {
         var count = 0;
         for (var i = 0; i < span.Length; i++)
-        {
             if (span[i] == value)
                 count++;
-        }
 
         return count;
     }
@@ -50,10 +46,8 @@ internal
     public static bool ContainsAny(ReadOnlySpan<char> span, ReadOnlySpan<char> values)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (values.IndexOf(span[i]) >= 0)
                 return true;
-        }
 
         return false;
     }
@@ -65,10 +59,8 @@ internal
     public static int IndexOfAny(ReadOnlySpan<char> span, ReadOnlySpan<char> values)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (values.IndexOf(span[i]) >= 0)
                 return i;
-        }
 
         return -1;
     }
@@ -80,10 +72,8 @@ internal
     public static bool IsWhiteSpace(ReadOnlySpan<char> span)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (!char.IsWhiteSpace(span[i]))
                 return false;
-        }
 
         return true;
     }

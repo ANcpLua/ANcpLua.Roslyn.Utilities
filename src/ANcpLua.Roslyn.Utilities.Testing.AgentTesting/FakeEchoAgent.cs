@@ -7,33 +7,30 @@ using Microsoft.Extensions.AI;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-/// A fake agent that echoes back user messages as assistant responses.
-/// Filters for <see cref="ChatRole.User"/> messages and returns their text
-/// with an optional prefix. Useful for testing round-trip message flow.
+///     A fake agent that echoes back user messages as assistant responses.
+///     Filters for <see cref="ChatRole.User" /> messages and returns their text
+///     with an optional prefix. Useful for testing round-trip message flow.
 /// </summary>
 public sealed class FakeEchoAgent(string? id = null, string? name = null, string? prefix = null) : FakeAgentBase
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override string? IdCore => id ?? base.IdCore;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override string? Name => name;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override async IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
         IEnumerable<ChatMessage> messages,
         AgentRunOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        foreach (ChatMessage message in messages)
+        foreach (var message in messages)
         {
-            if (message.Role != ChatRole.User || string.IsNullOrEmpty(message.Text))
-            {
-                continue;
-            }
+            if (message.Role != ChatRole.User || string.IsNullOrEmpty(message.Text)) continue;
 
-            string echoText = prefix is not null ? $"{prefix}{message.Text}" : message.Text;
-            string messageId = Guid.NewGuid().ToString("N");
+            var echoText = prefix is not null ? $"{prefix}{message.Text}" : message.Text;
+            var messageId = Guid.NewGuid().ToString("N");
 
             yield return new AgentResponseUpdate
             {

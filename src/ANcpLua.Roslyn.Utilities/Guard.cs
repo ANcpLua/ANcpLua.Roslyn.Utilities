@@ -1017,7 +1017,8 @@ internal
         [CallerLineNumber] int lineNumber = 0)
     {
         if (condition)
-            ThrowInvalidOperation($"{BuildUnreachableMessage(message, memberName, filePath, lineNumber)}. Condition: {conditionExpression}");
+            ThrowInvalidOperation(
+                $"{BuildUnreachableMessage(message, memberName, filePath, lineNumber)}. Condition: {conditionExpression}");
     }
 
     #endregion
@@ -1844,32 +1845,44 @@ internal
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgumentNull(string? paramName)
-        => throw new ArgumentNullException(paramName);
+    {
+        throw new ArgumentNullException(paramName);
+    }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static T ThrowArgumentNull<T>(string? paramName)
-        => throw new ArgumentNullException(paramName);
+    {
+        throw new ArgumentNullException(paramName);
+    }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowArgument(string message, string? paramName)
-        => throw new ArgumentException(message, paramName);
+    {
+        throw new ArgumentException(message, paramName);
+    }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowIndexOutOfRange(int index, int count, string? paramName)
-        => throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
+    {
+        throw new ArgumentOutOfRangeException(paramName, index, $"Index must be between 0 and {count - 1}.");
+    }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowOutOfRange(string? paramName, object? value, string message)
-        => throw new ArgumentOutOfRangeException(paramName, value, message);
+    {
+        throw new ArgumentOutOfRangeException(paramName, value, message);
+    }
 
     [DoesNotReturn]
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowInvalidOperation(string message)
-        => throw new InvalidOperationException(message);
+    {
+        throw new InvalidOperationException(message);
+    }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static string BuildUnreachableMessage(string? message, string memberName, string filePath, int lineNumber)

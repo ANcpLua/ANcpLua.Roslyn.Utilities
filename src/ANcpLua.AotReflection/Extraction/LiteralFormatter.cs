@@ -7,17 +7,18 @@ internal static class LiteralFormatter
         if (value is null) return "null";
 
         return type is INamedTypeSymbol
-            {
-                TypeKind: TypeKind.Enum,
-                EnumUnderlyingType: { } underlyingType
-            }
+        {
+            TypeKind: TypeKind.Enum,
+            EnumUnderlyingType: { } underlyingType
+        }
             ? FormatEnumConstant(value, type, underlyingType)
             : FormatLiteral(value);
     }
 
     public static string? GetDefaultValueLiteral(IParameterSymbol parameter, CancellationToken cancellationToken)
     {
-        var syntax = parameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as ParameterSyntax;
+        var syntax =
+            parameter.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) as ParameterSyntax;
         var fromSyntax = syntax?.Default?.Value.ToString().Trim();
         return !string.IsNullOrWhiteSpace(fromSyntax)
             ? fromSyntax
@@ -27,10 +28,7 @@ internal static class LiteralFormatter
     private static string? FormatEnumConstant(object value, ITypeSymbol enumType, ITypeSymbol underlyingType)
     {
         var convertedValue = ConvertToUnderlyingType(value, underlyingType);
-        if (convertedValue is null)
-        {
-            return null;
-        }
+        if (convertedValue is null) return null;
 
         var literal = FormatLiteral(convertedValue);
         return literal is null ? null : $"({enumType.GetFullyQualifiedName()}){literal}";
@@ -38,7 +36,7 @@ internal static class LiteralFormatter
 
     private static string? FormatLiteral(object value)
     {
-        return SymbolDisplay.FormatPrimitive(value, quoteStrings: true, useHexadecimalNumbers: false);
+        return SymbolDisplay.FormatPrimitive(value, true, false);
     }
 
     private static object? ConvertToUnderlyingType(object value, ITypeSymbol underlyingType)

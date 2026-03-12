@@ -47,11 +47,31 @@ internal
             return 32;
 
         var n = 0;
-        if (value <= 0x0000_FFFFu) { n += 16; value <<= 16; }
-        if (value <= 0x00FF_FFFFu) { n += 8; value <<= 8; }
-        if (value <= 0x0FFF_FFFFu) { n += 4; value <<= 4; }
-        if (value <= 0x3FFF_FFFFu) { n += 2; value <<= 2; }
-        if (value <= 0x7FFF_FFFFu) { n += 1; }
+        if (value <= 0x0000_FFFFu)
+        {
+            n += 16;
+            value <<= 16;
+        }
+
+        if (value <= 0x00FF_FFFFu)
+        {
+            n += 8;
+            value <<= 8;
+        }
+
+        if (value <= 0x0FFF_FFFFu)
+        {
+            n += 4;
+            value <<= 4;
+        }
+
+        if (value <= 0x3FFF_FFFFu)
+        {
+            n += 2;
+            value <<= 2;
+        }
+
+        if (value <= 0x7FFF_FFFFu) n += 1;
         return n;
     }
 

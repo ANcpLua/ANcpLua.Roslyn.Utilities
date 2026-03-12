@@ -6,16 +6,16 @@ using Xunit;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-///     Captures completed <see cref="Activity"/> instances from named
-///     <see cref="ActivitySource"/>s for test assertions.
+///     Captures completed <see cref="Activity" /> instances from named
+///     <see cref="ActivitySource" />s for test assertions.
 /// </summary>
 /// <remarks>
 ///     <para>Usage:</para>
 ///     <code>
 ///     using var collector = new ActivityCollector("Qyl.Agents");
-///
+/// 
 ///     // ... exercise code that creates activities ...
-///
+/// 
 ///     var span = collector.FindSingle("chat gpt-4");
 ///     span.AssertTag("gen_ai.provider.name", "openai");
 ///     span.AssertStatus(ActivityStatusCode.Ok);
@@ -23,8 +23,8 @@ namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 /// </remarks>
 public sealed class ActivityCollector : IDisposable
 {
-    private readonly ActivityListener _listener;
     private readonly ConcurrentBag<Activity> _activities = [];
+    private readonly ActivityListener _listener;
     private readonly HashSet<string>? _sourceFilter;
 
     /// <summary>
@@ -51,8 +51,14 @@ public sealed class ActivityCollector : IDisposable
     /// <summary>All captured activities.</summary>
     public IReadOnlyList<Activity> Activities => [.. _activities];
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _listener.Dispose();
+    }
+
     /// <summary>Returns the single activity matching the operation name prefix.</summary>
-    /// <param name="operationNamePrefix">Prefix to match against <see cref="Activity.OperationName"/>.</param>
+    /// <param name="operationNamePrefix">Prefix to match against <see cref="Activity.OperationName" />.</param>
     public Activity FindSingle(string operationNamePrefix)
     {
         var matches = _activities
@@ -83,7 +89,7 @@ public sealed class ActivityCollector : IDisposable
         return this;
     }
 
-    /// <summary>Asserts that at least <paramref name="expected"/> activities were captured.</summary>
+    /// <summary>Asserts that at least <paramref name="expected" /> activities were captured.</summary>
     public ActivityCollector ShouldHaveCount(int expected)
     {
         Assert.True(_activities.Count >= expected,
@@ -91,15 +97,14 @@ public sealed class ActivityCollector : IDisposable
         return this;
     }
 
-    /// <inheritdoc />
-    public void Dispose() => _listener.Dispose();
-
-    private bool ShouldListen(ActivitySource source) =>
-        _sourceFilter is null || _sourceFilter.Contains(source.Name);
+    private bool ShouldListen(ActivitySource source)
+    {
+        return _sourceFilter is null || _sourceFilter.Contains(source.Name);
+    }
 }
 
 /// <summary>
-///     Fluent assertion extensions for <see cref="Activity"/>.
+///     Fluent assertion extensions for <see cref="Activity" />.
 /// </summary>
 public static class ActivityAssert
 {

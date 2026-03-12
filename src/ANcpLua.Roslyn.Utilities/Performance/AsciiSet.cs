@@ -43,8 +43,8 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(char c)
     {
-        if (c < 64) return (_lo >> c & 1) != 0;
-        if (c < 128) return (_hi >> (c - 64) & 1) != 0;
+        if (c < 64) return ((_lo >> c) & 1) != 0;
+        if (c < 128) return ((_hi >> (c - 64)) & 1) != 0;
         return false;
     }
 
@@ -54,8 +54,8 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Contains(byte b)
     {
-        if (b < 64) return (_lo >> b & 1) != 0;
-        return (_hi >> (b - 64) & 1) != 0;
+        if (b < 64) return ((_lo >> b) & 1) != 0;
+        return ((_hi >> (b - 64)) & 1) != 0;
     }
 
     /// <summary>
@@ -65,10 +65,8 @@ internal
     public int IndexOfAny(ReadOnlySpan<char> span)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (Contains(span[i]))
                 return i;
-        }
 
         return -1;
     }
@@ -80,10 +78,8 @@ internal
     public int IndexOfAny(ReadOnlySpan<byte> span)
     {
         for (var i = 0; i < span.Length; i++)
-        {
             if (Contains(span[i]))
                 return i;
-        }
 
         return -1;
     }

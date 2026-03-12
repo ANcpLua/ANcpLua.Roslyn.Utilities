@@ -256,6 +256,52 @@ internal
     }
 
     /// <summary>
+    ///     Converts a PascalCase or camelCase string to kebab-case.
+    /// </summary>
+    /// <param name="input">The input string to convert.</param>
+    /// <returns>
+    ///     The input string converted to kebab-case using invariant culture rules.
+    ///     Returns the input unchanged if it is <c>null</c> or empty.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         Consecutive uppercase letters are treated as a single acronym.
+    ///         A dash is inserted at the boundary between an acronym and the next word.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item><description><c>"GetValue"</c> becomes <c>"get-value"</c></description></item>
+    ///         <item><description><c>"XMLParser"</c> becomes <c>"xml-parser"</c></description></item>
+    ///         <item><description><c>"GetHTTPClient"</c> becomes <c>"get-http-client"</c></description></item>
+    ///         <item><description><c>"SimpleTest"</c> becomes <c>"simple-test"</c></description></item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="ToParameterName" />
+    /// <seealso cref="ToPropertyName" />
+    public static string ToKebabCase(this string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        var sb = new StringBuilder(input.Length + 4);
+        for (var i = 0; i < input.Length; i++)
+        {
+            var c = input[i];
+            if (char.IsUpper(c) && i > 0)
+            {
+                var prevIsLower = char.IsLower(input[i - 1]);
+                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
+
+                // Dash before: standard word boundary (aB) or end of acronym (ABc)
+                if (prevIsLower || nextIsLower)
+                    sb.Append('-');
+            }
+
+            sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
     ///     Removes lines that contain only whitespace characters while preserving empty lines.
     /// </summary>
     /// <param name="text">The text to process.</param>

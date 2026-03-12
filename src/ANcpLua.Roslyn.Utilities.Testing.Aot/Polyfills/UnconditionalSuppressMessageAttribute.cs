@@ -6,16 +6,16 @@
 namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>
-/// Suppresses reporting of a specific rule violation, allowing multiple suppressions on a single code artifact.
+///     Suppresses reporting of a specific rule violation, allowing multiple suppressions on a single code artifact.
 /// </summary>
 /// <remarks>
-/// This attribute is polyfilled for netstandard2.0 compatibility.
+///     This attribute is polyfilled for netstandard2.0 compatibility.
 /// </remarks>
 [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
 internal sealed class UnconditionalSuppressMessageAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UnconditionalSuppressMessageAttribute"/> class.
+    ///     Initializes a new instance of the <see cref="UnconditionalSuppressMessageAttribute" /> class.
     /// </summary>
     /// <param name="category">The category for the attribute.</param>
     /// <param name="checkId">The identifier of the analysis rule the attribute applies to.</param>

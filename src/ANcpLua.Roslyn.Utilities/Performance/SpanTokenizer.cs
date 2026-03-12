@@ -54,5 +54,8 @@ internal
 
     /// <summary>Returns this instance as the enumerator (duck-typed <c>foreach</c> support).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SpanTokenizer GetEnumerator() => this;
+    public SpanTokenizer GetEnumerator()
+    {
+        return this;
+    }
 }

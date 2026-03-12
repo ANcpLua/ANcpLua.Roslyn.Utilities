@@ -19,7 +19,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<byte> AsBytes<T>(Span<T> span)
         where T : struct
-        => MemoryMarshal.AsBytes(span);
+    {
+        return MemoryMarshal.AsBytes(span);
+    }
 
     /// <summary>
     ///     Reinterprets a <see cref="ReadOnlySpan{T}" /> of value types as a <see cref="ReadOnlySpan{T}" /> of bytes.
@@ -27,7 +29,9 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<byte> AsBytes<T>(ReadOnlySpan<T> span)
         where T : struct
-        => MemoryMarshal.AsBytes(span);
+    {
+        return MemoryMarshal.AsBytes(span);
+    }
 
     /// <summary>
     ///     Casts a <see cref="Span{T}" /> of one value type to another.
@@ -36,7 +40,9 @@ internal
     public static Span<TTo> Cast<TFrom, TTo>(Span<TFrom> span)
         where TFrom : struct
         where TTo : struct
-        => MemoryMarshal.Cast<TFrom, TTo>(span);
+    {
+        return MemoryMarshal.Cast<TFrom, TTo>(span);
+    }
 
     /// <summary>
     ///     Casts a <see cref="ReadOnlySpan{T}" /> of one value type to another.
@@ -45,19 +51,25 @@ internal
     public static ReadOnlySpan<TTo> Cast<TFrom, TTo>(ReadOnlySpan<TFrom> span)
         where TFrom : struct
         where TTo : struct
-        => MemoryMarshal.Cast<TFrom, TTo>(span);
+    {
+        return MemoryMarshal.Cast<TFrom, TTo>(span);
+    }
 
     /// <summary>
     ///     Returns a reference to the first element of the span, or a null reference if empty.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T GetReference<T>(Span<T> span)
-        => ref MemoryMarshal.GetReference(span);
+    {
+        return ref MemoryMarshal.GetReference(span);
+    }
 
     /// <summary>
     ///     Returns a reference to the first element of the span, or a null reference if empty.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T GetReference<T>(ReadOnlySpan<T> span)
-        => ref MemoryMarshal.GetReference(span);
+    {
+        return ref MemoryMarshal.GetReference(span);
+    }
 }

@@ -1,6 +1,7 @@
 # CLAUDE.md - ANcpLua.Roslyn.Utilities
 
-**Source of truth:** `ANcpLua.Roslyn.Utilities` is the foundation package for downstream Roslyn tooling in this ecosystem. Use this file as the first reference before authoring helpers.
+**Source of truth:** `ANcpLua.Roslyn.Utilities` is the foundation package for downstream Roslyn tooling in this
+ecosystem. Use this file as the first reference before authoring helpers.
 
 ## Scope and constraints
 
@@ -57,7 +58,7 @@ When implementing a new helper, check these places first in order:
 When reviewing code, rank issues by:
 
 - **P1:** Behavioral correctness / semantic mismatch.
-- **P2:** Safety risk (nullability, reflection edge-cases, overflow). 
+- **P2:** Safety risk (nullability, reflection edge-cases, overflow).
 - **P3:** Maintainability (duplication, brittle stringly typing).
 - **P4:** Style and performance unless proven impact.
 
@@ -70,4 +71,5 @@ When reviewing code, rank issues by:
 
 ## Practical reminder
 
-If you need an API shape in doubt, follow the implementation in `src/ANcpLua.Roslyn.Utilities` rather than docs snippets. This file may lag implementation details and should be corrected when mismatches appear.
+If you need an API shape in doubt, follow the implementation in `src/ANcpLua.Roslyn.Utilities` rather than docs
+snippets. This file may lag implementation details and should be corrected when mismatches appear.

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-/// A captured log entry produced by <see cref="TestOutputAdapter"/>.
+///     A captured log entry produced by <see cref="TestOutputAdapter" />.
 /// </summary>
 /// <param name="Level">The log level.</param>
 /// <param name="EventId">The event ID.</param>

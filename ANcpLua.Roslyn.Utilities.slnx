@@ -1,20 +1,21 @@
 <Solution>
     <Folder Name="/Solution Items/">
-        <File Path="Directory.Build.props" />
-        <File Path="Directory.Packages.props" />
-        <File Path="global.json" />
-        <File Path="nuget.config" />
-        <File Path="README.md" />
-        <File Path="LICENSE" />
+        <File Path="Directory.Build.props"/>
+        <File Path="Directory.Packages.props"/>
+        <File Path="global.json"/>
+        <File Path="nuget.config"/>
+        <File Path="README.md"/>
+        <File Path="LICENSE"/>
     </Folder>
     <Folder Name="/src/">
-        <Project Path="src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj" />
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj" />
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj" />
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj" />
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj" />
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj" />
-        <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj" />
-        <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj" />
+        <Project Path="src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj"/>
+        <Project
+                Path="src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
+        <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
+        <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
     </Folder>
 </Solution>

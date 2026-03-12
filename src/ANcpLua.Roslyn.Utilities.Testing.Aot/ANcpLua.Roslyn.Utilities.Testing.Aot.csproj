@@ -1,28 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PackageId>ANcpLua.Roslyn.Utilities.Testing.Aot</PackageId>
-    <Title>ANcpLua AOT/Trim Testing Utilities</Title>
-    <Description>Attributes and utilities for testing AOT compilation and IL trimming behavior in .NET applications.</Description>
-    <PackageTags>aot;trimming;native-aot;testing;publishaot;publishtrimmed</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageId>ANcpLua.Roslyn.Utilities.Testing.Aot</PackageId>
+        <Title>ANcpLua AOT/Trim Testing Utilities</Title>
+        <Description>Attributes and utilities for testing AOT compilation and IL trimming behavior in .NET applications.</Description>
+        <PackageTags>aot;trimming;native-aot;testing;publishaot;publishtrimmed</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 
-    <IsTrimmable>true</IsTrimmable>
+        <IsTrimmable>true</IsTrimmable>
 
-    <NoWarn>$(NoWarn);CS1591;NETSDK1212</NoWarn>
-  </PropertyGroup>
+        <NoWarn>$(NoWarn);CS1591;NETSDK1212</NoWarn>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="/" />
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="/"/>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="build\**\*" Pack="true" PackagePath="build\" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="build\**\*" Pack="true" PackagePath="build\"/>
+    </ItemGroup>
 </Project>

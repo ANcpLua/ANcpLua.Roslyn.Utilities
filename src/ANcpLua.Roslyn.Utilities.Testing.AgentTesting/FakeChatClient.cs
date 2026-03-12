@@ -5,7 +5,7 @@ using Microsoft.Extensions.AI;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-///     Configurable <see cref="IChatClient"/> test double that supports scripted responses,
+///     Configurable <see cref="IChatClient" /> test double that supports scripted responses,
 ///     fallback factories, streaming updates, and call recording for assertions.
 /// </summary>
 /// <remarks>
@@ -14,7 +14,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 ///     using var client = new FakeChatClient()
 ///         .WithResponse("Hello!")
 ///         .WithStreamingResponse("Hel", "lo!");
-///
+/// 
 ///     var response = await client.GetResponseAsync([new(ChatRole.User, "Hi")]);
 ///     Assert.Equal("Hello!", response.Text);
 ///     Assert.Single(client.Calls);
@@ -22,19 +22,19 @@ namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 /// </remarks>
 public sealed class FakeChatClient : IChatClient
 {
-    private readonly Queue<object> _responses = new(); // PreparedResponse | ChatResponseUpdate[] | Exception
     private readonly Lock _lock = new();
-    private Func<RequestContext, PreparedResponse>? _fallbackFactory;
+    private readonly Queue<object> _responses = new(); // PreparedResponse | ChatResponseUpdate[] | Exception
     private int _callIndex;
+    private Func<RequestContext, PreparedResponse>? _fallbackFactory;
 
     /// <summary>
-    ///     All calls made to <see cref="GetResponseAsync"/> and <see cref="GetStreamingResponseAsync"/>,
+    ///     All calls made to <see cref="GetResponseAsync" /> and <see cref="GetStreamingResponseAsync" />,
     ///     in order. Each entry records the messages and options passed by the caller.
     /// </summary>
     public List<ChatClientCall> Calls { get; } = [];
 
     /// <summary>
-    ///     The <see cref="ChatOptions"/> from the most recent call.
+    ///     The <see cref="ChatOptions" /> from the most recent call.
     /// </summary>
     public ChatOptions? LastOptions { get; private set; }
 
@@ -46,7 +46,9 @@ public sealed class FakeChatClient : IChatClient
         get
         {
             using (_lock.EnterScope())
+            {
                 return _callIndex;
+            }
         }
     }
 
@@ -61,11 +63,78 @@ public sealed class FakeChatClient : IChatClient
     public string ModelId { get; set; } = "test-model";
 
     /// <summary>
-    ///     Metadata returned by <see cref="GetService"/> when the requested type
-    ///     is <see cref="ChatClientMetadata"/>.
+    ///     Metadata returned by <see cref="GetService" /> when the requested type
+    ///     is <see cref="ChatClientMetadata" />.
     /// </summary>
     public ChatClientMetadata Metadata { get; set; } =
         new("FakeChatClient", new Uri("https://test.example.com"), "test-model");
+
+    /// <inheritdoc />
+    public Task<ChatResponse> GetResponseAsync(
+        IEnumerable<ChatMessage> messages,
+        ChatOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var context = RecordCall(messages, options);
+        var next = DequeueNext(context);
+
+        return next switch
+        {
+            Exception ex => Task.FromException<ChatResponse>(ex),
+            ChatResponseUpdate[] updates => Task.FromResult(CreateResponseFromUpdates(updates)),
+            PreparedResponse prepared => Task.FromResult(CreateResponse(prepared)),
+            _ => Task.FromResult(CreateResponse(CreatePreparedResponse([new TextContent(string.Empty)])))
+        };
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        IEnumerable<ChatMessage> messages,
+        ChatOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var context = RecordCall(messages, options);
+        var next = DequeueNext(context);
+
+        switch (next)
+        {
+            case Exception ex:
+                throw ex;
+
+            case ChatResponseUpdate[] updates:
+                foreach (var update in updates)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return update;
+                }
+
+                yield break;
+
+            case PreparedResponse prepared:
+                await foreach (var update in StreamPreparedResponse(prepared, cancellationToken))
+                    yield return update;
+                yield break;
+
+            default:
+                yield break;
+        }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        if (serviceType == typeof(ChatClientMetadata))
+            return Metadata;
+
+        return serviceType.IsInstanceOfType(this) ? this : null;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
 
     /// <summary>
     ///     Creates a fake that always returns a fixed text response.
@@ -121,7 +190,7 @@ public sealed class FakeChatClient : IChatClient
         var client = new FakeChatClient();
         return client.UseFactory(ctx =>
         {
-            IEnumerable<AIContent> result = factory(ctx);
+            var result = factory(ctx);
             return client.CreatePreparedResponse(result as IReadOnlyList<AIContent> ?? [.. result]);
         });
     }
@@ -129,14 +198,18 @@ public sealed class FakeChatClient : IChatClient
     /// <summary>
     ///     Creates a fake that throws the specified exception on every call.
     /// </summary>
-    public static FakeChatClient WithException(Exception exception) =>
-        new FakeChatClient().UseFactory(_ => throw exception);
+    public static FakeChatClient WithException(Exception exception)
+    {
+        return new FakeChatClient().UseFactory(_ => throw exception);
+    }
 
     /// <summary>
     ///     Creates a fake that throws the specified exception type on every call.
     /// </summary>
-    public static FakeChatClient WithException<TException>() where TException : Exception, new() =>
-        WithException(new TException());
+    public static FakeChatClient WithException<TException>() where TException : Exception, new()
+    {
+        return WithException(new TException());
+    }
 
     /// <summary>
     ///     Enqueues a canned non-streaming response with the given text.
@@ -145,12 +218,14 @@ public sealed class FakeChatClient : IChatClient
         string text,
         ChatFinishReason? finishReason = null,
         UsageDetails? usage = null,
-        string? modelId = null) =>
-        WithResponse(
+        string? modelId = null)
+    {
+        return WithResponse(
             [new TextContent(text)],
             finishReason,
             usage,
             modelId);
+    }
 
     /// <summary>
     ///     Enqueues a canned non-streaming response with the given content items.
@@ -162,7 +237,9 @@ public sealed class FakeChatClient : IChatClient
         string? modelId = null)
     {
         using (_lock.EnterScope())
+        {
             _responses.Enqueue(CreatePreparedResponse(contents, finishReason, usage, modelId));
+        }
 
         return this;
     }
@@ -174,8 +251,10 @@ public sealed class FakeChatClient : IChatClient
         ChatFinishReason? finishReason = null,
         UsageDetails? usage = null,
         string? modelId = null,
-        params AIContent[] contents) =>
-        WithResponse(contents, finishReason, usage, modelId);
+        params AIContent[] contents)
+    {
+        return WithResponse(contents, finishReason, usage, modelId);
+    }
 
     /// <summary>
     ///     Enqueues a canned streaming response that yields one update per chunk.
@@ -195,7 +274,9 @@ public sealed class FakeChatClient : IChatClient
     public FakeChatClient WithStreamingResponse(params ChatResponseUpdate[] updates)
     {
         using (_lock.EnterScope())
+        {
             _responses.Enqueue(updates);
+        }
 
         return this;
     }
@@ -206,7 +287,9 @@ public sealed class FakeChatClient : IChatClient
     public FakeChatClient WithError(Exception exception)
     {
         using (_lock.EnterScope())
+        {
             _responses.Enqueue(exception);
+        }
 
         return this;
     }
@@ -214,87 +297,24 @@ public sealed class FakeChatClient : IChatClient
     /// <summary>
     ///     Enqueues a typed exception to be thrown on the next call.
     /// </summary>
-    public FakeChatClient WithError<TException>() where TException : Exception, new() =>
-        WithError(new TException());
-
-    /// <inheritdoc />
-    public Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
+    public FakeChatClient WithError<TException>() where TException : Exception, new()
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        RequestContext context = RecordCall(messages, options);
-        object? next = DequeueNext(context);
-
-        return next switch
-        {
-            Exception ex => Task.FromException<ChatResponse>(ex),
-            ChatResponseUpdate[] updates => Task.FromResult(CreateResponseFromUpdates(updates)),
-            PreparedResponse prepared => Task.FromResult(CreateResponse(prepared)),
-            _ => Task.FromResult(CreateResponse(CreatePreparedResponse([new TextContent(string.Empty)])))
-        };
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        RequestContext context = RecordCall(messages, options);
-        object? next = DequeueNext(context);
-
-        switch (next)
-        {
-            case Exception ex:
-                throw ex;
-
-            case ChatResponseUpdate[] updates:
-                foreach (ChatResponseUpdate update in updates)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    yield return update;
-                }
-
-                yield break;
-
-            case PreparedResponse prepared:
-                await foreach (ChatResponseUpdate update in StreamPreparedResponse(prepared, cancellationToken))
-                    yield return update;
-                yield break;
-
-            default:
-                yield break;
-        }
-    }
-
-    /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        if (serviceType == typeof(ChatClientMetadata))
-            return Metadata;
-
-        return serviceType.IsInstanceOfType(this) ? this : null;
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
+        return WithError(new TException());
     }
 
     private FakeChatClient UseFactory(Func<RequestContext, PreparedResponse> factory)
     {
         using (_lock.EnterScope())
+        {
             _fallbackFactory = factory;
+        }
 
         return this;
     }
 
     private RequestContext RecordCall(IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
-        IReadOnlyList<ChatMessage> snapshot = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
+        var snapshot = messages as IReadOnlyList<ChatMessage> ?? [.. messages];
 
         using (_lock.EnterScope())
         {
@@ -320,27 +340,31 @@ public sealed class FakeChatClient : IChatClient
         IReadOnlyList<AIContent> contents,
         ChatFinishReason? finishReason = null,
         UsageDetails? usage = null,
-        string? modelId = null) =>
-        new(contents, finishReason ?? FinishReason, usage, modelId ?? ModelId);
+        string? modelId = null)
+    {
+        return new PreparedResponse(contents, finishReason ?? FinishReason, usage, modelId ?? ModelId);
+    }
 
-    private static ChatResponse CreateResponse(PreparedResponse prepared) =>
-        new(new ChatMessage(ChatRole.Assistant, [.. prepared.Contents]))
+    private static ChatResponse CreateResponse(PreparedResponse prepared)
+    {
+        return new ChatResponse(new ChatMessage(ChatRole.Assistant, [.. prepared.Contents]))
         {
             FinishReason = prepared.FinishReason,
             Usage = prepared.Usage,
             ModelId = prepared.ModelId
         };
+    }
 
     private static ChatResponse CreateResponseFromUpdates(ChatResponseUpdate[] updates)
     {
         List<AIContent> contents = [];
         UsageDetails? usage = null;
 
-        foreach (ChatResponseUpdate update in updates)
+        foreach (var update in updates)
         {
             if (update.Contents is { Count: > 0 })
             {
-                foreach (AIContent content in update.Contents)
+                foreach (var content in update.Contents)
                 {
                     if (content is UsageContent usageContent)
                     {
@@ -369,23 +393,21 @@ public sealed class FakeChatClient : IChatClient
         PreparedResponse prepared,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        List<AIContent> expanded = ExpandTextForStreaming(prepared.Contents);
+        var expanded = ExpandTextForStreaming(prepared.Contents);
 
         if (expanded.Count == 0)
         {
             if (prepared.Usage is not null)
-            {
                 yield return new ChatResponseUpdate
                 {
                     Contents = [new UsageContent(prepared.Usage)],
                     Role = ChatRole.Assistant
                 };
-            }
 
             yield break;
         }
 
-        for (int i = 0; i < expanded.Count; i++)
+        for (var i = 0; i < expanded.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -408,14 +430,14 @@ public sealed class FakeChatClient : IChatClient
     {
         List<AIContent> expanded = [];
 
-        foreach (AIContent content in contents)
+        foreach (var content in contents)
         {
             if (content is TextContent { Text: { Length: > 0 } text })
             {
-                string[] words = text.Split(' ');
-                for (int i = 0; i < words.Length; i++)
+                var words = text.Split(' ');
+                for (var i = 0; i < words.Length; i++)
                 {
-                    string word = i < words.Length - 1 ? words[i] + " " : words[i];
+                    var word = i < words.Length - 1 ? words[i] + " " : words[i];
                     expanded.Add(new TextContent(word));
                 }
 
@@ -435,7 +457,7 @@ public sealed class FakeChatClient : IChatClient
         string? ModelId);
 
     /// <summary>
-    ///     Context provided to <see cref="WithFactory"/> delegates containing
+    ///     Context provided to <see cref="WithFactory" /> delegates containing
     ///     the current request state.
     /// </summary>
     /// <param name="Messages">The messages sent to the client.</param>
@@ -448,7 +470,7 @@ public sealed class FakeChatClient : IChatClient
 }
 
 /// <summary>
-///     Records a single call to <see cref="FakeChatClient"/>.
+///     Records a single call to <see cref="FakeChatClient" />.
 /// </summary>
 /// <param name="Messages">The chat messages passed to the call.</param>
 /// <param name="Options">The chat options passed to the call, if any.</param>

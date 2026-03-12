@@ -7,72 +7,54 @@ using Microsoft.Extensions.AI;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-/// A fake agent that replays a pre-recorded sequence of <see cref="ChatMessage"/> instances.
-/// Each message is streamed content-by-content, preserving message IDs and structure.
-/// Useful for deterministic multi-turn testing and streaming composition validation.
+///     A fake agent that replays a pre-recorded sequence of <see cref="ChatMessage" /> instances.
+///     Each message is streamed content-by-content, preserving message IDs and structure.
+///     Useful for deterministic multi-turn testing and streaming composition validation.
 /// </summary>
-public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null, string? id = null, string? name = null) : FakeAgentBase
+public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null, string? id = null, string? name = null)
+    : FakeAgentBase
 {
     /// <summary>
-    /// The pre-recorded messages to replay. Empty if none provided.
+    ///     The pre-recorded messages to replay. Empty if none provided.
     /// </summary>
     public IReadOnlyList<ChatMessage> Messages { get; } = ValidateNoDuplicateIds(messages) ?? [];
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override string? IdCore => id ?? base.IdCore;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override string? Name => name;
 
     /// <summary>
-    /// Creates a <see cref="FakeReplayAgent"/> from plain text strings.
-    /// Each string is split into word-level <see cref="TextContent"/> items to simulate streaming.
+    ///     Creates a <see cref="FakeReplayAgent" /> from plain text strings.
+    ///     Each string is split into word-level <see cref="TextContent" /> items to simulate streaming.
     /// </summary>
-    public static FakeReplayAgent FromStrings(params string[] texts) =>
-        new(ToChatMessages(texts));
+    public static FakeReplayAgent FromStrings(params string[] texts)
+    {
+        return new FakeReplayAgent(ToChatMessages(texts));
+    }
 
     /// <summary>
-    /// Converts plain text strings into <see cref="ChatMessage"/> instances
-    /// with word-level content splitting for realistic streaming simulation.
+    ///     Converts plain text strings into <see cref="ChatMessage" /> instances
+    ///     with word-level content splitting for realistic streaming simulation.
+    ///     Delegates to <see cref="ChatMessageExtensions.ToChatMessages" />.
     /// </summary>
-    public static IReadOnlyList<ChatMessage> ToChatMessages(params string[] texts) =>
-        texts.Select(static text =>
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                return new ChatMessage(ChatRole.Assistant, "") { MessageId = "" };
-            }
+    public static IReadOnlyList<ChatMessage> ToChatMessages(params string[] texts)
+    {
+        return texts.ToChatMessages();
+    }
 
-            string[] splits = text.Split(' ');
-            for (int i = 0; i < splits.Length - 1; i++)
-            {
-                splits[i] += ' ';
-            }
-
-            List<AIContent> contents = splits
-                .Select<string, AIContent>(static s => new TextContent(s) { RawRepresentation = s })
-                .ToList();
-
-            return new ChatMessage(ChatRole.Assistant, contents)
-            {
-                MessageId = Guid.NewGuid().ToString("N"),
-                RawRepresentation = text,
-                CreatedAt = TimeProvider.System.GetUtcNow(),
-            };
-        }).ToList();
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override async IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
         IEnumerable<ChatMessage> messages,
         AgentRunOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        string responseId = Guid.NewGuid().ToString("N");
+        var responseId = Guid.NewGuid().ToString("N");
 
-        foreach (ChatMessage message in Messages)
+        foreach (var message in Messages)
         {
-            foreach (AIContent content in message.Contents)
-            {
+            foreach (var content in message.Contents)
                 yield return new AgentResponseUpdate
                 {
                     AgentId = Id,
@@ -82,7 +64,6 @@ public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null,
                     Role = message.Role,
                     Contents = [content],
                 };
-            }
 
             await Task.Yield();
         }
@@ -90,18 +71,14 @@ public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null,
 
     private static IReadOnlyList<ChatMessage>? ValidateNoDuplicateIds(IReadOnlyList<ChatMessage>? candidateMessages)
     {
-        if (candidateMessages is null)
-        {
-            return null;
-        }
+        if (candidateMessages is null) return null;
 
         string? previousId = null;
-        foreach (ChatMessage message in candidateMessages)
+        foreach (var message in candidateMessages)
         {
             if (previousId is not null && string.Equals(previousId, message.MessageId, StringComparison.Ordinal))
-            {
-                throw new ArgumentException("Duplicate consecutive message IDs are not allowed.", nameof(candidateMessages));
-            }
+                throw new ArgumentException("Duplicate consecutive message IDs are not allowed.",
+                    nameof(candidateMessages));
 
             previousId = message.MessageId;
         }

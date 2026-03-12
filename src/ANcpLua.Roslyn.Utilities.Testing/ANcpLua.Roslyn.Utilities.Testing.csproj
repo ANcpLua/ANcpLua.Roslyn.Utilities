@@ -33,7 +33,7 @@
         <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
     </ItemGroup>
 
-<ItemGroup Label="MSBuild Testing">
+    <ItemGroup Label="MSBuild Testing">
         <PackageReference Include="Meziantou.Framework"/>
         <PackageReference Include="Meziantou.Framework.Threading"/>
         <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing"/>

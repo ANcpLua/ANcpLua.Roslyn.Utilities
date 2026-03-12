@@ -7,22 +7,18 @@ using Microsoft.Extensions.AI;
 namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
 
 /// <summary>
-/// A fake agent that streams multiple messages (different message IDs) in one turn.
+///     A fake agent that streams multiple messages (different message IDs) in one turn.
 /// </summary>
 public sealed class FakeMultiMessageAgent(params string[][] messageChunks) : FakeAgentBase
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override async IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
         IEnumerable<ChatMessage> messages,
         AgentRunOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        foreach (string[] chunks in messageChunks)
-        {
-            await foreach (AgentResponseUpdate update in StreamChunksAsync(chunks, cancellationToken).ConfigureAwait(false))
-            {
-                yield return update;
-            }
-        }
+        foreach (var chunks in messageChunks)
+        await foreach (var update in StreamChunksAsync(chunks, cancellationToken).ConfigureAwait(false))
+            yield return update;
     }
 }
