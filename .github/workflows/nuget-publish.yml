@@ -111,8 +111,6 @@ jobs:
           name: packages
           path: artifacts/
       - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
       - name: Push to NuGet
         run: |
           for pkg in artifacts/*.nupkg; do
