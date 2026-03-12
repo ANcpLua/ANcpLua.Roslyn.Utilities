@@ -110,7 +110,7 @@
     <MicrosoftExtensionsVersion>10.4.0</MicrosoftExtensionsVersion>
     <AspNetCoreVersion>10.0.4</AspNetCoreVersion>
     <MicrosoftBclAsyncInterfacesVersion>10.0.4</MicrosoftBclAsyncInterfacesVersion>
-    <BclAsyncInterfacesVersion>6.0.0</BclAsyncInterfacesVersion>
+    <BclAsyncInterfacesVersion>10.0.5</BclAsyncInterfacesVersion>
     <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
     <SystemThreadingChannelsVersion>6.0.0</SystemThreadingChannelsVersion>
   </PropertyGroup>
