@@ -67,7 +67,7 @@ jobs:
           dotnet pack src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
           dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
           dotnet pack src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }}-preview.1 --no-build
         env:
           CI: true
       - uses: actions/upload-artifact@v7
