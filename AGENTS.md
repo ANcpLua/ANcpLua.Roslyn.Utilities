@@ -25,6 +25,7 @@ This is the source of truth for `ANcpLua.Roslyn.Utilities` and downstream utilit
 
 - C# 14 language features are available.
 - .NET 10 SDK baseline is available.
+- Core package target remains `netstandard2.0`.
 
 ## Editing guardrails
 
@@ -44,6 +45,22 @@ This is the source of truth for `ANcpLua.Roslyn.Utilities` and downstream utilit
 - Source-only packages: `src/ANcpLua.Roslyn.Utilities.Sources`, `src/ANcpLua.Roslyn.Utilities.Polyfills`
 - Testing framework: `src/ANcpLua.Roslyn.Utilities.Testing`
 - AOT reflection package: `src/ANcpLua.AotReflection`
+- Attribute contracts package: `src/ANcpLua.AotReflection.Attributes`
+
+## Check Before Writing
+
+When implementing a new helper, check these places first in order:
+
+1. Existing utility types (`EquatableArray`, `Result`, `DiagnosticFlow`, `Guard`, `HashCombiner`).
+2. Matching DSL (`Match.*`, `Invoke.*`) before introducing custom symbol checks.
+3. Existing extensions in `SymbolExtensions`, `TypeSymbolExtensions`, `OperationExtensions`.
+4. Existing analyzers/tests in `ANcpLua.Roslyn.Utilities.Testing` for expected behavior.
+
+## AOT Reflection Quick Path
+
+- Extractors build immutable metadata models.
+- Generators materialize metadata payload classes in `*.AotReflection.g.cs`.
+- Keep generated metadata deterministic and null-safe.
 
 ## Practical review mindset
 
@@ -57,3 +74,14 @@ When auditing code, prioritize:
 ## Decision rule
 
 If you need behavior changes, keep blast radius local. For metadata or generation behavior changes, ensure emitted shape remains consistent and deterministic.
+
+## Code Style Defaults
+
+- Prefer explicit intent over cleverness.
+- Keep generated code minimal and deterministic.
+- Prefer helper methods for repeated construction logic.
+- Keep extension methods small and single-purpose.
+
+## Practical Reminder
+
+If an API shape is in doubt, trust the implementation under `src/ANcpLua.Roslyn.Utilities` over stale doc snippets and update this file when mismatches appear.

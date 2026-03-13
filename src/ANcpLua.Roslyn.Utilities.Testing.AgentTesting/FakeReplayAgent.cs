@@ -62,7 +62,7 @@ public sealed class FakeReplayAgent(IReadOnlyList<ChatMessage>? messages = null,
                     MessageId = message.MessageId,
                     ResponseId = responseId,
                     Role = message.Role,
-                    Contents = [content],
+                    Contents = [content]
                 };
 
             await Task.Yield();

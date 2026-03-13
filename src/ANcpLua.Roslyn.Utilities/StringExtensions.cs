@@ -269,10 +269,18 @@ internal
     ///         A dash is inserted at the boundary between an acronym and the next word.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item><description><c>"GetValue"</c> becomes <c>"get-value"</c></description></item>
-    ///         <item><description><c>"XMLParser"</c> becomes <c>"xml-parser"</c></description></item>
-    ///         <item><description><c>"GetHTTPClient"</c> becomes <c>"get-http-client"</c></description></item>
-    ///         <item><description><c>"SimpleTest"</c> becomes <c>"simple-test"</c></description></item>
+    ///         <item>
+    ///             <description><c>"GetValue"</c> becomes <c>"get-value"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"XMLParser"</c> becomes <c>"xml-parser"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"GetHTTPClient"</c> becomes <c>"get-http-client"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"SimpleTest"</c> becomes <c>"simple-test"</c></description>
+    ///         </item>
     ///     </list>
     /// </remarks>
     /// <seealso cref="ToParameterName" />

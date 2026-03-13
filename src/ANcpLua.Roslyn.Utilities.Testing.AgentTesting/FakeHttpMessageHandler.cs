@@ -53,7 +53,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
         string body,
         string contentType = "application/json")
     {
-        _rules.Add(new ResponseRule(urlPattern: urlPattern.TrimStart('*'), statusCode: statusCode, body: body, contentType: contentType, times: null));
+        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, body, contentType, null));
         return this;
     }
 
@@ -62,7 +62,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
     /// </summary>
     public FakeHttpMessageHandler WithError(string urlPattern, HttpStatusCode statusCode)
     {
-        _rules.Add(new ResponseRule(urlPattern: urlPattern.TrimStart('*'), statusCode: statusCode, body: string.Empty, contentType: "text/plain", times: null));
+        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, string.Empty, "text/plain", null));
         return this;
     }
 
@@ -76,7 +76,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
         int times,
         string contentType = "application/json")
     {
-        _rules.Add(new ResponseRule(urlPattern: urlPattern.TrimStart('*'), statusCode: statusCode, body: body, contentType: contentType, times: times));
+        _rules.Add(new ResponseRule(urlPattern.TrimStart('*'), statusCode, body, contentType, times));
         return this;
     }
 
@@ -94,7 +94,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
         foreach (var e in serializedEvents) sb.Append("data: ").Append(e).Append("\n\n");
 
         _rules.Add(new ResponseRule(
-            urlPattern: urlPattern.TrimStart('*'), statusCode: HttpStatusCode.OK, body: sb.ToString(), contentType: "text/event-stream", times: null));
+            urlPattern.TrimStart('*'), HttpStatusCode.OK, sb.ToString(), "text/event-stream", null));
         return this;
     }
 
@@ -115,7 +115,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
     /// </summary>
     public HttpClient BuildHttpClient()
     {
-        return new HttpClient(handler: this, disposeHandler: false);
+        return new HttpClient(this, false);
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
     /// </summary>
     public HttpClient BuildHttpClient(string baseAddress)
     {
-        return new HttpClient(handler: this, disposeHandler: false) { BaseAddress = new Uri(baseAddress) };
+        return new HttpClient(this, false) { BaseAddress = new Uri(baseAddress) };
     }
 
     // ── HttpMessageHandler ───────────────────────────────────────────────────
@@ -157,7 +157,7 @@ public sealed class FakeHttpMessageHandler : HttpMessageHandler
 
                 return Task.FromResult(new HttpResponseMessage(rule.StatusCode)
                 {
-                    Content = new StringContent(rule.Body, Encoding.UTF8, rule.ContentType),
+                    Content = new StringContent(rule.Body, Encoding.UTF8, rule.ContentType)
                 });
             }
         }
