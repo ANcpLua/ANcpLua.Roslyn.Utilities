@@ -52,7 +52,7 @@ internal static partial class TextUtilities
         StringBuilder sb = new();
         sb.AppendLine(CultureInfo.InvariantCulture, $"{indent}{expectedLabel}{quotedExpected}");
         sb.AppendLine(CultureInfo.InvariantCulture, $"{indent}{actualLabel}{quotedActual}");
-        sb.Append(indent).Append(new string(' ', actualLabel.Length + index)).AppendLine("^");
+        sb.Append(indent).Append(new string(' ', actualLabel.Length + index)).Append('^').AppendLine();
         return sb.ToString().TrimEnd();
     }
 
