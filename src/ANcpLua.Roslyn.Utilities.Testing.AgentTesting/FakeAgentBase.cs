@@ -100,7 +100,7 @@ public abstract class FakeAgentBase : AIAgent
             {
                 MessageId = messageId,
                 Role = ChatRole.Assistant,
-                Contents = [new TextContent(chunk)]
+                Contents = [new TextContent(chunk),],
             };
 
             await Task.Yield();
