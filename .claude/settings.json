@@ -2,5 +2,38 @@
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
     "hookify@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "docs/ref/hooks/journal.sh SessionStart"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "docs/ref/hooks/journal.sh PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "docs/ref/hooks/journal.sh Stop"
+          }
+        ]
+      }
+    ]
   }
 }

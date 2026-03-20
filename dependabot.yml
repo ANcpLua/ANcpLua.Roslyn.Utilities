@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      ancplua-sdk:
+        patterns: ["ANcpLua.*"]
+      roslyn:
+        patterns: ["Microsoft.CodeAnalysis*"]
+      testing:
+        patterns: ["xunit*", "AwesomeAssertions*", "Basic.Reference.Assemblies*"]
+      extensions-ai:
+        patterns: ["Microsoft.Extensions.AI*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -46,7 +46,18 @@
 
     <ItemGroup Label="Web Testing">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
+        <PackageReference Include="NUnit"/>
+        <PackageReference Include="TUnit.Core" IncludeAssets="compile;runtime"/>
+        <PackageReference Include="bunit"/>
     </ItemGroup>
+
+    <!-- TUnit.Core is referenced for its attributes only, not as a test framework.
+         Remove its migration analyzers and source generator to avoid conflicts with xUnit/NUnit code. -->
+    <Target Name="_RemoveTUnitAnalyzers" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <Analyzer Remove="@(Analyzer)" Condition="$([System.String]::new('%(Filename)').StartsWith('TUnit.'))" />
+        </ItemGroup>
+    </Target>
 
     <ItemGroup Label="Agent Testing">
         <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>

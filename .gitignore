@@ -39,3 +39,4 @@ docs/api/*.yml
 docs/api/*.md
 !docs/api/toc.yml
 .claude/worktrees/
+.claude/journal/
