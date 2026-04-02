@@ -133,7 +133,7 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Build Tools">
         <NuGetVersion>7.3.0</NuGetVersion>
-        <MSBuildStructuredLoggerVersion>2.3.113</MSBuildStructuredLoggerVersion>
+        <MSBuildStructuredLoggerVersion>2.3.154</MSBuildStructuredLoggerVersion>
         <MicrosoftSourceLinkVersion>10.0.200</MicrosoftSourceLinkVersion>
         <MicrosoftDeploymentDotNetReleasesVersion>1.0.1</MicrosoftDeploymentDotNetReleasesVersion>
     </PropertyGroup>
