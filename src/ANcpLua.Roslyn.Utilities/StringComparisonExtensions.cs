@@ -518,6 +518,31 @@ internal
     // ========== Replace Comparisons ==========
 
     /// <summary>
+    ///     Replaces all occurrences of a specified string using ordinal comparison.
+    /// </summary>
+    /// <param name="value">The string to modify.</param>
+    /// <param name="oldValue">The string to be replaced.</param>
+    /// <param name="newValue">The string to replace all occurrences of <paramref name="oldValue" />.</param>
+    /// <returns>
+    ///     A new string with all occurrences of <paramref name="oldValue" /> replaced by <paramref name="newValue" />,
+    ///     or <c>null</c> if <paramref name="value" /> is <c>null</c>.
+    /// </returns>
+    /// <example>
+    ///     <code>
+    /// var result = "Hello World".ReplaceOrdinal("World", "everyone");
+    /// // result: "Hello everyone"
+    /// </code>
+    /// </example>
+    /// <seealso cref="ReplaceIgnoreCase" />
+    public static string? ReplaceOrdinal(this string? value, string oldValue, string newValue)
+    {
+        if (value is null)
+            return null;
+
+        return value.Replace(oldValue, newValue, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     Replaces all occurrences of a specified string using case-insensitive comparison.
     /// </summary>
     /// <param name="value">The string to modify.</param>

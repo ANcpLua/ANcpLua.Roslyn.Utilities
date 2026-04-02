@@ -47,7 +47,8 @@ internal
     ///     String methods that have StringComparison extension equivalents.
     /// </summary>
     /// <remarks>
-    ///     Note: LastIndexOf is NOT included - no extension exists for it.
+    ///     Note: LastIndexOf is NOT included — no extension exists for it.
+    ///     Replace is included — ReplaceOrdinal and ReplaceIgnoreCase exist.
     /// </remarks>
     private static readonly HashSet<string> StringComparisonMethods =
         new(StringComparer.Ordinal)
@@ -56,7 +57,8 @@ internal
             "StartsWith",
             "EndsWith",
             "Contains",
-            "IndexOf"
+            "IndexOf",
+            "Replace"
         };
 
     /// <summary>
