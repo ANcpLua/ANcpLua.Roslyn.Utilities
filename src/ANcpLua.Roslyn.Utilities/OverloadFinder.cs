@@ -143,17 +143,24 @@ internal
         if (containingType is null)
             return null;
 
-        foreach (var member in containingType.GetMembers(method.Name))
+        // Search the containing type and its base types for overloads
+        var currentType = containingType;
+        while (currentType is not null)
         {
-            if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
-                continue;
+            foreach (var member in currentType.GetMembers(method.Name))
+            {
+                if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
+                    continue;
 
-            if (!includeObsolete && IsObsolete(candidate))
-                continue;
+                if (!includeObsolete && IsObsolete(candidate))
+                    continue;
 
-            if (HasParameterOfType(candidate, additionalParamType) &&
-                HasSimilarParameters(method, candidate, additionalParamType))
-                return candidate;
+                if (HasParameterOfType(candidate, additionalParamType) &&
+                    HasSimilarParameters(method, candidate, additionalParamType))
+                    return candidate;
+            }
+
+            currentType = currentType.BaseType;
         }
 
         return null;
@@ -186,17 +193,23 @@ internal
         if (containingType is null)
             return null;
 
-        foreach (var member in containingType.GetMembers(method.Name))
+        var currentType = containingType;
+        while (currentType is not null)
         {
-            if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
-                continue;
+            foreach (var member in currentType.GetMembers(method.Name))
+            {
+                if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
+                    continue;
 
-            if (!includeObsolete && IsObsolete(candidate))
-                continue;
+                if (!includeObsolete && IsObsolete(candidate))
+                    continue;
 
-            if (HasAllParameterTypes(candidate, additionalParamTypes) &&
-                HasSimilarParametersMultiple(method, candidate, additionalParamTypes))
-                return candidate;
+                if (HasAllParameterTypes(candidate, additionalParamTypes) &&
+                    HasSimilarParametersMultiple(method, candidate, additionalParamTypes))
+                    return candidate;
+            }
+
+            currentType = currentType.BaseType;
         }
 
         return null;
@@ -222,16 +235,22 @@ internal
         if (containingType is null)
             return null;
 
-        foreach (var member in containingType.GetMembers(method.Name))
+        var currentType = containingType;
+        while (currentType is not null)
         {
-            if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
-                continue;
+            foreach (var member in currentType.GetMembers(method.Name))
+            {
+                if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
+                    continue;
 
-            if (!includeObsolete && IsObsolete(candidate))
-                continue;
+                if (!includeObsolete && IsObsolete(candidate))
+                    continue;
 
-            if (predicate(candidate))
-                return candidate;
+                if (predicate(candidate))
+                    return candidate;
+            }
+
+            currentType = currentType.BaseType;
         }
 
         return null;
@@ -255,15 +274,21 @@ internal
         if (containingType is null)
             yield break;
 
-        foreach (var member in containingType.GetMembers(method.Name))
+        var currentType = containingType;
+        while (currentType is not null)
         {
-            if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
-                continue;
+            foreach (var member in currentType.GetMembers(method.Name))
+            {
+                if (member is not IMethodSymbol candidate || candidate.Equals(method, SymbolEqualityComparer.Default))
+                    continue;
 
-            if (!includeObsolete && IsObsolete(candidate))
-                continue;
+                if (!includeObsolete && IsObsolete(candidate))
+                    continue;
 
-            yield return candidate;
+                yield return candidate;
+            }
+
+            currentType = currentType.BaseType;
         }
     }
 
@@ -368,27 +393,42 @@ internal
         var originalParams = original.Parameters;
         var candidateParams = candidate.Parameters;
 
-        var additionalFound = false;
-        var originalIndex = 0;
-
-        foreach (var candidateParam in candidateParams)
+        // Try each position as the "additional" parameter slot to avoid greedy mismatch
+        // when the additional type also appears in the original parameters
+        for (var additionalIndex = 0; additionalIndex < candidateParams.Length; additionalIndex++)
         {
-            if (!additionalFound && candidateParam.Type.IsEqualTo(additionalType))
-            {
-                additionalFound = true;
+            var candidateParam = candidateParams[additionalIndex];
+
+            // The additional slot must match the expected type and have compatible ref kind
+            if (!candidateParam.Type.IsEqualTo(additionalType) ||
+                candidateParam.RefKind is not RefKind.None ||
+                candidateParam.IsParams)
                 continue;
+
+            // Verify remaining candidate params match original params in order
+            var originalIndex = 0;
+            var allMatch = true;
+
+            for (var i = 0; i < candidateParams.Length; i++)
+            {
+                if (i == additionalIndex)
+                    continue;
+
+                if (originalIndex >= originalParams.Length ||
+                    !candidateParams[i].Type.IsEqualTo(originalParams[originalIndex].Type))
+                {
+                    allMatch = false;
+                    break;
+                }
+
+                originalIndex++;
             }
 
-            if (originalIndex >= originalParams.Length)
-                return false;
-
-            if (!candidateParam.Type.IsEqualTo(originalParams[originalIndex].Type))
-                return false;
-
-            originalIndex++;
+            if (allMatch && originalIndex == originalParams.Length)
+                return true;
         }
 
-        return additionalFound && originalIndex == originalParams.Length;
+        return false;
     }
 
     private static bool HasSimilarParametersMultiple(IMethodSymbol original, IMethodSymbol candidate,

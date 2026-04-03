@@ -18,4 +18,8 @@
         <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
         <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
     </Folder>
+    <Folder Name="/examples/">
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes.csproj"/>
+    </Folder>
 </Solution>

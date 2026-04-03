@@ -602,6 +602,9 @@ internal
             return ImmutableArray<ISymbol>.Empty;
 
         var containingType = symbol.ContainingType;
+        if (containingType is null)
+            return ImmutableArray<ISymbol>.Empty;
+
         var query = containingType.AllInterfaces
             .SelectMany(iface => iface.GetMembers(), (iface, interfaceMember) => new { iface, interfaceMember })
             .Select(t => new { t, impl = containingType.FindImplementationForInterfaceMember(t.interfaceMember) })
