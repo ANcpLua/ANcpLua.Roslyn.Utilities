@@ -61,6 +61,7 @@
 
     <ItemGroup Label="Agent Testing">
         <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>
+        <PackageReference Include="OpenAI"/>
     </ItemGroup>
 
     <ItemGroup>

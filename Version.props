@@ -16,7 +16,7 @@
          ROSLYN.UTILITIES (Runtime package)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities">
-        <ANcpLuaRoslynUtilitiesVersion>1.49.0</ANcpLuaRoslynUtilitiesVersion>
+        <ANcpLuaRoslynUtilitiesVersion>1.50.0</ANcpLuaRoslynUtilitiesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -155,6 +155,10 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Agents">
         <MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>1.0.0-preview.260402.1</MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Label="OpenAI">
+        <OpenAIVersion>2.9.1</OpenAIVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
