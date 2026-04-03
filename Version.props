@@ -16,7 +16,7 @@
          ROSLYN.UTILITIES (Runtime package)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities">
-        <ANcpLuaRoslynUtilitiesVersion>1.50.0</ANcpLuaRoslynUtilitiesVersion>
+        <ANcpLuaRoslynUtilitiesVersion>1.51.0</ANcpLuaRoslynUtilitiesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
