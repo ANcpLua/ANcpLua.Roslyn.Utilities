@@ -158,7 +158,7 @@
     </PropertyGroup>
 
     <PropertyGroup Label="OpenAI">
-        <OpenAIVersion>2.9.1</OpenAIVersion>
+        <OpenAIVersion>2.10.0</OpenAIVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
