@@ -3,8 +3,15 @@ name: Trigger Docs Rebuild
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'Version.props'
+      - 'README.md'
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   trigger-docs:

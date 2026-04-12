@@ -12,16 +12,24 @@ on:
         description: 'Version to publish (without v prefix)'
         required: true
 
+# Coalesce in-flight runs on the same ref. Don't cancel: a tag push that races a main push
+# must still complete its publish.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+# Default to read-only. Jobs that need more (publish) opt in explicitly.
 permissions:
   contents: read
-  id-token: write
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
+  CI: true
 
 jobs:
-  # Layer 1: Compute version deterministically
+  # Compute version once. Tags and workflow_dispatch produce a release version;
+  # everything else gets a CI build number derived from commit count + sha.
   version:
     runs-on: ubuntu-latest
     outputs:
@@ -37,8 +45,7 @@ jobs:
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
             echo "is_release=true" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
             echo "is_release=true" >> $GITHUB_OUTPUT
           else
             COMMITS=$(git rev-list --count HEAD)
@@ -47,38 +54,11 @@ jobs:
             echo "is_release=false" >> $GITHUB_OUTPUT
           fi
 
-  # Layer 2: Build and pack
+  # Build on both Linux and Windows to catch path-case and platform-specific build issues
+  # early. Pack/upload only from Linux to avoid duplicate artifacts (output is netstandard2.0,
+  # platform-invariant, so a single nupkg set is correct).
   build:
     needs: version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-      - name: Build
-        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release -p:Version=${{ needs.version.outputs.version }}
-        env:
-          CI: true
-      - name: Pack
-        run: |
-          dotnet pack src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }}-preview.1 --no-build
-        env:
-          CI: true
-      - uses: actions/upload-artifact@v7
-        with:
-          name: packages
-          path: artifacts/*.nupkg
-          if-no-files-found: error
-
-  # Layer 3: Test (cross-platform)
-  test:
-    needs: [version, build]
     strategy:
       fail-fast: false
       matrix:
@@ -86,36 +66,89 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
-      - uses: actions/download-artifact@v8
+      - name: Restore
+        run: dotnet restore ANcpLua.Roslyn.Utilities.slnx
+      - name: Build
+        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release --no-restore -p:Version=${{ needs.version.outputs.version }}
+
+      # Stable packages — packed once on Linux only.
+      - name: Pack (stable)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet pack src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+
+      # AgentTesting depends on Microsoft.Extensions.AI / Microsoft.Agents.AI which are still
+      # preview-tracking. We append `-preview.1` so this package can never be picked up as a
+      # stable version by accident — consumers must opt in via a prerelease feed.
+      # When Microsoft.Extensions.AI ships a stable 1.0, drop this suffix.
+      - name: Pack (AgentTesting — preview)
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }}-preview.1 --no-build
+
+      - name: Upload artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
         with:
           name: packages
-          path: local-feed/
-      - name: Add local NuGet source
-        run: dotnet nuget add source ./local-feed -n local
-      - name: Build with local packages
-        run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release -p:Version=${{ needs.version.outputs.version }}
-        env:
-          CI: true
+          path: artifacts/*.nupkg
+          if-no-files-found: error
 
-  # Layer 4: Publish (only on tags/dispatch, after tests pass)
+  # Publish only on tagged releases or workflow_dispatch. The `nuget` environment provides
+  # the manual approval gate and houses the trusted publishing config.
+  #
+  # Trusted publishing setup (one-time, per package):
+  #   1. Visit https://www.nuget.org/account/trustedpublishing
+  #   2. For each ANcpLua.Roslyn.Utilities.* package owned by ANcpLua, add a GitHub policy
+  #      pointing at this repo + workflow file (`nuget-publish.yml`) + environment (`nuget`).
+  #   3. No NUGET_API_KEY secret required — OIDC handles auth.
   publish:
-    needs: [version, build, test]
+    needs: [version, build]
     if: needs.version.outputs.is_release == 'true'
     runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: write   # for gh release create
+      id-token: write   # for trusted publishing OIDC token
     steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
           name: packages
           path: artifacts/
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
+
+      - name: Authenticate to NuGet (trusted publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ANcpLua
+
       - name: Push to NuGet
         run: |
           for pkg in artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
               --source https://api.nuget.org/v3/index.json \
-              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
               --skip-duplicate
           done
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          TAG="v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+          else
+            gh release create "$TAG" --generate-notes --title "$TAG"
+          fi

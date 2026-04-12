@@ -5,20 +5,52 @@ updates:
     schedule:
       interval: "weekly"
       day: "wednesday"
+    commit-message:
+      prefix: "deps"
 
   - package-ecosystem: "nuget"
     directory: "/"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
     schedule:
       interval: "weekly"
     groups:
       ancplua-sdk:
         patterns: ["ANcpLua.*"]
       roslyn:
-        patterns: ["Microsoft.CodeAnalysis*"]
-      testing:
-        patterns: ["xunit*", "AwesomeAssertions*", "Basic.Reference.Assemblies*"]
+        patterns:
+          - "Microsoft.CodeAnalysis*"
+          - "Basic.Reference.Assemblies*"
+      microsoft-extensions:
+        patterns:
+          - "Microsoft.Extensions.*"
+          - "Microsoft.Bcl.*"
+          - "System.Threading.Channels"
+          - "Microsoft.AspNetCore.*"
+      microsoft-agents-ai:
+        patterns:
+          - "Microsoft.Agents.AI*"
+          - "Microsoft.Extensions.AI*"
+          - "OpenAI"
+      meziantou:
+        patterns: ["Meziantou.*"]
+      xunit:
+        patterns: ["xunit*"]
+      testing-frameworks:
+        patterns:
+          - "TUnit*"
+          - "NUnit"
+          - "bunit"
+          - "AwesomeAssertions"
+      msbuild-tooling:
+        patterns:
+          - "MSBuild.StructuredLogger"
+          - "Microsoft.Deployment.*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    commit-message:
+      prefix: "ci"
     schedule:
       interval: "weekly"
