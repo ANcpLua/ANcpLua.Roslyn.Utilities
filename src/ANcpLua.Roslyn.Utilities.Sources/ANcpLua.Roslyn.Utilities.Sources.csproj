@@ -10,6 +10,7 @@
 
         <PackageId>ANcpLua.Roslyn.Utilities.Sources</PackageId>
         <Description>Source-only Roslyn utilities for analyzers and generators. Embeds as internal types.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>roslyn;source-generator;source-only;analyzer</PackageTags>
 
         <IsPackable>true</IsPackable>
@@ -17,6 +18,11 @@
 
         <ContentTargetFolders>contentFiles</ContentTargetFolders>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
         <None Include="build/*.props" Pack="true" PackagePath="build/"/>

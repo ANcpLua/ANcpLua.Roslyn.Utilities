@@ -10,6 +10,7 @@
 
         <PackageId>ANcpLua.Roslyn.Utilities.Polyfills</PackageId>
         <Description>Source-only polyfills for netstandard2.0: nullable attributes, language features (init, required, params collections), trim attributes, Index/Range, Lock, TimeProvider, StackTraceHidden, UnreachableException, and more. All types are internal and #if-gated by target framework.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>polyfills;netstandard2.0;source-only;backport;init;required;index;range;lock</PackageTags>
 
         <IsPackable>true</IsPackable>
@@ -17,6 +18,11 @@
 
         <ContentTargetFolders>contentFiles</ContentTargetFolders>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <!-- Pack props/targets for injection control -->
     <ItemGroup>
