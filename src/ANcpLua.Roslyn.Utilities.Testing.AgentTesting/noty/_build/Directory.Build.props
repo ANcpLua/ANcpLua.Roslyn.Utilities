@@ -1,0 +1,48 @@
+<Project>
+
+  <!--
+    Drop this at the root of your tests/ folder. It captures the exact contract
+    used by agent-framework/dotnet/tests/Directory.Build.props:
+
+    - xUnit v3 on the Microsoft Testing Platform (NOT VSTest).
+    - Code coverage via Microsoft.Testing.Extensions.CodeCoverage.
+    - xRetry.v3 imported as a global using so every .cs file can use [RetryFact].
+    - Moq shipped for mocks that cannot be hand-rolled.
+    - Multi-targets net10.0 and net472 to match the real repo.
+  -->
+
+  <!-- If you have a parent Directory.Build.props, keep this import. -->
+  <Import Project="../Directory.Build.props" Condition="Exists('../Directory.Build.props')" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsAotCompatible>false</IsAotCompatible>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+
+    <!--
+      Moq1410 -> It.IsAny<T>() generic-arg inference warning we do not fight.
+      xUnit1051 -> CancellationToken-on-theory-method nag we do not fight.
+      MAAI001  -> evaluator-preview opt-in for Microsoft.Agents.AI.
+    -->
+    <NoWarn>$(NoWarn);Moq1410;xUnit1051;MAAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xRetry.v3" />
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="xRetry.v3" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

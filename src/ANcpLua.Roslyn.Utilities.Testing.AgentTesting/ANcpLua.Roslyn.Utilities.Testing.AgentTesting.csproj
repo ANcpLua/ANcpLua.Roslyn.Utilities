@@ -34,4 +34,11 @@
         <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
     </ItemGroup>
+
+    <!-- noty/ is the parallel agent's harvest area: scaffolding only, never compiled.
+         References FluentAssertions and other packages that are not centrally managed. -->
+    <ItemGroup>
+        <Compile Remove="noty\**\*.cs"/>
+        <None Remove="noty\**\*"/>
+    </ItemGroup>
 </Project>

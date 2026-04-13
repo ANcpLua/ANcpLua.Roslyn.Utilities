@@ -4,10 +4,11 @@ using System.Runtime.CompilerServices;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Agents;
 
 /// <summary>
-///     A fake agent that streams multiple messages (different message IDs) in one turn.
+///     Streams multiple distinct messages — each with its own message id — in a single turn.
+///     Use to verify multi-message streaming and message-id boundary handling.
 /// </summary>
 public sealed class FakeMultiMessageAgent(params string[][] messageChunks) : FakeAgentBase
 {
@@ -18,7 +19,11 @@ public sealed class FakeMultiMessageAgent(params string[][] messageChunks) : Fak
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var chunks in messageChunks)
-        await foreach (var update in StreamChunksAsync(chunks, cancellationToken).ConfigureAwait(false))
-            yield return update;
+        {
+            await foreach (var update in StreamChunksAsync(chunks, cancellationToken).ConfigureAwait(false))
+            {
+                yield return update;
+            }
+        }
     }
 }

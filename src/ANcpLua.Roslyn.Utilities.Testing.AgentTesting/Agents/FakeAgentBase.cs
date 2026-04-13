@@ -6,23 +6,41 @@ using System.Text.Json.Serialization;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Agents;
 
 /// <summary>
-///     Abstract base class for fake <see cref="AIAgent" /> implementations in tests.
-///     Handles all session boilerplate — subclasses only override <see cref="StreamResponseAsync" />.
+///     Abstract base for fake <see cref="AIAgent" /> implementations used in tests.
+///     Handles every piece of session, run, and run-streaming boilerplate so subclasses
+///     only override <see cref="StreamResponseAsync" />.
 /// </summary>
-public abstract class FakeAgentBase : AIAgent
+/// <remarks>
+///     <para>
+///         Time access is centralised on <see cref="TimeProvider" /> so tests can substitute a
+///         <c>FakeTimeProvider</c> for deterministic <c>CreatedAt</c> stamps.
+///     </para>
+///     <para>
+///         The session model is a single <see cref="FakeSession" /> type that round-trips through
+///         <see cref="JsonSerializer" />. Subclasses that need richer state can override
+///         <see cref="CreateSessionCoreAsync" /> and the serialise/deserialise pair.
+///     </para>
+/// </remarks>
+public abstract class FakeAgentBase(string? id = null, string? name = null, TimeProvider? timeProvider = null) : AIAgent
 {
+    /// <summary>Time source for <c>CreatedAt</c> stamps. Defaults to <see cref="TimeProvider.System" />.</summary>
+    protected TimeProvider Time { get; } = timeProvider ?? TimeProvider.System;
+
     /// <inheritdoc />
-    protected override string? IdCore => GetType().Name;
+    protected override string? IdCore => id ?? GetType().Name;
+
+    /// <inheritdoc />
+    public override string? Name => name;
 
     /// <inheritdoc />
     public override string Description => $"Fake agent: {GetType().Name}";
 
     /// <summary>
-    ///     Override this to produce the streaming response for the agent.
-    ///     This is the only method subclasses need to implement.
+    ///     Produce the streaming response for one turn of the agent. The single hot spot
+    ///     subclasses must implement.
     /// </summary>
     protected abstract IAsyncEnumerable<AgentResponseUpdate> StreamResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -31,18 +49,14 @@ public abstract class FakeAgentBase : AIAgent
 
     /// <inheritdoc />
     protected override ValueTask<AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default)
-    {
-        return new ValueTask<AgentSession>(new FakeSession());
-    }
+        => new(new FakeSession());
 
     /// <inheritdoc />
     protected override ValueTask<AgentSession> DeserializeSessionCoreAsync(
         JsonElement serializedState,
         JsonSerializerOptions? jsonSerializerOptions = null,
         CancellationToken cancellationToken = default)
-    {
-        return new ValueTask<AgentSession>(serializedState.Deserialize<FakeSession>(jsonSerializerOptions)!);
-    }
+        => new(serializedState.Deserialize<FakeSession>(jsonSerializerOptions) ?? new FakeSession());
 
     /// <inheritdoc />
     protected override ValueTask<JsonElement> SerializeSessionCoreAsync(
@@ -51,10 +65,12 @@ public abstract class FakeAgentBase : AIAgent
         CancellationToken cancellationToken = default)
     {
         if (session is not FakeSession fakeSession)
+        {
             throw new InvalidOperationException(
-                $"Session type '{session.GetType().Name}' is not compatible with {GetType().Name}. Expected FakeSession.");
+                $"Session type '{session.GetType().Name}' is not compatible with {GetType().Name}. Expected {nameof(FakeSession)}.");
+        }
 
-        return new ValueTask<JsonElement>(JsonSerializer.SerializeToElement(fakeSession, jsonSerializerOptions));
+        return new(JsonSerializer.SerializeToElement(fakeSession, jsonSerializerOptions));
     }
 
     /// <inheritdoc />
@@ -63,10 +79,7 @@ public abstract class FakeAgentBase : AIAgent
         AgentSession? session = null,
         AgentRunOptions? options = null,
         CancellationToken cancellationToken = default)
-    {
-        return RunCoreStreamingAsync(messages, session, options, cancellationToken)
-            .ToAgentResponseAsync(cancellationToken);
-    }
+        => RunCoreStreamingAsync(messages, session, options, cancellationToken).ToAgentResponseAsync(cancellationToken);
 
     /// <inheritdoc />
     protected override async IAsyncEnumerable<AgentResponseUpdate> RunCoreStreamingAsync(
@@ -76,23 +89,23 @@ public abstract class FakeAgentBase : AIAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var update in StreamResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+        {
             yield return update;
+        }
     }
 
     /// <inheritdoc />
-    public override object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        return null;
-    }
+    public override object? GetService(Type serviceType, object? serviceKey = null) => null;
 
     /// <summary>
-    ///     Streams text chunks as <see cref="AgentResponseUpdate" /> instances sharing a single message ID.
+    ///     Stream a sequence of text chunks as <see cref="AgentResponseUpdate" /> instances that share one message id.
     /// </summary>
     protected static async IAsyncEnumerable<AgentResponseUpdate> StreamChunksAsync(
-        string[] chunks,
+        IReadOnlyList<string> chunks,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        _ = cancellationToken;
+        cancellationToken.ThrowIfCancellationRequested();
+
         var messageId = Guid.NewGuid().ToString("N");
         foreach (var chunk in chunks)
         {
@@ -100,22 +113,17 @@ public abstract class FakeAgentBase : AIAgent
             {
                 MessageId = messageId,
                 Role = ChatRole.Assistant,
-                Contents = [new TextContent(chunk),],
+                Contents = [new TextContent(chunk)],
             };
-
             await Task.Yield();
         }
     }
 
     private sealed class FakeSession : AgentSession
     {
-        public FakeSession()
-        {
-        }
+        public FakeSession() { }
 
         [JsonConstructor]
-        public FakeSession(AgentSessionStateBag stateBag) : base(stateBag)
-        {
-        }
+        public FakeSession(AgentSessionStateBag stateBag) : base(stateBag) { }
     }
 }

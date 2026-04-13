@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Copy, rename to <YourProject>.UnitTests.csproj, set the correct
+    ProjectReference, and you are ready to build.
+
+    Frameworks/versions intentionally omitted from PackageReference items —
+    they are supplied by Directory.Packages.props (central package management).
+    Every referenced package is already declared in agent-framework's
+    Directory.Packages.props.
+  -->
+
+  <PropertyGroup>
+    <!-- Only override warnings the main Workflows test project overrides. -->
+    <NoWarn>$(NoWarn);MEAI001;MAAIW001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference the project under test. -->
+    <ProjectReference Include="..\..\src\Microsoft.Agents.AI\Microsoft.Agents.AI.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Agents.AI.Workflows\Microsoft.Agents.AI.Workflows.csproj" />
+
+    <!--
+      When testing a source generator, reference it as Analyzer with
+      OutputItemType=Analyzer so Roslyn picks it up as an analyzer in the
+      test compilation AND as a library you can instantiate directly.
+    -->
+    <ProjectReference Include="..\..\src\Microsoft.Agents.AI.Workflows.Generators\Microsoft.Agents.AI.Workflows.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+  </ItemGroup>
+
+</Project>

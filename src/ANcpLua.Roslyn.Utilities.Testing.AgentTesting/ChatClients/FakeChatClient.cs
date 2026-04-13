@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.ChatClients;
 
 /// <summary>
 ///     Configurable <see cref="IChatClient" /> test double that supports scripted responses,

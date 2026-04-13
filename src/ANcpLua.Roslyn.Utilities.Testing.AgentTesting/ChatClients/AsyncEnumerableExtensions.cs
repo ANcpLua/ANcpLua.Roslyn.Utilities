@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.ChatClients;
 
 /// <summary>
 ///     Extensions for converting synchronous enumerables to async enumerables in test scenarios.

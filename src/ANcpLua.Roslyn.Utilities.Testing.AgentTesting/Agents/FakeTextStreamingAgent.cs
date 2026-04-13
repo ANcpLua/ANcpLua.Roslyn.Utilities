@@ -3,11 +3,11 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Agents;
 
 /// <summary>
-///     A simple fake agent that streams deterministic text chunks.
-///     Useful for basic streaming integration tests.
+///     Streams a fixed list of text chunks under one shared message id.
+///     The minimal harness for asserting on streaming-update plumbing.
 /// </summary>
 public sealed class FakeTextStreamingAgent(params string[] chunks) : FakeAgentBase
 {
@@ -16,7 +16,5 @@ public sealed class FakeTextStreamingAgent(params string[] chunks) : FakeAgentBa
         IEnumerable<ChatMessage> messages,
         AgentRunOptions? options,
         CancellationToken cancellationToken)
-    {
-        return StreamChunksAsync(chunks, cancellationToken);
-    }
+        => StreamChunksAsync(chunks, cancellationToken);
 }

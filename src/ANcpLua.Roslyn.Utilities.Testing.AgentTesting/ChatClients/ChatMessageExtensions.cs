@@ -3,7 +3,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.ChatClients;
 
 /// <summary>
 ///     Extension methods for building <see cref="ChatMessage" /> and <see cref="AgentResponseUpdate" />
