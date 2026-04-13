@@ -5,7 +5,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Logging;
 
 /// <summary>
 ///     Bridges xUnit's <see cref="ITestOutputHelper" /> to both <see cref="ILogger" />

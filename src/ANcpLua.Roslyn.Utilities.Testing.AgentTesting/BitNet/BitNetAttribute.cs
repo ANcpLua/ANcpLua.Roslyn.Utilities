@@ -1,4 +1,4 @@
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.BitNet;
 
 /// <summary>Marks a test class as requiring the BitNet LLM fixture.</summary>
 [AttributeUsage(AttributeTargets.Class)]

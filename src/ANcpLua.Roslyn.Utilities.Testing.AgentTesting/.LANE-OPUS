@@ -1,4 +1,4 @@
-OPUS LANE — DONE. Build green: 0 warnings, 0 errors against net10.0 + Meziantou.Analyzer.
+OPUS LANE — DONE (second pass). Root is now empty; all test infra lives in dedicated folders.
 
 WHAT WAS DELIVERED:
   Agents/           — FakeAgentBase + 6 fakes (Echo, Replay, MultiMessage, TextStreaming, RoleCheck, Delegating)

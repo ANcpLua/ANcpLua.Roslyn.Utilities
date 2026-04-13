@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.BitNet;
 
 /// <summary>
 ///     xUnit v3 collection definition for tests requiring a live BitNet server.

@@ -3,7 +3,7 @@ using Microsoft.Extensions.AI;
 using OpenAI;
 using Xunit;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.BitNet;
 
 /// <summary>
 ///     Shared fixture that probes a BitNet (llama.cpp) server and exposes an <see cref="IChatClient" />.

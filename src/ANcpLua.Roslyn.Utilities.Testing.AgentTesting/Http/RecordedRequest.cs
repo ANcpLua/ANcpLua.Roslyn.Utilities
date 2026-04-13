@@ -1,6 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Http;
 
 /// <summary>Records a single HTTP request sent through <see cref="FakeHttpMessageHandler" />.</summary>
 /// <param name="Method">The HTTP method.</param>

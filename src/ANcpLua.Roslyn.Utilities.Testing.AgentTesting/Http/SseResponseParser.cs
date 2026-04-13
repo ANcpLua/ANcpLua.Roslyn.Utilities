@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Http;
 
 /// <summary>
 ///     Parses Server-Sent Events (SSE) response content into structured JSON elements.

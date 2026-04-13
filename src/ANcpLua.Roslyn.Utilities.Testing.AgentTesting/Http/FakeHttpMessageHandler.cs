@@ -2,7 +2,7 @@
 
 using System.Net;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Http;
 
 /// <summary>
 ///     Configurable <see cref="HttpMessageHandler" /> that returns canned responses

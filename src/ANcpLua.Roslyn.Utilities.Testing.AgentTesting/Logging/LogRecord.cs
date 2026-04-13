@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting;
+namespace ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Logging;
 
 /// <summary>
 ///     A captured log entry produced by <see cref="TestOutputAdapter" />.
