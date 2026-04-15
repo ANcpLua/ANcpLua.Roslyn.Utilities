@@ -199,7 +199,10 @@ public readonly struct GeneratorStepAnalysis
         HasForbiddenTypes = hasForbiddenTypes;
 
         int cached = 0, unchanged = 0, modified = 0, @new = 0, removed = 0;
+        Type? outputType = null;
         foreach (var output in secondRun.SelectMany(static step => step.Outputs))
+        {
+            outputType ??= output.Value?.GetType();
             switch (output.Reason)
             {
                 case IncrementalStepRunReason.Cached: cached++; break;
@@ -209,13 +212,56 @@ public readonly struct GeneratorStepAnalysis
                 case IncrementalStepRunReason.Removed: removed++; break;
                 default: modified++; break;
             }
+        }
 
         Cached = cached;
         Unchanged = unchanged;
         Modified = modified;
         New = @new;
         Removed = removed;
+        OutputType = outputType;
     }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="GeneratorStepAnalysis" /> struct directly from
+    ///     pre-computed counts. Intended for unit tests that exercise diagnostic formatting without
+    ///     spinning up a real generator pipeline.
+    /// </summary>
+    /// <param name="stepName">The name of the step being analyzed.</param>
+    /// <param name="cached">Count of <see cref="IncrementalStepRunReason.Cached" /> outputs.</param>
+    /// <param name="unchanged">Count of <see cref="IncrementalStepRunReason.Unchanged" /> outputs.</param>
+    /// <param name="modified">Count of <see cref="IncrementalStepRunReason.Modified" /> outputs.</param>
+    /// <param name="new">Count of <see cref="IncrementalStepRunReason.New" /> outputs.</param>
+    /// <param name="removed">Count of <see cref="IncrementalStepRunReason.Removed" /> outputs.</param>
+    /// <param name="outputType">The runtime type of a representative output value, if known.</param>
+    /// <param name="hasForbiddenTypes">Whether the step has forbidden type violations.</param>
+    public GeneratorStepAnalysis(string stepName, int cached, int unchanged, int modified, int @new, int removed,
+        Type? outputType, bool hasForbiddenTypes)
+    {
+        StepName = stepName;
+        Cached = cached;
+        Unchanged = unchanged;
+        Modified = modified;
+        New = @new;
+        Removed = removed;
+        OutputType = outputType;
+        HasForbiddenTypes = hasForbiddenTypes;
+    }
+
+    /// <summary>
+    ///     Gets the runtime type of a representative output value for this step, if available.
+    /// </summary>
+    /// <value>
+    ///     The <see cref="Type" /> of the first non-null output value observed during analysis,
+    ///     or <see langword="null" /> if no outputs were produced or all outputs were null.
+    /// </value>
+    /// <remarks>
+    ///     This is used by diagnostic formatters to inspect the model's equality contract
+    ///     (e.g., to distinguish "lacks <see cref="IEquatable{T}" />" from "implements
+    ///     <see cref="IEquatable{T}" /> but Equals returned false").
+    /// </remarks>
+    /// <seealso cref="ModelEqualityClassifier" />
+    public Type? OutputType { get; }
 
     /// <summary>
     ///     Formats a breakdown of the step analysis results.

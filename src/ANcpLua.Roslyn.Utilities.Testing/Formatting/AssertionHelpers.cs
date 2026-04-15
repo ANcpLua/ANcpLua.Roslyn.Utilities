@@ -230,16 +230,15 @@ internal static class AssertionHelpers
     /// <seealso cref="StepFormatter" />
     public static string FormatFailedSteps(IEnumerable<GeneratorStepAnalysis> steps)
     {
-        return string.Join("\n", steps.Select(static s =>
+        var lines = steps.Select(static s =>
         {
             var breakdown = s.FormatBreakdown();
-            var hint = s.Modified > 0
-                ? " (output equality broken — model lacks IEquatable<T>)"
-                : s.New > 0
-                    ? " (new outputs appeared)"
-                    : " (outputs removed)";
-            return $"  ✗ {s.StepName}: {breakdown}{hint}";
-        }));
+            var equalityKind = ModelEqualityClassifier.Classify(s.OutputType);
+            var hint = CachingHintBuilder.BuildHint(equalityKind, s.Modified, s.New, s.Removed);
+            var typeSuffix = s.OutputType is { } t ? $" [model: {t.FullName ?? t.Name}]" : "";
+            return $"  ✗ {s.StepName}: {breakdown}{typeSuffix}\n      → {hint}";
+        });
+        return CachingHintBuilder.Legend + "\n" + string.Join("\n", lines);
     }
 }
 
@@ -358,9 +357,21 @@ internal static class StepFormatter
         StringBuilder sb = new();
         sb.AppendLine(CultureInfo.InvariantCulture, $"--- ISSUE {issueNumber}: Step Not Cached '{step.StepName}' ---");
         sb.AppendLine(CultureInfo.InvariantCulture, $"  Breakdown: {FormatBreakdown(step)}");
-        sb.AppendLine(step.HasForbiddenTypes
-            ? "  Cause: Forbidden Roslyn types cached."
-            : "  Fix: Ensure output model has value equality.");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"  {CachingHintBuilder.Legend}");
+        if (step.OutputType is { } t)
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  Model: {t.FullName ?? t.Name}");
+
+        if (step.HasForbiddenTypes)
+        {
+            sb.AppendLine("  Cause: Forbidden Roslyn types cached.");
+        }
+        else
+        {
+            var equalityKind = ModelEqualityClassifier.Classify(step.OutputType);
+            var hint = CachingHintBuilder.BuildHint(equalityKind, step.Modified, step.New, step.Removed);
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  Cause: {hint}");
+        }
+
         sb.AppendLine();
         return sb.ToString();
     }
