@@ -1,0 +1,140 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>ANcpLua.Roslyn.Utilities.Testing.Workflows</RootNamespace>
+        <PackageId>ANcpLua.Roslyn.Utilities.Testing.Workflows</PackageId>
+        <Description>Test infrastructure for Microsoft Agent Framework Workflows. Workflow fixture base with fluent assertions, execution-environment parametric axis, and a harvest of the MAF internal test helpers (parked until MAF publishes a public testing package).</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>maf;workflows;testing;declarative;checkpointing;inproc;microsoft-agents</PackageTags>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!--
+            Harvested upstream exception (see ~/.claude/CLAUDE.md "No suppression" rule):
+            code in this project originates from microsoft/agent-framework test tree
+            and is intentionally kept close to upstream shape to ease re-sync. Style
+            analyzer warnings are suppressed project-wide; real correctness analyzers
+            stay on.
+                MA0004 — ConfigureAwait(false) on Task-returning calls
+                MA0006 — string.Equals instead of == / !=
+                MA0040 — overload with CancellationToken
+                MA0048 — file name must match type name (upstream uses one-file-multi-type)
+                MA0061 — method override default value drift
+                MA0076 — implicit culture-sensitive ToString
+                MA0079 — specify CancellationToken via WithCancellation()
+                MA0002 — IEqualityComparer&lt;string&gt; overload preference
+                MA0003 — name parameter in invocation
+                MA0015 — ArgumentException with parameter name
+                MA0016 — prefer collection abstraction over implementation (upstream uses List&lt;T&gt;)
+                MA0182 — internal type never used (many helpers ship for downstream use)
+                CA1707 — underscores in identifier (InProcess_Lockstep is upstream spelling)
+                CA1816 — Dispose should call GC.SuppressFinalize (upstream pattern)
+                CA1826 — Enumerable on indexable collections
+        -->
+        <NoWarn>$(NoWarn);MA0002;MA0003;MA0004;MA0006;MA0015;MA0016;MA0040;MA0048;MA0061;MA0076;MA0079;MA0182;CA1707;CA1816;CA1826;CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Agents.AI" />
+        <PackageReference Include="Microsoft.Agents.AI.Workflows" />
+        <PackageReference Include="Microsoft.Agents.AI.Workflows.Declarative" />
+        <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="xunit.v3.extensibility.core" />
+        <PackageReference Include="xunit.v3.assert" />
+    </ItemGroup>
+
+    <ItemGroup Label="Analyzers">
+        <PackageReference Include="Meziantou.Analyzer" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup Label="Global usings">
+        <Using Include="Microsoft.Agents.AI" />
+        <Using Include="Microsoft.Agents.AI.Workflows" />
+        <Using Include="Microsoft.Extensions.AI" />
+    </ItemGroup>
+
+    <!-- Parked: files that depend on the INTERNAL workflow runner protocol
+         (IRunnerContext, ISuperStepJoinContext, EdgeMap, WorkflowTelemetryContext,
+         MessageEnvelope, SessionCheckpointCache, DeliveryMapping, ExecutorInfo,
+         ExecutorIdentity), the evolved JsonCheckpointStore shape, the new
+         Executor.ConfigureProtocol(ProtocolBuilder) abstract, or partial-class
+         source-generator methods that aren't wired in a public NuGet package.
+
+         Those types are only accessible inside the upstream microsoft/agent-framework
+         repo via [InternalsVisibleTo("Microsoft.Agents.AI.Workflows.UnitTests")].
+         Keeping them as harvest on disk so a future port can reintegrate them once
+         MAF publishes a testing-helpers package or exposes these types publicly. -->
+    <ItemGroup Label="Parked (internal MAF API dependency)">
+        <!-- Runtime context harness — depends on IRunnerContext, ISuperStepJoinContext,
+             EdgeMap, WorkflowTelemetryContext, MessageEnvelope, StepContext,
+             IStepTracer, IExternalRequestContext, IExternalRequestSink,
+             ISuperStepRunner. All internal in Workflows 1.1.0. -->
+        <Compile Remove="Runtime\TestRunContext.cs" />
+        <Compile Remove="Runtime\TestWorkflowContext.cs" />
+        <Compile Remove="Runtime\TestRunState.cs" />
+        <Compile Remove="Runtime\TestingExecutor.cs" />
+        <Compile Remove="Runtime\DynamicPortsExecutor.cs" />
+        <Compile Remove="Runtime\ForwardMessageExecutor.cs" />
+
+        <!-- JsonCheckpointStore shape evolved: abstract members RetrieveIndexAsync,
+             CreateCheckpointAsync, RetrieveCheckpointAsync have different signatures
+             and SessionCheckpointCache is now internal. -->
+        <Compile Remove="Checkpointing\InMemoryJsonStore.cs" />
+
+        <!-- DeliveryMapping, ExecutorInfo, ExecutorIdentity, MessageEnvelope all internal. -->
+        <Compile Remove="Assertions\MessageDeliveryValidation.cs" />
+        <Compile Remove="Assertions\ValidationExtensions.cs" />
+
+        <!-- Needs Microsoft.CodeAnalysis (Roslyn SyntaxTree). Belongs in Testing
+             project, not Workflows. Will be moved in a follow-up. -->
+        <Compile Remove="Assertions\SyntaxTreeFluentExtensions.cs" />
+
+        <!-- Mock&lt;ResponseAgentProvider&gt; — ResponseAgentProvider has a non-public
+             ctor in the Declarative package, so Moq can't generate a proxy. -->
+        <Compile Remove="Declarative\MockAgentProvider.cs" />
+
+        <!-- Samples use the partial-class + source-generator pattern from upstream.
+             MAF 1.1.0 requires Executor subclasses to override ConfigureProtocol
+             via a source-generator-emitted partial method that isn't shipped in the
+             public NuGet. 07 additionally uses AgentWorkflowBuilder which is internal.
+             06 references AgentTesting fakes via a using that would introduce a
+             reverse dependency from Workflows back into AgentTesting. -->
+        <Compile Remove="Samples\01_Sequential.cs" />
+        <Compile Remove="Samples\02_Conditional.cs" />
+        <Compile Remove="Samples\03_Loop.cs" />
+        <Compile Remove="Samples\04_ExternalRequest.cs" />
+        <Compile Remove="Samples\05_Checkpointing.cs" />
+        <Compile Remove="Samples\06_Concurrent.cs" />
+        <Compile Remove="Samples\07_Subworkflow.cs" />
+        <Compile Remove="Samples\Quickstart.cs" />
+
+        <None Include="Runtime\TestRunContext.cs" />
+        <None Include="Runtime\TestWorkflowContext.cs" />
+        <None Include="Runtime\TestRunState.cs" />
+        <None Include="Runtime\TestingExecutor.cs" />
+        <None Include="Runtime\DynamicPortsExecutor.cs" />
+        <None Include="Runtime\ForwardMessageExecutor.cs" />
+        <None Include="Checkpointing\InMemoryJsonStore.cs" />
+        <None Include="Assertions\MessageDeliveryValidation.cs" />
+        <None Include="Assertions\ValidationExtensions.cs" />
+        <None Include="Assertions\SyntaxTreeFluentExtensions.cs" />
+        <None Include="Declarative\MockAgentProvider.cs" />
+        <None Include="Samples\01_Sequential.cs" />
+        <None Include="Samples\02_Conditional.cs" />
+        <None Include="Samples\03_Loop.cs" />
+        <None Include="Samples\04_ExternalRequest.cs" />
+        <None Include="Samples\05_Checkpointing.cs" />
+        <None Include="Samples\06_Concurrent.cs" />
+        <None Include="Samples\07_Subworkflow.cs" />
+        <None Include="Samples\Quickstart.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    </ItemGroup>
+</Project>

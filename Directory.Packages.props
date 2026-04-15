@@ -7,16 +7,29 @@
           Version.props is a COPY - sync manually with SDK.
           This file only declares WHICH packages are used, not their versions.
         -->
-  <!-- Import centralized versions from symlinked Version.props -->
+  <!--to Import centralized versions from symlinked Version.props -->
   <Import Project="$(MSBuildThisFileDirectory)Version.props" />
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Label="Agent Testing">
+    <PackageVersion Include="Microsoft.Agents.AI" Version="$(MicrosoftAgentsAIVersion)" />
     <PackageVersion Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="$(MicrosoftAgentsAIHostingAGUIAspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
     <PackageVersion Include="OpenAI" Version="$(OpenAIVersion)" />
+  </ItemGroup>
+  <ItemGroup Label="Workflow Testing">
+    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="$(MicrosoftAgentsAIWorkflowsVersion)" />
+    <PackageVersion Include="Microsoft.Agents.AI.Workflows.Declarative" Version="$(MicrosoftAgentsAIWorkflowsDeclarativeVersion)" />
+    <PackageVersion Include="Moq" Version="$(MoqVersion)" />
+  </ItemGroup>
+  <ItemGroup Label="LLM Provider SDKs">
+    <PackageVersion Include="Azure.AI.OpenAI" Version="$(AzureAIOpenAIVersion)" />
+    <PackageVersion Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
+    <PackageVersion Include="Anthropic.SDK" Version="$(AnthropicSDKVersion)" />
+    <PackageVersion Include="OllamaSharp" Version="$(OllamaSharpVersion)" />
+    <PackageVersion Include="Mscc.GenerativeAI" Version="$(MsccGenerativeAIVersion)" />
   </ItemGroup>
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->

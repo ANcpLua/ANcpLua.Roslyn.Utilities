@@ -14,6 +14,8 @@
         <Project Path="src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj"/>
         <Project
                 Path="src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj"/>
+        <Project
+                Path="src/ANcpLua.Roslyn.Utilities.Testing.Workflows/ANcpLua.Roslyn.Utilities.Testing.Workflows.csproj"/>
         <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
         <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
         <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
@@ -21,5 +23,8 @@
     <Folder Name="/examples/">
         <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer.csproj"/>
         <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/ANcpLua.Roslyn.Utilities.Testing.Tests/ANcpLua.Roslyn.Utilities.Testing.Tests.csproj"/>
     </Folder>
 </Solution>

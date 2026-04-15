@@ -16,28 +16,35 @@
          ROSLYN.UTILITIES (Runtime package)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities">
-        <ANcpLuaRoslynUtilitiesVersion>1.51.0</ANcpLuaRoslynUtilitiesVersion>
+        <ANcpLuaRoslynUtilitiesVersion>1.52.0</ANcpLuaRoslynUtilitiesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.SOURCES (Source-only package for generators)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Sources">
-        <ANcpLuaRoslynUtilitiesSourcesVersion>1.51.0</ANcpLuaRoslynUtilitiesSourcesVersion>
+        <ANcpLuaRoslynUtilitiesSourcesVersion>1.52.0</ANcpLuaRoslynUtilitiesSourcesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.POLYFILLS (Source-only polyfills for netstandard2.0)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Polyfills">
-        <ANcpLuaRoslynUtilitiesPolyfillsVersion>1.51.0</ANcpLuaRoslynUtilitiesPolyfillsVersion>
+        <ANcpLuaRoslynUtilitiesPolyfillsVersion>1.52.0</ANcpLuaRoslynUtilitiesPolyfillsVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.TESTING (Analyzer/CodeFix/Generator test infrastructure)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Testing">
-        <ANcpLuaRoslynUtilitiesTestingVersion>1.51.0</ANcpLuaRoslynUtilitiesTestingVersion>
+        <ANcpLuaRoslynUtilitiesTestingVersion>1.52.0</ANcpLuaRoslynUtilitiesTestingVersion>
+    </PropertyGroup>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ROSLYN.UTILITIES.TESTING.WORKFLOWS (MAF workflow test infrastructure)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <PropertyGroup Label="Roslyn.Utilities.Testing.Workflows">
+        <ANcpLuaRoslynUtilitiesTestingWorkflowsVersion>1.52.0</ANcpLuaRoslynUtilitiesTestingWorkflowsVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -151,14 +158,35 @@
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          MICROSOFT AGENTS
-         Used by: Roslyn.Utilities.Testing (Agent test infrastructure)
+         Used by: Roslyn.Utilities.Testing (Agent test infrastructure),
+                  Roslyn.Utilities.Testing.Workflows (Workflow test infrastructure)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Agents">
+        <MicrosoftAgentsAIVersion>1.1.0</MicrosoftAgentsAIVersion>
         <MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>1.0.0-preview.260402.1</MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>
+        <MicrosoftAgentsAIWorkflowsVersion>1.1.0</MicrosoftAgentsAIWorkflowsVersion>
+        <MicrosoftAgentsAIWorkflowsDeclarativeVersion>1.0.0-rc6</MicrosoftAgentsAIWorkflowsDeclarativeVersion>
     </PropertyGroup>
 
-    <PropertyGroup Label="OpenAI">
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LLM PROVIDER SDKs
+         Used by: Roslyn.Utilities.Testing.AgentTesting (Conformance/Examples fixtures)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <PropertyGroup Label="LLM Providers">
         <OpenAIVersion>2.10.0</OpenAIVersion>
+        <AzureAIOpenAIVersion>2.1.0</AzureAIOpenAIVersion>
+        <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
+        <AnthropicSDKVersion>5.10.0</AnthropicSDKVersion>
+        <OllamaSharpVersion>5.4.25</OllamaSharpVersion>
+        <MsccGenerativeAIVersion>3.1.0</MsccGenerativeAIVersion>
+    </PropertyGroup>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         WORKFLOW TEST DEPENDENCIES
+         Used by: Roslyn.Utilities.Testing.Workflows
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <PropertyGroup Label="Workflow Testing">
+        <MoqVersion>4.20.72</MoqVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
