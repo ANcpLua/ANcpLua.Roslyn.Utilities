@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>ANcpLua.Roslyn.Utilities.Testing.Tests</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <OutputType>Exe</OutputType>
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <NoWarn>$(NoWarn);CA1707;CA1861;CA2007;CA1812;IDE1006;CS1591</NoWarn>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3"/>
+        <PackageReference Include="AwesomeAssertions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference
+            Include="..\..\src\ANcpLua.Roslyn.Utilities.Testing\ANcpLua.Roslyn.Utilities.Testing.csproj"/>
+    </ItemGroup>
+
+    <!-- TUnit migration analyzers flag xUnit calls as TUXU0001 ("xUnit code can be converted to
+         TUnit code"). This project deliberately uses xUnit; strip the TUnit analyzers, mirroring
+         the pattern used by the Testing project itself. -->
+    <Target Name="_RemoveTUnitAnalyzers" BeforeTargets="CoreCompile">
+        <ItemGroup>
+            <Analyzer Remove="@(Analyzer)"
+                      Condition="$([System.String]::new('%(Filename)').StartsWith('TUnit.'))"/>
+        </ItemGroup>
+    </Target>
+</Project>
