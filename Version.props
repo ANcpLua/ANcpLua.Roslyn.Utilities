@@ -73,7 +73,6 @@
         <MeziantouTemporaryDirectoryVersion>1.0.37</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
         <MeziantouDependencyScanningVersion>2.0.9</MeziantouDependencyScanningVersion>
-        <MeziantouAnalyzerVersion>3.0.47</MeziantouAnalyzerVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════

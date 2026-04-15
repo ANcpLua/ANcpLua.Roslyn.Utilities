@@ -6,19 +6,23 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>ANcpLua.Roslyn.Utilities.Testing.AgentTesting</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities.Testing.AgentTesting</PackageId>
-        <Description>Test infrastructure for Microsoft Agent Framework AG-UI integration testing. Fake agents, scripted chat clients, SSE parsing, mock HTTP handlers, HTTP protocol conformance base, and in-memory test server utilities.</Description>
+        <Description>Test infrastructure for Microsoft Agent Framework. Fake agents, scripted chat clients, SSE parsing, mock HTTP handlers, AG-UI integration, and IChatClientAgentFixture reference implementations for OpenAI, Azure OpenAI, Anthropic, Ollama, Google Gemini, and OpenRouter.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>agent;agui;testing;sse;mock;streaming;microsoft-agents;conformance</PackageTags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!--
-            Harvested upstream exception (see ~/.claude/CLAUDE.md "No suppression" rule):
-            ChatClients/ChatClientAgentTestHelper.cs + ChatClients/MockChatClients.cs
-            Conformance/Http/ConformanceTestBase.cs + Conformance/Examples/*
-            originate from the microsoft/agent-framework test tree and intentionally
-            preserve upstream shape for low-friction re-sync. Style analyzers that
-            drift between harvest and project norms are suppressed project-wide.
+            Harvested upstream exception (~/.claude/CLAUDE.md "upstream sample repos" clause):
+            ChatClients/ChatClientAgentTestHelper.cs + ChatClients/MockChatClients.cs +
+            Conformance/Examples/* originate from microsoft/agent-framework test tree.
+            These CA style rules don't catch bugs — they enforce conventions upstream
+            writes differently. Real-bug CA rules stay on.
+                CA1305 — culture-sensitive formatting (upstream uses invariant)
+                CA1707 — underscores in identifier
+                CA1816 — Dispose should call GC.SuppressFinalize
+                CA1826 — Enumerable on indexable collections
+                CS1591 — missing XML doc on public members
         -->
-        <NoWarn>$(NoWarn);MA0002;MA0003;MA0004;MA0006;MA0011;MA0015;MA0016;MA0040;MA0048;MA0061;MA0076;MA0079;MA0182;CA1305;CA1707;CA1816;CA1826;CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CA1305;CA1707;CA1816;CA1826;CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -47,7 +51,6 @@
     </ItemGroup>
 
     <ItemGroup Label="Analyzers">
-        <PackageReference Include="Meziantou.Analyzer" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all"/>
     </ItemGroup>
 
