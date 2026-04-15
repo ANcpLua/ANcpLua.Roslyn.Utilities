@@ -108,6 +108,34 @@ public static class ChatMessageExtensions
     }
 
     /// <summary>
+    ///     Converts a string into a deterministic word-level <see cref="AgentResponseUpdate" /> stream
+    ///     using the supplied <see cref="TimeProvider" /> for <see cref="AgentResponseUpdate.CreatedAt" />.
+    ///     Intended for workflow tests that need controlled timestamps.
+    /// </summary>
+    public static IEnumerable<AgentResponseUpdate> ToAgentRunStream(
+        this string message,
+        TimeProvider timeProvider,
+        DateTimeOffset? createdAt = null,
+        string? messageId = null,
+        string? responseId = null,
+        string? agentId = null,
+        string? authorName = null)
+    {
+        messageId ??= Guid.NewGuid().ToString("N");
+        DateTimeOffset timestamp = createdAt ?? timeProvider.GetUtcNow();
+        return message.ToContentStream().Select(content => new AgentResponseUpdate
+        {
+            Role = ChatRole.Assistant,
+            CreatedAt = timestamp,
+            MessageId = messageId,
+            ResponseId = responseId,
+            AgentId = agentId,
+            AuthorName = authorName,
+            Contents = [content],
+        });
+    }
+
+    /// <summary>
     ///     Converts plain text strings into <see cref="ChatMessage" /> instances
     ///     with word-level content streaming.
     /// </summary>
