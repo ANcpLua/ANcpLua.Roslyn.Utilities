@@ -17,6 +17,7 @@
     <PackageVersion Include="Microsoft.Agents.AI" Version="$(MicrosoftAgentsAIVersion)" />
     <PackageVersion Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="$(MicrosoftAgentsAIHostingAGUIAspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
     <PackageVersion Include="OpenAI" Version="$(OpenAIVersion)" />
   </ItemGroup>
   <ItemGroup Label="Workflow Testing">
@@ -30,6 +31,7 @@
     <PackageVersion Include="Anthropic.SDK" Version="$(AnthropicSDKVersion)" />
     <PackageVersion Include="OllamaSharp" Version="$(OllamaSharpVersion)" />
     <PackageVersion Include="Mscc.GenerativeAI" Version="$(MsccGenerativeAIVersion)" />
+    <PackageVersion Include="Mscc.GenerativeAI.Microsoft" Version="$(MsccGenerativeAIMicrosoftVersion)" />
   </ItemGroup>
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->

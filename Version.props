@@ -118,7 +118,8 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Extensions">
         <MicrosoftExtensionsVersion>10.4.0</MicrosoftExtensionsVersion>
-        <MicrosoftExtensionsAIAbstractionsVersion>10.4.1</MicrosoftExtensionsAIAbstractionsVersion>
+        <MicrosoftExtensionsAIAbstractionsVersion>10.5.0</MicrosoftExtensionsAIAbstractionsVersion>
+        <MicrosoftExtensionsAIOpenAIVersion>10.5.0</MicrosoftExtensionsAIOpenAIVersion>
         <AspNetCoreVersion>10.0.5</AspNetCoreVersion>
         <MicrosoftBclAsyncInterfacesVersion>10.0.4</MicrosoftBclAsyncInterfacesVersion>
         <BclAsyncInterfacesVersion>10.0.5</BclAsyncInterfacesVersion>
@@ -179,6 +180,7 @@
         <AnthropicSDKVersion>5.10.0</AnthropicSDKVersion>
         <OllamaSharpVersion>5.4.25</OllamaSharpVersion>
         <MsccGenerativeAIVersion>3.1.0</MsccGenerativeAIVersion>
+        <MsccGenerativeAIMicrosoftVersion>3.1.0</MsccGenerativeAIMicrosoftVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
