@@ -1,11 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
+// Source: Microsoft.Agents.AI.Workflows.UnitTests/MessageDeliveryValidation.cs
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using AwesomeAssertions;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Agents.AI.Workflows.Execution;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.Workflows.Assertions;
+namespace ANcpLua.Roslyn.Utilities.Testing.Workflows;
 
-/// <summary>Structural assertions for DeliveryMapping and forwarded message queues.</summary>
 internal static class MessageDeliveryValidation
 {
     public static void CheckDeliveries(this DeliveryMapping mapping, HashSet<string> receiverIds, HashSet<object> messages)
@@ -13,14 +17,12 @@ internal static class MessageDeliveryValidation
         HashSet<string> unseenReceivers = [.. receiverIds];
         HashSet<object> unseenMessages = [.. messages];
 
-        foreach (IGrouping<string, MessageDelivery> grouping in mapping.Deliveries.GroupBy(delivery => delivery.TargetId))
+        foreach (var grouping in mapping.Deliveries.GroupBy(d => d.TargetId))
         {
-            string receiverId = grouping.Key;
-
-            receiverIds.Should().Contain(receiverId);
+            receiverIds.Should().Contain(grouping.Key);
             unseenReceivers.Remove(grouping.Key);
 
-            foreach (MessageDelivery delivery in grouping)
+            foreach (var delivery in grouping)
             {
                 object messageValue;
                 if (delivery.Envelope.Message is PortableValue portableValue)
@@ -46,22 +48,17 @@ internal static class MessageDeliveryValidation
     {
         queuedMessages.Should().HaveCount(expectedForwards.Length);
 
-        IEnumerable<Action<string>> perSenderValidations = expectedForwards.Select(forward =>
+        var perSenderValidations = expectedForwards.Select(forward => (Action<string>)(senderId =>
         {
-            (string expectedSender, List<string> expectedMessages) = forward;
+            senderId.Should().Be(forward.expectedSender);
+            queuedMessages[senderId].Should().HaveCount(forward.expectedMessages.Count);
 
-            return (Action<string>)(senderId =>
-            {
-                senderId.Should().Be(expectedSender);
-                queuedMessages[senderId].Should().HaveCount(expectedMessages.Count);
+            var validations = forward.expectedMessages
+                .Select(m => (Action<MessageEnvelope>)(envelope => envelope.Message.Should().Be(m)))
+                .ToArray();
 
-                Action<MessageEnvelope>[] validations = expectedMessages
-                    .Select(message => (Action<MessageEnvelope>)(envelope => envelope!.Message.Should().Be(message)))
-                    .ToArray();
-
-                Assert.Collection(queuedMessages[senderId], validations);
-            });
-        });
+            Assert.Collection(queuedMessages[senderId], validations);
+        }));
 
         Assert.Collection(queuedMessages.Keys, perSenderValidations.ToArray());
     }

@@ -1,27 +1,45 @@
 // Copyright (c) Microsoft. All rights reserved.
+// Source: Microsoft.Agents.AI.Workflows.UnitTests/TestWorkflowContext.cs
 
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Agents.AI.Workflows.Execution;
 
-namespace ANcpLua.Roslyn.Utilities.Testing.Workflows.Runtime;
+namespace ANcpLua.Roslyn.Utilities.Testing.Workflows;
 
 /// <summary>
-/// Per-executor IWorkflowContext backed by StateManager + concurrent queues.
-/// Use TestRunState.ContextFor(executorId) to allocate one bound to a shared run state.
+/// A lightweight, inspectable <see cref="IWorkflowContext"/>. Use it when you
+/// want to unit-test a single executor's message handler without spinning up
+/// <c>InProcessExecution</c>. State flows through a shared <see cref="TestRunState"/>
+/// so multiple executors can be tested together.
 /// </summary>
-internal sealed class TestWorkflowContext(string executorId, TestRunState? state = null, bool concurrentRunsEnabled = false) : IWorkflowContext
+internal sealed class TestWorkflowContext : IWorkflowContext
 {
-    private readonly TestRunState _state = state ?? new TestRunState();
+    private readonly string _executorId;
+    private readonly TestRunState _state;
 
-    public bool ConcurrentRunsEnabled { get; } = concurrentRunsEnabled;
+    public TestWorkflowContext(string executorId, TestRunState? state = null, bool concurrentRunsEnabled = false)
+    {
+        this._executorId = executorId;
+        this._state = state ?? new TestRunState();
+        this.ConcurrentRunsEnabled = concurrentRunsEnabled;
+    }
 
-    public ConcurrentQueue<object> SentMessages => this._state.SentMessages.GetOrAdd(executorId, _ => new());
+    public bool ConcurrentRunsEnabled { get; }
+
+    public IReadOnlyDictionary<string, string>? TraceContext => null;
+
+    public ConcurrentQueue<object> SentMessages => this._state.SentMessages.GetOrAdd(this._executorId, _ => new());
 
     public StateManager StateManager => this._state.StateManager;
 
     public ConcurrentQueue<WorkflowEvent> EmittedEvents => this._state.EmittedEvents;
 
-    public ConcurrentQueue<object> YieldedOutputs => this._state.YieldedOutputs.GetOrAdd(executorId, _ => new());
+    public ConcurrentQueue<object> YieldedOutputs => this._state.YieldedOutputs.GetOrAdd(this._executorId, _ => new());
 
     public ValueTask AddEventAsync(WorkflowEvent workflowEvent, CancellationToken cancellationToken = default)
     {
@@ -33,12 +51,17 @@ internal sealed class TestWorkflowContext(string executorId, TestRunState? state
     {
         this.YieldedOutputs.Enqueue(output);
 
-        return output switch
+        if (output is AgentResponseUpdate update)
         {
-            AgentResponseUpdate update => this.AddEventAsync(new AgentResponseUpdateEvent(executorId, update), cancellationToken),
-            AgentResponse response => this.AddEventAsync(new AgentResponseEvent(executorId, response), cancellationToken),
-            _ => this.AddEventAsync(new WorkflowOutputEvent(output, executorId), cancellationToken),
-        };
+            return this.AddEventAsync(new AgentResponseUpdateEvent(this._executorId, update), cancellationToken);
+        }
+
+        if (output is AgentResponse response)
+        {
+            return this.AddEventAsync(new AgentResponseEvent(this._executorId, response), cancellationToken);
+        }
+
+        return this.AddEventAsync(new WorkflowOutputEvent(output, this._executorId), cancellationToken);
     }
 
     public ValueTask RequestHaltAsync()
@@ -48,25 +71,23 @@ internal sealed class TestWorkflowContext(string executorId, TestRunState? state
     }
 
     public ValueTask QueueClearScopeAsync(string? scopeName = null, CancellationToken cancellationToken = default)
-        => this.StateManager.ClearStateAsync(new ScopeId(executorId, scopeName));
+        => this.StateManager.ClearStateAsync(new ScopeId(this._executorId, scopeName));
 
     public ValueTask QueueStateUpdateAsync<T>(string key, T? value, string? scopeName = null, CancellationToken cancellationToken = default)
-        => this.StateManager.WriteStateAsync(new ScopeId(executorId, scopeName), key, value);
+        => this.StateManager.WriteStateAsync(new ScopeId(this._executorId, scopeName), key, value);
 
     public ValueTask<T?> ReadStateAsync<T>(string key, string? scopeName = null, CancellationToken cancellationToken = default)
-        => this.StateManager.ReadStateAsync<T>(new ScopeId(executorId, scopeName), key);
+        => this.StateManager.ReadStateAsync<T>(new ScopeId(this._executorId, scopeName), key);
 
     public ValueTask<T> ReadOrInitStateAsync<T>(string key, Func<T> initialStateFactory, string? scopeName = null, CancellationToken cancellationToken = default)
-        => this.StateManager.ReadOrInitStateAsync(new ScopeId(executorId, scopeName), key, initialStateFactory);
+        => this.StateManager.ReadOrInitStateAsync(new ScopeId(this._executorId, scopeName), key, initialStateFactory);
 
     public ValueTask<HashSet<string>> ReadStateKeysAsync(string? scopeName = null, CancellationToken cancellationToken = default)
-        => this.StateManager.ReadKeysAsync(new ScopeId(executorId, scopeName));
+        => this.StateManager.ReadKeysAsync(new ScopeId(this._executorId, scopeName));
 
     public ValueTask SendMessageAsync(object message, string? targetId = null, CancellationToken cancellationToken = default)
     {
         this.SentMessages.Enqueue(message);
         return default;
     }
-
-    public IReadOnlyDictionary<string, string>? TraceContext => null;
 }
