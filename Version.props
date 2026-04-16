@@ -60,7 +60,7 @@
          Used by: Roslyn.Utilities.Testing, Analyzers.Tests
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Reference Assemblies">
-        <BasicReferenceAssembliesVersion>1.8.4</BasicReferenceAssembliesVersion>
+        <BasicReferenceAssembliesVersion>1.8.5</BasicReferenceAssembliesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
