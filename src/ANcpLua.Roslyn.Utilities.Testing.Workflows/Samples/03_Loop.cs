@@ -56,11 +56,12 @@ internal static class LoopSample
 [YieldsOutput(typeof(string))]
 internal sealed partial class GuessNumberExecutor : Executor
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     private readonly int _initialLowerBound;
     private readonly int _initialUpperBound;
 
     public GuessNumberExecutor(string id, int lowerBound, int upperBound)
-        : base(id, new ExecutorOptions { AutoYieldOutputHandlerResultObject = false }, declareCrossRunShareable: true)
+        : base(id, default(ExecutorOptions), declareCrossRunShareable: true)
     {
         if (lowerBound >= upperBound)
         {
@@ -98,6 +99,7 @@ internal sealed partial class GuessNumberExecutor : Executor
 [YieldsOutput(typeof(TryCount))]
 internal sealed partial class JudgeExecutor(string id, int targetNumber) : Executor(id, declareCrossRunShareable: true)
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     [MessageHandler]
     public async ValueTask<NumberSignal> HandleAsync(int message, IWorkflowContext context, CancellationToken cancellationToken = default)
     {

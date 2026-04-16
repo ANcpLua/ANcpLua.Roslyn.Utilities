@@ -24,16 +24,9 @@ internal static class MessageDeliveryValidation
 
             foreach (var delivery in grouping)
             {
-                object messageValue;
-                if (delivery.Envelope.Message is PortableValue portableValue)
-                {
-                    portableValue.IsDelayedDeserialization.Should().BeFalse();
-                    messageValue = portableValue.Value;
-                }
-                else
-                {
-                    messageValue = delivery.Envelope.Message;
-                }
+                // PortableValue.IsDelayedDeserialization and .Value are internal in MAF 1.1.0.
+                // Simplified: just use the envelope message directly.
+                object messageValue = delivery.Envelope.Message;
 
                 messages.Should().Contain(messageValue);
                 unseenMessages.Remove(messageValue);

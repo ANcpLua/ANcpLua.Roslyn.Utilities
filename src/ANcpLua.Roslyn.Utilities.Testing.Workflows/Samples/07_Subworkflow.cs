@@ -98,6 +98,7 @@ internal static class SubworkflowSample
     private sealed partial class TextProcessingOrchestrator(string id)
         : StatefulExecutor<TextProcessingOrchestrator.State>(id, () => new(), declareCrossRunShareable: false)
     {
+        protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
         internal sealed class State
         {
             public List<TextProcessingResult> Results { get; } = [];

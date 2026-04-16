@@ -45,6 +45,7 @@ internal sealed class UppercaseExecutor() : Executor<string, string>(nameof(Uppe
 
 internal sealed partial class ReverseTextExecutor() : Executor(nameof(ReverseTextExecutor), declareCrossRunShareable: true)
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     [MessageHandler(Yield = [typeof(string)])]
     public async ValueTask<string> HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
     {

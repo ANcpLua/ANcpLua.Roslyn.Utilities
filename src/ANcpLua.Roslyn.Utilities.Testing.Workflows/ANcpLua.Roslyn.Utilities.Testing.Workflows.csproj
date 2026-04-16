@@ -20,7 +20,7 @@
                 CA1826 — Enumerable on indexable collections (performance hint, not a bug)
                 CS1591 — missing XML doc comment on public members (harvest files are partially documented)
         -->
-        <NoWarn>$(NoWarn);CA1707;CA1816;CA1826;CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CA1707;CA1816;CA1822;CA1826;CA1852;CA1305;CA2249;CS1591;MEAI001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,86 +38,36 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     </ItemGroup>
 
+    <ItemGroup Label="Roslyn (for SyntaxTreeFluentExtensions)">
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    </ItemGroup>
+
+    <ItemGroup Label="Sibling project (for 06_Concurrent sample — uses FakeEchoAgent)">
+        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Testing.AgentTesting\ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj" />
+    </ItemGroup>
+
     <ItemGroup Label="Global usings">
         <Using Include="Microsoft.Agents.AI" />
         <Using Include="Microsoft.Agents.AI.Workflows" />
+        <Using Include="Microsoft.Agents.AI.Workflows.Declarative" />
         <Using Include="Microsoft.Extensions.AI" />
+        <Using Include="ANcpLua.Roslyn.Utilities.Testing.Workflows.Internals" />
+        <Using Include="Xunit" />
+        <Using Include="ANcpLua.Roslyn.Utilities.Testing.AgentTesting.Agents" />
     </ItemGroup>
 
-    <!-- Parked: files that depend on the INTERNAL workflow runner protocol
-         (IRunnerContext, ISuperStepJoinContext, EdgeMap, WorkflowTelemetryContext,
-         MessageEnvelope, SessionCheckpointCache, DeliveryMapping, ExecutorInfo,
-         ExecutorIdentity), the evolved JsonCheckpointStore shape, the new
-         Executor.ConfigureProtocol(ProtocolBuilder) abstract, or partial-class
-         source-generator methods that aren't wired in a public NuGet package.
+    <!--
+        Internals/ contains copies of internal types from Microsoft.Agents.AI.Workflows 1.1.0
+        that are only accessible upstream via InternalsVisibleTo. These copies are version-pinned
+        to 1.1.0 — diff against upstream on version bump.
+        See: Internals/*.cs for provenance comments per file.
+    -->
 
-         Those types are only accessible inside the upstream microsoft/agent-framework
-         repo via [InternalsVisibleTo("Microsoft.Agents.AI.Workflows.UnitTests")].
-         Keeping them as harvest on disk so a future port can reintegrate them once
-         MAF publishes a testing-helpers package or exposes these types publicly. -->
-    <ItemGroup Label="Parked (internal MAF API dependency)">
-        <!-- Runtime context harness — depends on IRunnerContext, ISuperStepJoinContext,
-             EdgeMap, WorkflowTelemetryContext, MessageEnvelope, StepContext,
-             IStepTracer, IExternalRequestContext, IExternalRequestSink,
-             ISuperStepRunner. All internal in Workflows 1.1.0. -->
-        <Compile Remove="Runtime\TestRunContext.cs" />
-        <Compile Remove="Runtime\TestWorkflowContext.cs" />
-        <Compile Remove="Runtime\TestRunState.cs" />
-        <Compile Remove="Runtime\TestingExecutor.cs" />
+    <!-- DynamicPortsExecutor uses RouteBuilder.AddPortHandler which exists in upstream main
+         but hasn't shipped in the 1.1.0 NuGet. Will be unparked when MAF ships the API. -->
+    <ItemGroup Label="Parked (post-1.1.0 API)">
         <Compile Remove="Runtime\DynamicPortsExecutor.cs" />
-        <Compile Remove="Runtime\ForwardMessageExecutor.cs" />
-
-        <!-- JsonCheckpointStore shape evolved: abstract members RetrieveIndexAsync,
-             CreateCheckpointAsync, RetrieveCheckpointAsync have different signatures
-             and SessionCheckpointCache is now internal. -->
-        <Compile Remove="Checkpointing\InMemoryJsonStore.cs" />
-
-        <!-- DeliveryMapping, ExecutorInfo, ExecutorIdentity, MessageEnvelope all internal. -->
-        <Compile Remove="Assertions\MessageDeliveryValidation.cs" />
-        <Compile Remove="Assertions\ValidationExtensions.cs" />
-
-        <!-- Needs Microsoft.CodeAnalysis (Roslyn SyntaxTree). Belongs in Testing
-             project, not Workflows. Will be moved in a follow-up. -->
-        <Compile Remove="Assertions\SyntaxTreeFluentExtensions.cs" />
-
-        <!-- Mock&lt;ResponseAgentProvider&gt; — ResponseAgentProvider has a non-public
-             ctor in the Declarative package, so Moq can't generate a proxy. -->
-        <Compile Remove="Declarative\MockAgentProvider.cs" />
-
-        <!-- Samples use the partial-class + source-generator pattern from upstream.
-             MAF 1.1.0 requires Executor subclasses to override ConfigureProtocol
-             via a source-generator-emitted partial method that isn't shipped in the
-             public NuGet. 07 additionally uses AgentWorkflowBuilder which is internal.
-             06 references AgentTesting fakes via a using that would introduce a
-             reverse dependency from Workflows back into AgentTesting. -->
-        <Compile Remove="Samples\01_Sequential.cs" />
-        <Compile Remove="Samples\02_Conditional.cs" />
-        <Compile Remove="Samples\03_Loop.cs" />
-        <Compile Remove="Samples\04_ExternalRequest.cs" />
-        <Compile Remove="Samples\05_Checkpointing.cs" />
-        <Compile Remove="Samples\06_Concurrent.cs" />
-        <Compile Remove="Samples\07_Subworkflow.cs" />
-        <Compile Remove="Samples\Quickstart.cs" />
-
-        <None Include="Runtime\TestRunContext.cs" />
-        <None Include="Runtime\TestWorkflowContext.cs" />
-        <None Include="Runtime\TestRunState.cs" />
-        <None Include="Runtime\TestingExecutor.cs" />
         <None Include="Runtime\DynamicPortsExecutor.cs" />
-        <None Include="Runtime\ForwardMessageExecutor.cs" />
-        <None Include="Checkpointing\InMemoryJsonStore.cs" />
-        <None Include="Assertions\MessageDeliveryValidation.cs" />
-        <None Include="Assertions\ValidationExtensions.cs" />
-        <None Include="Assertions\SyntaxTreeFluentExtensions.cs" />
-        <None Include="Declarative\MockAgentProvider.cs" />
-        <None Include="Samples\01_Sequential.cs" />
-        <None Include="Samples\02_Conditional.cs" />
-        <None Include="Samples\03_Loop.cs" />
-        <None Include="Samples\04_ExternalRequest.cs" />
-        <None Include="Samples\05_Checkpointing.cs" />
-        <None Include="Samples\06_Concurrent.cs" />
-        <None Include="Samples\07_Subworkflow.cs" />
-        <None Include="Samples\Quickstart.cs" />
     </ItemGroup>
 
     <ItemGroup>

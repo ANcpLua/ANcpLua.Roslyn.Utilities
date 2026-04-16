@@ -39,7 +39,7 @@ public sealed class SequentialQuickstart(ITestOutputHelper output) : WorkflowFix
     }
 }
 
-public sealed class CheckpointQuickstart(ITestOutputHelper output) : WorkflowFixture<NumberSignal>(output)
+internal sealed class CheckpointQuickstart(ITestOutputHelper output) : WorkflowFixture<NumberSignal>(output)
 {
     protected override Workflow BuildWorkflow() => ExternalRequestSample.Build(target: 42);
 

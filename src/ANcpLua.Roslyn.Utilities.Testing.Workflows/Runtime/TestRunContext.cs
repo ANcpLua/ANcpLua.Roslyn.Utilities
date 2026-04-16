@@ -40,7 +40,12 @@ public class TestRunContext : IRunnerContext
 
     internal TestRunContext ConfigureExecutor(Executor executor, EdgeMap? map = null)
     {
-        executor.AttachRequestContext(new TestExternalRequestContext(this, executor.Id, map));
+        // Executor.AttachRequestContext is internal in MAF 1.1.0.
+        // Use reflection for test infrastructure — this is test code, not production.
+        var method = typeof(Executor).GetMethod("AttachRequestContext",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        method?.Invoke(executor, [new TestExternalRequestContext(this, executor.Id, map)]);
+
         this.Executors.Add(executor.Id, executor);
         return this;
     }

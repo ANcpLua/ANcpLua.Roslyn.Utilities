@@ -14,7 +14,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Workflows;
 internal sealed class DynamicPortsExecutor<TRequest, TResponse>(string id, params IEnumerable<string> ports)
     : Executor(id)
 {
-    public Dictionary<string, PortBinding> PortBindings { get; } = new();
+    public Dictionary<string, RequestPortBinding> RequestPortBindings { get; } = new();
 
     public ConcurrentDictionary<string, ConcurrentQueue<TResponse>> ReceivedResponses { get; } = new();
 
@@ -31,13 +31,13 @@ internal sealed class DynamicPortsExecutor<TRequest, TResponse>(string id, param
                     },
                     out var binding);
 
-                this.PortBindings[portId] = binding;
+                this.RequestPortBindings[portId] = binding;
             }
         });
 
     public ValueTask PostRequestAsync(string portId, TRequest request, TestRunContext testContext, string? requestId = null)
     {
-        var binding = this.PortBindings[portId];
+        var binding = this.RequestPortBindings[portId];
         return binding.Sink.PostAsync(ExternalRequest.Create(binding.Port, request, requestId));
     }
 }

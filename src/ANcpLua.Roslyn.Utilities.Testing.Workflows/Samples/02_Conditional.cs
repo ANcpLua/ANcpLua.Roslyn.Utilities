@@ -54,6 +54,7 @@ internal static class ConditionalSample
 
 internal sealed partial class DetectSpamExecutor(string id, string[] spamKeywords) : Executor(id, declareCrossRunShareable: true)
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     [MessageHandler]
     public ValueTask<bool> HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
         => new(spamKeywords.Any(keyword => message.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0));
@@ -61,6 +62,7 @@ internal sealed partial class DetectSpamExecutor(string id, string[] spamKeyword
 
 internal sealed partial class RespondToMessageExecutor(string id) : Executor(id, declareCrossRunShareable: true)
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     public const string ActionResult = "Message processed successfully.";
 
     [MessageHandler(Yield = [typeof(string)])]
@@ -76,6 +78,7 @@ internal sealed partial class RespondToMessageExecutor(string id) : Executor(id,
 
 internal sealed partial class RemoveSpamExecutor(string id) : Executor(id, declareCrossRunShareable: true)
 {
+    protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder) => protocolBuilder;
     public const string ActionResult = "Spam message removed.";
 
     [MessageHandler(Yield = [typeof(string)])]
