@@ -1,0 +1,83 @@
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ANcpLua.Roslyn.Utilities.Testing.Workflows.Runtime;
+
+/// <summary>
+/// Scriptable Executor: pass an array of action functions, optionally loop, support manual
+/// cancellation and linked tokens. Iterations and AtEnd/Completed flags expose run state.
+/// </summary>
+internal abstract partial class TestingExecutor<TIn, TOut> : Executor, IDisposable
+{
+    private readonly bool _loop;
+    private readonly Func<TIn, IWorkflowContext, CancellationToken, ValueTask<TOut>>[] _actions;
+    private readonly HashSet<CancellationToken> _linkedTokens = [];
+    private CancellationTokenSource _internalCts = new();
+
+    public int Iterations { get; private set; }
+    public bool AtEnd => this._nextActionIndex >= this._actions.Length;
+    public bool Completed => !this._loop && this.AtEnd;
+
+    protected TestingExecutor(string id, bool loop = false, params Func<TIn, IWorkflowContext, CancellationToken, ValueTask<TOut>>[] actions) : base(id)
+    {
+        this._loop = loop;
+        this._actions = actions;
+    }
+
+    public void UnlinkCancellation(CancellationToken cancellationToken) =>
+        this._linkedTokens.Remove(cancellationToken);
+
+    public void LinkCancellation(CancellationToken cancellationToken)
+    {
+        this._linkedTokens.Add(cancellationToken);
+        CancellationTokenSource tokenSource = CancellationTokenSource.CreateLinkedTokenSource(this._linkedTokens.ToArray());
+        tokenSource = Interlocked.Exchange(ref this._internalCts, tokenSource);
+        tokenSource.Dispose();
+    }
+
+    public void SetCancel() => Volatile.Read(ref this._internalCts).Cancel();
+
+    private int _nextActionIndex;
+
+    [MessageHandler]
+    public ValueTask<TOut> RouteToActionsAsync(TIn message, IWorkflowContext context)
+    {
+        if (this.AtEnd)
+        {
+            if (this._loop)
+            {
+                this.Iterations++;
+                this._nextActionIndex = 0;
+            }
+            else
+            {
+                throw new InvalidOperationException("No more actions to execute and looping is disabled.");
+            }
+        }
+
+        try
+        {
+            Func<TIn, IWorkflowContext, CancellationToken, ValueTask<TOut>> action = this._actions[this._nextActionIndex];
+            return action(message, context, Volatile.Read(ref this._internalCts).Token);
+        }
+        finally
+        {
+            this._nextActionIndex++;
+        }
+    }
+
+    ~TestingExecutor() => this.Dispose(false);
+
+    protected virtual void Dispose(bool disposing) => this._internalCts.Dispose();
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}

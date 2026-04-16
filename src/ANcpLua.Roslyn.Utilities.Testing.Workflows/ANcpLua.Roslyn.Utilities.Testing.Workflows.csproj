@@ -41,6 +41,25 @@
         <Using Include="Microsoft.Extensions.AI" />
     </ItemGroup>
 
+    <!--
+        These 6 files use Microsoft.Agents.AI.Workflows internal types (IRunnerContext,
+        StateManager, SessionCheckpointCache, DeliveryMapping, MessageEnvelope, ExecutorInfo,
+        ExecutorIdentity) that are only accessible via InternalsVisibleTo from the upstream
+        test assembly. They compile correctly inside microsoft/agent-framework but NOT as an
+        external NuGet consumer. Parked until Microsoft exposes these types publicly or adds
+        InternalsVisibleTo for this package. SyntaxTreeFluentExtensions also needs a Roslyn
+        PackageReference which this project doesn't carry.
+    -->
+    <ItemGroup Label="Parked — requires InternalsVisibleTo from Microsoft.Agents.AI.Workflows">
+        <Compile Remove="Checkpointing/InMemoryJsonStore.cs" />
+        <Compile Remove="Runtime/TestRunContext.cs" />
+        <Compile Remove="Runtime/TestRunState.cs" />
+        <Compile Remove="Runtime/TestWorkflowContext.cs" />
+        <Compile Remove="Assertions/MessageDeliveryValidation.cs" />
+        <Compile Remove="Assertions/ValidationExtensions.cs" />
+        <Compile Remove="Assertions/SyntaxTreeFluentExtensions.cs" />
+    </ItemGroup>
+
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
