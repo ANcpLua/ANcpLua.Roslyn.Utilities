@@ -40,12 +40,7 @@ public class TestRunContext : IRunnerContext
 
     internal TestRunContext ConfigureExecutor(Executor executor, EdgeMap? map = null)
     {
-        // Executor.AttachRequestContext is internal in MAF 1.1.0.
-        // Use reflection for test infrastructure — this is test code, not production.
-        var method = typeof(Executor).GetMethod("AttachRequestContext",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        method?.Invoke(executor, [new TestExternalRequestContext(this, executor.Id, map)]);
-
+        _ = executor.DescribeProtocol();
         this.Executors.Add(executor.Id, executor);
         return this;
     }
@@ -125,19 +120,6 @@ public class TestRunContext : IRunnerContext
     ValueTask<string> ISuperStepJoinContext.AttachSuperstepAsync(ISuperStepRunner superStepRunner, CancellationToken cancellationToken) => new(string.Empty);
 
     ValueTask<bool> ISuperStepJoinContext.DetachSuperstepAsync(string joinId) => new(false);
-
-    private sealed class TestExternalRequestContext(IRunnerContext runnerContext, string executorId, EdgeMap? map) : IExternalRequestContext
-    {
-        public IExternalRequestSink RegisterPort(RequestPort port)
-        {
-            if (map?.TryRegisterPort(runnerContext, executorId, port) == false)
-            {
-                throw new InvalidOperationException("Duplicate port id: " + port.Id);
-            }
-
-            return runnerContext;
-        }
-    }
 
     private sealed class BoundContext(
         string executorId,
