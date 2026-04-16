@@ -116,14 +116,14 @@
          Used by: Web projects
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Extensions">
-        <MicrosoftExtensionsVersion>10.4.0</MicrosoftExtensionsVersion>
+        <MicrosoftExtensionsVersion>10.5.0</MicrosoftExtensionsVersion>
         <MicrosoftExtensionsAIAbstractionsVersion>10.5.0</MicrosoftExtensionsAIAbstractionsVersion>
         <MicrosoftExtensionsAIOpenAIVersion>10.5.0</MicrosoftExtensionsAIOpenAIVersion>
-        <AspNetCoreVersion>10.0.5</AspNetCoreVersion>
+        <AspNetCoreVersion>10.0.6</AspNetCoreVersion>
         <MicrosoftBclAsyncInterfacesVersion>10.0.4</MicrosoftBclAsyncInterfacesVersion>
-        <BclAsyncInterfacesVersion>10.0.5</BclAsyncInterfacesVersion>
+        <BclAsyncInterfacesVersion>10.0.6</BclAsyncInterfacesVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
-        <SystemThreadingChannelsVersion>10.0.5</SystemThreadingChannelsVersion>
+        <SystemThreadingChannelsVersion>10.0.6</SystemThreadingChannelsVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
