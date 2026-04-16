@@ -68,7 +68,7 @@
          Used by: SDK, Roslyn.Utilities
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Meziantou">
-        <MeziantouFrameworkVersion>5.0.14</MeziantouFrameworkVersion>
+        <MeziantouFrameworkVersion>5.0.15</MeziantouFrameworkVersion>
         <MeziantouFullPathVersion>1.1.18</MeziantouFullPathVersion>
         <MeziantouTemporaryDirectoryVersion>1.0.37</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
