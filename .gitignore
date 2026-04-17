@@ -1,23 +1,14 @@
+# Project-specific ignores. Universal OS/editor/build junk lives in
+# ~/.config/git/ignore (global). Keep this file focused on this repo only.
+
 # MCP config (contains tokens)
 .mcp.json
 
-# Build outputs
-bin/
-obj/
+# Custom build outputs (non-standard paths)
 out/
 artifacts/
 
-# IDE
-.idea/
-.vs/
-*.user
-*.suo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# NuGet
+# NuGet artefacts
 *.nupkg
 *.snupkg
 packages/
@@ -27,7 +18,7 @@ nupkgs/
 TestResults/
 *.trx
 
-# Local scratch files
+# Scratch files (project-local)
 *.png
 *.sh
 async-showcase.md
@@ -38,9 +29,8 @@ docs/_site/
 docs/api/*.yml
 docs/api/*.md
 !docs/api/toc.yml
+
+# Claude Code project state
 .claude/worktrees/
 .claude/journal/
-
-# Claude Code elegance-pipeline skill scratch state
 .claude/elegance_pipeline/
-__pycache__/
