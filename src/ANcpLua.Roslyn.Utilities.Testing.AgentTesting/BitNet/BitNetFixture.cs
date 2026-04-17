@@ -63,7 +63,7 @@ public sealed class BitNetFixture : IAsyncLifetime
     public ValueTask DisposeAsync()
     {
         _http.Dispose();
-        (ChatClient as IDisposable)?.Dispose();
+        ChatClient.Dispose();
         return ValueTask.CompletedTask;
     }
 }

@@ -1,64 +1,257 @@
-[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities?label=NuGet&color=0891B2)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities/)
-[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities.Sources?label=Sources&color=7C3AED)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Sources/)
-[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities.Polyfills?label=Polyfills&color=D97706)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Polyfills/)
-[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities.Testing?label=Testing&color=059669)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities.Testing/)
+[![NuGet](https://img.shields.io/nuget/v/ANcpLua.Roslyn.Utilities?label=nuget&color=0891B2)](https://www.nuget.org/packages/ANcpLua.Roslyn.Utilities/)
 [![.NET Standard 2.0](https://img.shields.io/badge/.NET%20Standard-2.0-512BD4)](https://dotnet.microsoft.com/platform/dotnet-standard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 # ANcpLua.Roslyn.Utilities
 
-Utilities for Roslyn analyzers and source generators.
+A curated .NET framework utility library. Best-in-slot primitives harvested and refined from three ecosystems:
+
+- **Roslyn source generators & analyzers** — the incremental generator shape that actually caches, the matching DSL that replaces stringly-typed symbol comparisons, code emission that isn't raw `StringBuilder`.
+- **Microsoft Agent Framework (MAF)** — test doubles for `AIAgent` / `IChatClient`, a provider-agnostic conformance suite, reference `IChatClientAgentFixture` implementations for six LLM providers, workflow fixture with fluent assertions.
+- **ModelContextProtocol** — OTel semantic conventions (GenAI semconv 1.40), SSE client with reconnect, agent test infrastructure that plays with MCP's transport.
+
+The library is the author's own. Use it, improve it (the upstream is this repo), or propose switching directions — don't reinvent locally.
 
 ## Packages
 
-| Package                              | Purpose                                                            |
-|--------------------------------------|--------------------------------------------------------------------|
-| `ANcpLua.Roslyn.Utilities`           | Core utilities (DLL reference)                                     |
-| `ANcpLua.Roslyn.Utilities.Sources`   | Source-only package (embeds as `internal` in analyzers/generators) |
-| `ANcpLua.Roslyn.Utilities.Polyfills` | Source-only polyfills for `netstandard2.0` (no Roslyn dependency)  |
-| `ANcpLua.Roslyn.Utilities.Testing`   | Testing framework for Roslyn tooling                               |
+| Package | Target | What it's for |
+|---------|--------|---------------|
+| **`ANcpLua.Roslyn.Utilities`** | netstandard2.0 | Runtime + Roslyn utilities as a normal NuGet reference (BCL + optional Roslyn layer) |
+| **`ANcpLua.Roslyn.Utilities.Sources`** | source-only | Embeds the utilities as `internal` source into source generators (generators can't load NuGet DLLs at runtime) |
+| **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
+| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Generator/analyzer/codefix test infrastructure, MSBuild integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers |
+| **`ANcpLua.Roslyn.Utilities.Testing.AgentTesting`** | net10.0 | MAF agent test doubles, scripted chat clients, MAF conformance suite, provider fixtures for OpenAI/Azure OpenAI/Anthropic/Ollama/Gemini/OpenRouter, AG-UI test server, BitNet integration |
+| **`ANcpLua.Roslyn.Utilities.Testing.Workflows`** | net10.0 | `Microsoft.Agents.AI.Workflows` test infrastructure: `WorkflowFixture<TInput>` with fluent assertions, stateful agent test doubles, execution-environment parametric axis |
 
-## Installation
+## Quickstart
+
+### Writing a source generator
 
 ```bash
-# For analyzers/generators (source-only, no runtime dependency)
 dotnet add package ANcpLua.Roslyn.Utilities.Sources
-
-# For polyfills only (no Roslyn dependency)
-dotnet add package ANcpLua.Roslyn.Utilities.Polyfills
-
-# For runtime reference
-dotnet add package ANcpLua.Roslyn.Utilities
-
-# For testing
-dotnet add package ANcpLua.Roslyn.Utilities.Testing
 ```
 
-## Polyfills
+A canonical incremental generator is 25 lines when the utilities do their job — see `src/ANcpLua.AotReflection/AotReflectionGenerator.cs` in this repo for the reference shape:
 
-The `.Polyfills` and `.Sources` packages include polyfills for modern C# features on `netstandard2.0`:
+```csharp
+[Generator]
+public sealed class MyGenerator : IIncrementalGenerator
+{
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        var flows = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "MyNamespace.TracedAttribute",
+            static (node, _) => node is ClassDeclarationSyntax,
+            static (ctx, ct) => TypeExtractor.Extract(ctx, ct));
 
-| Polyfill            | What it enables                      | Opt-out property                      |
-|---------------------|--------------------------------------|---------------------------------------|
-| `Index` / `Range`   | `array[^1]`, `array[1..3]` syntax    | `InjectIndexRangeOnLegacy`            |
-| `IsExternalInit`    | `record` types and `init` properties | `InjectIsExternalInitOnLegacy`        |
-| Nullable attributes | `[NotNull]`, `[MaybeNull]`, etc.     | `InjectNullabilityAttributesOnLegacy` |
-| Trim/AOT attributes | `[RequiresUnreferencedCode]`, etc.   | `InjectTrimAttributesOnLegacy`        |
-| `TimeProvider`      | Testable time abstraction            | `InjectTimeProviderPolyfill`          |
-| `Lock`              | `System.Threading.Lock` polyfill     | `InjectLockPolyfill`                  |
-| String extensions   | `string.Contains(StringComparison)`  | `InjectStringExtensionsPolyfill`      |
+        var types = flows.ReportAndStop(context);
 
-All polyfills are enabled by default. Set any property to `false` to opt out, or disable all with:
+        var files = types
+            .Select(static (m, _) => OutputGenerator.Generate(m))
+            .CollectAsEquatableArray();
 
-```xml
-<InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>
+        files.AddSources(context);
+    }
+}
 ```
+
+What the library provides at each step:
+- `ForAttributeWithMetadataName` — filter syntax before expensive semantic work
+- `DiagnosticFlow<T>` — railway-oriented pipeline carrying value + accumulated diagnostics, value-equatable for incremental caching
+- `ReportAndStop` — drain the flow into `ReportDiagnostic` and yield values
+- `CollectAsEquatableArray` — value equality so the cache actually hits
+- `AddSources` — emit `FileWithName` records without boilerplate
+- `Match.Type()` / `Match.Method()` — fluent symbol matching, no string comparisons
+- `IndentedStringBuilder` — `BeginBlock()`/`EndBlock()` scopes, no hardcoded indentation strings
+- `GeneratedCodeHelpers` — `<auto-generated/>` headers, `#nullable enable`, pragma helpers
+
+### Testing an agent
+
+```bash
+dotnet add package ANcpLua.Roslyn.Utilities.Testing.AgentTesting
+```
+
+```csharp
+// Scripted IChatClient double
+var client = new FakeChatClient()
+    .WithText("Hello!")
+    .WithFunctionCall("get_weather", new { city = "Vienna" });
+
+// Multi-turn agent double with session state
+var agent = FakeReplayAgent.FromStrings(
+    TimeProvider.System, "First response", "Second response");
+
+// Capture and assert OTel activities
+using var collector = new ActivityCollector("my-source");
+await agent.RunAsync(new ChatMessage(ChatRole.User, "hi"));
+collector.FindSingle("my-agent.run")
+    .AssertStatus(ActivityStatusCode.Ok)
+    .AssertTag("gen_ai.request.model", "gpt-5.4-mini");
+```
+
+### Running the provider-agnostic MAF conformance suite
+
+One fixtu![img.png](img.png)re implementation unlocks ~30 conformance tests against any `IChatClient`-backed agent. Six reference implementations ship in the package:
+
+```csharp
+// OpenAI
+public sealed class MyOpenAITests()
+    : RunTests<OpenAIChatCompletionFixture>(() => new());
+
+// Azure OpenAI
+public sealed class MyAzureTests()
+    : RunTests<AzureOpenAIChatCompletionFixture>(() => new());
+
+// Anthropic (Claude)
+public sealed class MyAnthropicTests()
+    : RunTests<AnthropicChatCompletionFixture>(() => new());
+
+// Ollama (local, free, no API key)
+public sealed class MyOllamaTests()
+    : RunStreamingTests<OllamaChatCompletionFixture>(() => new());
+
+// Google Gemini
+public sealed class MyGeminiTests()
+    : ChatClientAgentRunTests<GoogleGeminiChatCompletionFixture>(() => new());
+
+// OpenRouter (meta-provider, 100+ backing models)
+public sealed class MyRouterTests()
+    : StructuredOutputRunTests<OpenRouterChatCompletionFixture>(() => new());
+```
+
+Wire credentials via `testsettings.development.json`, environment variables, or user secrets — see `TestSettings` for the key catalog.
+
+### Testing a MAF workflow
+
+```bash
+dotnet add package ANcpLua.Roslyn.Utilities.Testing.Workflows
+```
+
+```csharp
+public sealed class MyWorkflowTests(ITestOutputHelper output)
+    : WorkflowFixture<string>(output)
+{
+    protected override Workflow BuildWorkflow() => SimpleSequentialSample.Build();
+
+    [Theory]
+    [InlineData(ExecutionEnvironment.InProcess_Lockstep)]
+    [InlineData(ExecutionEnvironment.InProcess_OffThread)]
+    public async Task UppercaseReverse_YieldsReversedShouted(ExecutionEnvironment env)
+    {
+        var run = await this.RunAsync("Hello, World!", env);
+
+        run.Should()
+           .YieldOutput<string>(s => s.Should().Be("!DLROW ,OLLEH"))
+           .And.HaveNoErrors()
+           .And.CompletedExecutors("UppercaseExecutor", "ReverseTextExecutor");
+    }
+}
+```
+
+## What's in the box
+
+### Layer 1 — Runtime utilities
+
+Zero-allocation, BCL-only primitives. Consumable from any .NET project.
+
+- **Performance**: `SpanTokenizer`, `AsciiHelpers`, `AsciiSet`, `IntegerParser`, `ValueStringBuilder`, `BitHelpers`, `MemoryHelpers`
+- **Data structures**: `EquatableArray<T>`, `CircularBuffer<T>`, `Deduplicator<T>`, `ExpiringCache<TKey,TValue>`, `Result<T>`
+- **Async & streaming**: `SseClient<T>` (with reconnect), `ParallelAsyncExtensions` (channel-based), `AsyncBatchingWorkQueue<T>`, `AsyncSequenceExtensions`, `CancellationSeries`
+- **Telemetry support**: `TimeConversions` (OTLP nanos), `AssemblyVersionExtensions`
+- **Domain**: `ErrorCategorizer` (13 categories), `ErrorFingerprinter` (stable SHA256), `StatisticalMath` (entropy, KL divergence, RRF), `DistributionComparer`, `SqlOperationParser` (OTel db semconv), `CursorCodec` (opaque pagination), `PagedResult<T>`, `DataReaderExtensions`
+
+### Layer 2 — Roslyn utilities
+
+Require `Microsoft.CodeAnalysis`. Used by generators and analyzers.
+
+- **Incremental pipeline**: `DiagnosticFlow<T>`, `IncrementalValuesProviderExtensions`, `SyntaxValueProviderExtensions`
+- **Symbol matching**: `SymbolMatch` / `InvocationMatch` fluent DSL, `SymbolExtensions`, `TypeSymbolExtensions`, `AttributeExtensions`, `OverloadFinder`, `SemanticGuard`
+- **Cached type contexts**: `OTelContext`, `AspNetContext`, `AwaitableContext`, `DisposableContext`, `CollectionContext`
+- **Deprecated OTel detection**: `DeprecatedOtelAttributes` — 50+ attribute mappings synced to GenAI semconv 1.40
+- **Code emission**: `IndentedStringBuilder`, `GeneratedCodeHelpers`, `FileWithName`, `ValueStringBuilder`
+- **Flow analysis**: `DataFlowAnalyzer<T>` — abstract forward dataflow over `ControlFlowGraph` with worklist + lattice operations
+- **Misc**: `MappingRegistry`, `CodeStylePreferences`, `DiagnosticAnalyzerBase`, `TypeCache<TEnum>`, `HashCombiner`, `Boxes`
+
+### Layer 3 — Testing
+
+Generator, analyzer, codefix, refactoring, MSBuild integration, and cross-framework web testing.
+
+- **Generator tests**: `GeneratorTestEngine` (fluent builder), `GeneratorCachingReport` (compares two runs, detects cache hits), `GeneratorStepAnalyzer`, `ForbiddenTypeAnalyzer`
+- **Analyzer / CodeFix / Refactoring tests**: `AnalyzerTest`, `CodeFixTest<TAnalyzer,TCodeFix>`, `CodeFixTestWithEditorConfig`, `RefactoringTest`, `SolutionRefactoringTest`, `LogAssert`
+- **MSBuild integration tests**: `ProjectBuilder` (fluent isolated temp project), `PackageProjectBuilder` (Default/ProjectElement/SdkElement import styles), `NuGetPackageFixture` (package pre-warming), `BuildResult` + fluent assertions, `DotNetSdkHelpers`
+- **Web testing** (cross-framework — xUnit root + `NUnit/` + `TUnit/` + `Bunit/` subfolders): `IntegrationTestBase` (fast in-memory `TestServer`), `KestrelTestBase` (real Kestrel for HTTP/2 / WebSockets / SSE / Playwright), `FakeLoggerExtensions`, `BunitTestBase`
+- **OTel instrumentation**: `ActivityInstrumentation` (semconv versions, `ScopedActivity`, GenAI helpers), `MetricsInstrumentation`, `LoggingConventions` (EventId ranges, 100+ LogTags), `LogEnricherInfrastructure`, `DataClassificationHelpers` (PII/Secret redaction)
+- **Generator helpers**: `GeneratorTestHelper<TGenerator>` — assertion-oriented one-liners complementing the fluent `GeneratorTestEngine`
+
+### Layer 4 — Agent testing
+
+MAF test infrastructure. Sibling of Workflows, focused on agents.
+
+- **Agents/** — `FakeAgentBase`, `FakeEchoAgent`, `FakeTextStreamingAgent`, `FakeMultiMessageAgent`, `FakeReplayAgent`, `FakeRoleCheckAgent`, `FakeDelegatingAgent`
+- **ChatClients/** — `FakeChatClient` (fluent builder with call recording, scripted sequences, streaming, exception injection), `ChatClientAgentTestHelper` (multi-turn agent orchestration with history verification), `MockChatClients` (6 single-purpose variants), `ChatMessageExtensions` + `AsyncEnumerableExtensions`
+- **Conformance/** — provider-agnostic MAF conformance suite
+  - `IAgentFixture` / `IChatClientAgentFixture` contracts, `AgentTestBase<TFixture>`
+  - `RunTests`, `RunStreamingTests`, `ChatClientAgentRunTests`, `ChatClientAgentRunStreamingTests`, `StructuredOutputRunTests`
+  - `MenuPlugin`, `CityInfo` — function-calling and structured-output test payloads
+  - **Examples/** — six reference `IChatClientAgentFixture` implementations: `OpenAIChatCompletionFixture`, `AzureOpenAIChatCompletionFixture`, `AnthropicChatCompletionFixture`, `OllamaChatCompletionFixture`, `GoogleGeminiChatCompletionFixture`, `OpenRouterChatCompletionFixture`, plus `TestSettings` config key catalog
+- **Hosting/** — `AGUITestServer` (in-memory AG-UI endpoint test server)
+- **Http/** — `FakeHttpMessageHandler` (URL pattern matching, SSE streams), `SseResponseParser`, `RecordedRequest`
+- **Diagnostics/** — `ActivityCollector` (`FindSingle`, `AssertTag`, `AssertStatus`, `AssertHasEvent`, `AssertKind`, `AssertDuration`)
+- **Logging/** — `TestOutputAdapter` (xUnit ↔ `ILogger` bridge with structured log capture), `LogRecord`
+- **BitNet/** — `BitNetFixture`, `BitNetAttribute`, `BitNetTestGroup` — integration tests against a real small model via llama.cpp
+
+### Layer 5 — Workflow testing
+
+`Microsoft.Agents.AI.Workflows` test infrastructure. Harvested from `microsoft/agent-framework`.
+
+- **Fixtures/** — `WorkflowFixture<TInput>`: derive, override `BuildWorkflow()`, assert via `.Should().YieldOutput<T>().And.HaveNoErrors()`. Handles execution-environment selection, in-memory checkpointing, and checkpoint resume out of the box.
+- **Runtime/** — `ExecutionEnvironment` parametric `[Theory]` axis (`InProcess_OffThread` / `InProcess_Lockstep` / `InProcess_Concurrent`)
+- **Agents/** — stateful workflow-oriented test doubles: `TestEchoAgent` (session history + prefix echo), `TestReplayAgent` (fixed replay with duplicate-id validation), `TestRequestAgent`, `RoleCheckAgent`
+- **Framework/** — declarative workflow integration-test harness: `Testcase` JSON schema, `WorkflowHarness`, `WorkflowEvents`
+
+Some upstream pieces are parked in-tree but excluded from compile because they depend on types that are `internal` to `Microsoft.Agents.AI.Workflows` (only reachable inside the upstream repo via `InternalsVisibleTo`). They'll be enabled when MAF publishes a public testing-helpers package.
+
+### Layer 6 — Polyfills
+
+Language and API backports for `netstandard2.0` consumers.
+
+| Polyfill | Enables | Opt-out |
+|----------|---------|---------|
+| `Index` / `Range` | `array[^1]`, `array[1..3]` | `InjectIndexRangeOnLegacy=false` |
+| `IsExternalInit` | `record` types, `init` setters | `InjectIsExternalInitOnLegacy=false` |
+| Nullable attributes | `[NotNull]`, `[MaybeNull]`, `[MemberNotNull]`, `[NotNullWhen]` | `InjectNullabilityAttributesOnLegacy=false` |
+| Trim/AOT attributes | `[RequiresUnreferencedCode]`, `[DynamicallyAccessedMembers]` | `InjectTrimAttributesOnLegacy=false` |
+| `TimeProvider` | Testable time abstraction | `InjectTimeProviderPolyfill=false` |
+| `Lock` | `System.Threading.Lock` | `InjectLockPolyfill=false` |
+| `required`, `params collections`, `CallerArgumentExpression`, `UnreachableException`, `StackTraceHidden`, `ExperimentalAttribute` | C# 11–13 language features on ns2.0 | per-feature MSBuild props |
+
+Disable all at once: `<InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>`
+
+## Separate: AOT reflection generator
+
+This repo also ships **`ANcpLua.Analyzers.AotReflection`** — an incremental source generator that replaces runtime `typeof(T).GetProperties()` with compile-time metadata, making types NativeAOT- and trim-safe. Mark a type `[AotReflection]` and a generated `FooMetadata` class appears with strongly-typed getter/setter/invoker delegates. Pair with `ANcpLua.Roslyn.Utilities.Testing.Aot` (`[AotTest]`, `[AotSafe]`, `[TrimSafe]`, `[TrimTest]`) to verify the output actually survives `PublishAot=true` and `PublishTrimmed=true`.
+
+## Design principles
+
+- **Compile-time over runtime reflection.** `EquatableArray<T>` for generator caching, `DiagnosticFlow<T>` for pipeline error accumulation, `IndentedStringBuilder` for emission — the shape of an incremental generator the compiler cache actually likes.
+- **Span-first, allocation-last.** `ValueStringBuilder` for hot-path strings, `SpanTokenizer` for allocation-free parsing, `Boxes` for cached boxed primitives, `AsciiSet` for O(1) membership.
+- **OTel semconv 1.40 native.** `OTelContext` resolves every `Activity`/`Meter`/`Counter`/`Histogram`/`TracerProvider`/`MeterProvider` type once. `DeprecatedOtelAttributes` catches `gen_ai.system` and 50+ other deprecated attribute names during analysis.
+- **Test discipline.** `FakeChatClient` over `Moq<IChatClient>`. `GeneratorCachingReport` over hand-rolled cache assertions. `ForbiddenTypeAnalyzer` catches `ISymbol`/`Compilation` snuck into pipeline models. `AgentTestBase<TFixture>` plugs any `IChatClient`-backed provider into a single conformance suite.
+- **Source-only delivery for generators.** The `.Sources` package rewrites the utilities to `internal` via a pack-time PowerShell transform (`Transform-Sources.ps1`), because source generators can't load NuGet DLLs at runtime.
+
+## Upstream harvest
+
+The `Testing.AgentTesting/ChatClients/{ChatClientAgentTestHelper,MockChatClients}`, `Testing.AgentTesting/Conformance/Examples/*`, and most of `Testing.Workflows/*` originate from the `microsoft/agent-framework` test tree under the Microsoft License. They're intentionally kept close to upstream shape to ease re-sync when MAF publishes updates. Each harvest file carries a `// Source: microsoft/agent-framework dotnet/tests — <filename>` comment in its header.
 
 ## Documentation
 
-**[ancplua.mintlify.app/utilities](https://ancplua.mintlify.app/utilities/overview)**
+**[ancplua.mintlify.app/utilities](https://ancplua.mintlify.app/utilities/overview)** — full API reference with examples.
 
 ## Related
 
-- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk)
-- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers)
+- **[ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk)** — opinionated .NET SDK wrapper built on the same conventions
+- **[ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers)** — the author's analyzer catalogue, built on these utilities
+
+## License
+
+MIT © Alexander Nachtmann
