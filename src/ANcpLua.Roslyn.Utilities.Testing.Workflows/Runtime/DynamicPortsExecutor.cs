@@ -9,8 +9,8 @@ using Microsoft.Agents.AI.Workflows;
 namespace ANcpLua.Roslyn.Utilities.Testing.Workflows;
 
 // Owns N dynamic request ports and records every response it sees, keyed by port id.
-// Combine with TestRunContext to verify that the EdgeMap routes responses to the
-// right port without going through the real InProcessExecution.
+// Combine with TestRunContext to verify that responses land on the right port
+// without going through the real InProcessExecution.
 internal sealed class DynamicPortsExecutor<TRequest, TResponse>(string id, params IEnumerable<string> ports)
     : Executor(id)
 {

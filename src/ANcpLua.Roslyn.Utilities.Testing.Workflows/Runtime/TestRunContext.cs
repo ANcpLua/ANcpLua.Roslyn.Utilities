@@ -38,18 +38,18 @@ public class TestRunContext : IRunnerContext
 
     WorkflowTelemetryContext IRunnerContext.TelemetryContext => WorkflowTelemetryContext.Disabled;
 
-    internal TestRunContext ConfigureExecutor(Executor executor, EdgeMap? map = null)
+    internal TestRunContext ConfigureExecutor(Executor executor)
     {
         _ = executor.DescribeProtocol();
         this.Executors.Add(executor.Id, executor);
         return this;
     }
 
-    internal TestRunContext ConfigureExecutors(IEnumerable<Executor> executors, EdgeMap? map = null)
+    internal TestRunContext ConfigureExecutors(IEnumerable<Executor> executors)
     {
         foreach (var executor in executors)
         {
-            this.ConfigureExecutor(executor, map);
+            this.ConfigureExecutor(executor);
         }
 
         return this;
