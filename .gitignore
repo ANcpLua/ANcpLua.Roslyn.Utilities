@@ -43,3 +43,4 @@ docs/api/*.md
 
 # Claude Code elegance-pipeline skill scratch state
 .claude/elegance_pipeline/
+__pycache__/
