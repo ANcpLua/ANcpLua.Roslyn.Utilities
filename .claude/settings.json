@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "docs/ref/hooks/journal.sh SessionStart"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/journal.py SessionStart"
           }
         ]
       }
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "docs/ref/hooks/journal.sh PostToolUse"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/journal.py PostToolUse"
           }
         ]
       }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "docs/ref/hooks/journal.sh Stop"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/journal.py Stop"
           }
         ]
       }

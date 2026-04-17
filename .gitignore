@@ -40,3 +40,6 @@ docs/api/*.md
 !docs/api/toc.yml
 .claude/worktrees/
 .claude/journal/
+
+# Claude Code elegance-pipeline skill scratch state
+.claude/elegance_pipeline/
