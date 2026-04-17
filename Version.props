@@ -72,7 +72,8 @@
         <MeziantouFullPathVersion>1.1.18</MeziantouFullPathVersion>
         <MeziantouTemporaryDirectoryVersion>1.0.37</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
-        <MeziantouDependencyScanningVersion>2.0.9</MeziantouDependencyScanningVersion>
+        <MeziantouDependencyScanningVersion>2.0.10</MeziantouDependencyScanningVersion>
+        <MeziantouAnalyzerVersion>3.0.44</MeziantouAnalyzerVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -97,7 +98,7 @@
         <CodeCoverageVersion>18.4.1</CodeCoverageVersion>
         <TestSdkVersion>18.3.0</TestSdkVersion>
         <DiagnosticsTestingVersion>10.4.0</DiagnosticsTestingVersion>
-        <GitHubActionsLoggerMTPVersion>3.0.2</GitHubActionsLoggerMTPVersion>
+        <GitHubActionsLoggerMTPVersion>3.0.3</GitHubActionsLoggerMTPVersion>
         <GitHubActionsLoggerVSTestVersion>2.4.1</GitHubActionsLoggerVSTestVersion>
     </PropertyGroup>
 
@@ -139,7 +140,7 @@
          Used by: SDK
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Build Tools">
-        <NuGetVersion>7.3.0</NuGetVersion>
+        <NuGetVersion>7.3.1</NuGetVersion>
         <MSBuildStructuredLoggerVersion>2.3.154</MSBuildStructuredLoggerVersion>
         <MicrosoftSourceLinkVersion>10.0.201</MicrosoftSourceLinkVersion>
         <MicrosoftDeploymentDotNetReleasesVersion>1.0.1</MicrosoftDeploymentDotNetReleasesVersion>
