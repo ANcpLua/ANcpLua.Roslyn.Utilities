@@ -41,13 +41,6 @@
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         ROSLYN.UTILITIES.TESTING.WORKFLOWS (MAF workflow test infrastructure)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Roslyn.Utilities.Testing.Workflows">
-        <ANcpLuaRoslynUtilitiesTestingWorkflowsVersion>1.52.0</ANcpLuaRoslynUtilitiesTestingWorkflowsVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN ANALYZER TESTING
          Used by: Roslyn.Utilities.Testing, Analyzers.Tests
          ═══════════════════════════════════════════════════════════════════════ -->
@@ -113,21 +106,6 @@
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         MICROSOFT.EXTENSIONS (ASP.NET Core / Hosting)
-         Used by: Web projects
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Microsoft.Extensions">
-        <MicrosoftExtensionsVersion>10.5.0</MicrosoftExtensionsVersion>
-        <MicrosoftExtensionsAIAbstractionsVersion>10.5.0</MicrosoftExtensionsAIAbstractionsVersion>
-        <MicrosoftExtensionsAIOpenAIVersion>10.5.0</MicrosoftExtensionsAIOpenAIVersion>
-        <AspNetCoreVersion>10.0.6</AspNetCoreVersion>
-        <MicrosoftBclAsyncInterfacesVersion>10.0.6</MicrosoftBclAsyncInterfacesVersion>
-        <BclAsyncInterfacesVersion>10.0.6</BclAsyncInterfacesVersion>
-        <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
-        <SystemThreadingChannelsVersion>10.0.6</SystemThreadingChannelsVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
          OPENTELEMETRY
          Used by: Web projects (qyl ServiceDefaults)
          ═══════════════════════════════════════════════════════════════════════ -->
@@ -158,40 +136,6 @@
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         MICROSOFT AGENTS
-         Used by: Roslyn.Utilities.Testing (Agent test infrastructure),
-                  Roslyn.Utilities.Testing.Workflows (Workflow test infrastructure)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Microsoft.Agents">
-        <MicrosoftAgentsAIVersion>1.1.0</MicrosoftAgentsAIVersion>
-        <MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>1.0.0-preview.260402.1</MicrosoftAgentsAIHostingAGUIAspNetCoreVersion>
-        <MicrosoftAgentsAIWorkflowsVersion>1.1.0</MicrosoftAgentsAIWorkflowsVersion>
-        <MicrosoftAgentsAIWorkflowsDeclarativeVersion>1.0.0-rc6</MicrosoftAgentsAIWorkflowsDeclarativeVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         LLM PROVIDER SDKs
-         Used by: Roslyn.Utilities.Testing.AgentTesting (Conformance/Examples fixtures)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="LLM Providers">
-        <OpenAIVersion>2.10.0</OpenAIVersion>
-        <AzureAIOpenAIVersion>2.1.0</AzureAIOpenAIVersion>
-        <AzureIdentityVersion>1.21.0</AzureIdentityVersion>
-        <AnthropicSDKVersion>5.10.0</AnthropicSDKVersion>
-        <OllamaSharpVersion>5.4.25</OllamaSharpVersion>
-        <MsccGenerativeAIVersion>3.1.0</MsccGenerativeAIVersion>
-        <MsccGenerativeAIMicrosoftVersion>3.1.0</MsccGenerativeAIMicrosoftVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         WORKFLOW TEST DEPENDENCIES
-         Used by: Roslyn.Utilities.Testing.Workflows
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Workflow Testing">
-        <MoqVersion>4.20.72</MoqVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
          MISCELLANEOUS
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Misc">
@@ -203,6 +147,5 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Aliases">
         <XunitMtpVersion>$(XunitV3Version)</XunitMtpVersion>
-        <MvcTestingVersion>$(AspNetCoreVersion)</MvcTestingVersion>
     </PropertyGroup>
 </Project>

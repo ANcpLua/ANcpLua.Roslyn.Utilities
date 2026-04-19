@@ -13,26 +13,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-  <ItemGroup Label="Agent Testing">
-    <PackageVersion Include="Microsoft.Agents.AI" Version="$(MicrosoftAgentsAIVersion)" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="$(MicrosoftAgentsAIHostingAGUIAspNetCoreVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="$(MicrosoftExtensionsAIOpenAIVersion)" />
-    <PackageVersion Include="OpenAI" Version="$(OpenAIVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="Workflow Testing">
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="$(MicrosoftAgentsAIWorkflowsVersion)" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows.Declarative" Version="$(MicrosoftAgentsAIWorkflowsDeclarativeVersion)" />
-    <PackageVersion Include="Moq" Version="$(MoqVersion)" />
-  </ItemGroup>
-  <ItemGroup Label="LLM Provider SDKs">
-    <PackageVersion Include="Azure.AI.OpenAI" Version="$(AzureAIOpenAIVersion)" />
-    <PackageVersion Include="Azure.Identity" Version="$(AzureIdentityVersion)" />
-    <PackageVersion Include="Anthropic.SDK" Version="$(AnthropicSDKVersion)" />
-    <PackageVersion Include="OllamaSharp" Version="$(OllamaSharpVersion)" />
-    <PackageVersion Include="Mscc.GenerativeAI" Version="$(MsccGenerativeAIVersion)" />
-    <PackageVersion Include="Mscc.GenerativeAI.Microsoft" Version="$(MsccGenerativeAIMicrosoftVersion)" />
-  </ItemGroup>
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
@@ -67,7 +47,6 @@
     <PackageVersion Include="TUnit.Core" Version="$(TUnitCoreVersion)" />
     <PackageVersion Include="bunit" Version="$(BunitVersion)" />
     <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
   <ItemGroup Label="MSBuild Testing">
     <PackageVersion Include="MSBuild.StructuredLogger" Version="$(MSBuildStructuredLoggerVersion)" />
