@@ -13,6 +13,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
+  <ItemGroup Label="Microsoft.Extensions (used by Roslyn.Utilities.Testing surface)">
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <PackageVersion Include="OpenAI" Version="$(OpenAIVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
