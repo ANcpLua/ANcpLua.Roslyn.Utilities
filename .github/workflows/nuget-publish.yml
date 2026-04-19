@@ -84,13 +84,8 @@ jobs:
           dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
           dotnet pack src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
 
-      # AgentTesting depends on Microsoft.Extensions.AI / Microsoft.Agents.AI which are still
-      # preview-tracking. We append `-preview.1` so this package can never be picked up as a
-      # stable version by accident — consumers must opt in via a prerelease feed.
-      # When Microsoft.Extensions.AI ships a stable 1.0, drop this suffix.
-      - name: Pack (AgentTesting — preview)
-        if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.AgentTesting/ANcpLua.Roslyn.Utilities.Testing.AgentTesting.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }}-preview.1 --no-build
+      # AgentTesting + Testing.Workflows moved to https://github.com/ANcpLua/ANcpLua.Agents
+      # (2026-04-19) and publish from that repo's own workflow.
 
       - name: Upload artifacts
         if: matrix.os == 'ubuntu-latest'
