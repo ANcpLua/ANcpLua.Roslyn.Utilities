@@ -7,6 +7,8 @@
 
 #if !NETCOREAPP3_1_OR_GREATER
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>

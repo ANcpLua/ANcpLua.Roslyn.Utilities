@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 #if !NETCOREAPP3_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER

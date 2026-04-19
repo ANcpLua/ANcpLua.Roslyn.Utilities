@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
 
 #if !NET7_0_OR_GREATER

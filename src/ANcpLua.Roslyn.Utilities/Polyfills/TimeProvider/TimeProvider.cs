@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 
 #if !NET8_0_OR_GREATER
