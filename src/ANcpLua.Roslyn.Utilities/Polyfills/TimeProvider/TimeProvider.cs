@@ -7,6 +7,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 #if !NET8_0_OR_GREATER
 

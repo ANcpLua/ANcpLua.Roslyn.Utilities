@@ -6,6 +6,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.CodeDom.Compiler;
+using System.Text;
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 
