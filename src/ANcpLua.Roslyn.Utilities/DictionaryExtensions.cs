@@ -185,4 +185,72 @@ internal
         dictionary[key] = null;
         return null;
     }
+
+    /// <summary>
+    ///     Gets the value for the specified key, or inserts a new default-constructed value if the key doesn't exist.
+    /// </summary>
+    /// <remarks>
+    ///     Ergonomic overload for the common case of bucket-style aggregation (dictionary of lists, sets, counters).
+    ///     Matches <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey,TValue}.GetOrAdd(TKey,Func{TKey,TValue})" />
+    ///     shape. For closure-free factories use
+    ///     <see cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />.
+    /// </remarks>
+    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
+        where TKey : notnull
+        where TValue : new()
+    {
+        if (dictionary.TryGetValue(key, out var value))
+            return value;
+
+        value = new TValue();
+        dictionary.Add(key, value);
+        return value;
+    }
+
+    /// <summary>
+    ///     Gets the value for the specified key, or inserts the result of <paramref name="factory" /> if the key doesn't exist.
+    /// </summary>
+    /// <remarks>
+    ///     Use a <c>static</c> lambda to avoid closure allocation. For lambdas that need external state, prefer the
+    ///     closure-free <see cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" /> overload.
+    /// </remarks>
+    public static TValue GetOrAdd<TKey, TValue>(
+        this Dictionary<TKey, TValue> dictionary,
+        TKey key,
+        Func<TKey, TValue> factory)
+        where TKey : notnull
+    {
+        if (dictionary.TryGetValue(key, out var value))
+            return value;
+
+        value = factory(key);
+        dictionary.Add(key, value);
+        return value;
+    }
+
+    /// <summary>
+    ///     Copies <paramref name="sourceKey" /> into <paramref name="destinationKey" /> when the source is present
+    ///     and the destination is absent. Returns <c>true</c> if the dictionary was mutated.
+    /// </summary>
+    /// <remarks>
+    ///     Extracts the "copy-if-absent under new name" pattern that shows up repeatedly in vendor-telemetry adapters
+    ///     (e.g. mapping Codex/Cursor GenAI attribute keys onto the OTel semconv names). The optional
+    ///     <paramref name="transform" /> lets callers reshape the value during the copy.
+    /// </remarks>
+    public static bool MapIfAbsent<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey sourceKey,
+        TKey destinationKey,
+        Func<TValue, TValue>? transform = null)
+        where TKey : notnull
+    {
+        if (dictionary.ContainsKey(destinationKey))
+            return false;
+
+        if (!dictionary.TryGetValue(sourceKey, out var value))
+            return false;
+
+        dictionary[destinationKey] = transform is null ? value : transform(value);
+        return true;
+    }
 }

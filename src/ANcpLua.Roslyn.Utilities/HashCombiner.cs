@@ -320,6 +320,36 @@ internal
     }
 
     /// <summary>
+    ///     Converts a (possibly null or empty) sequence to an <see cref="EquatableArray{T}" />, returning
+    ///     <c>default</c> when the source is <c>null</c> or empty.
+    /// </summary>
+    /// <remarks>
+    ///     Eliminates the <c>list.Count is 0 ? default : list.ToEquatableArray()</c> idiom that recurs across
+    ///     incremental generator pipelines. Returning <c>default</c> (instead of an empty instance) keeps cache
+    ///     keys identical for empty vs missing collections, avoiding spurious incremental-pipeline invalidation.
+    /// </remarks>
+    public static EquatableArray<T> ToEquatableArrayOrDefault<T>(this IEnumerable<T>? source) where T : IEquatable<T>
+    {
+        if (source is null)
+            return default;
+
+        if (source is IReadOnlyCollection<T> { Count: 0 })
+            return default;
+
+        var immutable = source.ToImmutableArray();
+        return immutable.IsEmpty ? default : immutable.AsEquatableArray();
+    }
+
+    /// <summary>
+    ///     Converts a (possibly default or empty) immutable array to an <see cref="EquatableArray{T}" />,
+    ///     returning <c>default</c> when the source is empty.
+    /// </summary>
+    public static EquatableArray<T> ToEquatableArrayOrDefault<T>(this ImmutableArray<T> source) where T : IEquatable<T>
+    {
+        return source.IsDefaultOrEmpty ? default : source.AsEquatableArray();
+    }
+
+    /// <summary>
     ///     Compares two immutable arrays for sequence equality using the default equality comparer.
     /// </summary>
     /// <typeparam name="T">The type of elements in the arrays.</typeparam>

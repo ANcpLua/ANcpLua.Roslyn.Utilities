@@ -197,10 +197,11 @@ internal
 /// <seealso cref="IndentScope" />
 /// <seealso cref="GeneratedCodeHelpers" />
 #if ANCPLUA_ROSLYN_PUBLIC
+public
 #else
 internal
 #endif
-public sealed class IndentedStringBuilder
+    sealed class IndentedStringBuilder
 {
     private readonly StringBuilder _sb;
     private readonly string _indentString;

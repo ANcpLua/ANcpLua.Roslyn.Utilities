@@ -2,7 +2,9 @@
 
 ## Scope
 
-This file governs testing utilities under `src/ANcpLua.Roslyn.Utilities.Testing`.
+This file governs testing utilities under `src/ANcpLua.Roslyn.Utilities.Testing` — Roslyn generator/analyzer/codefix test infrastructure (`Test<TGenerator>`, `AnalyzerTest<T>`, `CodeFixTest<T,F>`, `RefactoringTest<T>`), MSBuild/NuGet integration tests (`ProjectBuilder`, `PackageTestBase<TFixture>`, `NuGetPackageFixture`), cross-framework web testing (`IntegrationTestBase<T>` / `KestrelTestBase<T>` in xUnit / `WebTesting/NUnit/` / `WebTesting/TUnit/` / `WebTesting/Bunit/`), OTel instrumentation helpers (`ActivityInstrumentation`, `MetricsInstrumentation`, `LoggingConventions`, `DataClassificationHelpers`), and the `BitNetFixture` live-LLM integration.
+
+Agent test doubles, MAF conformance, and workflow fixtures live in the sibling package [`ANcpLua.Agents`](https://www.nuget.org/packages/ANcpLua.Agents/).
 
 ## Core contracts
 

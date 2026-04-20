@@ -13,9 +13,7 @@ internal
 #endif
     static class SyntaxBuilders
 {
-    /// <summary>
-    ///     Builds an extension method invocation: receiver.MethodName(args)
-    /// </summary>
+    /// <summary>Builds an extension method invocation: <c>receiver.MethodName(args)</c>.</summary>
     public static InvocationExpressionSyntax ExtensionCall(
         ExpressionSyntax receiver,
         string methodName,
@@ -35,9 +33,7 @@ internal
         return SyntaxFactory.InvocationExpression(memberAccess, argList);
     }
 
-    /// <summary>
-    ///     Builds a static method invocation: TypeName.MethodName(args)
-    /// </summary>
+    /// <summary>Builds a static method invocation: <c>TypeName.MethodName(args)</c>.</summary>
     public static InvocationExpressionSyntax StaticCall(
         string typeName,
         string methodName,
@@ -57,23 +53,15 @@ internal
         return SyntaxFactory.InvocationExpression(memberAccess, argList);
     }
 
-    /// <summary>
-    ///     Builds a nameof expression: nameof(expression)
-    /// </summary>
-    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression)
-    {
-        return SyntaxFactory.InvocationExpression(
+    /// <summary>Builds a <c>nameof(expression)</c> invocation.</summary>
+    public static InvocationExpressionSyntax NameOf(ExpressionSyntax expression) =>
+        SyntaxFactory.InvocationExpression(
             SyntaxFactory.IdentifierName("nameof"),
             SyntaxFactory.ArgumentList(
                 SyntaxFactory.SingletonSeparatedList(
                     SyntaxFactory.Argument(expression))));
-    }
 
-    /// <summary>
-    ///     Builds a nameof expression: nameof(name)
-    /// </summary>
-    public static InvocationExpressionSyntax NameOf(string name)
-    {
-        return NameOf(SyntaxFactory.IdentifierName(name));
-    }
+    /// <summary>Builds a <c>nameof(name)</c> invocation.</summary>
+    public static InvocationExpressionSyntax NameOf(string name) =>
+        NameOf(SyntaxFactory.IdentifierName(name));
 }

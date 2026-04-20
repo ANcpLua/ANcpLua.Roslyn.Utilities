@@ -46,7 +46,7 @@ public class MyAotTests
 ## Requirements
 
 - Target netstandard2.0 or later
-- MSBuild orchestration provided by ANcpLua.NET.Sdk (EnableAotTesting=true)
+- MSBuild orchestration ships inside the package itself (`build/ANcpLua.Roslyn.Utilities.Testing.Aot.props` + `.targets` auto-import on `PackageReference`). No external SDK dependency.
 
 ## License
 
