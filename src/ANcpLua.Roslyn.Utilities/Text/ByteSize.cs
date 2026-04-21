@@ -31,4 +31,22 @@ internal
             : abs.ToString("F" + decimals, CultureInfo.InvariantCulture);
         return (negative ? "-" : string.Empty) + rendered + " " + Suffixes[suffixIndex];
     }
+
+    /// <summary>
+    ///     <paramref name="bytes" /> expressed in mebibytes (IEC: <c>1 MiB = 1024×1024</c>), rounded to
+    ///     <paramref name="decimals" /> fractional digits. For dashboard/health JSON payloads that want a raw
+    ///     numeric rather than the <see cref="Humanize" /> string.
+    /// </summary>
+    public static double Megabytes(long bytes, int decimals = 2)
+    {
+        if (decimals < 0) throw new ArgumentOutOfRangeException(nameof(decimals), decimals, "Must be non-negative.");
+        return Math.Round(bytes / (1024.0 * 1024.0), decimals);
+    }
+
+    /// <summary><paramref name="bytes" /> in gibibytes (IEC: <c>1 GiB = 1024³</c>), rounded to <paramref name="decimals" /> digits.</summary>
+    public static double Gigabytes(long bytes, int decimals = 2)
+    {
+        if (decimals < 0) throw new ArgumentOutOfRangeException(nameof(decimals), decimals, "Must be non-negative.");
+        return Math.Round(bytes / (1024.0 * 1024.0 * 1024.0), decimals);
+    }
 }
