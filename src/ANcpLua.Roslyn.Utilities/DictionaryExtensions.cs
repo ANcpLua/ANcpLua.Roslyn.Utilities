@@ -1,25 +1,6 @@
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     Extension methods for <see cref="Dictionary{TKey,TValue}" /> with allocation-free patterns.
-/// </summary>
-/// <remarks>
-///     <para>
-///         These extensions provide get-or-insert semantics optimized for performance-critical code paths,
-///         such as Roslyn analyzers and source generators.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>Uses context parameters to avoid closure allocations in hot paths.</description>
-///         </item>
-///         <item>
-///             <description>Factory functions are only invoked when the key is not found.</description>
-///         </item>
-///         <item>
-///             <description>Newly created values are automatically added to the dictionary.</description>
-///         </item>
-///     </list>
-/// </remarks>
+/// <summary>Get-or-insert dictionary helpers that thread a context parameter to the factory so callers can pass static lambdas and avoid closure allocations.</summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

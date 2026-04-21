@@ -2,34 +2,7 @@ using System.Reflection;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     Extension methods for <see cref="object" /> providing safe casting, type checking, and reflection helpers.
-/// </summary>
-/// <remarks>
-///     <para>
-///         This class provides fluent alternatives to common casting patterns, reducing verbosity
-///         and improving readability. All methods are designed to be safe and predictable.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 <b>Safe casting:</b> <see cref="As{T}(object?)" /> and <see cref="AsValue{T}(object?)" />
-///                 provide clean alternatives to <c>as</c> and <c>is</c> patterns.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Type checking:</b> <c>Is&lt;T&gt;</c> combines type checking and casting.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Reflection:</b> <see cref="HasProperty" /> and <c>TryGetPropertyValue&lt;T&gt;</c>
-///                 provide safe property access without throwing.
-///             </description>
-///         </item>
-///     </list>
-/// </remarks>
+/// <summary>Fluent casts (<see cref="As{T}(object?)"/>, <see cref="AsValue{T}(object?)"/>) and non-throwing reflection property access. Chains well with null-conditional operators.</summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

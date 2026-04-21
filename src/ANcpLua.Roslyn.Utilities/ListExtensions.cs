@@ -1,36 +1,6 @@
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     Extension methods for <see cref="List{T}" /> that provide allocation-free patterns
-///     by using context parameters instead of closures.
-/// </summary>
-/// <remarks>
-///     <para>
-///         These extension methods mirror the standard <see cref="List{T}" /> methods but accept
-///         an additional context parameter. This design pattern eliminates closure allocations
-///         that would otherwise occur when capturing local variables in lambda expressions.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 All methods accept a <c>context</c> parameter that is passed to the predicate,
-///                 allowing the use of <c>static</c> lambdas.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 These methods are particularly useful in hot paths such as Roslyn analyzers
-///                 and source generators where allocation pressure must be minimized.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 The context pattern enables the compiler to avoid generating a closure class,
-///                 reducing both memory allocations and garbage collection overhead.
-///             </description>
-///         </item>
-///     </list>
-/// </remarks>
+/// <summary>List mutation helpers that thread a context parameter to the predicate so callers can pass static lambdas and avoid closure allocations.</summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

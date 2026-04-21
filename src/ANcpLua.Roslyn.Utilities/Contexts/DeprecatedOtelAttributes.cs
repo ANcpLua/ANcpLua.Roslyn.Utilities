@@ -4,26 +4,10 @@
 namespace ANcpLua.Roslyn.Utilities.Contexts;
 
 /// <summary>
-///     Contains mappings of deprecated OpenTelemetry semantic convention attributes
-///     to their modern replacements.
+///     Deprecated OTel semconv attribute names → (modern replacement, version introduced).
+///     Synced to schema v1.40.0 (Feb 2026); update by consulting the
+///     <see href="https://opentelemetry.io/docs/specs/semconv/">semconv spec</see> changelog.
 /// </summary>
-/// <remarks>
-///     <para>
-///         <b>Source of Truth:</b> OpenTelemetry Semantic Conventions specification
-///         <see href="https://opentelemetry.io/docs/specs/semconv/" />
-///     </para>
-///     <para>
-///         <b>Last Synchronized:</b> February 2026 (Schema v1.40.0)
-///     </para>
-///     <para>
-///         <b>How to Update:</b>
-///         <list type="number">
-///             <item>Check the semantic conventions changelog for renamed/deprecated attributes</item>
-///             <item>Add new entries with (Replacement, VersionDeprecated) tuple</item>
-///             <item>Update the "Last Synchronized" date and schema version above</item>
-///         </list>
-///     </para>
-/// </remarks>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

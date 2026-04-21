@@ -4,24 +4,7 @@ using System.Buffers;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     A lightweight, pooled string builder for low-allocation source generation.
-/// </summary>
-/// <remarks>
-///     <para>
-///         This type minimizes allocations by using a caller-provided buffer first and
-///         renting larger buffers from <see cref="ArrayPool{T}" /> when needed.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>Use <see cref="Dispose" /> to return pooled buffers.</description>
-///         </item>
-///         <item>
-///             <description>Designed for short-lived, hot-path string construction.</description>
-///         </item>
-///     </list>
-/// </remarks>
-/// <seealso cref="ArrayPool{T}" />
+/// <summary>Pooled ref-struct string builder: starts on a caller-supplied stack buffer, rents from <see cref="ArrayPool{T}" /> on growth, returns the rental on <see cref="Dispose" />. For hot-path codegen.</summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

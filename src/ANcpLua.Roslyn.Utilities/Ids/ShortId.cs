@@ -3,45 +3,12 @@ using System.Security.Cryptography;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Short, human-readable identifier factories for records, correlation ids, and URL slugs.
+///     Short-id factories: <see cref="NewHex32" /> (32-char record id), <see cref="NewHex" /> (truncated correlation id),
+///     <see cref="NewPrefixedSortable" /> (<c>{prefix}-{hex}</c> with an 80-bit entropy floor — prevents the
+///     <c>$"ws-{Guid.CreateVersion7():N}"[..24]</c> bug that kept only ~36 random bits), and
+///     <see cref="NewUrlSafeRandom" /> (cryptographically-strong URL slug). Hex variants use <c>Guid.NewGuid()</c>
+///     and are NOT for secrets.
 /// </summary>
-/// <remarks>
-///     <para>
-///         Centralises the three common id shapes found across service code:
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 <see cref="NewHex32" /> — <c>Guid.NewGuid().ToString("N")</c>, the canonical
-///                 32-hex-char record id.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <see cref="NewHex" /> — truncated hex for correlation/log-enricher ids
-///                 where 32 chars is overkill.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <see cref="NewPrefixedSortable" /> — <c>{prefix}-{hex}</c> with an entropy-floor
-///                 contract so callers cannot accidentally create collision-prone ids (previous
-///                 bug: <c>$"ws-{Guid.CreateVersion7():N}"[..24]</c> kept only ~36 random bits).
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <see cref="NewUrlSafeRandom" /> — delegates to <see cref="Base64Url.NewRandom" />
-///                 for URL-safe slugs backed by cryptographically strong randomness.
-///             </description>
-///         </item>
-///     </list>
-///     <para>
-///         All methods that advertise cryptographic strength use <see cref="RandomNumberGenerator" />.
-///         <see cref="NewHex32" /> and <see cref="NewHex" /> use <c>Guid.NewGuid()</c> — suitable for
-///         non-adversarial correlation / primary-key generation, NOT for secrets.
-///     </para>
-/// </remarks>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

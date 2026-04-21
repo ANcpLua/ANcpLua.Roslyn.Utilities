@@ -2,10 +2,7 @@ using System.Collections.Concurrent;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     Thread-safe cache with LRU eviction and time-based expiry.
-///     Uses a value factory pattern for atomic get-or-add semantics.
-/// </summary>
+/// <summary>Thread-safe LRU + idle-timeout cache with atomic get-or-add via value factory.</summary>
 /// <typeparam name="TKey">The type of cache keys.</typeparam>
 /// <typeparam name="TValue">The type of cached values.</typeparam>
 #if ANCPLUA_ROSLYN_PUBLIC

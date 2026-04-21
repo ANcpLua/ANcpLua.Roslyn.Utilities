@@ -2,56 +2,11 @@ using System.Runtime.CompilerServices;
 
 namespace ANcpLua.Roslyn.Utilities;
 
-/// <summary>
-///     Provides cached boxed values for common value types to avoid repeated allocations.
-/// </summary>
+/// <summary>Cached boxed values for analyzer hot paths where repeated boxing shows up in allocation profiles.</summary>
 /// <remarks>
-///     <para>
-///         Boxing a value type allocates a new object on the heap every time. In analyzer hot paths
-///         (dictionary lookups, event args, parameter arrays), this can generate significant GC pressure.
-///         This class caches commonly used boxed values so the same object is reused.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 Boolean values are always cached — there are only two possible values.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 Integer values in the range [-1..10] are cached, covering most loop counters,
-///                 array indices, and sentinel values.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 Character values in the ASCII range [0..127] are cached.
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 Zero values are cached for all numeric types.
-///             </description>
-///         </item>
-///     </list>
+///     Covers both bools, <c>int</c> in <c>[-1..10]</c>, ASCII chars <c>[0..127]</c>, and zero for every numeric type.
+///     Anything outside those ranges falls through to normal boxing.
 /// </remarks>
-/// <example>
-///     <code>
-/// // Instead of boxing a bool on every call:
-/// dict[key] = true;  // allocates each time
-///
-/// // Use cached boxed value:
-/// dict[key] = Boxes.BoxedTrue;  // reuses same object
-///
-/// // Or use the Box method for dynamic values:
-/// object boxed = Boxes.Box(someCondition);  // returns cached instance
-///
-/// // Small integers are cached too:
-/// object zero = Boxes.Box(0);   // cached
-/// object ten  = Boxes.Box(10);  // cached
-/// object big  = Boxes.Box(999); // not cached, normal boxing
-/// </code>
-/// </example>
 /// <seealso cref="HashCombiner" />
 #if ANCPLUA_ROSLYN_PUBLIC
 public

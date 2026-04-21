@@ -1,57 +1,10 @@
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     Extension methods providing try-pattern alternatives for common operations,
-///     reducing boilerplate code when working with dictionaries, parsing, and lookups.
+///     Nullable-returning <c>Try*</c> alternatives that chain with <c>?.</c> better than the BCL's <c>bool + out</c> shape:
+///     dictionary <c>GetOrNull/Default/Else</c>, <c>TryParse</c> for every BCL numeric/bool/char/Guid/enum/DateTime*/TimeSpan,
+///     and <c>ElementAtOrNull/Default</c> for <see cref="IList{T}" />.
 /// </summary>
-/// <remarks>
-///     <para>
-///         These extensions eliminate verbose <c>TryGetValue</c> and <c>TryParse</c> patterns,
-///         providing null-returning alternatives that work better with null-conditional operators.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description>
-///                 <b>Dictionary lookups:</b> <see cref="GetOrNull{TKey,TValue}(IDictionary{TKey,TValue},TKey)" />,
-///                 <see cref="GetOrDefault{TKey,TValue}(IDictionary{TKey,TValue},TKey,TValue)" />,
-///                 <see cref="GetOrElse{TKey,TValue}(IDictionary{TKey,TValue},TKey,Func{TValue})" />
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Integer parsing:</b> <see cref="TryParseByte(string?)" />, <see cref="TryParseSByte(string?)" />,
-///                 <see cref="TryParseInt16(string?)" />, <see cref="TryParseUInt16(string?)" />,
-///                 <see cref="TryParseInt32(string?)" />, <see cref="TryParseUInt32(string?)" />,
-///                 <see cref="TryParseInt64(string?)" />, <see cref="TryParseUInt64(string?)" />
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Floating-point parsing:</b> <see cref="TryParseSingle(string?)" />,
-///                 <see cref="TryParseDouble(string?)" />, <see cref="TryParseDecimal(string?)" />
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Other parsing:</b> <see cref="TryParseBool(string?)" />, <see cref="TryParseChar(string?)" />,
-///                 <see cref="TryParseGuid(string?)" />, <see cref="TryParseEnum{TEnum}(string?,bool)" />
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Date/time parsing:</b> <see cref="TryParseDateTime(string?)" />,
-///                 <see cref="TryParseDateTimeOffset(string?)" />, <see cref="TryParseTimeSpan(string?)" />
-///             </description>
-///         </item>
-///         <item>
-///             <description>
-///                 <b>Collection access:</b> <see cref="ElementAtOrNull{T}(IList{T},int)" />,
-///                 <see cref="ValueAtOrNull{T}(IList{T},int)" />,
-///                 <see cref="ElementAtOrDefault{T}(IList{T},int,T)" />
-///             </description>
-///         </item>
-///     </list>
-/// </remarks>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else

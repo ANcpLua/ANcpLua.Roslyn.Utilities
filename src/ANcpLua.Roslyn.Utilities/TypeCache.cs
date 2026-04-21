@@ -3,59 +3,10 @@ using Microsoft.CodeAnalysis;
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
-///     A high-performance cache for well-known type symbols, indexed by an enum.
+///     Enum-indexed, lazily-resolved type-symbol cache (the primitive behind <c>OTelContext</c>, <c>AspNetContext</c>, etc.).
+///     One instance per <see cref="Compilation" /> — symbols are not comparable across compilations.
 /// </summary>
-/// <typeparam name="TEnum">An enum type whose values represent well-known types.</typeparam>
-/// <remarks>
-///     <para>
-///         This cache provides efficient O(1) lookups for frequently accessed type symbols
-///         in Roslyn analyzers. Types are lazily loaded on first access using the provided
-///         resolver function, and cached for subsequent lookups.
-///     </para>
-///     <para>
-///         The cache is designed for use within a single compilation context.
-///         Create a new instance for each <see cref="Compilation" />.
-///     </para>
-///     <list type="bullet">
-///         <item>
-///             <description><see cref="Get" />: Retrieves a cached type symbol by enum value</description>
-///         </item>
-///         <item>
-///             <description><see cref="IsType" />: Checks if a symbol matches a cached type</description>
-///         </item>
-///         <item>
-///             <description><see cref="HasAttribute" />: Checks if a symbol has an attribute of a cached type</description>
-///         </item>
-///     </list>
-/// </remarks>
-/// <example>
-///     <code>
-/// // Define your well-known types enum
-/// public enum WellKnownType
-/// {
-///     SystemString,
-///     SystemInt32,
-///     ObsoleteAttribute,
-///     // ... more types
-/// }
-///
-/// // Create the resolver function
-/// Func&lt;WellKnownType, INamedTypeSymbol?&gt; resolver = type => type switch
-/// {
-///     WellKnownType.SystemString => compilation.GetSpecialType(SpecialType.System_String),
-///     WellKnownType.SystemInt32 => compilation.GetSpecialType(SpecialType.System_Int32),
-///     WellKnownType.ObsoleteAttribute => compilation.GetTypeByMetadataName("System.ObsoleteAttribute"),
-///     _ => null
-/// };
-///
-/// // Create and use the cache
-/// var cache = new TypeCache&lt;WellKnownType&gt;(resolver);
-/// if (cache.HasAttribute(symbol, WellKnownType.ObsoleteAttribute))
-/// {
-///     // Symbol is marked obsolete
-/// }
-/// </code>
-/// </example>
+/// <typeparam name="TEnum">Your own enum of well-known types.</typeparam>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
 #else
