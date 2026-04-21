@@ -85,4 +85,64 @@ internal
         var ticks = (long)(unixNano / 100);
         return UnixEpoch.AddTicks(ticks);
     }
+
+    // ── Cutoff Helpers ───────────────────────────────────────────────────────
+
+    /// <summary>Returns the Unix-nanosecond timestamp of a point <paramref name="ago" /> before <paramref name="now" />.</summary>
+    /// <param name="now">The current time. Pass <c>TimeProvider.System.GetUtcNow()</c> in production.</param>
+    /// <param name="ago">Duration to subtract from <paramref name="now" />.</param>
+    /// <returns>Unix nanoseconds (unsigned).</returns>
+    /// <remarks>
+    ///     Takes <see cref="DateTimeOffset" /> rather than <c>TimeProvider</c> to keep the method
+    ///     reachable from any target framework — the <c>TimeProvider</c> polyfill is internal in
+    ///     this package's netstandard2.0 build.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong NanosAgo(DateTimeOffset now, TimeSpan ago) =>
+        ToUnixNanoUnsigned(now.Subtract(ago));
+
+    // ── ISO-8601 Round-Trip ──────────────────────────────────────────────────
+
+    /// <summary>Helpers for ISO-8601 round-trip formatting and parsing of UTC timestamps.</summary>
+    /// <remarks>Uses the <c>"O"</c> round-trip format specifier for consistency with <see cref="DateTime.ToString(string)" />.</remarks>
+#if ANCPLUA_ROSLYN_PUBLIC
+    public
+#else
+    internal
+#endif
+        static class Iso8601
+    {
+        /// <summary>Formats a <see cref="DateTime" /> as an ISO-8601 round-trip string.</summary>
+        /// <param name="value">The value to format.</param>
+        /// <returns>The ISO-8601 round-trip representation.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Format(DateTime value) =>
+            value.ToString("O", CultureInfo.InvariantCulture);
+
+        /// <summary>Formats a <see cref="DateTimeOffset" /> as an ISO-8601 round-trip string.</summary>
+        /// <param name="value">The value to format.</param>
+        /// <returns>The ISO-8601 round-trip representation.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Format(DateTimeOffset value) =>
+            value.ToString("O", CultureInfo.InvariantCulture);
+
+        /// <summary>Tries to parse an ISO-8601 round-trip string into a <see cref="DateTimeOffset" />.</summary>
+        /// <param name="input">The candidate string.</param>
+        /// <param name="result">On success, the parsed UTC-offset value.</param>
+        /// <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
+        public static bool TryParse(string? input, out DateTimeOffset result)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                result = default;
+                return false;
+            }
+
+            return DateTimeOffset.TryParse(
+                input,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind | DateTimeStyles.AssumeUniversal,
+                out result);
+        }
+    }
 }

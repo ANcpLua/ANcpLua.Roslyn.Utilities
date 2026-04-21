@@ -803,4 +803,26 @@ internal
     {
         return index >= 0 && index < list.Count ? list[index] : defaultValue;
     }
+
+    // ========== Base64Url Try-Parsers ==========
+
+    /// <summary>
+    ///     Attempts to decode a URL-safe Base64 string (padded or unpadded) to bytes, returning <c>null</c> on failure.
+    /// </summary>
+    /// <param name="input">The URL-safe Base64 string. May be <c>null</c>, empty, padded, or unpadded.</param>
+    /// <returns>
+    ///     The decoded bytes, or <c>null</c> when the input is null, whitespace, or malformed.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         Swallows both <see cref="FormatException" /> and <see cref="ArgumentException" /> —
+    ///         a narrow <see cref="FormatException" /> catch would let <see cref="ArgumentException" />
+    ///         bubble up on certain malformed lengths.
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="Base64Url.TryDecode(string?, out byte[])" />
+    public static byte[]? TryParseBase64Url(this string? input)
+    {
+        return Base64Url.TryDecode(input, out var bytes) ? bytes : null;
+    }
 }

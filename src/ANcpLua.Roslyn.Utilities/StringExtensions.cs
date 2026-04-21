@@ -310,6 +310,61 @@ internal
     }
 
     /// <summary>
+    ///     Converts a PascalCase or camelCase string to snake_case.
+    /// </summary>
+    /// <param name="input">The input string to convert.</param>
+    /// <returns>
+    ///     The input string converted to snake_case using invariant culture rules.
+    ///     Returns the input unchanged if it is <c>null</c> or empty.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         Consecutive uppercase letters are treated as a single acronym.
+    ///         An underscore is inserted at the boundary between an acronym and the next word.
+    ///     </para>
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description><c>"GetValue"</c> becomes <c>"get_value"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"XMLParser"</c> becomes <c>"xml_parser"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"GetHTTPClient"</c> becomes <c>"get_http_client"</c></description>
+    ///         </item>
+    ///         <item>
+    ///             <description><c>"SimpleTest"</c> becomes <c>"simple_test"</c></description>
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    /// <seealso cref="ToKebabCase" />
+    /// <seealso cref="ToParameterName" />
+    /// <seealso cref="ToPropertyName" />
+    public static string ToSnakeCase(this string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        var sb = new StringBuilder(input.Length + 4);
+        for (var i = 0; i < input.Length; i++)
+        {
+            var c = input[i];
+            if (char.IsUpper(c) && i > 0)
+            {
+                var prevIsLower = char.IsLower(input[i - 1]);
+                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
+
+                // Underscore before: standard word boundary (aB) or end of acronym (ABc)
+                if (prevIsLower || nextIsLower)
+                    sb.Append('_');
+            }
+
+            sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
     ///     Removes lines that contain only whitespace characters while preserving empty lines.
     /// </summary>
     /// <param name="text">The text to process.</param>
@@ -735,6 +790,47 @@ internal
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
         return BitConverter.ToString(hash, 0, 4).Replace("-", "");
+#endif
+    }
+
+    /// <summary>
+    ///     Computes a deterministic N-character hexadecimal hash from a string.
+    /// </summary>
+    /// <param name="input">The input string to hash.</param>
+    /// <param name="hexChars">Number of hex characters to return (1–64).</param>
+    /// <param name="lowercase">If <c>true</c>, returns lowercase hex; otherwise uppercase. Defaults to <c>false</c> for visual parity with <see cref="ToShortHash(string)" />.</param>
+    /// <returns>
+    ///     An <paramref name="hexChars" />-character hexadecimal string derived from the SHA-256 hash of the input.
+    ///     Returns a string of <paramref name="hexChars" /> zeroes if the input is <c>null</c> or empty.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when <paramref name="hexChars" /> is not in the range 1–64.
+    /// </exception>
+    /// <remarks>
+    ///     <para>
+    ///         This overload allows callers to select hash length and casing. The parameterless
+    ///         <see cref="ToShortHash(string)" /> remains unchanged (8-char uppercase).
+    ///     </para>
+    /// </remarks>
+    public static string ToShortHash(this string input, int hexChars, bool lowercase = false)
+    {
+        if (hexChars is < 1 or > 64)
+            throw new ArgumentOutOfRangeException(nameof(hexChars), hexChars, "Must be 1–64.");
+
+        if (string.IsNullOrEmpty(input))
+            return new string('0', hexChars);
+
+#if NET5_0_OR_GREATER
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hex = Convert.ToHexString(hash);
+        return (lowercase ? hex.ToLowerInvariant() : hex).Substring(0, hexChars);
+#else
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+        var needBytes = (hexChars + 1) / 2;
+        var hex = BitConverter.ToString(hash, 0, needBytes).Replace("-", "");
+        if (lowercase) hex = hex.ToLowerInvariant();
+        return hex.Substring(0, hexChars);
 #endif
     }
 

@@ -105,4 +105,40 @@ internal
 
         return (T)typedConstant.Value;
     }
+
+    // ========== Hex Conversion ==========
+
+    /// <summary>
+    ///     Converts a read-only byte span to a lowercase hexadecimal string, or <see cref="string.Empty" /> if the span is empty.
+    /// </summary>
+    /// <param name="bytes">The bytes to convert.</param>
+    /// <returns>
+    ///     A lowercase hex string of length <c>2 * bytes.Length</c>, or an empty string when <paramref name="bytes" /> is empty.
+    /// </returns>
+    public static string ToHexLowerOrEmpty(this ReadOnlySpan<byte> bytes)
+    {
+        if (bytes.IsEmpty) return string.Empty;
+
+#if NET9_0_OR_GREATER
+        return Convert.ToHexStringLower(bytes);
+#elif NET5_0_OR_GREATER
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+#else
+        var sb = new StringBuilder(bytes.Length * 2);
+        for (var i = 0; i < bytes.Length; i++)
+            sb.Append(bytes[i].ToString("x2", CultureInfo.InvariantCulture));
+        return sb.ToString();
+#endif
+    }
+
+    /// <summary>
+    ///     Converts a byte array to a lowercase hexadecimal string, or <see cref="string.Empty" /> if the array is null or empty.
+    /// </summary>
+    /// <param name="bytes">The bytes to convert.</param>
+    /// <returns>A lowercase hex string, or an empty string for null/empty input.</returns>
+    public static string ToHexLowerOrEmpty(this byte[]? bytes)
+    {
+        if (bytes is null || bytes.Length is 0) return string.Empty;
+        return ToHexLowerOrEmpty((ReadOnlySpan<byte>)bytes);
+    }
 }
