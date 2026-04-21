@@ -34,3 +34,4 @@ docs/api/*.md
 .claude/worktrees/
 .claude/journal/
 .claude/elegance_pipeline/
+.worktrees/
