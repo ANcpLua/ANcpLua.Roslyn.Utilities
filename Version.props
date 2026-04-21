@@ -16,28 +16,28 @@
          ROSLYN.UTILITIES (Runtime package)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities">
-        <ANcpLuaRoslynUtilitiesVersion>2.0.1</ANcpLuaRoslynUtilitiesVersion>
+        <ANcpLuaRoslynUtilitiesVersion>2.0.2</ANcpLuaRoslynUtilitiesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.SOURCES (Source-only package for generators)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Sources">
-        <ANcpLuaRoslynUtilitiesSourcesVersion>2.0.1</ANcpLuaRoslynUtilitiesSourcesVersion>
+        <ANcpLuaRoslynUtilitiesSourcesVersion>2.0.2</ANcpLuaRoslynUtilitiesSourcesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.POLYFILLS (Source-only polyfills for netstandard2.0)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Polyfills">
-        <ANcpLuaRoslynUtilitiesPolyfillsVersion>2.0.1</ANcpLuaRoslynUtilitiesPolyfillsVersion>
+        <ANcpLuaRoslynUtilitiesPolyfillsVersion>2.0.2</ANcpLuaRoslynUtilitiesPolyfillsVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          ROSLYN.UTILITIES.TESTING (Analyzer/CodeFix/Generator test infrastructure)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Roslyn.Utilities.Testing">
-        <ANcpLuaRoslynUtilitiesTestingVersion>2.0.1</ANcpLuaRoslynUtilitiesTestingVersion>
+        <ANcpLuaRoslynUtilitiesTestingVersion>2.0.2</ANcpLuaRoslynUtilitiesTestingVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -65,7 +65,7 @@
         <MeziantouFullPathVersion>1.1.18</MeziantouFullPathVersion>
         <MeziantouTemporaryDirectoryVersion>1.0.37</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
-        <MeziantouDependencyScanningVersion>2.0.10</MeziantouDependencyScanningVersion>
+        <MeziantouDependencyScanningVersion>2.0.20</MeziantouDependencyScanningVersion>
         <MeziantouAnalyzerVersion>3.0.44</MeziantouAnalyzerVersion>
     </PropertyGroup>
 

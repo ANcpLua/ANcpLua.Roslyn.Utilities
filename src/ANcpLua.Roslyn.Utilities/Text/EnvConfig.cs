@@ -1,3 +1,7 @@
+// Runtime-only. Excluded from the source-only Sources package (where ANCPLUA_ROSLYN_PUBLIC isn't defined)
+// because Roslyn analyzers are forbidden to read Environment by RS1035 ("Analyzers should not read their settings
+// directly from environment variables"). Generators that need config must go through analyzer config/MSBuildWorkspace.
+#if ANCPLUA_ROSLYN_PUBLIC
 namespace ANcpLua.Roslyn.Utilities.Text;
 
 /// <summary>
@@ -9,12 +13,7 @@ namespace ANcpLua.Roslyn.Utilities.Text;
 ///     Reads go straight to <see cref="Environment.GetEnvironmentVariable(string)" /> — no caching, no
 ///     process-wide mutation, safe to call from DI factories.
 /// </remarks>
-#if ANCPLUA_ROSLYN_PUBLIC
-public
-#else
-internal
-#endif
-    static class EnvConfig
+public static class EnvConfig
 {
     /// <summary>Trimmed string value of <paramref name="name" />, or <paramref name="defaultValue" /> when unset/whitespace.</summary>
     public static string? ReadString(string name, string? defaultValue = null)
@@ -80,3 +79,4 @@ internal
         return raw is not null && Uri.TryCreate(raw, UriKind.Absolute, out var parsed) ? parsed : defaultValue;
     }
 }
+#endif
