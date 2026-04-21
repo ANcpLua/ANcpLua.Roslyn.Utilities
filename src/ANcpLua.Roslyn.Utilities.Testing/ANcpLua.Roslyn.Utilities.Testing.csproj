@@ -47,7 +47,11 @@
     <ItemGroup Label="Web Testing">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
         <PackageReference Include="NUnit"/>
-        <PackageReference Include="TUnit.Core" IncludeAssets="compile;runtime"/>
+        <!-- TUnit.Core ships TUnit.Analyzers.dll which fires TUXU0001 ("xUnit code can be converted to TUnit")
+             on every xUnit-using consumer. IncludeAssets="compile;runtime" keeps only the attribute types
+             usable at compile time; PrivateAssets="analyzers" prevents the analyzer DLL from flowing
+             transitively to downstream consumers. -->
+        <PackageReference Include="TUnit.Core" IncludeAssets="compile;runtime" PrivateAssets="analyzers"/>
         <PackageReference Include="bunit"/>
     </ItemGroup>
 
