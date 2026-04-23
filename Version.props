@@ -62,8 +62,8 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Meziantou">
         <MeziantouFrameworkVersion>5.0.15</MeziantouFrameworkVersion>
-        <MeziantouFullPathVersion>1.1.18</MeziantouFullPathVersion>
-        <MeziantouTemporaryDirectoryVersion>1.0.37</MeziantouTemporaryDirectoryVersion>
+        <MeziantouFullPathVersion>1.1.19</MeziantouFullPathVersion>
+        <MeziantouTemporaryDirectoryVersion>1.0.38</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
         <MeziantouDependencyScanningVersion>2.0.20</MeziantouDependencyScanningVersion>
         <MeziantouAnalyzerVersion>3.0.44</MeziantouAnalyzerVersion>
