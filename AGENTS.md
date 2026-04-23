@@ -4,7 +4,7 @@
 
 ## Role of this repository
 
-Source of truth for `ANcpLua.Roslyn.Utilities` — a 5-layer utility library consumed by qyl (AI observability), Qyl.Agents (MCP source generator), and standalone analyzers. All three consumers now live in the qyl monorepo at `/Users/ancplua/qyl`.
+Source of truth for `ANcpLua.Roslyn.Utilities` — a 5-layer utility library consumed by qyl (AI observability monorepo at `/Users/ancplua/qyl/`), the sibling `ANcpLua.Agents` repo (MAF helpers + test infrastructure at `/Users/ancplua/framework/ANcpLua.Agents/`), and standalone analyzers in `/Users/ancplua/framework/ANcpLua.Analyzers/`.
 
 ## Architecture: 5 Layers
 
@@ -31,14 +31,17 @@ Agent and workflow testing — `FakeChatClient`, the provider-agnostic MAF confo
 
 ## Check Before Writing
 
-When implementing a new helper, check these places first:
+When implementing a new helper, check these places first (authoritative inventory: `~/.agents/skills/ancplua-roslyn-utilities/SKILL.md`):
 
-1. **Runtime utilities** — `Result<T>`, `EquatableArray<T>`, `Guard`, `HashCombiner`, `TryExtensions`, `CircularBuffer`, `ExpiringCache`
-2. **Roslyn pipeline** — `DiagnosticFlow<T>`, `SemanticGuard`, `TypeCache<TEnum>`, `IndentedStringBuilder`
-3. **Symbol analysis** — `SymbolExtensions`, `TypeSymbolExtensions`, `MethodSymbolExtensions`, `InvocationExtensions`
+1. **Runtime utilities** — `EquatableArray<T>`, `Guard`, `HashCombiner`, `TryExtensions`, `ExpiringCache`, `ByteSize`, `ShortId`, `Base64Url`, `BearerHeader`, `Pkce`, `Sha256Hex`, `CryptoCompare`, `QueryString`, `MarkdownText`, `EnvConfig`, `TimeConversions`, `SqlLikeEscape`, `DataReaderExtensions`, `AsyncSequenceExtensions`, `ParallelAsyncExtensions`
+2. **Roslyn pipeline** — `DiagnosticFlow<T>`, `ResultWithDiagnostics<T>`, `SemanticGuard`, `TypeCache<TEnum>`, `IndentedStringBuilder`, `GeneratedCodeHelpers`, `ValueStringBuilder`, `FileWithName`
+3. **Symbol analysis** — `SymbolExtensions`, `TypeSymbolExtensions`, `MethodSymbolExtensions`, `InvocationExtensions`, `AttributeExtensions`, `OperationExtensions`
 4. **Matching DSL** — `InvocationMatch`, `SymbolMatch` in `Matching/`
-5. **Contexts** — `OTelContext`, `AwaitableContext`, `CollectionContext`, `DisposableContext`
-6. **Testing** — `AnalyzerTest<T>`, `CodeFixTest<T,F>`, `Test<TGenerator>`, `GeneratorTestHelper.RunGenerator<T>()`, `ProjectBuilder`, `PackageTestBase<TFixture>`, `IntegrationTestBase<T>` / `KestrelTestBase<T>` (xUnit/NUnit/TUnit/Bunit variants), `BitNetFixture`
+5. **Cached contexts** — `DeprecatedOtelAttributes` (semconv v1.40), `SemconvVersion`, `TypeCache<TEnum>` primitive for building your own
+6. **Analyzer authoring** — `DiagnosticAnalyzerBase`, `DiagnosticCategories`, `IncrementalPipelineHelpers`, `SyntaxBuilders`
+7. **Testing** — `AnalyzerTest`, `CodeFixTest<TAnalyzer,TCodeFix>`, `Test`, `GeneratorTestHelper.RunGenerator<T>()`, `ProjectBuilder`, `PackageTestBase<TFixture>`, `IntegrationTestBase` / `KestrelTestBase` (xUnit / NUnit / TUnit / Bunit variants), `BitNetFixture`
+
+Agent and workflow testing (`FakeChatClient`, conformance suites, provider fixtures, `WorkflowFixture<TInput>`) lives in the sibling `ANcpLua.Agents` repo, not here.
 
 ## Accessibility Pattern
 
@@ -54,7 +57,7 @@ Define `ANCPLUA_ROSLYN_PUBLIC` to make types public. The Sources package embeds 
 
 ## Performance Conventions
 
-- Zero-allocation on success paths (`Result<T>`, ref structs, spans)
+- Zero-allocation on success paths (`DiagnosticFlow<T>` value-struct chains, ref structs, spans)
 - ArrayPool-backed buffers (`ValueStringBuilder`)
 - Static lambdas via context parameters (no closure allocations)
 - Span-based parsing throughout
@@ -62,7 +65,7 @@ Define `ANCPLUA_ROSLYN_PUBLIC` to make types public. The Sources package embeds 
 
 ## Semconv Relationship
 
-This repo provides compile-time type analysis (`OTelContext.cs` caches `Activity`, `Meter`, etc. as `INamedTypeSymbol`). The qyl monorepo has a separate semconv generator (`eng/semconv/`) that produces runtime string constants (`GenAiAttributes.g.cs`). These are complementary — one for generators, one for application code. Do not merge them.
+This repo ships `DeprecatedOtelAttributes` (dictionary of deprecated semconv attribute names → replacements, semconv v1.40.0) + `SemconvVersion` constants, used by analyzers that flag deprecated attribute usage. The qyl monorepo has its own semconv generator under `eng/semconv/` that produces runtime string constants (`QylAttributes.g.cs` + upstream `packages/Qyl.OpenTelemetry.SemanticConventions*/`) for application code. The two surfaces are complementary — one for generator-side type checking, one for application-side attribute authoring. Do not merge them.
 
 ## Build and Delivery
 
