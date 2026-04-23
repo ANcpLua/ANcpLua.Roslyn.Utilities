@@ -113,10 +113,10 @@
     <PropertyGroup Label="Microsoft.Extensions">
         <MicrosoftExtensionsVersion>10.5.0</MicrosoftExtensionsVersion>
         <MicrosoftExtensionsAIAbstractionsVersion>10.5.0</MicrosoftExtensionsAIAbstractionsVersion>
-        <AspNetCoreVersion>10.0.6</AspNetCoreVersion>
-        <BclAsyncInterfacesVersion>10.0.6</BclAsyncInterfacesVersion>
+        <AspNetCoreVersion>10.0.7</AspNetCoreVersion>
+        <BclAsyncInterfacesVersion>10.0.7</BclAsyncInterfacesVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
-        <SystemThreadingChannelsVersion>10.0.6</SystemThreadingChannelsVersion>
+        <SystemThreadingChannelsVersion>10.0.7</SystemThreadingChannelsVersion>
         <OpenAIVersion>2.10.0</OpenAIVersion>
     </PropertyGroup>
 
