@@ -21,6 +21,7 @@
         <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes.csproj"/>
     </Folder>
     <Folder Name="/tests/">
+        <Project Path="tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests.csproj"/>
         <Project Path="tests/ANcpLua.Roslyn.Utilities.Testing.Tests/ANcpLua.Roslyn.Utilities.Testing.Tests.csproj"/>
     </Folder>
 </Solution>

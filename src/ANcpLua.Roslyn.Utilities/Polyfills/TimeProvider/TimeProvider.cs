@@ -14,18 +14,23 @@ using System.Threading.Tasks;
 namespace System;
 
 /// <summary>
-///     Provides an abstraction for time, allowing for easier testing and mocking of time-dependent code.
+///     Internal shim used by this library on netstandard2.0 to access TimeProvider-equivalent
+///     behavior without colliding with the BCL <c>System.TimeProvider</c> on net8.0+ consumers.
 /// </summary>
 /// <remarks>
-///     This is a polyfill for System.TimeProvider which was introduced in .NET 8.
+///     This type is intentionally NOT named <c>TimeProvider</c>. A public-named polyfill ships
+///     separately via <c>ANcpLua.Roslyn.Utilities.Sources</c> as opt-in source content for
+///     consumers that want a public <c>System.TimeProvider</c> shape. Naming this internal shim
+///     <c>TimeProvider</c> caused CS0419 cref ambiguity for net10.0 consumers that referenced the
+///     compiled DLL with <c>GenerateDocumentationFile=true</c>.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-internal abstract class TimeProvider
+internal abstract class TimeProviderShim
 {
     /// <summary>
-    ///     Gets a <see cref="TimeProvider" /> that provides a clock based on <see cref="DateTimeOffset.UtcNow" />.
+    ///     Gets a <see cref="TimeProviderShim" /> that provides a clock based on <see cref="DateTimeOffset.UtcNow" />.
     /// </summary>
-    public static TimeProvider System { get; } = new SystemTimeProvider();
+    public static TimeProviderShim System { get; } = new SystemTimeProvider();
 
     /// <summary>
     ///     Gets the local time zone.
@@ -68,7 +73,7 @@ internal abstract class TimeProvider
         return new SystemTimer(callback, state, dueTime, period);
     }
 
-    private sealed class SystemTimeProvider : TimeProvider
+    private sealed class SystemTimeProvider : TimeProviderShim
     {
     }
 

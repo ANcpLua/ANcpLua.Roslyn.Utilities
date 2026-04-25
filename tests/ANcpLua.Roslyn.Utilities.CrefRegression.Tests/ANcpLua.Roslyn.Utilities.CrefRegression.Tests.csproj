@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>ANcpLua.Roslyn.Utilities.CrefRegression.Tests</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <!-- The whole point of this project: prove that net10.0 consumers can write
+             <see cref="TimeProvider"/> against the published lib DLL without CS0419.
+             GenerateDocumentationFile + TreatWarningsAsErrors (inherited) flip CS0419
+             into a build break if the polyfill leaks back as `internal class TimeProvider`. -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj"/>
+    </ItemGroup>
+</Project>

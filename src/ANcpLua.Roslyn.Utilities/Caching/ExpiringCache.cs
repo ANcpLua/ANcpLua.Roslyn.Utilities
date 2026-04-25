@@ -50,7 +50,7 @@ internal
     /// <returns>The cached or newly created value.</returns>
     public TValue? GetOrAdd(TKey key, Func<TValue?> factory)
     {
-        var now = TimeProvider.System.GetUtcNow();
+        var now = TimeProviderShim.System.GetUtcNow();
 
         if (_cache.TryGetValue(key, out var existing))
         {
