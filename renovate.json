@@ -66,6 +66,13 @@
       "labels": ["dependencies", "major"]
     },
     {
+      "description": "Block .NET SDK previews — stable channel only",
+      "matchManagers": ["dotnet-sdk"],
+      "matchPackageNames": ["dotnet-sdk"],
+      "ignoreUnstable": true,
+      "allowedVersions": "/^[0-9]+\\.[0-9]+\\.[0-9]+$/"
+    },
+    {
       "description": "Block ALL self-bumps — Roslyn.Utilities is foundation; self-test pin coupled to publish flow (chicken-and-egg if auto-bumped)",
       "matchPackageNames": ["/^ANcpLua\\./"],
       "enabled": false
