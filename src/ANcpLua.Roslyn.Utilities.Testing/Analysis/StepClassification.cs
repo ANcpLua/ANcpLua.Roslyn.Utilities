@@ -202,7 +202,7 @@ public readonly struct GeneratorStepAnalysis
         Type? outputType = null;
         foreach (var output in secondRun.SelectMany(static step => step.Outputs))
         {
-            outputType ??= output.Value?.GetType();
+            outputType ??= output.Value.GetType();
             switch (output.Reason)
             {
                 case IncrementalStepRunReason.Cached: cached++; break;
