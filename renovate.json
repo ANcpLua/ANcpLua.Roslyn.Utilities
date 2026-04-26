@@ -1,0 +1,74 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["0 */6 * * *"],
+  "timezone": "UTC",
+  "dependencyDashboard": true,
+  "commitMessagePrefix": "deps:",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "Roslyn analyzers + reference assemblies",
+      "groupName": "roslyn",
+      "matchPackageNames": ["/^Microsoft\\.CodeAnalysis/", "/^Basic\\.Reference\\.Assemblies/"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Microsoft.Extensions / BCL / System.Threading.Channels",
+      "groupName": "microsoft-extensions",
+      "matchPackageNames": [
+        "/^Microsoft\\.Extensions/",
+        "/^Microsoft\\.Bcl/",
+        "/^System\\.Threading\\.Channels/"
+      ],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "ASP.NET Core",
+      "groupName": "aspnetcore",
+      "matchPackageNames": ["/^Microsoft\\.AspNetCore/"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Microsoft.Extensions.AI + OpenAI (used by Roslyn.Utilities.Testing surface)",
+      "groupName": "microsoft-extensions-ai",
+      "matchPackageNames": ["/^Microsoft\\.Extensions\\.AI/", "/^OpenAI/"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Meziantou framework family",
+      "groupName": "meziantou",
+      "matchPackageNames": ["/^Meziantou\\./"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Test frameworks (xUnit / NUnit / TUnit / bunit / MTP)",
+      "groupName": "testing-frameworks",
+      "matchPackageNames": [
+        "/^xunit/",
+        "/^NUnit/",
+        "/^TUnit/",
+        "/^bunit/",
+        "/^Microsoft\\.Testing/"
+      ],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Major bumps require manual review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major"]
+    },
+    {
+      "description": "Block ALL self-bumps — Roslyn.Utilities is foundation; self-test pin coupled to publish flow (chicken-and-egg if auto-bumped)",
+      "matchPackageNames": ["/^ANcpLua\\./"],
+      "enabled": false
+    }
+  ]
+}
