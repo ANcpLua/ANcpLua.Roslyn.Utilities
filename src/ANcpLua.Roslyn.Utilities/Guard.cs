@@ -1837,6 +1837,97 @@ internal
 
     #endregion
 
+    #region Numeric - TimeSpan
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is not <see cref="TimeSpan.Zero" /> and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan NotZero(TimeSpan value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value == TimeSpan.Zero)
+            ThrowOutOfRange(paramName, value, "Duration cannot be zero.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is not negative (i.e. <c>&gt;= TimeSpan.Zero</c>) and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan NotNegative(TimeSpan value,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value < TimeSpan.Zero)
+            ThrowOutOfRange(paramName, value, "Duration cannot be negative.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is positive (i.e. <c>&gt; TimeSpan.Zero</c>) and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan Positive(TimeSpan value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value <= TimeSpan.Zero)
+            ThrowOutOfRange(paramName, value, "Duration must be positive.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is not greater than the specified maximum and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan NotGreaterThan(TimeSpan value, TimeSpan max,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value > max)
+            ThrowOutOfRange(paramName, value, $"Duration must not be greater than {max}.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is not less than the specified minimum and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan NotLessThan(TimeSpan value, TimeSpan min,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value < min)
+            ThrowOutOfRange(paramName, value, $"Duration must not be less than {min}.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is strictly less than the specified maximum and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan LessThan(TimeSpan value, TimeSpan max,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value >= max)
+            ThrowOutOfRange(paramName, value, $"Duration must be less than {max}.");
+        return value;
+    }
+
+    /// <summary>
+    ///     Validates that a <see cref="TimeSpan" /> is strictly greater than the specified minimum and returns it.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TimeSpan GreaterThan(TimeSpan value, TimeSpan min,
+        [CallerArgumentExpression(nameof(value))]
+        string? paramName = null)
+    {
+        if (value <= min)
+            ThrowOutOfRange(paramName, value, $"Duration must be greater than {min}.");
+        return value;
+    }
+
+    #endregion
+
     #region ThrowHelpers
 
     // Cold-path throw methods: [NoInlining] keeps exception construction out of
