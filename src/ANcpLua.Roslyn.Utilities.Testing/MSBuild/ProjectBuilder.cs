@@ -143,6 +143,26 @@ public class ProjectBuilder : IAsyncDisposable
     protected List<(string Name, string Content)> SourceFiles { get; } = [];
 
     /// <summary>
+    ///     Names of MSBuild properties to record during the build.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         When non-empty, <see cref="GenerateCsprojFile" /> emits a
+    ///         <c>_WriteRecordedProperties</c> target that runs <c>AfterTargets="Build"</c>
+    ///         and writes one <c>obj/recorded.{TargetFramework}.properties</c> file per TFM
+    ///         containing <c>Name=Value</c> lines for every requested property.
+    ///     </para>
+    ///     <para>
+    ///         <see cref="ExecuteDotnetCommandAsync" /> reads those files into
+    ///         <see cref="BuildResult.RecordedProperties" />. Compared to scanning the binlog
+    ///         this is deterministic across cross-targeting builds (one file per TFM, no
+    ///         shared sink) and immune to structured-logger cold-cache event loss observed on
+    ///         Windows runners. Mirrors <c>dotnet/sdk</c>'s <c>GetValuesCommand</c> pattern.
+    ///     </para>
+    /// </remarks>
+    protected HashSet<string> PropertiesToRecord { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     ///     The test output helper for logging, if provided.
     /// </summary>
     protected ITestOutputHelper? TestOutputHelper { get; }
@@ -519,6 +539,125 @@ public class ProjectBuilder : IAsyncDisposable
     }
 
     /// <summary>
+    ///     Records the value of one or more MSBuild properties during the build for later assertion.
+    /// </summary>
+    /// <param name="propertyNames">The names of properties to record (e.g., "TargetFramework", "OutputType").</param>
+    /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         Mirrors <c>dotnet/sdk</c>'s <c>GetValuesCommand</c> pattern. The emitted csproj
+    ///         contains a <c>_WriteRecordedProperties</c> target that runs <c>AfterTargets="Build"</c>
+    ///         and writes <c>obj/recorded.{TargetFramework}.properties</c> with <c>Name=Value</c>
+    ///         lines. After the build, retrieve values via
+    ///         <see cref="BuildResult.GetRecordedProperty" /> or assert via
+    ///         <c>BuildResultAssertions.ShouldHaveRecordedProperty</c>.
+    ///     </para>
+    ///     <para>
+    ///         Prefer this over <see cref="BuildResult.GetMsBuildPropertyValue" /> (binlog parsing) —
+    ///         binlog scans can lose late property events under cold-cache parallel restore on
+    ///         Windows, and produce a single shared sink under cross-targeting. Recorded properties
+    ///         are written deterministically per-TFM by MSBuild itself.
+    ///     </para>
+    /// </remarks>
+    /// <example>
+    ///     <code>
+    /// var result = await builder
+    ///     .RecordProperties("TargetFramework", "_IsSourceGeneratorProject")
+    ///     .BuildAsync();
+    ///
+    /// result.ShouldHaveRecordedProperty("_IsSourceGeneratorProject", "true");
+    /// </code>
+    /// </example>
+    /// <seealso cref="BuildResult.GetRecordedProperty" />
+    public ProjectBuilder RecordProperties(params string[] propertyNames)
+    {
+        foreach (var name in propertyNames)
+            PropertiesToRecord.Add(name);
+
+        return this;
+    }
+
+    /// <summary>
+    ///     Builds the inline MSBuild target XML that records requested properties to disk.
+    /// </summary>
+    /// <returns>
+    ///     XML for an inline <c>&lt;Target&gt;</c> emitting one <c>obj/recorded.{TargetFramework}.properties</c>
+    ///     per TFM, or <see cref="string.Empty" /> when no properties are recorded.
+    /// </returns>
+    /// <remarks>
+    ///     Concrete builders should embed this XML in their generated csproj alongside
+    ///     <c>&lt;PropertyGroup&gt;</c> and <c>&lt;ItemGroup&gt;</c> blocks. The target uses
+    ///     <c>WriteLinesToFile</c> with <c>Overwrite="true"</c>, so re-runs of the same TFM
+    ///     produce idempotent output.
+    /// </remarks>
+    protected string GetRecordPropertiesTargetXml()
+    {
+        if (PropertiesToRecord.Count == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        foreach (var name in PropertiesToRecord.OrderBy(static n => n, StringComparer.Ordinal))
+        {
+            if (sb.Length > 0)
+                sb.AppendLine();
+
+            sb.Append("      <_Recorded Include=\"").Append(name).Append("=$(").Append(name).Append(")\" />");
+        }
+
+        var items = sb.ToString();
+
+        return $"""
+                  <Target Name="_WriteRecordedProperties" AfterTargets="Build">
+                    <ItemGroup>
+                {items}
+                    </ItemGroup>
+                    <WriteLinesToFile File="$(MSBuildProjectDirectory)\obj\recorded.$(TargetFramework).properties"
+                                      Lines="@(_Recorded)"
+                                      Overwrite="true" />
+                  </Target>
+                """;
+    }
+
+    /// <summary>
+    ///     Loads recorded property files written by <c>_WriteRecordedProperties</c> into a TFM-keyed dictionary.
+    /// </summary>
+    /// <param name="projectDirectory">The project directory containing the <c>obj/</c> folder.</param>
+    /// <returns>
+    ///     A dictionary keyed by target framework moniker, each entry mapping property name to value.
+    ///     Empty when no recording was requested or no files were produced.
+    /// </returns>
+    protected static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> LoadRecordedProperties(string projectDirectory)
+    {
+        var objDir = Path.Combine(projectDirectory, "obj");
+        if (!System.IO.Directory.Exists(objDir))
+            return new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal);
+
+        var result = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal);
+        foreach (var file in System.IO.Directory.EnumerateFiles(objDir, "recorded.*.properties"))
+        {
+            var stem = Path.GetFileNameWithoutExtension(file);
+            const string prefix = "recorded.";
+            if (!stem.StartsWith(prefix, StringComparison.Ordinal))
+                continue;
+
+            var tfm = stem[prefix.Length..];
+            var props = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var line in File.ReadLines(file))
+            {
+                var idx = line.IndexOf('=');
+                if (idx <= 0)
+                    continue;
+
+                props[line[..idx]] = line[(idx + 1)..];
+            }
+
+            result[tfm] = props;
+        }
+
+        return result;
+    }
+
+    /// <summary>
     ///     Adds a source file to the project.
     /// </summary>
     /// <param name="filename">The filename for the source file (e.g., "Program.cs", "Models/User.cs").</param>
@@ -849,13 +988,17 @@ public class ProjectBuilder : IAsyncDisposable
                 new XAttribute("Include", package.Name),
                 new XAttribute("Version", package.Version)));
 
+        // Per-TFM SARIF path: cross-targeting builds otherwise race for a single
+        // BuildOutput.sarif sink and produce concatenated invalid JSON. Each TFM
+        // gets its own file; BuildResult merges them on read.
         var content = $"""
                        <Project Sdk="{RootSdk}">
                            <PropertyGroup>
-                               <ErrorLog>{SarifFileName},version=2.1</ErrorLog>
+                               <ErrorLog>BuildOutput.$(TargetFramework).sarif,version=2.1</ErrorLog>
                            </PropertyGroup>
                            {propertiesElement}
                            {packagesElement}
+                       {GetRecordPropertiesTargetXml()}
                        </Project>
                        """;
 
@@ -958,16 +1101,61 @@ public class ProjectBuilder : IAsyncDisposable
         TestOutputHelper?.WriteLine("Process exit code: " + result.ExitCode);
         TestOutputHelper?.WriteLine(result.Output.ToString());
 
-        var sarifPath = Directory.FullPath / SarifFileName;
-        SarifFile? sarif = null;
-        if (File.Exists(sarifPath))
+        var sarif = await LoadSarifAsync(Directory.FullPath);
+        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
+        var recordedProperties = LoadRecordedProperties(Directory.FullPath);
+
+        return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent)
         {
-            var bytes = await File.ReadAllBytesAsync(sarifPath);
-            sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
+            RecordedProperties = recordedProperties
+        };
+    }
+
+    /// <summary>
+    ///     Loads the SARIF file produced by the build, transparently handling per-TFM outputs.
+    /// </summary>
+    /// <param name="projectDirectory">The project directory containing the SARIF file(s).</param>
+    /// <returns>
+    ///     A merged <see cref="SarifFile" /> containing every diagnostic across all TFMs, or
+    ///     <see langword="null" /> when no SARIF file was emitted.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         The default <c>GenerateCsprojFile</c> writes <c>BuildOutput.$(TargetFramework).sarif</c>
+    ///         which yields a single file for single-targeted builds and one file per TFM for
+    ///         cross-targeting builds. This method collapses both shapes into one
+    ///         <see cref="SarifFile" /> so callers don't branch on cross-targeting.
+    ///     </para>
+    ///     <para>
+    ///         The legacy <c>BuildOutput.sarif</c> path (without TFM suffix) is also recognised so
+    ///         that callers overriding <c>GenerateCsprojFile</c> with the older single-file
+    ///         <c>ErrorLog</c> declaration continue to work.
+    ///     </para>
+    /// </remarks>
+    private static async Task<SarifFile?> LoadSarifAsync(FullPath projectDirectory)
+    {
+        var sarifFiles = System.IO.Directory.EnumerateFiles(projectDirectory, "BuildOutput*.sarif")
+            .OrderBy(static f => f, StringComparer.Ordinal)
+            .ToList();
+
+        if (sarifFiles.Count == 0)
+            return null;
+
+        if (sarifFiles.Count == 1)
+        {
+            var bytes = await File.ReadAllBytesAsync(sarifFiles[0]);
+            return JsonSerializer.Deserialize<SarifFile>(bytes);
         }
 
-        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
+        var allRuns = new List<SarifFileRun>();
+        foreach (var path in sarifFiles)
+        {
+            var bytes = await File.ReadAllBytesAsync(path);
+            var sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
+            if (sarif?.Runs is not null)
+                allRuns.AddRange(sarif.Runs);
+        }
 
-        return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent);
+        return new SarifFile { Runs = [.. allRuns] };
     }
 }

@@ -284,6 +284,44 @@ public static class BuildResultAssertions
     }
 
     /// <summary>
+    ///     Asserts that an MSBuild property recorded via <c>ProjectBuilder.RecordProperties(...)</c>
+    ///     has the expected value.
+    /// </summary>
+    /// <param name="result">The build result to validate.</param>
+    /// <param name="name">The property name to check.</param>
+    /// <param name="expectedValue">
+    ///     The expected value, or <see langword="null" /> when the property should be absent
+    ///     (unset properties are written as empty strings — both <see langword="null" /> and
+    ///     empty match an unset property).
+    /// </param>
+    /// <param name="targetFramework">
+    ///     The TFM to read from; defaults to the only recorded TFM when the build is single-targeted.
+    /// </param>
+    /// <param name="ignoreCase">Case-insensitive comparison. Defaults to <see langword="true" />.</param>
+    /// <returns>The same <see cref="BuildResult" /> instance for fluent chaining.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         Prefer this over <see cref="ShouldHavePropertyValue" /> — recorded properties are
+    ///         deterministic per-TFM (no shared sink under cross-targeting) and survive cold-cache
+    ///         parallel restore races that can lose late binlog events on Windows.
+    ///     </para>
+    ///     <para>
+    ///         <c>WriteLinesToFile</c> writes the empty string when an MSBuild property is unset,
+    ///         which round-trips as <see cref="string.Empty" />. This assertion treats
+    ///         <see langword="null" /> and empty as equivalent so that
+    ///         <c>ShouldHaveRecordedProperty("X", null)</c> passes for an unset <c>X</c>.
+    ///     </para>
+    /// </remarks>
+    public static BuildResult ShouldHaveRecordedProperty(this BuildResult result, string name, string? expectedValue,
+        string? targetFramework = null, bool ignoreCase = true)
+    {
+        var actual = result.GetRecordedProperty(name, targetFramework);
+        var normalisedActual = string.IsNullOrEmpty(actual) ? null : actual;
+        Assert.Equal(expectedValue, normalisedActual, ignoreCase);
+        return result;
+    }
+
+    /// <summary>
     ///     Asserts that a specific MSBuild target was executed during the build.
     /// </summary>
     /// <param name="result">The build result to validate.</param>

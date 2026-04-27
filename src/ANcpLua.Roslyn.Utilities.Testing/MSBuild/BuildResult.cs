@@ -42,6 +42,68 @@ public sealed record BuildResult(
     private Build? _cachedBuild;
 
     /// <summary>
+    ///     MSBuild properties that the project requested via
+    ///     <c>ProjectBuilder.RecordProperties(...)</c>, keyed first by target framework moniker
+    ///     and then by property name.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Populated by <c>ProjectBuilder.ExecuteDotnetCommandAsync</c> from the
+    ///         <c>obj/recorded.{TargetFramework}.properties</c> files written by the inline
+    ///         <c>_WriteRecordedProperties</c> target. Mirrors <c>dotnet/sdk</c>'s
+    ///         <c>GetValuesCommand</c> pattern.
+    ///     </para>
+    ///     <para>
+    ///         Prefer <see cref="GetRecordedProperty" /> for value lookups — it handles the
+    ///         single-TFM and cross-targeting cases uniformly and is deterministic across
+    ///         platforms, unlike <see cref="GetMsBuildPropertyValue" /> which can lose late
+    ///         events under cold-cache parallel restore on Windows.
+    ///     </para>
+    /// </remarks>
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> RecordedProperties { get; init; }
+        = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal);
+
+    /// <summary>
+    ///     Gets the recorded value of an MSBuild property, optionally scoped to a target framework.
+    /// </summary>
+    /// <param name="name">The property name (e.g., "TargetFramework", "_IsSourceGeneratorProject").</param>
+    /// <param name="targetFramework">
+    ///     The TFM to read from; defaults to the only recorded TFM when the build is single-targeted.
+    ///     Required when the project cross-targets — the dictionary contains an entry per TFM.
+    /// </param>
+    /// <returns>The recorded value, or <see langword="null" /> when not recorded for the given TFM.</returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown when <paramref name="targetFramework" /> is <see langword="null" /> but the build
+    ///     produced multiple TFM-scoped recordings — the caller must disambiguate.
+    /// </exception>
+    /// <remarks>
+    ///     The property must be declared via <c>ProjectBuilder.RecordProperties(...)</c> before the
+    ///     build; recording is opt-in and explicit.
+    /// </remarks>
+    /// <seealso cref="RecordedProperties" />
+    public string? GetRecordedProperty(string name, string? targetFramework = null)
+    {
+        if (RecordedProperties.Count == 0)
+            return null;
+
+        if (targetFramework is null)
+        {
+            if (RecordedProperties.Count > 1)
+                throw new InvalidOperationException(
+                    $"Build produced recorded properties for {RecordedProperties.Count} target frameworks " +
+                    $"({string.Join(", ", RecordedProperties.Keys)}); pass targetFramework explicitly.");
+
+            var only = RecordedProperties.Values.First();
+            return only.TryGetValue(name, out var v) ? v : null;
+        }
+
+        return RecordedProperties.TryGetValue(targetFramework, out var props)
+               && props.TryGetValue(name, out var value)
+            ? value
+            : null;
+    }
+
+    /// <summary>
     ///     Gets the process output collection.
     /// </summary>
     /// <value>The collection of output lines from the build process.</value>
