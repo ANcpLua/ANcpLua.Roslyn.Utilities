@@ -65,7 +65,6 @@
         <MeziantouFullPathVersion>1.1.19</MeziantouFullPathVersion>
         <MeziantouTemporaryDirectoryVersion>1.0.38</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>2.0.4</MeziantouThreadingVersion>
-        <MeziantouDependencyScanningVersion>2.0.20</MeziantouDependencyScanningVersion>
         <MeziantouAnalyzerVersion>3.0.44</MeziantouAnalyzerVersion>
     </PropertyGroup>
 
@@ -147,7 +146,6 @@
     <PropertyGroup Label="OpenAPI">
         <MicrosoftOpenApiVersion>3.3.1</MicrosoftOpenApiVersion>
         <MicrosoftOpenApiReadersVersion>2.0.0-preview.13</MicrosoftOpenApiReadersVersion>
-        <YamlDotNetVersion>16.3.0</YamlDotNetVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
