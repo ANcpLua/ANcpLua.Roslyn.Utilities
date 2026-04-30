@@ -2,8 +2,8 @@ namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
 ///     Nullable-returning <c>Try*</c> alternatives that chain with <c>?.</c> better than the BCL's <c>bool + out</c> shape:
-///     dictionary <c>GetOrNull/Default/Else</c>, <c>TryParse</c> for every BCL numeric/bool/char/Guid/enum/DateTime*/TimeSpan,
-///     and <c>ElementAtOrNull/Default</c> for <see cref="IList{T}" />.
+///     dictionary <c>GetValueOrNull/Else</c>, <c>TryParse</c> for every BCL numeric/bool/char/Guid/enum/DateTime*/TimeSpan,
+///     and <c>ElementAtOrNull/Default</c> for <see cref="IReadOnlyList{T}" />.
 /// </summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
@@ -12,63 +12,6 @@ internal
 #endif
     static class TryExtensions
 {
-    // ========== Dictionary Extensions (Reference Types) ==========
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or <c>null</c> if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary (must be a reference type).</typeparam>
-    /// <param name="dictionary">The dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> if found; otherwise, <c>null</c>.
-    /// </returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method provides a cleaner alternative to <c>TryGetValue</c> when you just
-    ///         need the value or <c>null</c>.
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// // Before
-    /// if (dict.TryGetValue(key, out var value))
-    /// {
-    ///     DoSomething(value);
-    /// }
-    ///
-    /// // After - works with null-conditional
-    /// dict.GetOrNull(key)?.DoSomething();
-    ///
-    /// // Or in a chain
-    /// var result = dict.GetOrNull(key)?.Process();
-    /// </code>
-    /// </example>
-    /// <seealso cref="GetOrDefault{TKey,TValue}(IDictionary{TKey,TValue},TKey,TValue)" />
-    public static TValue? GetOrNull<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
-        where TValue : class
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : null;
-    }
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or <c>null</c> if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary (must be a reference type).</typeparam>
-    /// <param name="dictionary">The read-only dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> if found; otherwise, <c>null</c>.
-    /// </returns>
-    /// <seealso cref="GetOrNull{TKey,TValue}(IDictionary{TKey,TValue},TKey)" />
-    public static TValue? GetOrNull<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key)
-        where TValue : class
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : null;
-    }
-
     // ========== Dictionary Extensions (Value Types) ==========
 
     /// <summary>
@@ -88,73 +31,13 @@ internal
     /// int? count = counts.GetValueOrNull("key");
     /// </code>
     /// </example>
-    public static TValue? GetValueOrNull<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
-        where TValue : struct
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : null;
-    }
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or <c>null</c> if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary (must be a value type).</typeparam>
-    /// <param name="dictionary">The read-only dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> wrapped in a nullable if found;
-    ///     otherwise, <c>null</c>.
-    /// </returns>
     public static TValue? GetValueOrNull<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key)
         where TValue : struct
     {
         return dictionary.TryGetValue(key, out var value) ? value : null;
     }
 
-    // ========== Dictionary Extensions (Default Value) ==========
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or a default value if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    /// <param name="dictionary">The dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <param name="defaultValue">The value to return if the key is not found.</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> if found;
-    ///     otherwise, <paramref name="defaultValue" />.
-    /// </returns>
-    /// <example>
-    ///     <code>
-    /// var timeout = settings.GetOrDefault("Timeout", 30);
-    /// var name = users.GetOrDefault(userId, "Unknown");
-    /// </code>
-    /// </example>
-    /// <seealso cref="GetOrNull{TKey,TValue}(IDictionary{TKey,TValue},TKey)" />
-    public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        TValue defaultValue)
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
-    }
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or a default value if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    /// <param name="dictionary">The read-only dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <param name="defaultValue">The value to return if the key is not found.</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> if found;
-    ///     otherwise, <paramref name="defaultValue" />.
-    /// </returns>
-    public static TValue GetOrDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key,
-        TValue defaultValue)
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
-    }
+    // ========== Dictionary Extensions (Lazy Factory) ==========
 
     /// <summary>
     ///     Gets the value associated with the specified key, or computes a default using a factory if not found.
@@ -162,35 +45,6 @@ internal
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
     /// <param name="dictionary">The dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <param name="factory">A factory function to compute the default value (only called if key is not found).</param>
-    /// <returns>
-    ///     The value associated with <paramref name="key" /> if found;
-    ///     otherwise, the result of <paramref name="factory" />.
-    /// </returns>
-    /// <remarks>
-    ///     <para>
-    ///         Use this when the default value is expensive to compute and should only be
-    ///         calculated when the key is not found.
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// var config = cache.GetOrElse(key, () => LoadExpensiveConfig());
-    /// </code>
-    /// </example>
-    public static TValue GetOrElse<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        Func<TValue> factory)
-    {
-        return dictionary.TryGetValue(key, out var value) ? value : factory();
-    }
-
-    /// <summary>
-    ///     Gets the value associated with the specified key, or computes a default using a factory if not found.
-    /// </summary>
-    /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    /// <param name="dictionary">The read-only dictionary to search.</param>
     /// <param name="key">The key to look up.</param>
     /// <param name="factory">A factory function to compute the default value.</param>
     /// <returns>
@@ -670,21 +524,6 @@ internal
     /// var last = items.ElementAtOrNull(items.Count - 1);
     /// </code>
     /// </example>
-    /// <seealso cref="ElementAtOrDefault{T}(IList{T},int,T)" />
-    public static T? ElementAtOrNull<T>(this IList<T> list, int index) where T : class
-    {
-        return index >= 0 && index < list.Count ? list[index] : null;
-    }
-
-    /// <summary>
-    ///     Gets the element at the specified index, or <c>null</c> if the index is out of bounds.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the list.</typeparam>
-    /// <param name="list">The read-only list to access.</param>
-    /// <param name="index">The zero-based index of the element to get.</param>
-    /// <returns>
-    ///     The element at <paramref name="index" /> if within bounds; otherwise, <c>null</c>.
-    /// </returns>
     public static T? ElementAtOrNull<T>(this IReadOnlyList<T> list, int index) where T : class
     {
         return index >= 0 && index < list.Count ? list[index] : null;
@@ -695,21 +534,6 @@ internal
     /// </summary>
     /// <typeparam name="T">The type of elements in the list (must be a value type).</typeparam>
     /// <param name="list">The list to access.</param>
-    /// <param name="index">The zero-based index of the element to get.</param>
-    /// <returns>
-    ///     The element at <paramref name="index" /> wrapped in a nullable if within bounds;
-    ///     otherwise, <c>null</c>.
-    /// </returns>
-    public static T? ValueAtOrNull<T>(this IList<T> list, int index) where T : struct
-    {
-        return index >= 0 && index < list.Count ? list[index] : null;
-    }
-
-    /// <summary>
-    ///     Gets the value type element at the specified index, or <c>null</c> if the index is out of bounds.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the list (must be a value type).</typeparam>
-    /// <param name="list">The read-only list to access.</param>
     /// <param name="index">The zero-based index of the element to get.</param>
     /// <returns>
     ///     The element at <paramref name="index" /> wrapped in a nullable if within bounds;
@@ -736,22 +560,6 @@ internal
     /// var item = items.ElementAtOrDefault(index, fallbackItem);
     /// </code>
     /// </example>
-    public static T ElementAtOrDefault<T>(this IList<T> list, int index, T defaultValue)
-    {
-        return index >= 0 && index < list.Count ? list[index] : defaultValue;
-    }
-
-    /// <summary>
-    ///     Gets the element at the specified index, or a default value if the index is out of bounds.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the list.</typeparam>
-    /// <param name="list">The read-only list to access.</param>
-    /// <param name="index">The zero-based index of the element to get.</param>
-    /// <param name="defaultValue">The value to return if the index is out of bounds.</param>
-    /// <returns>
-    ///     The element at <paramref name="index" /> if within bounds;
-    ///     otherwise, <paramref name="defaultValue" />.
-    /// </returns>
     public static T ElementAtOrDefault<T>(this IReadOnlyList<T> list, int index, T defaultValue)
     {
         return index >= 0 && index < list.Count ? list[index] : defaultValue;
