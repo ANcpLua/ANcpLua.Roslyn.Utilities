@@ -9,7 +9,6 @@ Agent test doubles, MAF conformance, and workflow fixtures live in the sibling p
 ## Core contracts
 
 - Keep testing helpers stable and deterministic.
-- Do not change public test API behavior without strong reason.
 - Prefer compatibility in assertions and builder APIs.
 
 ## Tooling preference
