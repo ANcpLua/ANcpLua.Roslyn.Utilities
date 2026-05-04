@@ -159,6 +159,11 @@ ANcpLua.Agents
 
 ### Release flow
 
-1. Push to `main` via PR — CI runs, auto-merge bots handle dep bumps
-2. Tag `vX.Y.Z` on `main` — publish workflow pushes to NuGet
-3. NuGet indexes in ~4-8 minutes — downstream repos pick up via Renovate
+Manual-tag-triggers-publish. The workflow runs on `push: main` for build + test only (publish job gated by `is_release=true`); the tag push triggers the publish path.
+
+1. PR to `main` via squash merge — workflow runs build + test; publish job skipped (`is_release=false`)
+2. After merge: `git tag vX.Y.Z && git push --tags` — version comes from `${GITHUB_REF_NAME#v}`, `is_release=true`
+3. Publish job pushes to NuGet via trusted publishing, then `gh release create v$VERSION` auto-creates the GitHub release
+4. NuGet indexes in ~4-8 minutes — downstream repos pick up via Renovate
+
+Note: ANcpLua.NET.Sdk uses a different pattern (auto-bump-on-merge + auto-tag); ANcpLua.Analyzers uses the same manual-tag pattern as this repo but does **not** auto-create the GH release.
