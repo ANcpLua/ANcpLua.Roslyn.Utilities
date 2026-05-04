@@ -50,7 +50,7 @@ public abstract class KestrelTestBase<TProgram>
     public virtual async Task TearDownAsync()
     {
         _client?.Dispose();
-        if (_factory != null) await _factory.DisposeAsync();
+        if (_factory != null) await _factory.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <summary>

@@ -250,7 +250,7 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     {
         BuildCount++;
 
-        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion))
+        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion).ConfigureAwait(false))
         {
             WorkingDirectory = Directory.FullPath,
             RedirectStandardOutput = true,
@@ -310,7 +310,7 @@ public sealed class PackageProjectBuilder : ProjectBuilder
             foreach (var env in environmentVariables)
                 psi.Environment[env.Name] = env.Value;
 
-        var result = await psi.RunAsTaskAsync();
+        var result = await psi.RunAsTaskAsync().ConfigureAwait(false);
 
         // Retry logic for SDK resolution failures
         const int maxRetries = 5;
@@ -320,8 +320,8 @@ public sealed class PackageProjectBuilder : ProjectBuilder
                     line.Text.Contains("The project file may be invalid or missing targets required for restore",
                         StringComparison.Ordinal)))
             {
-                await Task.Delay(100 * (1 << retry));
-                result = await psi.RunAsTaskAsync();
+                await Task.Delay(100 * (1 << retry)).ConfigureAwait(false);
+                result = await psi.RunAsTaskAsync().ConfigureAwait(false);
             }
             else
             {
@@ -332,11 +332,11 @@ public sealed class PackageProjectBuilder : ProjectBuilder
         SarifFile? sarif = null;
         if (File.Exists(sarifPath))
         {
-            var bytes = await File.ReadAllBytesAsync(sarifPath);
+            var bytes = await File.ReadAllBytesAsync(sarifPath).ConfigureAwait(false);
             sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
         }
 
-        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
+        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog").ConfigureAwait(false);
 
         return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent);
     }
@@ -564,10 +564,10 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     /// </remarks>
     public async Task InitializeGitRepoAsync()
     {
-        await ExecuteGitCommand("init");
-        await ExecuteGitCommand("add", ".");
-        await ExecuteGitCommand("commit", "-m", "Initial commit");
-        await ExecuteGitCommand("remote", "add", "origin", "https://github.com/ancplua/sample.git");
+        await ExecuteGitCommand("init").ConfigureAwait(false);
+        await ExecuteGitCommand("add", ".").ConfigureAwait(false);
+        await ExecuteGitCommand("commit", "-m", "Initial commit").ConfigureAwait(false);
+        await ExecuteGitCommand("remote", "add", "origin", "https://github.com/ancplua/sample.git").ConfigureAwait(false);
     }
 
     /// <summary>

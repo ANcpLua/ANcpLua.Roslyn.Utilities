@@ -45,7 +45,7 @@ public abstract class IntegrationTestBase<TProgram>
     public virtual async Task TearDown()
     {
         Client.Dispose();
-        if (_factory != null) await _factory.DisposeAsync();
+        if (_factory != null) await _factory.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <summary>
