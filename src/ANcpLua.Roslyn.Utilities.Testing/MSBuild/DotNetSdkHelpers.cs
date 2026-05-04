@@ -50,17 +50,17 @@ public static class DotNetSdkHelpers
     /// <summary>
     ///     Shared HTTP client for downloading SDK archives.
     /// </summary>
-    private static readonly HttpClient HttpClient = new();
+    private static readonly HttpClient s_httpClient = new();
 
     /// <summary>
     ///     Cache of resolved SDK paths indexed by version.
     /// </summary>
-    private static readonly ConcurrentDictionary<NetSdkVersion, FullPath> Values = new();
+    private static readonly ConcurrentDictionary<NetSdkVersion, FullPath> s_values = new();
 
     /// <summary>
     ///     Keyed async lock to prevent concurrent downloads of the same SDK version.
     /// </summary>
-    private static readonly KeyedAsyncLock<NetSdkVersion> KeyedAsyncLock = new();
+    private static readonly KeyedAsyncLock<NetSdkVersion> s_keyedAsyncLock = new();
 
     /// <summary>
     ///     Gets the path to the dotnet executable for the specified SDK version.
@@ -100,12 +100,12 @@ public static class DotNetSdkHelpers
     /// <seealso cref="ClearCache" />
     public static async Task<FullPath> Get(NetSdkVersion version)
     {
-        if (Values.TryGetValue(version, out var result))
+        if (s_values.TryGetValue(version, out var result))
             return result;
 
-        using (await KeyedAsyncLock.LockAsync(version).ConfigureAwait(false))
+        using (await s_keyedAsyncLock.LockAsync(version).ConfigureAwait(false))
         {
-            if (Values.TryGetValue(version, out result))
+            if (s_values.TryGetValue(version, out result))
                 return result;
 
             var versionString = version switch
@@ -129,13 +129,13 @@ public static class DotNetSdkHelpers
             var finalDotnetPath = finalFolderPath / (OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
             if (File.Exists(finalDotnetPath))
             {
-                Values[version] = finalDotnetPath;
+                s_values[version] = finalDotnetPath;
                 return finalDotnetPath;
             }
 
             var tempFolder = FullPath.GetTempPath() / "dotnet" / Guid.NewGuid().ToString("N");
 
-            var bytes = await HttpClient.GetByteArrayAsync(file.Address).ConfigureAwait(false);
+            var bytes = await s_httpClient.GetByteArrayAsync(file.Address).ConfigureAwait(false);
             if (Path.GetExtension(file.Name) is ".zip")
             {
                 using var ms = new MemoryStream(bytes);
@@ -192,7 +192,7 @@ public static class DotNetSdkHelpers
             if (!File.Exists(finalDotnetPath))
                 throw new InvalidOperationException($"SDK download failed. Expected dotnet at: {finalDotnetPath}");
 
-            Values[version] = finalDotnetPath;
+            s_values[version] = finalDotnetPath;
             return finalDotnetPath;
         }
     }
@@ -210,6 +210,6 @@ public static class DotNetSdkHelpers
     /// <seealso cref="Get" />
     public static void ClearCache()
     {
-        Values.Clear();
+        s_values.Clear();
     }
 }

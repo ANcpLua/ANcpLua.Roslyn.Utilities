@@ -62,10 +62,10 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 /// <seealso cref="Test{TGenerator}" />
 public static class TestConfiguration
 {
-    private static readonly AsyncLocal<LanguageVersion?> LanguageVersionOverride = new();
-    private static readonly AsyncLocal<ReferenceAssemblies?> ReferenceAssembliesOverride = new();
+    private static readonly AsyncLocal<LanguageVersion?> s_languageVersionOverride = new();
+    private static readonly AsyncLocal<ReferenceAssemblies?> s_referenceAssembliesOverride = new();
 
-    private static readonly AsyncLocal<ImmutableArray<PortableExecutableReference>?> AdditionalReferencesOverride =
+    private static readonly AsyncLocal<ImmutableArray<PortableExecutableReference>?> s_additionalReferencesOverride =
         new();
 
     /// <summary>
@@ -104,7 +104,7 @@ public static class TestConfiguration
     /// </remarks>
     /// <seealso cref="WithLanguageVersion" />
     public static LanguageVersion LanguageVersion =>
-        LanguageVersionOverride.Value ?? LanguageVersion.Preview;
+        s_languageVersionOverride.Value ?? LanguageVersion.Preview;
 
     /// <summary>
     ///     Gets the reference assemblies to use for test compilations.
@@ -132,7 +132,7 @@ public static class TestConfiguration
     /// </remarks>
     /// <seealso cref="WithReferenceAssemblies" />
     public static ReferenceAssemblies ReferenceAssemblies =>
-        ReferenceAssembliesOverride.Value ?? Net100Tfm;
+        s_referenceAssembliesOverride.Value ?? Net100Tfm;
 
     /// <summary>
     ///     Gets additional metadata references to include in test compilations.
@@ -162,7 +162,7 @@ public static class TestConfiguration
     /// <seealso cref="WithAdditionalReferences(ImmutableArray{PortableExecutableReference})" />
     /// <seealso cref="WithAdditionalReferences(Type[])" />
     public static ImmutableArray<PortableExecutableReference> AdditionalReferences =>
-        AdditionalReferencesOverride.Value ?? ImmutableArray<PortableExecutableReference>.Empty;
+        s_additionalReferencesOverride.Value ?? ImmutableArray<PortableExecutableReference>.Empty;
 
     /// <summary>
     ///     Creates a scope that temporarily overrides the C# language version for test compilations.
@@ -207,9 +207,9 @@ public static class TestConfiguration
     /// <seealso cref="LanguageVersion" />
     public static IDisposable WithLanguageVersion(LanguageVersion version)
     {
-        var previous = LanguageVersionOverride.Value;
-        LanguageVersionOverride.Value = version;
-        return new ConfigurationScope(() => LanguageVersionOverride.Value = previous);
+        var previous = s_languageVersionOverride.Value;
+        s_languageVersionOverride.Value = version;
+        return new ConfigurationScope(() => s_languageVersionOverride.Value = previous);
     }
 
     /// <summary>
@@ -258,9 +258,9 @@ public static class TestConfiguration
     /// <seealso cref="ReferenceAssemblies" />
     public static IDisposable WithReferenceAssemblies(ReferenceAssemblies assemblies)
     {
-        var previous = ReferenceAssembliesOverride.Value;
-        ReferenceAssembliesOverride.Value = assemblies;
-        return new ConfigurationScope(() => ReferenceAssembliesOverride.Value = previous);
+        var previous = s_referenceAssembliesOverride.Value;
+        s_referenceAssembliesOverride.Value = assemblies;
+        return new ConfigurationScope(() => s_referenceAssembliesOverride.Value = previous);
     }
 
     /// <summary>
@@ -312,9 +312,9 @@ public static class TestConfiguration
     /// <seealso cref="WithAdditionalReferences(Type[])" />
     public static IDisposable WithAdditionalReferences(ImmutableArray<PortableExecutableReference> references)
     {
-        var previous = AdditionalReferencesOverride.Value;
-        AdditionalReferencesOverride.Value = references;
-        return new ConfigurationScope(() => AdditionalReferencesOverride.Value = previous);
+        var previous = s_additionalReferencesOverride.Value;
+        s_additionalReferencesOverride.Value = references;
+        return new ConfigurationScope(() => s_additionalReferencesOverride.Value = previous);
     }
 
     /// <summary>

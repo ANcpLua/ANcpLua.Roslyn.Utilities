@@ -1441,11 +1441,11 @@ internal
 
     #region Path Validation
 
-    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+    private static readonly char[] s_invalidFileNameChars = Path.GetInvalidFileNameChars();
 
-    private static readonly char[] InvalidPathChars = Path
+    private static readonly char[] s_invalidPathChars = Path
         .GetInvalidPathChars()
-        .Concat(InvalidFileNameChars.Except(['/', '\\', ':']))
+        .Concat(s_invalidFileNameChars.Except(['/', '\\', ':']))
         .Distinct()
         .ToArray();
 
@@ -1475,7 +1475,7 @@ internal
     {
         NotNullOrEmpty(value, paramName);
 
-        foreach (var invalidChar in InvalidFileNameChars)
+        foreach (var invalidChar in s_invalidFileNameChars)
             if (value.IndexOf(invalidChar) != -1)
                 throw new ArgumentException($"Invalid character '{invalidChar}' in file name: {value}", paramName);
 
@@ -1517,7 +1517,7 @@ internal
     {
         NotNullOrEmpty(value, paramName);
 
-        foreach (var invalidChar in InvalidPathChars)
+        foreach (var invalidChar in s_invalidPathChars)
             if (value.IndexOf(invalidChar) != -1)
                 throw new ArgumentException($"Invalid character '{invalidChar}' in path: {value}", paramName);
 
