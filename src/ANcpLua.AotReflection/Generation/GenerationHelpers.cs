@@ -27,7 +27,7 @@ internal static class GenerationHelpers
 
         return lastDotIndex <= 0
             ? (string.Empty, type)
-            : (type.Substring(0, lastDotIndex), type.Substring(lastDotIndex + 1));
+            : (type[..lastDotIndex], type[(lastDotIndex + 1)..]);
     }
 
     public static string GetTypeOf(string fullyQualifiedType)
@@ -38,7 +38,7 @@ internal static class GenerationHelpers
     private static string RemoveGlobalPrefix(string fullyQualifiedType)
     {
         return fullyQualifiedType.StartsWith(GlobalPrefix, StringComparison.Ordinal)
-            ? fullyQualifiedType.Substring(GlobalPrefix.Length)
+            ? fullyQualifiedType[GlobalPrefix.Length..]
             : fullyQualifiedType;
     }
 }

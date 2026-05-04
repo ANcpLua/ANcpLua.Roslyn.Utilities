@@ -43,6 +43,8 @@
     <!-- Polyfills from core Roslyn.Utilities (internal, must be linked per-project) -->
     <ItemGroup>
         <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\LanguageFeatures\IsExternalInit.cs" Link="Polyfills\IsExternalInit.cs"/>
+        <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\IndexRange\Index.cs" Link="Polyfills\Index.cs"/>
+        <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\IndexRange\Range.cs" Link="Polyfills\Range.cs"/>
     </ItemGroup>
 
     <ItemGroup>

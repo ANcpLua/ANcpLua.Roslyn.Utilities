@@ -28,7 +28,7 @@ internal
         token = null;
         if (string.IsNullOrWhiteSpace(headerValue)) return false;
         if (!headerValue!.StartsWith(Scheme, StringComparison.OrdinalIgnoreCase)) return false;
-        var candidate = headerValue.Substring(Scheme.Length).Trim();
+        var candidate = headerValue[Scheme.Length..].Trim();
         if (candidate.Length == 0) return false;
         token = candidate;
         return true;
