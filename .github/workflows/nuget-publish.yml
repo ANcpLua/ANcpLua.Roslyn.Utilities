@@ -49,7 +49,7 @@ jobs:
               MAJOR=${BASH_REMATCH[1]}
               MINOR=${BASH_REMATCH[2]}
               PATCH=${BASH_REMATCH[3]}
-              if git tag --points-at HEAD | grep -qx "$LATEST_TAG"; then
+              if git tag --points-at HEAD | grep -qFx "$LATEST_TAG"; then
                 VERSION="$MAJOR.$MINOR.$PATCH"
                 echo "HEAD is tagged $LATEST_TAG — reusing version: $VERSION"
               else
@@ -116,7 +116,7 @@ jobs:
   #   3. No NUGET_API_KEY secret required — OIDC handles auth.
   publish:
     needs: [version, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
