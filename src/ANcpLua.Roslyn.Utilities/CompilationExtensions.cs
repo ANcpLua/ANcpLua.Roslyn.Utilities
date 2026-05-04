@@ -101,6 +101,44 @@ internal
     }
 
     /// <summary>
+    ///     Projects an <see cref="IncrementalValueProvider{Compilation}" /> to a value-equatable
+    ///     <see cref="bool" /> indicating whether a type with the given metadata name is accessible
+    ///     in the compilation.
+    /// </summary>
+    /// <param name="compilation">
+    ///     The compilation provider, typically <c>context.CompilationProvider</c>, that should be
+    ///     reduced to a boolean gate before participating in downstream pipeline stages.
+    /// </param>
+    /// <param name="fullyQualifiedMetadataName">
+    ///     The fully qualified metadata name of the type to look for
+    ///     (e.g. <c>"Microsoft.AspNetCore.Builder.WebApplicationBuilder"</c>).
+    /// </param>
+    /// <returns>
+    ///     An <see cref="IncrementalValueProvider{Boolean}" /> that yields <c>true</c> when the type
+    ///     is accessible from the compilation's assembly; otherwise <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         <see cref="Compilation" /> is not value-equatable — combining it directly into a
+    ///         pipeline stage invalidates the cache key on every keystroke. The textbook fix is
+    ///         to project the compilation to a value-equatable type (here a <see cref="bool" />)
+    ///         before any downstream <c>Combine</c>. This helper does that in one line so callers
+    ///         can write:
+    ///     </para>
+    ///     <code>
+    /// var runtimeAvailable = context.CompilationProvider.IsTypeAccessible("My.Runtime.Marker");
+    /// values.RegisterCollectedEmitter(context, gate: runtimeAvailable, emitter: ...);
+    /// </code>
+    /// </remarks>
+    /// <seealso cref="HasAccessibleTypeWithMetadataName" />
+    public static IncrementalValueProvider<bool> IsTypeAccessible(
+        this IncrementalValueProvider<Compilation> compilation,
+        string fullyQualifiedMetadataName)
+    {
+        return compilation.Select((c, _) => c.HasAccessibleTypeWithMetadataName(fullyQualifiedMetadataName));
+    }
+
+    /// <summary>
     ///     Checks if the compilation targets .NET 10 or a later version.
     /// </summary>
     /// <param name="compilation">
