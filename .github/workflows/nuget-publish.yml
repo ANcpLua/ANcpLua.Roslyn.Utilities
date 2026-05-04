@@ -3,17 +3,15 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (without v prefix)'
-        required: true
+        description: 'Version override (without v prefix). Leave empty to auto-bump from latest tag.'
+        required: false
 
-# Coalesce in-flight runs on the same ref. Don't cancel: a tag push that races a main push
-# must still complete its publish.
+# Coalesce in-flight runs on the same ref so two main pushes don't race to publish the same version.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: false
@@ -28,31 +26,43 @@ env:
   CI: true
 
 jobs:
-  # Compute version once. Tags and workflow_dispatch produce a release version;
-  # everything else gets a CI build number derived from commit count + sha.
+  # Compute version by reading the latest v* tag and bumping the patch.
+  # If HEAD is exactly the tag, reuse the version (re-run safe).
+  # workflow_dispatch with an explicit version overrides the auto-bump.
   version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.ver.outputs.version }}
-      is_release: ${{ steps.ver.outputs.is_release }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          fetch-tags: true
       - id: ver
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-            echo "is_release=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-            echo "is_release=true" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "Workflow dispatch override: $VERSION"
           else
-            COMMITS=$(git rev-list --count HEAD)
-            SHA=$(git rev-parse --short HEAD)
-            echo "version=0.0.$COMMITS-ci.g$SHA" >> $GITHUB_OUTPUT
-            echo "is_release=false" >> $GITHUB_OUTPUT
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              MAJOR=${BASH_REMATCH[1]}
+              MINOR=${BASH_REMATCH[2]}
+              PATCH=${BASH_REMATCH[3]}
+              if git tag --points-at HEAD | grep -qx "$LATEST_TAG"; then
+                VERSION="$MAJOR.$MINOR.$PATCH"
+                echo "HEAD is tagged $LATEST_TAG — reusing version: $VERSION"
+              else
+                PATCH=$((PATCH + 1))
+                VERSION="$MAJOR.$MINOR.$PATCH"
+                echo "Commits after $LATEST_TAG — bumped to: $VERSION"
+              fi
+            else
+              VERSION="0.0.1"
+              echo "No v* tag found — defaulting to: $VERSION"
+            fi
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   # Build on both Linux and Windows to catch path-case and platform-specific build issues
   # early. Pack/upload only from Linux to avoid duplicate artifacts (output is netstandard2.0,
@@ -95,8 +105,9 @@ jobs:
           path: artifacts/*.nupkg
           if-no-files-found: error
 
-  # Publish only on tagged releases or workflow_dispatch. The `nuget` environment provides
-  # the manual approval gate and houses the trusted publishing config.
+  # Publish on push to main (auto-bump-on-merge) or workflow_dispatch override.
+  # The `Must Publish Packages` gate diffs against the latest tag — docs-only PRs skip publish.
+  # The `nuget` environment houses the trusted publishing config.
   #
   # Trusted publishing setup (one-time, per package):
   #   1. Visit https://www.nuget.org/account/trustedpublishing
@@ -105,7 +116,7 @@ jobs:
   #   3. No NUGET_API_KEY secret required — OIDC handles auth.
   publish:
     needs: [version, build]
-    if: needs.version.outputs.is_release == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
@@ -115,19 +126,45 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          fetch-tags: true
+
+      - name: Must Publish Packages
+        id: has_changes
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous tag — first publish, proceeding"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            CHANGES=$(git diff --name-only "$LATEST_TAG" HEAD -- 'src/**' 'tests/**' || true)
+            if [ -n "$CHANGES" ]; then
+              echo "Changes since $LATEST_TAG:"
+              echo "$CHANGES"
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "No src/ or tests/ changes since $LATEST_TAG — skipping publish"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        if: steps.has_changes.outputs.has_changes == 'true'
         with:
           name: packages
           path: artifacts/
+
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        if: steps.has_changes.outputs.has_changes == 'true'
 
       - name: Authenticate to NuGet (trusted publishing)
+        if: steps.has_changes.outputs.has_changes == 'true'
         id: nuget-login
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
         with:
           user: ANcpLua
 
       - name: Push to NuGet
+        if: steps.has_changes.outputs.has_changes == 'true'
         run: |
           for pkg in artifacts/*.nupkg; do
             dotnet nuget push "$pkg" \
@@ -137,6 +174,7 @@ jobs:
           done
 
       - name: Create GitHub release
+        if: steps.has_changes.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.version.outputs.version }}
