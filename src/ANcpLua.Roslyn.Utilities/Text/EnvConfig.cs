@@ -1,6 +1,7 @@
 // Runtime-only. Excluded from the source-only Sources package (where ANCPLUA_ROSLYN_PUBLIC isn't defined)
 // because Roslyn analyzers are forbidden to read Environment by RS1035 ("Analyzers should not read their settings
 // directly from environment variables"). Generators that need config must go through analyzer config/MSBuildWorkspace.
+
 #if ANCPLUA_ROSLYN_PUBLIC
 namespace ANcpLua.Roslyn.Utilities.Text;
 
@@ -16,11 +17,11 @@ namespace ANcpLua.Roslyn.Utilities.Text;
 public static class EnvConfig
 {
     /// <summary>Trimmed string value of <paramref name="name" />, or <paramref name="defaultValue" /> when unset/whitespace.</summary>
-    public static string? ReadString(string name, string? defaultValue = null)
+    private static string? ReadString(string name, string? defaultValue = null)
     {
         if (name is null) throw new ArgumentNullException(nameof(name));
         var raw = Environment.GetEnvironmentVariable(name);
-        return string.IsNullOrWhiteSpace(raw) ? defaultValue : raw!.Trim();
+        return string.IsNullOrWhiteSpace(raw) ? defaultValue : raw.Trim();
     }
 
     /// <summary>
@@ -30,10 +31,9 @@ public static class EnvConfig
     public static int ReadInt(string name, int defaultValue, int? min = null, int? max = null)
     {
         var raw = ReadString(name);
-        if (raw is null || !int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        if (raw is null || !int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ||
+            min is { } lo && parsed < lo || max is { } hi && parsed > hi)
             return defaultValue;
-        if (min is int lo && parsed < lo) return defaultValue;
-        if (max is int hi && parsed > hi) return defaultValue;
         return parsed;
     }
 

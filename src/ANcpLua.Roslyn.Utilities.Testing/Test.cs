@@ -21,7 +21,7 @@ public static class Test
     {
         var engine = new GeneratorTestEngine();
         configure(engine);
-        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken);
+        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken).ConfigureAwait(false);
         return new GeneratorResult(firstRun, secondRun, null, primaryGeneratorType ?? typeof(GeneratorTestEngine));
     }
 }
@@ -35,7 +35,7 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     public static async Task<GeneratorResult> Run(string source, CancellationToken cancellationToken = default)
     {
         var engine = new GeneratorTestEngine<TGenerator>().WithSource(source);
-        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken);
+        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken).ConfigureAwait(false);
         return new GeneratorResult(firstRun, secondRun, source, typeof(TGenerator));
     }
 
@@ -45,7 +45,7 @@ public static class Test<TGenerator> where TGenerator : IIncrementalGenerator, n
     {
         var engine = new GeneratorTestEngine<TGenerator>();
         configure(engine);
-        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken);
+        var (firstRun, secondRun) = await engine.RunTwiceAsync(cancellationToken).ConfigureAwait(false);
         return new GeneratorResult(firstRun, secondRun, null, typeof(TGenerator));
     }
 }

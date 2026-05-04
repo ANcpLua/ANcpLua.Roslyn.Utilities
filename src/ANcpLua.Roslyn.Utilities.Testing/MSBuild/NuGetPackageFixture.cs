@@ -177,7 +177,7 @@ public class NuGetPackageFixture : IAsyncLifetime
         }
 
         // Local development mode: pre-warm the cache
-        await PreWarmNuGetCacheAsync();
+        await PreWarmNuGetCacheAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -185,7 +185,7 @@ public class NuGetPackageFixture : IAsyncLifetime
     /// </summary>
     public virtual async ValueTask DisposeAsync()
     {
-        await _packageDirectory.DisposeAsync();
+        await _packageDirectory.DisposeAsync().ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
@@ -218,7 +218,7 @@ public class NuGetPackageFixture : IAsyncLifetime
                                    </packageSources>
                                </configuration>
                                """;
-            await File.WriteAllTextAsync(warmupDir / "NuGet.config", nugetConfig);
+            await File.WriteAllTextAsync(warmupDir / "NuGet.config", nugetConfig).ConfigureAwait(false);
 
             var packageRefs = string.Join("\n        ",
                 _preWarmPackages.Select(static p =>
@@ -234,7 +234,7 @@ public class NuGetPackageFixture : IAsyncLifetime
                               </ItemGroup>
                           </Project>
                           """;
-            await File.WriteAllTextAsync(warmupDir / "warmup.csproj", csproj);
+            await File.WriteAllTextAsync(warmupDir / "warmup.csproj", csproj).ConfigureAwait(false);
 
             var psi = new ProcessStartInfo("dotnet")
             {
@@ -246,7 +246,7 @@ public class NuGetPackageFixture : IAsyncLifetime
             };
             psi.ArgumentList.AddRange("restore", "--no-cache");
 
-            var result = await psi.RunAsTaskAsync(CancellationToken.None);
+            var result = await psi.RunAsTaskAsync(CancellationToken.None).ConfigureAwait(false);
             if (result.ExitCode is not 0)
                 throw new InvalidOperationException(
                     $"NuGet cache pre-warm failed with exit code {result.ExitCode}. Output: {result.Output}");

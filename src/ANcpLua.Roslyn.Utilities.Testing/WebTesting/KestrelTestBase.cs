@@ -55,7 +55,7 @@ public abstract class KestrelTestBase<TProgram> : IAsyncLifetime
     public virtual async ValueTask DisposeAsync()
     {
         _client?.Dispose();
-        await _baseFactory.DisposeAsync();
+        await _baseFactory.DisposeAsync().ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 

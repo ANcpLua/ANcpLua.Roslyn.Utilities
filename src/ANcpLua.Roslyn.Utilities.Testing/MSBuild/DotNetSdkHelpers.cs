@@ -103,7 +103,7 @@ public static class DotNetSdkHelpers
         if (Values.TryGetValue(version, out var result))
             return result;
 
-        using (await KeyedAsyncLock.LockAsync(version))
+        using (await KeyedAsyncLock.LockAsync(version).ConfigureAwait(false))
         {
             if (Values.TryGetValue(version, out result))
                 return result;
@@ -114,9 +114,9 @@ public static class DotNetSdkHelpers
                 _ => throw new NotSupportedException($"SDK version {version} is not supported")
             };
 
-            var products = await ProductCollection.GetAsync();
+            var products = await ProductCollection.GetAsync().ConfigureAwait(false);
             var product = products.Single(a => a.ProductName == ".NET" && a.ProductVersion == versionString);
-            var releases = await product.GetReleasesAsync();
+            var releases = await product.GetReleasesAsync().ConfigureAwait(false);
             var latestRelease = releases.Single(r => r.Version == product.LatestReleaseVersion);
             var latestSdk = latestRelease.Sdks.MaxBy(static sdk => sdk.Version)
                             ?? throw new InvalidOperationException($"No SDK found for .NET {versionString}");
@@ -135,19 +135,19 @@ public static class DotNetSdkHelpers
 
             var tempFolder = FullPath.GetTempPath() / "dotnet" / Guid.NewGuid().ToString("N");
 
-            var bytes = await HttpClient.GetByteArrayAsync(file.Address);
+            var bytes = await HttpClient.GetByteArrayAsync(file.Address).ConfigureAwait(false);
             if (Path.GetExtension(file.Name) is ".zip")
             {
                 using var ms = new MemoryStream(bytes);
                 var zip = new ZipArchive(ms);
-                await zip.ExtractToDirectoryAsync(tempFolder, true);
+                await zip.ExtractToDirectoryAsync(tempFolder, true).ConfigureAwait(false);
             }
             else
             {
                 using var ms = new MemoryStream(bytes);
                 await using var gz = new GZipStream(ms, CompressionMode.Decompress);
                 await using var tar = new TarReader(gz);
-                while (await tar.GetNextEntryAsync() is { } entry)
+                while ((await tar.GetNextEntryAsync().ConfigureAwait(false)) is { } entry)
                 {
                     var destinationPath = tempFolder / entry.Name;
                     switch (entry.EntryType)
@@ -161,7 +161,7 @@ public static class DotNetSdkHelpers
                                 Directory.CreateDirectory(parentDir);
                             var entryStream = entry.DataStream;
                             await using var outputStream = File.Create(destinationPath);
-                            if (entryStream is not null) await entryStream.CopyToAsync(outputStream);
+                            if (entryStream is not null) await entryStream.CopyToAsync(outputStream).ConfigureAwait(false);
                             break;
                         }
                     }

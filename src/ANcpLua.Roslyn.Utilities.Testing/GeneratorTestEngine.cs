@@ -120,7 +120,7 @@ internal sealed class GeneratorTestEngine
     /// <returns>A task that resolves to a <see cref="CSharpCompilation" />.</returns>
     public async Task<CSharpCompilation> CreateCompilationAsync(CancellationToken cancellationToken = default)
     {
-        var resolvedReferences = await _referenceAssemblies.ResolveAsync(LanguageNames.CSharp, cancellationToken);
+        var resolvedReferences = await _referenceAssemblies.ResolveAsync(LanguageNames.CSharp, cancellationToken).ConfigureAwait(false);
 
         var allReferences = resolvedReferences
             .Concat(_references)
@@ -163,7 +163,7 @@ internal sealed class GeneratorTestEngine
     internal async Task<(GeneratorDriverRunResult FirstRun, GeneratorDriverRunResult SecondRun)> RunTwiceAsync(
         CancellationToken cancellationToken = default)
     {
-        var compilation = await CreateCompilationAsync(cancellationToken);
+        var compilation = await CreateCompilationAsync(cancellationToken).ConfigureAwait(false);
         var driver = CreateDriver();
 
         // First run

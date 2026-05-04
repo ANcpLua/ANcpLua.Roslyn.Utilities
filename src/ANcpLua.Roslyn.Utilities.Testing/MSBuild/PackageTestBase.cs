@@ -301,7 +301,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
             .WithOutputType(Val.Library)
             .WithProperties(extraProps)
             .AddSource("Code.cs", code)
-            .BuildAsync();
+            .BuildAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -352,6 +352,6 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
             .WithOutputType(Val.Exe)
             .WithProperties(extraProps)
             .AddSource("Program.cs", code)
-            .BuildAsync();
+            .BuildAsync().ConfigureAwait(false);
     }
 }

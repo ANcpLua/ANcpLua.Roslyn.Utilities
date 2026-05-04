@@ -88,7 +88,10 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
             || operation.Syntax.IsKind(SyntaxKind.DefaultLiteralExpression))
             return true;
 
-        return operation is IPropertyReferenceOperation { Property.Name: "None", Property.ContainingType: { } containingType }
+        return operation is IPropertyReferenceOperation
+               {
+                   Property: { Name: "None", ContainingType: { } containingType }
+               }
                && containingType.IsEqualTo(cancellationTokenType);
     }
 }

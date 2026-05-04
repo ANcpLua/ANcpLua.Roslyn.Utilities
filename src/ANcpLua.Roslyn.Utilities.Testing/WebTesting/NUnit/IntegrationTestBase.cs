@@ -53,7 +53,7 @@ public abstract class IntegrationTestBase<TProgram>
     [OneTimeTearDown]
     public virtual async Task OneTimeTearDownAsync()
     {
-        await Factory.DisposeAsync();
+        await Factory.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <summary>
