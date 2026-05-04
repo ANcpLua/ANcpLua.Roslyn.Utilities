@@ -25,7 +25,7 @@ internal
         if (string.IsNullOrEmpty(value)) return false;
         if (!value!.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase)) return false;
 
-        var parts = value.Substring(Prefix.Length).Split('.');
+        var parts = value[Prefix.Length..].Split('.');
         if (parts.Length < 2) return false;
         if (!int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out major)) return false;
         if (!int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out minor)) return false;

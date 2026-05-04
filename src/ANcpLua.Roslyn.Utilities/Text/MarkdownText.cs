@@ -17,7 +17,7 @@ internal
     {
         if (maxLength < 1) throw new ArgumentOutOfRangeException(nameof(maxLength), maxLength, "Must be at least 1.");
         if (string.IsNullOrEmpty(text)) return string.Empty;
-        return text!.Length <= maxLength ? text : text.Substring(0, maxLength - 1) + "…";
+        return text!.Length <= maxLength ? text : text[..(maxLength - 1)] + "…";
     }
 
     /// <summary>Escapes <c>|</c> and newlines so <paramref name="text" /> can be safely embedded in a markdown table cell.</summary>
