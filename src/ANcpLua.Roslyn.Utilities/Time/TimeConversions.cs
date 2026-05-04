@@ -22,7 +22,7 @@ internal
     ///     Unix epoch (1970-01-01T00:00:00Z) for environments where
     ///     <c>DateTime.UnixEpoch</c> is not available.
     /// </summary>
-    private static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime s_unixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     // ── DateTimeOffset -> UnixNano ────────────────────────────────────────────
 
@@ -83,7 +83,7 @@ internal
     public static DateTime UnixNanoToDateTime(ulong unixNano)
     {
         var ticks = (long)(unixNano / 100);
-        return UnixEpoch.AddTicks(ticks);
+        return s_unixEpoch.AddTicks(ticks);
     }
 
     // ── Cutoff Helpers ───────────────────────────────────────────────────────

@@ -15,7 +15,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.AI;
 /// </remarks>
 public sealed class BitNetFixture : IAsyncLifetime
 {
-    private static readonly Uri DefaultEndpoint = new("http://localhost:8080");
+    private static readonly Uri s_defaultEndpoint = new("http://localhost:8080");
     private const string DefaultModel = "bitnet-b1.58-2B-4T";
     private const int MaxRetries = 3;
 
@@ -28,7 +28,7 @@ public sealed class BitNetFixture : IAsyncLifetime
     public bool IsAvailable { get; private set; }
 
     /// <summary>Resolved endpoint URI.</summary>
-    public Uri Endpoint { get; private set; } = DefaultEndpoint;
+    public Uri Endpoint { get; private set; } = s_defaultEndpoint;
 
     /// <summary>Resolved model name.</summary>
     public string Model { get; private set; } = DefaultModel;
@@ -37,7 +37,7 @@ public sealed class BitNetFixture : IAsyncLifetime
     {
         Endpoint = Environment.GetEnvironmentVariable("BITNET_URL") is { Length: > 0 } url
             ? new Uri(url)
-            : DefaultEndpoint;
+            : s_defaultEndpoint;
 
         Model = Environment.GetEnvironmentVariable("BITNET_MODEL") is { Length: > 0 } model
             ? model

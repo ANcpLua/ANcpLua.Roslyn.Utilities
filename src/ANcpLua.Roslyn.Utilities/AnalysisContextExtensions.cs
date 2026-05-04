@@ -65,10 +65,10 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <example>
 ///     <code>
 /// // Before: Verbose pattern
-/// context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation(), typeName));
-/// 
+/// context.ReportDiagnostic(Diagnostic.Create(s_rule, node.GetLocation(), typeName));
+///
 /// // After: Simplified extension
-/// context.ReportDiagnostic(Rule, node.GetLocation(), typeName);
+/// context.ReportDiagnostic(s_rule, node.GetLocation(), typeName);
 /// </code>
 /// </example>
 #if ANCPLUA_ROSLYN_PUBLIC

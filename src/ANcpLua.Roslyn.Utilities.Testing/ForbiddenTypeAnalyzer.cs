@@ -89,7 +89,7 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///     </list>
     /// </remarks>
-    private static readonly HashSet<Type> ForbiddenTypes =
+    private static readonly HashSet<Type> s_forbiddenTypes =
     [
         typeof(ISymbol),
         typeof(Compilation),
@@ -106,7 +106,7 @@ internal static class ForbiddenTypeAnalyzer
     ///     Caches <see cref="FieldInfo" /> arrays to avoid repeated reflection overhead
     ///     when analyzing the same types across multiple generator runs.
     /// </remarks>
-    private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldCache = new();
+    private static readonly ConcurrentDictionary<Type, FieldInfo[]> s_fieldCache = new();
 
     /// <summary>
     ///     Analyzes a generator run result for forbidden type violations.
@@ -243,14 +243,14 @@ internal static class ForbiddenTypeAnalyzer
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Results are cached in <see cref="FieldCache" /> to avoid repeated reflection.
+    ///                 Results are cached in <see cref="s_fieldCache" /> to avoid repeated reflection.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </remarks>
     private static IEnumerable<FieldInfo> GetRelevantFields(Type type)
     {
-        return FieldCache.GetOrAdd(type,
+        return s_fieldCache.GetOrAdd(type,
             static t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
                                     BindingFlags.DeclaredOnly).Where(static f => !IsAllowedType(f.FieldType))
                 .ToArray());
@@ -268,7 +268,7 @@ internal static class ForbiddenTypeAnalyzer
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 Checks for exact type matches in <see cref="ForbiddenTypes" />.
+    ///                 Checks for exact type matches in <see cref="s_forbiddenTypes" />.
     ///             </description>
     ///         </item>
     ///         <item>
@@ -281,8 +281,8 @@ internal static class ForbiddenTypeAnalyzer
     /// </remarks>
     private static bool IsForbiddenType(Type type)
     {
-        return ForbiddenTypes.Contains(type) ||
-               ForbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
+        return s_forbiddenTypes.Contains(type) ||
+               s_forbiddenTypes.Any(forbidden => forbidden.IsAssignableFrom(type));
     }
 
     /// <summary>

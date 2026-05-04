@@ -29,7 +29,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Formatting;
 /// <seealso cref="AssertionHelpers" />
 internal static class ReportFormatter
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         WriteIndented = true
     };
@@ -237,7 +237,7 @@ internal static class ReportFormatter
                 s.Removed
             })
         };
-        return JsonSerializer.Serialize(payload, JsonOptions);
+        return JsonSerializer.Serialize(payload, s_jsonOptions);
     }
 
     /// <summary>

@@ -40,7 +40,7 @@ internal
 #endif
     static class StringExtensions
 {
-    private static readonly char[] NewLineSeparator = ['\n'];
+    private static readonly char[] s_newLineSeparator = ['\n'];
 
     /// <summary>
     ///     Splits a string into lines without allocating intermediate string arrays.
@@ -403,7 +403,7 @@ internal
     public static string TrimBlankLines(this string text)
     {
         text = text ?? throw new ArgumentNullException(nameof(text));
-        var lines = text.NormalizeLineEndings().Split(NewLineSeparator, StringSplitOptions.None);
+        var lines = text.NormalizeLineEndings().Split(s_newLineSeparator, StringSplitOptions.None);
         var result = new StringBuilder();
         var first = true;
 
@@ -966,11 +966,11 @@ internal
             .Replace("\n", "<br/>");
     }
 
-    private static readonly Regex WhitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
+    private static readonly Regex s_whitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
 
     private static Regex WhitespaceRegex()
     {
-        return WhitespaceRegexInstance;
+        return s_whitespaceRegexInstance;
     }
 
     /// <summary>

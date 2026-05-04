@@ -10,7 +10,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 
 internal static class SolutionRefactoringTestReferences
 {
-    internal static readonly ImmutableArray<MetadataReference> References =
+    internal static readonly ImmutableArray<MetadataReference> s_references =
         Net100.References.All.CastArray<MetadataReference>();
 }
 
@@ -227,7 +227,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var project = _workspace.AddProject("TestProject", LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .WithParseOptions(new CSharpParseOptions(TestConfiguration.LanguageVersion))
-            .WithMetadataReferences(SolutionRefactoringTestReferences.References);
+            .WithMetadataReferences(SolutionRefactoringTestReferences.s_references);
 
         var solution = project.Solution;
         foreach (var (name, source) in documents)
@@ -251,7 +251,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
                 .WithProjectCompilationOptions(projectId,
                     new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .WithProjectParseOptions(projectId, new CSharpParseOptions(TestConfiguration.LanguageVersion))
-                .WithProjectMetadataReferences(projectId, SolutionRefactoringTestReferences.References);
+                .WithProjectMetadataReferences(projectId, SolutionRefactoringTestReferences.s_references);
 
             foreach (var (fileName, content) in documents)
             {
