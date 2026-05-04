@@ -159,11 +159,15 @@ ANcpLua.Agents
 
 ### Release flow
 
-Manual-tag-triggers-publish. The workflow runs on `push: main` for build + test only (publish job gated by `is_release=true`); the tag push triggers the publish path.
+Auto-bump-on-merge (matches ANcpLua.NET.Sdk pattern):
 
-1. PR to `main` via squash merge — workflow runs build + test; publish job skipped (`is_release=false`)
-2. After merge: `git tag vX.Y.Z && git push --tags` — version comes from `${GITHUB_REF_NAME#v}`, `is_release=true`
-3. Publish job pushes to NuGet via trusted publishing, then `gh release create v$VERSION` auto-creates the GitHub release
-4. NuGet indexes in ~4-8 minutes — downstream repos pick up via Renovate
+1. PR to `main` via squash merge — workflow runs build + pack on every push
+2. On merge, the publish job:
+   - `version` reads the latest `v*` tag and bumps the patch (`v2.2.0` → `2.2.1`); reuses the tag's version when HEAD is exactly the tag
+   - `Must Publish Packages` gate diffs against the previous tag for `src/**` and `tests/**` — docs-only PRs skip publish
+   - Pushes packages to NuGet via trusted publishing (the `nuget` environment), then `gh release create v$VERSION` creates the GH release **and the tag** in one step
+3. NuGet indexes in ~4-8 minutes — downstream repos pick up via Renovate
 
-Note: ANcpLua.NET.Sdk uses a different pattern (auto-bump-on-merge + auto-tag); ANcpLua.Analyzers uses the same manual-tag pattern as this repo but does **not** auto-create the GH release.
+Manual override: `workflow_dispatch` accepts an explicit version (without the `v` prefix) — use this to force a minor/major bump or re-run a release.
+
+Note: ANcpLua.Analyzers still uses manual-tag-triggers-publish (the workflow runs only on `push: tags v*`).
