@@ -19,5 +19,5 @@ permissions:
 
 jobs:
   auto-merge:
-    uses: ANcpLua/renovate-config/.github/workflows/auto-merge-reusable.yml@1e1c5c61fdf44a05a62a70aeada34219c23e1428 # main
+    uses: ANcpLua/renovate-config/.github/workflows/auto-merge-reusable.yml@25b2825cc61505ea8c06104f6a01c293fb935fe3 # main (PR #7 — adds hardened ai-agent lane)
     secrets: inherit
