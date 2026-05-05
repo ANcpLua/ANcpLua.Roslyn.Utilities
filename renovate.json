@@ -1,11 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ANcpLua/renovate-config"],
-  "packageRules": [
-    {
-      "description": "Block ALL first-party self-bumps — Roslyn.Utilities is foundation; self-test pin coupled to publish flow (chicken-and-egg if auto-bumped)",
-      "matchPackageNames": ["/^ANcpLua\\./"],
-      "enabled": false
-    }
-  ]
+  "extends": ["github>ANcpLua/renovate-config"]
 }
