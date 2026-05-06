@@ -3,8 +3,16 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'CHANGELOG.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'CHANGELOG.md'
   workflow_dispatch:
     inputs:
       version:
@@ -79,6 +87,8 @@ jobs:
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
           global-json-file: global.json
+          cache: true
+          cache-dependency-path: '**/Directory.Packages.props'
       - name: Restore
         run: dotnet restore ANcpLua.Roslyn.Utilities.slnx
       - name: Build
@@ -155,6 +165,10 @@ jobs:
 
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         if: steps.has_changes.outputs.has_changes == 'true'
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: '**/Directory.Packages.props'
 
       - name: Authenticate to NuGet (trusted publishing)
         if: steps.has_changes.outputs.has_changes == 'true'
