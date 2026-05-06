@@ -1,0 +1,350 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# ANcpLua.Roslyn.Utilities — source-only utilities + helper packages
+# Stack: C# / netstandard2.0 (analyzer-host constraint), source-only consumption
+# Packages: Roslyn.Utilities, Polyfills, Sources (source-only), Testing,
+#           Testing.Aot, AotReflection, AotReflection.Attributes
+# Auto-bump pattern (compute_version on push to main).
+#
+# Schema-validated against: https://coderabbit.ai/integrations/schema.v2.json
+#
+
+language: en-US
+tone_instructions: >-
+  Principal-engineer review. Direct, concise. Flag structural violations as blocking.
+  Focus: source-only API stability (consumers paste this code), AOT safety,
+  netstandard2.0 polyfill discipline, no suppression policy.
+early_access: true
+enable_free_tier: false
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_in_walkthrough: false
+  review_status: true
+  review_details: true
+  commit_status: true
+  fail_commit_status: true
+  collapse_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: true
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  enable_prompt_for_ai_agents: true
+
+  labeling_instructions:
+    - label: 'area:utilities'
+      instructions: 'Apply when the PR modifies src/ANcpLua.Roslyn.Utilities/.'
+    - label: 'area:sources'
+      instructions: 'Apply when the PR modifies src/ANcpLua.Roslyn.Utilities.Sources/.'
+    - label: 'area:polyfills'
+      instructions: 'Apply when the PR modifies src/ANcpLua.Roslyn.Utilities.Polyfills/.'
+    - label: 'area:testing'
+      instructions: 'Apply when the PR modifies src/ANcpLua.Roslyn.Utilities.Testing/ or .Testing.Aot/.'
+    - label: 'area:aotreflection'
+      instructions: 'Apply when the PR modifies src/ANcpLua.AotReflection/ or .Attributes/.'
+    - label: 'area:examples'
+      instructions: 'Apply when the PR modifies the Examples.* projects.'
+    - label: 'area:tests'
+      instructions: 'Apply when the PR modifies tests/.'
+    - label: 'area:infra'
+      instructions: 'Apply when the PR modifies .github/, eng/, or root build infrastructure.'
+    - label: 'breaking'
+      instructions: >-
+        Apply when the PR introduces breaking changes — especially in .Sources
+        (source-only consumption means renames break consumers immediately).
+  auto_apply_labels: true
+
+  path_filters:
+    - 'src/**'
+    - 'tests/**'
+    - 'eng/**'
+    - '.github/**'
+    - '*.props'
+    - '*.targets'
+    - '*.slnx'
+    - 'global.json'
+    - 'Directory.*.props'
+    - 'Directory.*.targets'
+    - 'Version.props'
+    - 'coverage.runsettings'
+    - '!**/*.g.cs'
+    - '!**/*.Designer.cs'
+    - '!**/bin/**'
+    - '!**/obj/**'
+    - '!**/artifacts/**'
+
+  path_instructions:
+    - path: 'src/ANcpLua.Roslyn.Utilities/**/*.cs'
+      instructions: |
+        Helper utilities for incremental generators. Review for:
+        - Value-equatable record types for incremental pipeline models.
+        - No `ISymbol` / `SyntaxNode` / `Compilation` storage in pipeline data.
+        - `IIncrementalGenerator` patterns; never `ISourceGenerator`.
+        - `ForAttributeWithMetadataName` for attribute discovery.
+        - C# 14 with preview features. File-scoped namespaces. Switch expressions.
+        - No `DateTime.Now` — use `TimeProvider.System` (or polyfill in netstandard2.0).
+        - No `.Result`/`.Wait()` — `await` always.
+        - No null-forgiving `!` — rewrite the code.
+
+    - path: 'src/ANcpLua.Roslyn.Utilities.Sources/**'
+      instructions: |
+        SOURCE-ONLY consumption — consumers paste this into their compilation.
+
+        ARCHITECTURAL INVARIANTS — flag violations as blocking:
+        - Public API renames break every consumer next compile. Treat
+          renames as breaking changes; require a deprecation cycle when
+          possible (mark old, add new, remove next major).
+        - All types must be `internal` so consumers don't unexpectedly
+          re-export them as their own public surface.
+        - No external dependencies — source-only means you're embedding the
+          code; PackageReference here doesn't reach the consumer.
+        - netstandard2.0-compatible — many consumers are analyzer projects.
+        - No `unsafe` blocks unless absolutely required and documented.
+
+    - path: 'src/ANcpLua.Roslyn.Utilities.Polyfills/**'
+      instructions: |
+        Polyfills for missing BCL APIs in netstandard2.0. Review for:
+        - Each polyfill is `internal` and gated by `#if !NET6_0_OR_GREATER`
+          (or appropriate version) so it disappears on modern targets.
+        - Public API matches the BCL exactly — same signature, same nullability.
+        - Behavior matches BCL behavior; document any deviation inline.
+        - No new polyfills without confirming the BCL doesn't already have it
+          in the target framework set.
+
+    - path: 'src/ANcpLua.Roslyn.Utilities.Testing/**/*.cs'
+      instructions: |
+        Test infrastructure for analyzer/code-fix/generator tests.
+        Review for: clear public API, helpful error messages on test failure,
+        no Roslyn version coupling beyond what's documented.
+
+    - path: 'src/ANcpLua.Roslyn.Utilities.Testing.Aot/**/*.cs'
+      instructions: |
+        AOT-safe test infrastructure. Review for: no reflection, no
+        `Activator.CreateInstance` without DynamicallyAccessedMembers,
+        no `Type.GetType(string)` lookups. Annotate with
+        `[RequiresUnreferencedCode]` / `[RequiresDynamicCode]` when
+        unavoidable, and document the path that's safe.
+
+    - path: 'src/ANcpLua.AotReflection/**/*.cs'
+      instructions: |
+        Source-generated reflection alternatives for AOT. Review for:
+        - Generated code is deterministic (same inputs → identical output).
+        - Generated code is `internal partial` to avoid clashes.
+        - No Reflection.Emit, no `dynamic`, no `Type.MakeGenericType`.
+        - Diagnostic messages name the type that triggered generation.
+
+    - path: 'src/*.Examples.*/**'
+      instructions: |
+        Example projects demonstrating Roslyn.Utilities patterns.
+        Lower bar than production src/, but still: code must compile,
+        examples must reflect current Roslyn.Utilities API surface,
+        no obvious bugs that mislead readers.
+
+    - path: 'tests/**/*.cs'
+      instructions: |
+        xUnit + FluentAssertions. AAA pattern. NSubstitute for mocks.
+        Flag: blocking-async (`Task.Run(() => x.Result)`), missing
+        `async Task` (sync-void), `Thread.Sleep` instead of `await Task.Delay`,
+        tests asserting on private state via reflection.
+
+    - path: '**/*.props'
+      instructions: |
+        MSBuild property files. Multi-targeting matters here (netstandard2.0
+        for analyzer compatibility, modern targets for source generators).
+        Review for correct TargetFrameworks per project type.
+
+    - path: 'Version.props'
+      instructions: |
+        Single source of truth for version. Auto-bump pattern: compute_version
+        bumps from latest tag on push to main. Manual bumps via tag override
+        before merge. Review for: matches latest tag intention.
+
+    - path: '.github/workflows/**'
+      instructions: |
+        Pin third-party actions to SHA. First-party (actions/*) tag-pin OK.
+        Concurrency groups required on push-triggered workflows.
+        Secrets via env: not inline. No secrets in logs.
+        Auto-bump pattern: pushes to main can trigger publish via
+        compute_version — flag changes that affect that path.
+
+    - path: 'AGENTS.md'
+      instructions: |
+        Coordination file for AI agents. Review for: consistency with actual
+        repo structure, accurate package descriptions.
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: false
+    ignore_title_keywords:
+      - 'deps('
+      - '[skip ci]'
+      - '[skip review]'
+      - 'wip'
+    labels: []
+    base_branches: []
+    ignore_usernames:
+      - 'dependabot[bot]'
+      - 'renovate[bot]'
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  pre_merge_checks:
+    docstrings:
+      mode: 'off'
+    title:
+      mode: error
+      requirements: |
+        Conventional commits: feat|fix|refactor|chore|docs|test|ci|perf|deps.
+        Under 72 chars, no trailing period.
+        Examples: feat(utilities): add RegisterCollectedEmitter,
+        fix(polyfills): correct ReadOnlySpan slicing
+    description:
+      mode: warning
+    issue_assessment:
+      mode: warning
+    custom_checks:
+      - mode: error
+        name: 'No DateTime.Now/UtcNow'
+        instructions: |
+          Scan added/modified C# files for `DateTime.Now` or `DateTime.UtcNow`.
+          Pass if none. Fail if any usage — use `TimeProvider.System` (or
+          polyfill in netstandard2.0).
+      - mode: error
+        name: 'No .Result/.Wait() blocking async'
+        instructions: |
+          Scan added/modified C# files for `.Result`, `.Wait()`, or
+          `.GetAwaiter().GetResult()`. Pass if none. Fail if any.
+      - mode: error
+        name: 'No ISourceGenerator'
+        instructions: |
+          Scan added/modified C# files for `: ISourceGenerator` patterns.
+          Pass if none. Fail if a new ISourceGenerator is added — must use
+          IIncrementalGenerator instead.
+      - mode: warning
+        name: 'No null-forgiving operator without justification'
+        instructions: |
+          Scan added/modified C# files for `!` (null-forgiving). Pass if
+          none. Fail if any `!` is added without an inline comment.
+      - mode: warning
+        name: 'Sources public types must be internal'
+        instructions: |
+          Scan added/modified C# files in src/ANcpLua.Roslyn.Utilities.Sources/
+          for `public` type declarations. Pass if all types are internal.
+          Fail if any `public class/struct/record/interface/enum` declared —
+          source-only packages must use `internal` so consumers don't
+          accidentally re-export.
+
+  tools:
+    shellcheck:
+      enabled: true
+    actionlint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 180000
+    ast-grep:
+      essential_rules: true
+    eslint: { enabled: false }
+    biome: { enabled: false }
+    oxc: { enabled: false }
+    ruff: { enabled: false }
+    pylint: { enabled: false }
+    flake8: { enabled: false }
+    phpstan: { enabled: false }
+    phpmd: { enabled: false }
+    phpcs: { enabled: false }
+    swiftlint: { enabled: false }
+    detekt: { enabled: false }
+    pmd: { enabled: false }
+    semgrep: { enabled: false }
+    opengrep: { enabled: false }
+    trufflehog: { enabled: false }
+    checkov: { enabled: false }
+    tflint: { enabled: false }
+    fortitudeLint: { enabled: false }
+    rubocop: { enabled: false }
+    buf: { enabled: false }
+    regal: { enabled: false }
+    clang: { enabled: false }
+    cppcheck: { enabled: false }
+    circleci: { enabled: false }
+    clippy: { enabled: false }
+    sqlfluff: { enabled: false }
+    trivy: { enabled: false }
+    prismaLint: { enabled: false }
+    shopifyThemeCheck: { enabled: false }
+    luacheck: { enabled: false }
+    brakeman: { enabled: false }
+    dotenvLint: { enabled: false }
+    htmlhint: { enabled: false }
+    stylelint: { enabled: false }
+    checkmake: { enabled: false }
+    osvScanner: { enabled: false }
+    blinter: { enabled: false }
+    yamllint: { enabled: false }
+    psscriptanalyzer: { enabled: false }
+    languagetool: { enabled: false }
+    hadolint: { enabled: false }
+    golangci-lint: { enabled: false }
+
+chat:
+  auto_reply: true
+  art: false
+  integrations:
+    jira:
+      usage: disabled
+    linear:
+      usage: disabled
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - '**/CLAUDE.md'
+      - '**/AGENTS.md'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'Version.props'
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  pull_requests:
+    scope: auto
+  jira:
+    usage: disabled
+  linear:
+    usage: disabled
+  mcp:
+    usage: auto
+
+issue_enrichment:
+  auto_enrich:
+    enabled: true
+  planning:
+    auto_planning:
+      enabled: false
+  labeling:
+    auto_apply_labels: true

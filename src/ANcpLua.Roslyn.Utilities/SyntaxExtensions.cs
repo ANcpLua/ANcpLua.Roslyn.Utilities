@@ -543,7 +543,7 @@ internal
         if (genericStart > 0 && typeName.EndsWithOrdinal(">"))
         {
             var baseTypeName = typeName[..genericStart];
-            var argsContent = typeName.Substring(genericStart + 1, typeName.Length - genericStart - 2);
+            var argsContent = typeName[(genericStart + 1)..^1];
 
             var args = ParseGenericArguments(argsContent);
             var qualifiedArgs = args.Select(a => a.ToGlobalTypeName(typeParameterNames));
@@ -621,7 +621,7 @@ internal
                     depth--;
                     break;
                 case ',' when depth is 0:
-                    args.Add(argsContent.Substring(start, i - start).Trim());
+                    args.Add(argsContent[start..i].Trim());
                     start = i + 1;
                     break;
             }

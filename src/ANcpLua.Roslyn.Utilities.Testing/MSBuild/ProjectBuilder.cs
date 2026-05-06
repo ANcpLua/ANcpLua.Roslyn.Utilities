@@ -240,7 +240,7 @@ public class ProjectBuilder : IAsyncDisposable
     /// </remarks>
     public virtual async ValueTask DisposeAsync()
     {
-        await Directory.DisposeAsync();
+        await Directory.DisposeAsync().ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
@@ -1055,14 +1055,14 @@ public class ProjectBuilder : IAsyncDisposable
             foreach (var file in System.IO.Directory.GetFiles(Directory.FullPath, "*", SearchOption.AllDirectories))
             {
                 TestOutputHelper.WriteLine("File: " + file);
-                var content = await File.ReadAllTextAsync(file);
+                var content = await File.ReadAllTextAsync(file).ConfigureAwait(false);
                 TestOutputHelper.WriteLine(content);
             }
 
             TestOutputHelper.WriteLine("-------- dotnet " + command);
         }
 
-        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion))
+        var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion).ConfigureAwait(false))
         {
             WorkingDirectory = Directory.FullPath,
             RedirectStandardOutput = true,
@@ -1096,13 +1096,13 @@ public class ProjectBuilder : IAsyncDisposable
 
         TestOutputHelper?.WriteLine("Executing: " + psi.FileName + " " + string.Join(' ', psi.ArgumentList));
 
-        var result = await psi.RunAsTaskAsync();
+        var result = await psi.RunAsTaskAsync().ConfigureAwait(false);
 
         TestOutputHelper?.WriteLine("Process exit code: " + result.ExitCode);
         TestOutputHelper?.WriteLine(result.Output.ToString());
 
-        var sarif = await LoadSarifAsync(Directory.FullPath);
-        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog");
+        var sarif = await LoadSarifAsync(Directory.FullPath).ConfigureAwait(false);
+        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog").ConfigureAwait(false);
         var recordedProperties = LoadRecordedProperties(Directory.FullPath);
 
         return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent)
@@ -1143,14 +1143,14 @@ public class ProjectBuilder : IAsyncDisposable
 
         if (sarifFiles.Count == 1)
         {
-            var bytes = await File.ReadAllBytesAsync(sarifFiles[0]);
+            var bytes = await File.ReadAllBytesAsync(sarifFiles[0]).ConfigureAwait(false);
             return JsonSerializer.Deserialize<SarifFile>(bytes);
         }
 
         var allRuns = new List<SarifFileRun>();
         foreach (var path in sarifFiles)
         {
-            var bytes = await File.ReadAllBytesAsync(path);
+            var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
             var sarif = JsonSerializer.Deserialize<SarifFile>(bytes);
             if (sarif?.Runs is not null)
                 allRuns.AddRange(sarif.Runs);

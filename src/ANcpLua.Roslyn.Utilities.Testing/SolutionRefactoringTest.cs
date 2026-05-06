@@ -10,7 +10,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 
 internal static class SolutionRefactoringTestReferences
 {
-    internal static readonly ImmutableArray<MetadataReference> References =
+    internal static readonly ImmutableArray<MetadataReference> s_references =
         Net100.References.All.CastArray<MetadataReference>();
 }
 
@@ -101,21 +101,21 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     {
         var solution = CreateSolution(documents);
         var triggerDoc = solution.Projects.First().Documents.First(d => d.Name == triggerFile);
-        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken);
+        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken).ConfigureAwait(false);
         var span = GetSpan(triggerDocText, triggerText);
 
-        var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken);
+        var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken).ConfigureAwait(false);
 
         var matchingAction = actions.FirstOrDefault(a => a.Title == refactoringTitle)
                              ?? throw new InvalidOperationException(
                                  $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
 
-        var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken);
+        var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken).ConfigureAwait(false);
 
         foreach (var (fileName, expectedContent) in expected)
         {
             var changedDoc = changedSolution.Projects.First().Documents.First(d => d.Name == fileName);
-            var changedText = await changedDoc.GetTextAsync(cancellationToken);
+            var changedText = await changedDoc.GetTextAsync(cancellationToken).ConfigureAwait(false);
             var actual = changedText.ToString();
             var normalizedExpected = expectedContent.ReplaceLineEndings();
 
@@ -161,16 +161,16 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var solution = CreateMultiProjectSolution(projects);
         var triggerProj = solution.Projects.First(p => p.Name == triggerProject);
         var triggerDoc = triggerProj.Documents.First(d => d.Name == triggerFile);
-        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken);
+        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken).ConfigureAwait(false);
         var span = GetSpan(triggerDocText, triggerText);
 
-        var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken);
+        var actions = await GetRefactoringsAsync(triggerDoc, span, cancellationToken).ConfigureAwait(false);
 
         var matchingAction = actions.FirstOrDefault(a => a.Title == refactoringTitle)
                              ?? throw new InvalidOperationException(
                                  $"Expected refactoring '{refactoringTitle}' not found. Available: {string.Join(", ", actions.Select(a => $"'{a.Title}'"))}");
 
-        var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken);
+        var changedSolution = await ApplySolutionCodeActionAsync(matchingAction, cancellationToken).ConfigureAwait(false);
 
         foreach (var (projectName, expectedDocs) in expected)
         {
@@ -178,7 +178,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
             foreach (var (fileName, expectedContent) in expectedDocs)
             {
                 var changedDoc = changedProj.Documents.First(d => d.Name == fileName);
-                var changedText = await changedDoc.GetTextAsync(cancellationToken);
+                var changedText = await changedDoc.GetTextAsync(cancellationToken).ConfigureAwait(false);
                 var actual = changedText.ToString();
                 var normalizedExpected = expectedContent.ReplaceLineEndings();
 
@@ -200,10 +200,10 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     {
         var solution = CreateSolution(documents);
         var triggerDoc = solution.Projects.First().Documents.First(d => d.Name == triggerFile);
-        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken);
+        var triggerDocText = await triggerDoc.GetTextAsync(cancellationToken).ConfigureAwait(false);
         var span = GetSpan(triggerDocText, triggerText);
 
-        return await GetRefactoringsAsync(triggerDoc, span, cancellationToken);
+        return await GetRefactoringsAsync(triggerDoc, span, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         string triggerText,
         CancellationToken cancellationToken = default)
     {
-        var actions = await GetRefactoringsForDocumentAsync(documents, triggerFile, triggerText, cancellationToken);
+        var actions = await GetRefactoringsForDocumentAsync(documents, triggerFile, triggerText, cancellationToken).ConfigureAwait(false);
 
         if (actions.Length > 0)
             throw new InvalidOperationException(
@@ -227,7 +227,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         var project = _workspace.AddProject("TestProject", LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .WithParseOptions(new CSharpParseOptions(TestConfiguration.LanguageVersion))
-            .WithMetadataReferences(SolutionRefactoringTestReferences.References);
+            .WithMetadataReferences(SolutionRefactoringTestReferences.s_references);
 
         var solution = project.Solution;
         foreach (var (name, source) in documents)
@@ -251,7 +251,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
                 .WithProjectCompilationOptions(projectId,
                     new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .WithProjectParseOptions(projectId, new CSharpParseOptions(TestConfiguration.LanguageVersion))
-                .WithProjectMetadataReferences(projectId, SolutionRefactoringTestReferences.References);
+                .WithProjectMetadataReferences(projectId, SolutionRefactoringTestReferences.s_references);
 
             foreach (var (fileName, content) in documents)
             {
@@ -285,7 +285,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
             actions.Add,
             cancellationToken);
 
-        await provider.ComputeRefactoringsAsync(context);
+        await provider.ComputeRefactoringsAsync(context).ConfigureAwait(false);
 
         return [.. actions];
     }
@@ -294,7 +294,7 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
         CodeAction action,
         CancellationToken cancellationToken)
     {
-        var operations = await action.GetOperationsAsync(cancellationToken);
+        var operations = await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
         var applyChanges = operations.OfType<ApplyChangesOperation>().First();
         return applyChanges.ChangedSolution;
     }

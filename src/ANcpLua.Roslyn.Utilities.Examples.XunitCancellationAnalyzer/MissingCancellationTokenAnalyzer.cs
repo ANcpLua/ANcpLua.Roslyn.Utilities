@@ -14,7 +14,7 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
 {
     public const string DiagnosticId = "ANCP0001";
 
-    private static readonly DiagnosticDescriptor Rule = new(
+    private static readonly DiagnosticDescriptor s_rule = new(
         id: DiagnosticId,
         title: "Pass the xUnit cancellation token",
         messageFormat: "Call '{0}' with TestContext.Current.CancellationToken",
@@ -24,7 +24,7 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
         description: "Calls from xUnit test methods should pass TestContext.Current.CancellationToken when a single CancellationToken parameter is omitted or defaulted.");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        [Rule];
+        [s_rule];
 
     protected override void InitializeCore(AnalysisContext context)
     {
@@ -68,7 +68,7 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
 
         context.ReportDiagnostic(
             Diagnostic.Create(
-                descriptor: Rule,
+                descriptor: s_rule,
                 location: invocation.Syntax.GetLocation(),
                 properties: properties,
                 messageArgs: invocation.TargetMethod.Name));
@@ -88,7 +88,10 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
             || operation.Syntax.IsKind(SyntaxKind.DefaultLiteralExpression))
             return true;
 
-        return operation is IPropertyReferenceOperation { Property.Name: "None", Property.ContainingType: { } containingType }
+        return operation is IPropertyReferenceOperation
+               {
+                   Property: { Name: "None", ContainingType: { } containingType }
+               }
                && containingType.IsEqualTo(cancellationTokenType);
     }
 }

@@ -44,7 +44,7 @@ internal
         if (hexChars is < 1 or > 32)
             throw new ArgumentOutOfRangeException(nameof(hexChars), hexChars, "Must be 1–32.");
 
-        return Guid.NewGuid().ToString("N").Substring(0, hexChars);
+        return Guid.NewGuid().ToString("N")[..hexChars];
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ internal
         var hex = BitConverter.ToString(buffer).Replace("-", "").ToLowerInvariant();
 #endif
 
-        return prefix + "-" + hex.Substring(0, randomHexChars);
+        return prefix + "-" + hex[..randomHexChars];
     }
 
     /// <summary>

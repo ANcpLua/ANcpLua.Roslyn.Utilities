@@ -159,6 +159,15 @@ ANcpLua.Agents
 
 ### Release flow
 
-1. Push to `main` via PR — CI runs, auto-merge bots handle dep bumps
-2. Tag `vX.Y.Z` on `main` — publish workflow pushes to NuGet
+Auto-bump-on-merge (matches ANcpLua.NET.Sdk pattern):
+
+1. PR to `main` via squash merge — workflow runs build + pack on every push
+2. On merge, the publish job:
+   - `version` reads the latest `v*` tag and bumps the patch (`v2.2.0` → `2.2.1`); reuses the tag's version when HEAD is exactly the tag
+   - `Must Publish Packages` gate diffs against the previous tag for `src/**` and `tests/**` — docs-only PRs skip publish
+   - Pushes packages to NuGet via trusted publishing (the `nuget` environment), then `gh release create v$VERSION` creates the GH release **and the tag** in one step
 3. NuGet indexes in ~4-8 minutes — downstream repos pick up via Renovate
+
+Manual override: `workflow_dispatch` accepts an explicit version (without the `v` prefix) — use this to force a minor/major bump or re-run a release.
+
+Note: ANcpLua.Analyzers still uses manual-tag-triggers-publish (the workflow runs only on `push: tags v*`).

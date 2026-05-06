@@ -40,7 +40,7 @@ internal
 #endif
     static class StringExtensions
 {
-    private static readonly char[] NewLineSeparator = ['\n'];
+    private static readonly char[] s_newLineSeparator = ['\n'];
 
     /// <summary>
     ///     Splits a string into lines without allocating intermediate string arrays.
@@ -403,7 +403,7 @@ internal
     public static string TrimBlankLines(this string text)
     {
         text = text ?? throw new ArgumentNullException(nameof(text));
-        var lines = text.NormalizeLineEndings().Split(NewLineSeparator, StringSplitOptions.None);
+        var lines = text.NormalizeLineEndings().Split(s_newLineSeparator, StringSplitOptions.None);
         var result = new StringBuilder();
         var first = true;
 
@@ -618,7 +618,7 @@ internal
         var normalized = typeFqn.NormalizeTypeName();
         if (normalized.StartsWith("System.Nullable<", StringComparison.Ordinal) &&
             normalized.EndsWith(">", StringComparison.Ordinal))
-            return normalized.Substring("System.Nullable<".Length, normalized.Length - "System.Nullable<".Length - 1);
+            return normalized["System.Nullable<".Length..^1];
 
         return typeFqn;
     }
@@ -785,7 +785,7 @@ internal
 
 #if NET5_0_OR_GREATER
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash).Substring(0, 8);
+        return Convert.ToHexString(hash)[..8];
 #else
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
@@ -823,14 +823,14 @@ internal
 #if NET5_0_OR_GREATER
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         var hex = Convert.ToHexString(hash);
-        return (lowercase ? hex.ToLowerInvariant() : hex).Substring(0, hexChars);
+        return (lowercase ? hex.ToLowerInvariant() : hex)[..hexChars];
 #else
         using var sha256 = SHA256.Create();
         var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
         var needBytes = (hexChars + 1) / 2;
         var hex = BitConverter.ToString(hash, 0, needBytes).Replace("-", "");
         if (lowercase) hex = hex.ToLowerInvariant();
-        return hex.Substring(0, hexChars);
+        return hex[..hexChars];
 #endif
     }
 
@@ -966,11 +966,11 @@ internal
             .Replace("\n", "<br/>");
     }
 
-    private static readonly Regex WhitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
+    private static readonly Regex s_whitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
 
     private static Regex WhitespaceRegex()
     {
-        return WhitespaceRegexInstance;
+        return s_whitespaceRegexInstance;
     }
 
     /// <summary>

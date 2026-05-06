@@ -48,12 +48,9 @@ public sealed class MissingCancellationTokenFixer : CodeFixProvider
         Diagnostic diagnostic,
         CancellationToken cancellationToken)
     {
-        if (!diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterName, out var parameterName))
-            return document;
-        if (string.IsNullOrWhiteSpace(parameterName))
-            return document;
-
-        if (!diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterIndex, out var parameterIndexText)
+        if (!diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterName, out var parameterName)
+            || string.IsNullOrWhiteSpace(parameterName)
+            || !diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterIndex, out var parameterIndexText)
             || !int.TryParse(parameterIndexText, out var parameterIndex))
             return document;
 

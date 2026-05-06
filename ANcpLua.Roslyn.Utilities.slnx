@@ -15,6 +15,7 @@
         <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj"/>
         <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
         <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
+        <Project Path="src/ANcpLua.ExtensibleEnumMirror/ANcpLua.Analyzers.ExtensibleEnumMirror.csproj"/>
     </Folder>
     <Folder Name="/examples/">
         <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer.csproj"/>
@@ -23,5 +24,6 @@
     <Folder Name="/tests/">
         <Project Path="tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests.csproj"/>
         <Project Path="tests/ANcpLua.Roslyn.Utilities.Testing.Tests/ANcpLua.Roslyn.Utilities.Testing.Tests.csproj"/>
+        <Project Path="tests/ANcpLua.Roslyn.Utilities.ExtensibleEnumMirror.Tests/ANcpLua.Roslyn.Utilities.ExtensibleEnumMirror.Tests.csproj"/>
     </Folder>
 </Solution>

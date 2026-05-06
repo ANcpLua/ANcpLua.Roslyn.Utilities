@@ -15,8 +15,8 @@ internal
 #endif
     static class Boxes
 {
-    private static readonly object[] CachedInt32 = CreateInt32Cache();
-    private static readonly object[] CachedChar = CreateCharCache();
+    private static readonly object[] s_cachedInt32 = CreateInt32Cache();
+    private static readonly object[] s_cachedChar = CreateCharCache();
 
     /// <summary>
     ///     A cached boxed <see cref="bool" /> value of <c>true</c>.
@@ -31,12 +31,12 @@ internal
     /// <summary>
     ///     A cached boxed <see cref="int" /> value of <c>0</c>.
     /// </summary>
-    public static readonly object BoxedInt32Zero = CachedInt32[1]; // index 1 = value 0
+    public static readonly object BoxedInt32Zero = s_cachedInt32[1]; // index 1 = value 0
 
     /// <summary>
     ///     A cached boxed <see cref="int" /> value of <c>1</c>.
     /// </summary>
-    public static readonly object BoxedInt32One = CachedInt32[2]; // index 2 = value 1
+    public static readonly object BoxedInt32One = s_cachedInt32[2]; // index 2 = value 1
 
     /// <summary>
     ///     A cached boxed <see cref="long" /> value of <c>0</c>.
@@ -112,7 +112,7 @@ internal
     {
         // Cache range: -1 to 10 (index 0 to 11 in the array)
         var index = value + 1;
-        return (uint)index < (uint)CachedInt32.Length ? CachedInt32[index] : value;
+        return (uint)index < (uint)s_cachedInt32.Length ? s_cachedInt32[index] : value;
     }
 
     /// <summary>
@@ -237,7 +237,7 @@ internal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static object Box(char value)
     {
-        return value < (uint)CachedChar.Length ? CachedChar[value] : value;
+        return value < (uint)s_cachedChar.Length ? s_cachedChar[value] : value;
     }
 
     private static object[] CreateInt32Cache()

@@ -331,7 +331,7 @@ public static class LogAssert
             collector,
             logs => logs.Any(r => r.Message.Contains(text)),
             timeout,
-            ct);
+            ct).ConfigureAwait(false);
 
         Assert.True(found,
             $"Timed out waiting for log containing '{text}'.\nActual logs:\n{collector.FormatLogs()}");
@@ -355,7 +355,7 @@ public static class LogAssert
             collector,
             logs => logs.Count >= count,
             timeout,
-            ct);
+            ct).ConfigureAwait(false);
 
         Assert.True(found,
             $"Timed out waiting for {count} logs, got {collector.GetSnapshot().Count}.\nActual logs:\n{collector.FormatLogs()}");
@@ -379,7 +379,7 @@ public static class LogAssert
             collector,
             logs => logs.Any(r => r.Level == level),
             timeout,
-            ct);
+            ct).ConfigureAwait(false);
 
         Assert.True(found,
             $"Timed out waiting for {level} log.\nActual logs:\n{collector.FormatLogs()}");
@@ -401,7 +401,7 @@ public static class LogAssert
         TimeSpan? timeout = null,
         CancellationToken ct = default)
     {
-        var found = await WaitForCondition(collector, condition, timeout, ct);
+        var found = await WaitForCondition(collector, condition, timeout, ct).ConfigureAwait(false);
 
         Assert.True(found,
             because ?? $"Timed out waiting for condition.\nActual logs:\n{collector.FormatLogs()}");

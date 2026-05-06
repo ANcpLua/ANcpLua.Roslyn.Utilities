@@ -145,6 +145,87 @@ internal
     }
 
     /// <summary>
+    ///     Registers the canonical "collect → gate → exception-safe emit → AddSource" pipeline
+    ///     used by per-concern source generators that produce one file from many discovered values.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Composes <see cref="CollectAsEquatableArray{TSource}" />, the Roslyn
+    ///         <c>Combine</c> primitive,
+    ///         <see cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />,
+    ///         and <see cref="AddSource(IncrementalValueProvider{FileWithName}, IncrementalGeneratorInitializationContext)" />
+    ///         into a single declaration so the pipeline shape is enforced uniformly across generators.
+    ///     </para>
+    ///     <para>
+    ///         When the gate is <c>false</c> or the collected input is empty, the emitter is skipped
+    ///         and <see cref="FileWithName.Empty" /> flows through; <c>AddSource</c> drops empty files.
+    ///         When the emitter throws, the exception is reported as a diagnostic with
+    ///         <paramref name="diagnosticId" /> and the build continues without the file.
+    ///     </para>
+    /// </remarks>
+    /// <typeparam name="T">The type of discovered values. Must implement <see cref="IEquatable{T}" />.</typeparam>
+    /// <param name="source">The provider of discovered values to collect and pass to the emitter.</param>
+    /// <param name="context">The generator initialization context for registering the source output.</param>
+    /// <param name="gate">A boolean provider that must be <c>true</c> for the emitter to run.</param>
+    /// <param name="emitter">A pure function that turns the collected values into a generated file.</param>
+    /// <param name="diagnosticId">The diagnostic ID reported when the emitter throws. Defaults to <c>"SRE001"</c>.</param>
+    /// <seealso
+    ///     cref="RegisterCollectedEmitter{T}(IncrementalValuesProvider{T}, IncrementalGeneratorInitializationContext, IncrementalValueProvider{bool}, string, Func{ImmutableArray{T}, string}, string)" />
+    /// <seealso cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    public static void RegisterCollectedEmitter<T>(
+        this IncrementalValuesProvider<T> source,
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValueProvider<bool> gate,
+        Func<ImmutableArray<T>, FileWithName> emitter,
+        string diagnosticId = "SRE001")
+        where T : IEquatable<T>
+    {
+        source
+            .CollectAsEquatableArray()
+            .Combine(gate)
+            .SelectAndReportExceptions((input, _) =>
+                input.Right && !input.Left.IsDefaultOrEmpty
+                    ? emitter(input.Left.AsImmutableArray())
+                    : FileWithName.Empty, context, diagnosticId)
+            .AddSource(context);
+    }
+
+    /// <summary>
+    ///     Convenience overload of
+    ///     <see
+    ///         cref="RegisterCollectedEmitter{T}(IncrementalValuesProvider{T}, IncrementalGeneratorInitializationContext, IncrementalValueProvider{bool}, Func{ImmutableArray{T}, FileWithName}, string)" />
+    ///     for emitters that produce raw source text under a fixed file name.
+    /// </summary>
+    /// <typeparam name="T">The type of discovered values. Must implement <see cref="IEquatable{T}" />.</typeparam>
+    /// <param name="source">The provider of discovered values to collect and pass to the emitter.</param>
+    /// <param name="context">The generator initialization context for registering the source output.</param>
+    /// <param name="gate">A boolean provider that must be <c>true</c> for the emitter to run.</param>
+    /// <param name="generatedFileName">The hint name for the emitted file (e.g. <c>"MyManifest.g.cs"</c>).</param>
+    /// <param name="emitter">A pure function that turns the collected values into the generated source text. Returning <c>null</c> or empty suppresses emission.</param>
+    /// <param name="diagnosticId">The diagnostic ID reported when the emitter throws. Defaults to <c>"SRE001"</c>.</param>
+    public static void RegisterCollectedEmitter<T>(
+        this IncrementalValuesProvider<T> source,
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValueProvider<bool> gate,
+        string generatedFileName,
+        Func<ImmutableArray<T>, string?> emitter,
+        string diagnosticId = "SRE001")
+        where T : IEquatable<T>
+    {
+        source.RegisterCollectedEmitter(
+            context,
+            gate,
+            values =>
+            {
+                var text = emitter(values);
+                return string.IsNullOrEmpty(text)
+                    ? FileWithName.Empty
+                    : new FileWithName(generatedFileName, text!);
+            },
+            diagnosticId);
+    }
+
+    /// <summary>
     ///     Collects all values from a provider into an <see cref="EquatableArray{T}" />.
     /// </summary>
     /// <remarks>

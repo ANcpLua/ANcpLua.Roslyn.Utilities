@@ -8,7 +8,7 @@ internal
 #endif
     static class ByteSize
 {
-    private static readonly string[] Suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+    private static readonly string[] s_suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
     /// <summary>
     ///     Formats <paramref name="bytes" /> as e.g. <c>"256.50 MB"</c>. Negative values get a leading minus sign.
@@ -21,7 +21,7 @@ internal
         var negative = bytes < 0;
         var abs = negative ? -(double)bytes : bytes;
         var suffixIndex = 0;
-        while (abs >= 1024 && suffixIndex < Suffixes.Length - 1)
+        while (abs >= 1024 && suffixIndex < s_suffixes.Length - 1)
         {
             abs /= 1024;
             suffixIndex++;
@@ -29,7 +29,7 @@ internal
         var rendered = suffixIndex == 0
             ? abs.ToString("F0", CultureInfo.InvariantCulture)
             : abs.ToString("F" + decimals, CultureInfo.InvariantCulture);
-        return (negative ? "-" : string.Empty) + rendered + " " + Suffixes[suffixIndex];
+        return (negative ? "-" : string.Empty) + rendered + " " + s_suffixes[suffixIndex];
     }
 
     /// <summary>

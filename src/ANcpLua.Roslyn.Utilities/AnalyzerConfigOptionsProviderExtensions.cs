@@ -246,6 +246,49 @@ internal
     }
 
     /// <summary>
+    ///     Projects an <see cref="IncrementalValueProvider{AnalyzerConfigOptionsProvider}" /> to a
+    ///     value-equatable <see cref="bool" /> by reading an MSBuild boolean property and
+    ///     applying a default when the property is missing or unparseable.
+    /// </summary>
+    /// <param name="provider">
+    ///     The provider, typically <c>context.AnalyzerConfigOptionsProvider</c>, that should be
+    ///     reduced to a boolean gate before participating in downstream pipeline stages.
+    /// </param>
+    /// <param name="propertyName">
+    ///     The MSBuild property name (without the <c>build_property.</c> prefix).
+    /// </param>
+    /// <param name="defaultValue">
+    ///     The value to use when the property is absent or not parseable as a boolean.
+    /// </param>
+    /// <param name="prefix">
+    ///     An optional prefix prepended to <paramref name="propertyName" /> with an underscore separator.
+    /// </param>
+    /// <returns>
+    ///     An <see cref="IncrementalValueProvider{Boolean}" /> that yields the parsed property value,
+    ///     or <paramref name="defaultValue" /> when the property is absent or not parseable.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         <see cref="AnalyzerConfigOptionsProvider" /> changes identity on every edit, so combining
+    ///         it directly into a pipeline stage invalidates downstream caches. Project to a
+    ///         value-equatable <see cref="bool" /> first:
+    ///     </para>
+    ///     <code>
+    /// var enabled = context.AnalyzerConfigOptionsProvider.IsToggleEnabled("MyFeature", defaultValue: true);
+    /// values.RegisterCollectedEmitter(context, gate: enabled, emitter: ...);
+    /// </code>
+    /// </remarks>
+    /// <seealso cref="GetGlobalBoolOrDefault" />
+    public static IncrementalValueProvider<bool> IsToggleEnabled(
+        this IncrementalValueProvider<AnalyzerConfigOptionsProvider> provider,
+        string propertyName,
+        bool defaultValue = true,
+        string? prefix = null)
+    {
+        return provider.Select((options, _) => options.GetGlobalBoolOrDefault(propertyName, defaultValue, prefix));
+    }
+
+    /// <summary>
     ///     Tries to read and parse an MSBuild property as an integer.
     /// </summary>
     /// <param name="provider">The <see cref="AnalyzerConfigOptionsProvider" /> to read from.</param>
