@@ -238,6 +238,142 @@ internal
     }
 
     /// <summary>
+    ///     Returns the only element of the sequence.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence.</param>
+    /// <returns>The only element in <paramref name="source" />.</returns>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="source" /> contains zero elements or more than one element.
+    /// </exception>
+    /// <seealso cref="OnlyOrDefault{T}(IEnumerable{T})" />
+    public static T Only<T>(this IEnumerable<T> source)
+    {
+        Guard.That(
+            TryOnly(source, out var result),
+            "Sequence must contain exactly one element.",
+            nameof(source));
+        return result!;
+    }
+
+    /// <summary>
+    ///     Returns the only element of the sequence that satisfies a predicate.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="predicate">A function used to test each element.</param>
+    /// <returns>The only matching element in <paramref name="source" />.</returns>
+    /// <exception cref="ArgumentException">
+    ///     Thrown when <paramref name="source" /> contains zero matching elements or more than one matching element.
+    /// </exception>
+    /// <seealso cref="OnlyOrDefault{T}(IEnumerable{T},Func{T,bool})" />
+    public static T Only<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+    {
+        Guard.That(
+            TryOnly(source, predicate, out var result),
+            "Sequence must contain exactly one matching element.",
+            nameof(source));
+        return result!;
+    }
+
+    /// <summary>
+    ///     Returns the only element of the sequence, or <c>default</c> if the sequence does not contain exactly one element.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence.</param>
+    /// <returns>The only element in <paramref name="source" />, or <c>default</c>.</returns>
+    /// <seealso cref="Only{T}(IEnumerable{T})" />
+    public static T? OnlyOrDefault<T>(this IEnumerable<T> source)
+    {
+        TryOnly(source, out var result);
+        return result;
+    }
+
+    /// <summary>
+    ///     Returns the only element of the sequence that satisfies a predicate, or <c>default</c> if there is not exactly one.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="predicate">A function used to test each element.</param>
+    /// <returns>The only matching element in <paramref name="source" />, or <c>default</c>.</returns>
+    /// <seealso cref="Only{T}(IEnumerable{T},Func{T,bool})" />
+    public static T? OnlyOrDefault<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+    {
+        TryOnly(source, predicate, out var result);
+        return result;
+    }
+
+    /// <summary>
+    ///     Filters out <c>null</c> values from a sequence of reference types.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="source">The source sequence containing potentially <c>null</c> elements.</param>
+    /// <returns>An enumerable containing non-null elements from <paramref name="source" />.</returns>
+    /// <seealso cref="WhereNotNull{T}(IEnumerable{T?})" />
+    public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : class
+    {
+        Guard.NotNull(source);
+        return source.WhereNotNull();
+    }
+
+    /// <summary>
+    ///     Filters out <c>null</c> values from a sequence of nullable value types.
+    /// </summary>
+    /// <typeparam name="T">The underlying value type.</typeparam>
+    /// <param name="source">The source sequence containing potentially <c>null</c> elements.</param>
+    /// <returns>An enumerable containing present values from <paramref name="source" />.</returns>
+    /// <seealso cref="WhereNotNull{T}(IEnumerable{T?})" />
+    public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : struct
+    {
+        Guard.NotNull(source);
+        return source.WhereNotNull();
+    }
+
+    private static bool TryOnly<T>(IEnumerable<T> source, out T? result)
+    {
+        Guard.NotNull(source);
+
+        using var enumerator = source.GetEnumerator();
+        if (enumerator.MoveNext())
+        {
+            result = enumerator.Current;
+            if (!enumerator.MoveNext())
+                return true;
+        }
+
+        result = default;
+        return false;
+    }
+
+    private static bool TryOnly<T>(IEnumerable<T> source, Func<T, bool> predicate, out T? result)
+    {
+        Guard.NotNull(source);
+        Guard.NotNull(predicate);
+
+        using var enumerator = source.GetEnumerator();
+        result = default;
+        var found = false;
+
+        while (enumerator.MoveNext())
+        {
+            var item = enumerator.Current;
+            if (!predicate(item))
+                continue;
+
+            if (found)
+            {
+                result = default;
+                return false;
+            }
+
+            result = item;
+            found = true;
+        }
+
+        return found;
+    }
+
+    /// <summary>
     ///     Filters out <c>null</c> values from a sequence of reference types.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence (must be a reference type).</typeparam>
@@ -649,7 +785,22 @@ internal
     /// </returns>
     public static string JoinToString<T>(this IEnumerable<T> source, string separator = ", ")
     {
+        Guard.NotNull(source);
         return string.Join(separator, source);
+    }
+
+    /// <summary>
+    ///     Concatenates the string representations of the elements in a sequence using a character separator.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+    /// <param name="values">The source sequence.</param>
+    /// <param name="separator">The separator to use between elements.</param>
+    /// <returns>The joined string.</returns>
+    /// <seealso cref="JoinToString{T}" />
+    public static string Join<T>(this IEnumerable<T> values, char separator)
+    {
+        Guard.NotNull(values);
+        return string.Join(separator.ToString(), values);
     }
 
     /// <summary>
