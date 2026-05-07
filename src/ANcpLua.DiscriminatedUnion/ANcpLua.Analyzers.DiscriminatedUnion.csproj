@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <RootNamespace>ANcpLua.Analyzers.DiscriminatedUnion</RootNamespace>
+        <Description>Roslyn incremental source generator that turns a [DiscriminatedUnion]-marked partial record + nested partial record cases into a closed F#-style discriminated union: private base constructor that locks inheritance to the nested cases, sealed case records, and exhaustive Match&lt;TResult&gt; / Switch dispatchers. The marker attribute is emitted into the consumer compilation via post-init, so a single PackageReference is enough.</Description>
+        <PackageTags>roslyn;source-generator;discriminated-union;closed-union;sum-type;adt;pattern-matching</PackageTags>
+
+        <!-- Analyzer package settings -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
+        <!-- Ensure dependencies are copied to output for bundling -->
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+        <!-- Suppress warnings:
+             RS1035: Banned symbols from shared Roslyn.Utilities sources
+             RS1025/RS1026/RS1041: Analyzer registration patterns - intentional design
+             RS0030: Banned APIs - polyfill source must reference the API it replaces
+             CS1591: XML docs - generator internals
+             CA1308: ToLowerInvariant - intentional for C# code generation -->
+        <NoWarn>$(NoWarn);RS1035;RS1025;RS1026;RS1041;RS0030;CS1591;CA1308</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Include="System"/>
+        <Using Include="System.Collections.Generic"/>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Threading"/>
+        <Using Include="ANcpLua.Roslyn.Utilities"/>
+        <Using Include="ANcpLua.Roslyn.Utilities.Models"/>
+        <Using Include="Microsoft.CodeAnalysis"/>
+        <Using Include="Microsoft.CodeAnalysis.CSharp"/>
+        <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax"/>
+        <Using Include="System.Collections.Immutable"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Text"/>
+    </ItemGroup>
+
+    <!-- Polyfills from core Roslyn.Utilities (internal, must be linked per-project) -->
+    <ItemGroup>
+        <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\LanguageFeatures\IsExternalInit.cs" Link="Polyfills\IsExternalInit.cs"/>
+        <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\IndexRange\Index.cs" Link="Polyfills\Index.cs"/>
+        <Compile Include="..\ANcpLua.Roslyn.Utilities\Polyfills\IndexRange\Range.cs" Link="Polyfills\Range.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md"/>
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md"/>
+    </ItemGroup>
+
+    <!-- Pack analyzer DLLs into analyzers/dotnet/cs/ -->
+    <PropertyGroup>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddDiscriminatedUnionAnalyzersToPackage</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <Target Name="_AddDiscriminatedUnionAnalyzersToPackage">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(OutputPath)ANcpLua.Analyzers.DiscriminatedUnion.dll" PackagePath="analyzers/dotnet/cs"/>
+            <TfmSpecificPackageFile Include="$(OutputPath)ANcpLua.Roslyn.Utilities.dll" PackagePath="analyzers/dotnet/cs"/>
+        </ItemGroup>
+    </Target>
+</Project>
