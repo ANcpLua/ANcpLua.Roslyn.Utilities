@@ -9,19 +9,20 @@ namespace ANcpLua.Analyzers.ExtensibleEnumMirror.Tests;
 public sealed class ExtensibleEnumMirrorGeneratorTests
 {
     private const string FixtureExtensibleEnumStruct = """
-        namespace TestNs;
-
-        public readonly struct Reason : System.IEquatable<Reason>
+        namespace TestNs
         {
-            private readonly string? _value;
-            public Reason(string value) { _value = value; }
-            public static Reason ContentFilter { get; } = new("content_filter");
-            public static Reason MaxOutputTokens { get; } = new("max_output_tokens");
-            public static bool operator ==(Reason l, Reason r) => l.Equals(r);
-            public static bool operator !=(Reason l, Reason r) => !l.Equals(r);
-            public bool Equals(Reason other) => string.Equals(_value, other._value, System.StringComparison.Ordinal);
-            public override bool Equals(object? obj) => obj is Reason r && Equals(r);
-            public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+            public readonly struct Reason : System.IEquatable<Reason>
+            {
+                private readonly string? _value;
+                public Reason(string value) { _value = value; }
+                public static Reason ContentFilter { get; } = new("content_filter");
+                public static Reason MaxOutputTokens { get; } = new("max_output_tokens");
+                public static bool operator ==(Reason l, Reason r) => l.Equals(r);
+                public static bool operator !=(Reason l, Reason r) => !l.Equals(r);
+                public bool Equals(Reason other) => string.Equals(_value, other._value, System.StringComparison.Ordinal);
+                public override bool Equals(object? obj) => obj is Reason r && Equals(r);
+                public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+            }
         }
         """;
 
