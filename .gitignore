@@ -35,3 +35,5 @@ docs/api/*.md
 .claude/journal/
 .claude/elegance_pipeline/
 .worktrees/
+
+package-lock.json
