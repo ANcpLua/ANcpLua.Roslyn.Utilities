@@ -4,18 +4,16 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
-        <RootNamespace>ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes</RootNamespace>
+        <RootNamespace>ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared</RootNamespace>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer.csproj" />
-        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared.csproj" />
+        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj" />
     </ItemGroup>
 </Project>
