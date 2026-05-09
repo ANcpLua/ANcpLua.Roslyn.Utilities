@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using ANcpLua.Roslyn.Utilities;
 using ANcpLua.Roslyn.Utilities.Analyzers;
+using ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -12,7 +13,7 @@ namespace ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
 {
-    public const string DiagnosticId = "ANCP0001";
+    public const string DiagnosticId = MissingCancellationTokenContract.DiagnosticId;
 
     private static readonly DiagnosticDescriptor s_rule = new(
         id: DiagnosticId,
@@ -61,9 +62,9 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
             return;
 
         var properties = ImmutableDictionary<string, string?>.Empty
-            .Add(MissingCancellationTokenDiagnosticProperties.ParameterName, parameter.Name)
+            .Add(MissingCancellationTokenContract.ParameterNameProperty, parameter.Name)
             .Add(
-                MissingCancellationTokenDiagnosticProperties.ParameterIndex,
+                MissingCancellationTokenContract.ParameterIndexProperty,
                 parameter.Ordinal.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         context.ReportDiagnostic(
@@ -80,24 +81,6 @@ public sealed class MissingCancellationTokenAnalyzer : DiagnosticAnalyzerBase
                || method.HasAttribute("Xunit.TheoryAttribute");
     }
 
-    private static bool IsDefaultLike(IOperation operation, ITypeSymbol cancellationTokenType)
-    {
-        operation = operation.UnwrapAllConversions().UnwrapParenthesized();
-
-        if (operation.Syntax.IsKind(SyntaxKind.DefaultExpression)
-            || operation.Syntax.IsKind(SyntaxKind.DefaultLiteralExpression))
-            return true;
-
-        return operation is IPropertyReferenceOperation
-               {
-                   Property: { Name: "None", ContainingType: { } containingType }
-               }
-               && containingType.IsEqualTo(cancellationTokenType);
-    }
-}
-
-internal static class MissingCancellationTokenDiagnosticProperties
-{
-    public const string ParameterName = nameof(ParameterName);
-    public const string ParameterIndex = nameof(ParameterIndex);
+    private static bool IsDefaultLike(IOperation operation, ITypeSymbol cancellationTokenType) =>
+        MissingCancellationTokenContract.IsDefaultCancellationTokenArgument(operation, cancellationTokenType);
 }

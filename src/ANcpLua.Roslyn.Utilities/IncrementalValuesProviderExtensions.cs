@@ -278,30 +278,37 @@ internal
         string id = "SRE001")
     {
         var outputWithErrors = source
-            .Select((value, cancellationToken) =>
+            .Select<TSource, (TResult? Value, GeneratorErrorInfo? Error)>((value, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: null);
+                    return (selector(value, cancellationToken), null);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Cancellation must propagate so Roslyn can abort the pipeline.
+                    throw;
                 }
                 catch (Exception exception)
                 {
-                    return (Value: default(TResult), Exception: (Exception?)exception);
+                    return (default, GeneratorErrorInfo.From(exception));
                 }
             });
 
         initializationContext.RegisterSourceOutput(outputWithErrors,
             (context, tuple) =>
             {
-                if (tuple.Exception is not null)
-                    context.ReportException(id, tuple.Exception);
+                if (tuple.Error is { } error)
+                    context.ReportException(id, error);
             });
 
-        return outputWithErrors
-            .Select(static (x, _) =>
-                x.Value ?? throw new InvalidOperationException("Unexpected null value in SelectAndReportExceptions"));
+        // The diagnostic registered above is the visible failure for the user. Downstream
+        // consumers receive the selector's value (or default(TResult) on failure) and decide
+        // how to react — record-struct sentinels like FileWithName.Empty, for instance, are
+        // already filtered by AddSource. Throwing here would crash the generator a second time.
+        return outputWithErrors.Select(static (x, _) => x.Value!);
     }
 
     /// <summary>
@@ -450,35 +457,36 @@ internal
         string id = "SRE001")
     {
         var outputWithErrors = source
-            .Select((value, cancellationToken) =>
+            .Select<TSource, (TResult? Value, GeneratorErrorInfo? Error)>((value, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    return (Value: selector(value, cancellationToken), Exception: null);
+                    return (selector(value, cancellationToken), null);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Cancellation must propagate so Roslyn can abort the pipeline.
+                    throw;
                 }
                 catch (Exception exception)
                 {
-                    return (Value: default(TResult), Exception: (Exception?)exception);
+                    return (default, GeneratorErrorInfo.From(exception));
                 }
             });
 
         initializationContext.RegisterSourceOutput(outputWithErrors
-                .Where(static x => x.Exception is not null),
+                .Where(static x => x.Error is not null),
             (context, tuple) =>
             {
-                context.ReportException(id,
-                    tuple.Exception ??
-                    throw new InvalidOperationException(
-                        "Unexpected null exception in SelectAndReportExceptions"));
+                if (tuple.Error is { } error)
+                    context.ReportException(id, error);
             });
 
         return outputWithErrors
-            .Where(static x => x.Exception is null)
-            .Select(static (x, _) => x.Value ??
-                                     throw new InvalidOperationException(
-                                         "Unexpected null value in SelectAndReportExceptions"));
+            .Where(static x => x.Error is null)
+            .Select(static (x, _) => x.Value!);
     }
 
     /// <summary>
@@ -519,7 +527,12 @@ internal
         comparer ??= EqualityComparer<TKey>.Default;
         return source.Collect().SelectMany((values, _) =>
         {
+            // Preserve key-insertion order so generator output is deterministic.
+            // Dictionary<,> enumeration order is not part of the contract (it happens
+            // to follow insertion in the current .NET runtime, but a future runtime
+            // is free to change that, and adding/removing entries can shift it today).
             var map = new Dictionary<TKey, ImmutableArray<TElement>.Builder>(comparer);
+            var keys = new List<TKey>();
             foreach (var value in values)
             {
                 var key = keySelector(value);
@@ -527,14 +540,15 @@ internal
                 {
                     builder = ImmutableArray.CreateBuilder<TElement>();
                     map.Add(key, builder);
+                    keys.Add(key);
                 }
 
                 builder.Add(elementSelector(value));
             }
 
-            var result = ImmutableArray.CreateBuilder<(TKey, EquatableArray<TElement>)>(map.Count);
-            foreach (var entry in map)
-                result.Add((entry.Key, entry.Value.ToImmutable().AsEquatableArray()));
+            var result = ImmutableArray.CreateBuilder<(TKey, EquatableArray<TElement>)>(keys.Count);
+            foreach (var key in keys)
+                result.Add((key, map[key].ToImmutable().AsEquatableArray()));
             return result.MoveToImmutable();
         });
     }

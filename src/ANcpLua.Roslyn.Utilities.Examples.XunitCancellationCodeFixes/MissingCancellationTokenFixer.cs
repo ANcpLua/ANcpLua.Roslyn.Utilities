@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer;
+using ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -48,15 +49,15 @@ public sealed class MissingCancellationTokenFixer : CodeFixProvider
         Diagnostic diagnostic,
         CancellationToken cancellationToken)
     {
-        if (!diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterName, out var parameterName)
+        if (!diagnostic.Properties.TryGetValue(MissingCancellationTokenContract.ParameterNameProperty, out var parameterName)
             || string.IsNullOrWhiteSpace(parameterName)
-            || !diagnostic.Properties.TryGetValue(DiagnosticPropertyNames.ParameterIndex, out var parameterIndexText)
+            || !diagnostic.Properties.TryGetValue(MissingCancellationTokenContract.ParameterIndexProperty, out var parameterIndexText)
             || !int.TryParse(parameterIndexText, out var parameterIndex))
             return document;
 
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
         var arguments = invocation.ArgumentList.Arguments.ToList();
-        var tokenExpression = ParseExpression("TestContext.Current.CancellationToken");
+        var tokenExpression = MissingCancellationTokenContract.CreateReplacementTokenExpression();
         var safeParameterName = parameterName ?? string.Empty;
 
         var argumentIndex = arguments.FindIndex(argument =>
@@ -87,9 +88,4 @@ public sealed class MissingCancellationTokenFixer : CodeFixProvider
         return editor.GetChangedDocument();
     }
 
-    private static class DiagnosticPropertyNames
-    {
-        public const string ParameterName = nameof(ParameterName);
-        public const string ParameterIndex = nameof(ParameterIndex);
-    }
 }

@@ -16,5 +16,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ANcpLua.Roslyn.Utilities\ANcpLua.Roslyn.Utilities.csproj" />
+        <ProjectReference Include="..\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared\ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared.csproj" />
     </ItemGroup>
 </Project>
