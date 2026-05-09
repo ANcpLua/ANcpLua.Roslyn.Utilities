@@ -184,6 +184,38 @@ internal
     }
 
     /// <summary>
+    ///     Reports a captured <see cref="GeneratorErrorInfo" /> as an error diagnostic.
+    /// </summary>
+    /// <remarks>
+    ///     Use this overload from incremental pipeline stages so the captured error can flow
+    ///     through cache state by value rather than as a reference-equatable
+    ///     <see cref="Exception" />.
+    /// </remarks>
+    /// <param name="context">The source production context to report the diagnostic to.</param>
+    /// <param name="id">The diagnostic ID (e.g., <c>"GEN001"</c>).</param>
+    /// <param name="error">The captured error to report.</param>
+    /// <param name="prefix">Optional prefix prepended to <paramref name="id" />.</param>
+    public static void ReportException(
+        this SourceProductionContext context,
+        string id,
+        GeneratorErrorInfo error,
+        string? prefix = null)
+    {
+        id = id ?? throw new ArgumentNullException(nameof(id));
+        if (prefix is not null) id = $"{prefix}{id}";
+
+        context.ReportDiagnostic(Diagnostic.Create(
+            new DiagnosticDescriptor(
+                id,
+                "Exception: ",
+                error.ToString(),
+                "Usage",
+                DiagnosticSeverity.Error,
+                true),
+            Location.None));
+    }
+
+    /// <summary>
     ///     Creates a <see cref="Diagnostic" /> from an exception.
     /// </summary>
     /// <remarks>
