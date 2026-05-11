@@ -18,11 +18,6 @@
         <Project Path="src/ANcpLua.ExtensibleEnumMirror/ANcpLua.Analyzers.ExtensibleEnumMirror.csproj"/>
         <Project Path="src/ANcpLua.DiscriminatedUnion/ANcpLua.Analyzers.DiscriminatedUnion.csproj"/>
     </Folder>
-    <Folder Name="/examples/">
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationAnalyzer.csproj"/>
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationCodeFixes.csproj"/>
-        <Project Path="src/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared/ANcpLua.Roslyn.Utilities.Examples.XunitCancellationShared.csproj"/>
-    </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests.csproj"/>
         <Project Path="tests/ANcpLua.Roslyn.Utilities.Testing.Tests/ANcpLua.Roslyn.Utilities.Testing.Tests.csproj"/>
