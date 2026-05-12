@@ -96,6 +96,8 @@ Agent test doubles (`FakeChatClient`, `FakeReplayAgent`, `ActivityCollector`), t
 
 ### Analyzer authoring
 
+Reusable infrastructure for writing analyzers and code fixes — concrete rules (e.g. `AL0126`) intentionally ship in [`ANcpLua.Analyzers`](https://github.com/ANcpLua/ANcpLua.Analyzers).
+
 - **`DiagnosticAnalyzerBase`** — convention base class
 - **`DiagnosticCategories`** / **`DiagnosticSeverities`** — category/severity constants
 - **`DeprecatedOtelAttributes`** — 50+ attribute-name mappings synced to OTel GenAI semconv 1.40 (catches `gen_ai.system` and friends during analysis)
