@@ -1,6 +1,14 @@
 # ANcpLua.Roslyn.Utilities - Consolidated Review Log
 
 Only this file is kept for review outcomes to avoid spreading findings across directories.
+## Framework conventions
+
+Branch protection, auto-merge, CodeRabbit posture, release flow, dependency
+graph, and the cross-repo bootstrap rules for the four ANcpLua framework
+repos are documented in one place at
+[ANcpLua/renovate-config](https://github.com/ANcpLua/renovate-config#ancplua-framework-conventions--renovate-config).
+This file documents conventions specific to this repo only.
+
 
 ## 1) src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj
 - No blocking defects confirmed in first pass.
