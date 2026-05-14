@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/journal.py SessionStart"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "shell|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/journal.py PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/journal.py Stop"
+          }
+        ]
+      }
+    ]
+  }
+}
