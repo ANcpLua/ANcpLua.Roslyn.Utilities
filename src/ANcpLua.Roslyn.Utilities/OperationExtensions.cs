@@ -1,15 +1,11 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using CSharpParseOptions = Microsoft.CodeAnalysis.CSharp.CSharpParseOptions;
-using IMethodSymbol = Microsoft.CodeAnalysis.IMethodSymbol;
 using INamedTypeSymbol = Microsoft.CodeAnalysis.INamedTypeSymbol;
 using IOperation = Microsoft.CodeAnalysis.IOperation;
 using ISymbol = Microsoft.CodeAnalysis.ISymbol;
 using ITypeSymbol = Microsoft.CodeAnalysis.ITypeSymbol;
-using LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using OperationKind = Microsoft.CodeAnalysis.OperationKind;
-using RefKind = Microsoft.CodeAnalysis.RefKind;
 using SymbolEqualityComparer = Microsoft.CodeAnalysis.SymbolEqualityComparer;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -19,40 +15,38 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This class provides utilities for navigating, analyzing, and querying the operation tree
-///         in Roslyn analyzers. Operations represent the semantic interpretation of syntax nodes
-///         and provide a language-agnostic way to analyze code behavior.
+///         Utilities for navigating, analyzing, and querying the operation tree in Roslyn analyzers.
+///         The implementation is split across partial files by responsibility:
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>
-///                 Tree navigation: <see cref="Ancestors" />, <see cref="Descendants" />,
-///                 <see cref="FindAncestor{T}" />
-///             </description>
+///             <description>This file: ancestor navigation, <c>nameof</c> / expression-tree /
+///             static-context checks</description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Context detection: <see cref="IsInsideLoop" />, <see cref="IsInsideTryBlock" />,
-///                 <see cref="IsInExpressionTree" />
-///             </description>
+///             <description><c>OperationExtensions.Unwrap.cs</c> — conversion / parenthesized /
+///             labeled-operation unwrapping + <see cref="GetActualType" /></description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Unwrapping: <see cref="UnwrapImplicitConversions" />, <see cref="UnwrapAllConversions" />,
-///                 <see cref="UnwrapParenthesized" />
-///             </description>
+///             <description><c>OperationExtensions.Constants.cs</c> — constant-value predicates and
+///             extractors (<see cref="IsConstantZero" />, <see cref="TryGetConstantValue{T}" />, …)</description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Value analysis: <see cref="IsConstantZero" />, <see cref="IsConstantNull" />,
-///                 <see cref="TryGetConstantValue{T}" />
-///             </description>
+///             <description><c>OperationExtensions.Traversal.cs</c> — descendants enumeration plus the
+///             IsInside* family that shares a single <c>HasAncestor(predicate)</c> chokepoint</description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Assignment detection: <see cref="IsAssignmentTarget" />, <see cref="IsLeftSideOfAssignment" />
-///                 , <see cref="IsPassedByRef" />
-///             </description>
+///             <description><c>OperationExtensions.SymbolContext.cs</c> —
+///             <see cref="GetContainingMethod" />, <see cref="GetContainingType" />,
+///             <see cref="GetCSharpLanguageVersion" /></description>
+///         </item>
+///         <item>
+///             <description><c>OperationExtensions.Assignment.cs</c> — assignment-target / by-ref
+///             detection</description>
+///         </item>
+///         <item>
+///             <description><c>OperationExtensions.Naming.cs</c> — human-readable name extraction
+///             (<see cref="GetOperandName" />, <see cref="GetCollectionSourceName" />)</description>
 ///         </item>
 ///     </list>
 /// </remarks>
@@ -63,7 +57,7 @@ public
 #else
 internal
 #endif
-    static class OperationExtensions
+    static partial class OperationExtensions
 {
     /// <summary>
     ///     Enumerates all ancestor operations of the specified operation.
@@ -115,8 +109,7 @@ internal
     ///     Determines whether the operation is a descendant of an operation of the specified type.
     /// </summary>
     /// <typeparam name="T">
-    ///     The type of ancestor operation to check for. Must be a class implementing <see cref="IOperation" />
-    ///     .
+    ///     The type of ancestor operation to check for. Must be a class implementing <see cref="IOperation" />.
     /// </typeparam>
     /// <param name="operation">The operation to check.</param>
     /// <returns>
@@ -141,7 +134,10 @@ internal
     /// </remarks>
     public static bool IsInNameofOperation(this IOperation operation)
     {
-        return operation.HasAncestor(static parent => parent.Kind is OperationKind.NameOf);
+        foreach (var ancestor in operation.Ancestors())
+            if (ancestor.Kind is OperationKind.NameOf)
+                return true;
+        return false;
     }
 
     /// <summary>
@@ -162,11 +158,6 @@ internal
     ///         compiled to data structures rather than executable code. Analyzers may need to
     ///         skip or modify checks for operations within expression trees.
     ///     </para>
-    ///     <para>
-    ///         This method handles both method argument scenarios (e.g., <c>SomeMethod(x => x is 0)</c>
-    ///         where <c>SomeMethod</c> takes <c>Expression&lt;T&gt;</c>) and variable declaration scenarios
-    ///         (e.g., <c>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x => x is 0;</c>).
-    ///     </para>
     /// </remarks>
     public static bool IsInExpressionTree(this IOperation operation, INamedTypeSymbol? expressionSymbol)
     {
@@ -174,17 +165,25 @@ internal
             return false;
 
         foreach (var op in operation.Ancestors())
-        {
-            if (op is IArgumentOperation { Parameter.Type: { } paramType } &&
-                IsConstructedFromExpressionType(paramType, expressionSymbol))
+            if (HasExpressionType(op, expressionSymbol))
                 return true;
-
-            if (op is IConversionOperation { Type: { } convType } &&
-                IsConstructedFromExpressionType(convType, expressionSymbol))
-                return true;
-        }
 
         return false;
+    }
+
+    // Pulled out so IsInExpressionTree reads as "any ancestor has an expression type"
+    // rather than "any ancestor is one of these two shapes with this property check".
+    // Each of the four shapes that carry a type contributes one switch arm.
+    private static bool HasExpressionType(IOperation op, ISymbol expressionSymbol)
+    {
+        var type = op switch
+        {
+            IArgumentOperation { Parameter.Type: { } pt } => pt,
+            IConversionOperation { Type: { } ct } => ct,
+            _ => null
+        };
+
+        return type is not null && IsConstructedFromExpressionType(type, expressionSymbol);
     }
 
     /// <summary>
@@ -193,12 +192,10 @@ internal
     /// </summary>
     private static bool IsConstructedFromExpressionType(ITypeSymbol type, ISymbol expressionSymbol)
     {
-        // Check if the type itself is a constructed Expression<T>
         if (type is INamedTypeSymbol namedType &&
             SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, expressionSymbol))
             return true;
 
-        // Check if any base type is a constructed Expression<T>
         var baseType = type.BaseType;
         while (baseType is not null)
         {
@@ -220,687 +217,52 @@ internal
     ///     static lambda, or field initializer); otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    ///     This method walks up the syntax tree to find enclosing members and checks their static
-    ///     modifier. For local functions and lambdas, it checks the <c>static</c> keyword.
-    ///     Field declarations are assumed to be in a static context for safety.
+    ///     <para>
+    ///         Walks up the syntax tree to find enclosing members and checks their static modifier.
+    ///         For local functions and lambdas, checks the <c>static</c> keyword. Field declarations
+    ///         are assumed to be in a static context for safety.
+    ///     </para>
     /// </remarks>
     public static bool IsInStaticContext(this IOperation operation, CancellationToken cancellationToken)
     {
         foreach (var member in operation.Syntax.Ancestors())
-            if (member is LocalFunctionStatementSyntax localFunction)
-            {
-                var symbol = operation.SemanticModel?.GetDeclaredSymbol(localFunction, cancellationToken);
-                if (symbol is { IsStatic: true })
-                    return true;
-            }
-            else if (member is LambdaExpressionSyntax lambdaExpression)
-            {
-                var symbol = operation.SemanticModel?.GetSymbolInfo(lambdaExpression, cancellationToken).Symbol;
-                if (symbol is { IsStatic: true })
-                    return true;
-            }
-            else if (member is AnonymousMethodExpressionSyntax anonymousMethod)
-            {
-                var symbol = operation.SemanticModel?.GetSymbolInfo(anonymousMethod, cancellationToken).Symbol;
-                if (symbol is { IsStatic: true })
-                    return true;
-            }
-            else if (member is MethodDeclarationSyntax methodDeclaration)
-            {
-                var symbol = operation.SemanticModel?.GetDeclaredSymbol(methodDeclaration, cancellationToken);
-                return symbol is { IsStatic: true };
-            }
-            else if (member is PropertyDeclarationSyntax propertyDeclaration)
-            {
-                var symbol = operation.SemanticModel?.GetDeclaredSymbol(propertyDeclaration, cancellationToken);
-                return symbol is { IsStatic: true };
-            }
-            else if (member is FieldDeclarationSyntax)
-            {
-                return
-                    true; // Field initializers are in static context if the field is static, but default to true for safety
-            }
-
-        return false;
-    }
-
-    /// <summary>
-    ///     Unwraps implicit conversion operations to get the underlying operand.
-    /// </summary>
-    /// <param name="operation">The operation to unwrap.</param>
-    /// <returns>
-    ///     The innermost operation after removing all enclosing implicit conversions,
-    ///     or <paramref name="operation" /> itself if it is not an implicit conversion.
-    /// </returns>
-    /// <seealso cref="UnwrapAllConversions" />
-    /// <seealso cref="GetActualType" />
-    public static IOperation UnwrapImplicitConversions(this IOperation operation)
-    {
-        while (operation is IConversionOperation { IsImplicit: true } conversion)
-            operation = conversion.Operand;
-        return operation;
-    }
-
-    /// <summary>
-    ///     Unwraps all conversion operations (both implicit and explicit) to get the underlying operand.
-    /// </summary>
-    /// <param name="operation">The operation to unwrap.</param>
-    /// <returns>
-    ///     The innermost operation after removing all enclosing conversions,
-    ///     or <paramref name="operation" /> itself if it is not a conversion.
-    /// </returns>
-    /// <seealso cref="UnwrapImplicitConversions" />
-    /// <seealso cref="GetActualType" />
-    public static IOperation UnwrapAllConversions(this IOperation operation)
-    {
-        while (operation is IConversionOperation conversion)
-            operation = conversion.Operand;
-        return operation;
-    }
-
-    /// <summary>
-    ///     Unwraps parenthesized operations to get the inner operand.
-    /// </summary>
-    /// <param name="operation">The operation to unwrap.</param>
-    /// <returns>
-    ///     The innermost operation after removing all enclosing parentheses,
-    ///     or <paramref name="operation" /> itself if it is not parenthesized.
-    /// </returns>
-    public static IOperation UnwrapParenthesized(this IOperation operation)
-    {
-        while (operation is IParenthesizedOperation parenthesized)
-            operation = parenthesized.Operand;
-        return operation;
-    }
-
-    /// <summary>
-    ///     Unwraps labeled operations to get the inner operation.
-    /// </summary>
-    /// <param name="operation">The operation to unwrap.</param>
-    /// <returns>
-    ///     The innermost operation after removing all enclosing labels,
-    ///     or <c>null</c> if the labeled operation has no inner operation.
-    ///     Returns <paramref name="operation" /> if it is not a labeled operation.
-    /// </returns>
-    public static IOperation? UnwrapLabeledOperations(this IOperation operation)
-    {
-        if (operation is ILabeledOperation label)
-            return label.Operation?.UnwrapLabeledOperations();
-        return operation;
-    }
-
-    /// <summary>
-    ///     Gets the actual type of an operation after unwrapping all conversions.
-    /// </summary>
-    /// <param name="operation">The operation whose actual type to get.</param>
-    /// <returns>
-    ///     The type of the innermost operation after removing all conversions,
-    ///     or <c>null</c> if the operation has no type.
-    /// </returns>
-    /// <seealso cref="UnwrapAllConversions" />
-    public static ITypeSymbol? GetActualType(this IOperation operation)
-    {
-        return operation.UnwrapAllConversions().Type;
-    }
-
-    /// <summary>
-    ///     Determines whether the operation represents a constant zero value.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is a compile-time constant with a value of zero
-    ///     (as <see cref="int" />, <see cref="long" />, <see cref="uint" />, <see cref="ulong" />,
-    ///     <see cref="float" />, <see cref="double" />, or <see cref="decimal" />);
-    ///     otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsConstantNull" />
-    /// <seealso cref="IsConstant" />
-    public static bool IsConstantZero(this IOperation operation)
-    {
-        return operation is { ConstantValue: { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m } };
-    }
-
-    /// <summary>
-    ///     Determines whether the operation represents a constant <c>null</c> value.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is a compile-time constant with a <c>null</c> value;
-    ///     otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsConstantZero" />
-    /// <seealso cref="IsConstant" />
-    public static bool IsConstantNull(this IOperation operation)
-    {
-        return operation is { ConstantValue: { HasValue: true, Value: null } };
-    }
-
-    /// <summary>
-    ///     Checks if the operation is of the specified kind.
-    /// </summary>
-    public static bool IsKind(this IOperation operation, OperationKind kind)
-    {
-        return operation.Kind == kind;
-    }
-
-    /// <summary>
-    ///     Checks if the operation represents a constant null value.
-    /// </summary>
-    public static bool IsNull(this IOperation operation)
-    {
-        return operation.IsConstantNull();
-    }
-
-    /// <summary>
-    ///     Checks if the operation represents a constant with the specified value.
-    /// </summary>
-    public static bool IsConstant<T>(this IOperation operation, T value)
-    {
-        return operation.TryGetConstantValue<T>(out var actual) && EqualityComparer<T>.Default.Equals(actual, value);
-    }
-
-    /// <summary>
-    ///     Determines whether the operation represents a compile-time constant.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <param name="value">
-    ///     When this method returns <c>true</c>, contains the constant value.
-    ///     When this method returns <c>false</c>, contains <c>null</c>.
-    /// </param>
-    /// <returns>
-    ///     <c>true</c> if the operation is a compile-time constant; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="TryGetConstantValue{T}" />
-    /// <seealso cref="IsConstantZero" />
-    /// <seealso cref="IsConstantNull" />
-    public static bool IsConstant(this IOperation operation, out object? value)
-    {
-        if (operation.ConstantValue is { HasValue: true } constant)
         {
-            value = constant.Value;
-            return true;
-        }
-
-        value = null;
-        return false;
-    }
-
-    /// <summary>
-    ///     Tries to get the constant value of the specified type from an operation.
-    /// </summary>
-    /// <typeparam name="T">The expected type of the constant value.</typeparam>
-    /// <param name="operation">The operation to check.</param>
-    /// <param name="value">
-    ///     When this method returns <c>true</c>, contains the constant value of type <typeparamref name="T" />.
-    ///     When this method returns <c>false</c>, contains the default value of <typeparamref name="T" />.
-    /// </param>
-    /// <returns>
-    ///     <c>true</c> if the operation is a compile-time constant of type <typeparamref name="T" />;
-    ///     otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsConstant" />
-    public static bool TryGetConstantValue<T>(this IOperation operation, [MaybeNullWhen(false)] out T value)
-    {
-        if (operation.ConstantValue is { HasValue: true, Value: T typedValue })
-        {
-            value = typedValue;
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    /// <summary>
-    ///     Gets the method symbol that contains this operation.
-    /// </summary>
-    /// <param name="operation">The operation whose containing method to find.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    ///     The <see cref="IMethodSymbol" /> for the containing method, local function, accessor,
-    ///     or lambda expression; or <c>null</c> if the operation is not within a method-like construct
-    ///     or the semantic model is unavailable.
-    /// </returns>
-    /// <seealso cref="GetContainingType" />
-    /// <seealso cref="GetContainingBlock" />
-    public static IMethodSymbol? GetContainingMethod(this IOperation operation, CancellationToken cancellationToken)
-    {
-        if (operation.SemanticModel is null)
-            return null;
-
-        foreach (var syntax in operation.Syntax.AncestorsAndSelf())
-            switch (syntax)
-            {
-                case MethodDeclarationSyntax method:
-                    return operation.SemanticModel.GetDeclaredSymbol(method, cancellationToken);
-                case LocalFunctionStatementSyntax localFunction:
-                    return operation.SemanticModel.GetDeclaredSymbol(localFunction, cancellationToken);
-                case AccessorDeclarationSyntax accessor:
-                    return operation.SemanticModel.GetDeclaredSymbol(accessor, cancellationToken);
-                case LambdaExpressionSyntax lambda:
-                    return operation.SemanticModel.GetSymbolInfo(lambda, cancellationToken).Symbol as IMethodSymbol;
-            }
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Gets the named type symbol that contains this operation.
-    /// </summary>
-    /// <param name="operation">The operation whose containing type to find.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    ///     The <see cref="INamedTypeSymbol" /> for the containing type declaration,
-    ///     or <c>null</c> if the operation is not within a type or the semantic model is unavailable.
-    /// </returns>
-    /// <seealso cref="GetContainingMethod" />
-    public static INamedTypeSymbol? GetContainingType(this IOperation operation, CancellationToken cancellationToken)
-    {
-        if (operation.SemanticModel is null)
-            return null;
-
-        foreach (var syntax in operation.Syntax.AncestorsAndSelf())
-            if (syntax is TypeDeclarationSyntax typeDecl)
-                return operation.SemanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
-
-        return null;
-    }
-
-    /// <summary>
-    ///     Gets the C# language version of the source containing this operation.
-    /// </summary>
-    /// <param name="operation">The operation whose language version to determine.</param>
-    /// <returns>
-    ///     The <see cref="LanguageVersion" /> of the source file, or <see cref="LanguageVersion.Default" />
-    ///     if the syntax tree options are not C# parse options.
-    /// </returns>
-    public static LanguageVersion GetCSharpLanguageVersion(this IOperation operation)
-    {
-        if (operation.Syntax.SyntaxTree.Options is CSharpParseOptions options)
-            return options.LanguageVersion;
-        return LanguageVersion.Default;
-    }
-
-    /// <summary>
-    ///     Enumerates the operation and all its descendants in depth-first order.
-    /// </summary>
-    /// <param name="operation">The root operation.</param>
-    /// <returns>
-    ///     An enumerable sequence containing <paramref name="operation" /> followed by all its descendants.
-    /// </returns>
-    /// <seealso cref="Descendants" />
-    /// <seealso cref="DescendantsOfType{T}" />
-    public static IEnumerable<IOperation> DescendantsAndSelf(this IOperation operation)
-    {
-        yield return operation;
-        foreach (var child in operation.ChildOperations)
-        foreach (var descendant in child.DescendantsAndSelf())
-            yield return descendant;
-    }
-
-    /// <summary>
-    ///     Enumerates all descendants of the operation in depth-first order.
-    /// </summary>
-    /// <param name="operation">The root operation.</param>
-    /// <returns>
-    ///     An enumerable sequence of all descendant operations, not including <paramref name="operation" /> itself.
-    /// </returns>
-    /// <seealso cref="DescendantsAndSelf" />
-    /// <seealso cref="DescendantsOfType{T}" />
-    public static IEnumerable<IOperation> Descendants(this IOperation operation)
-    {
-        foreach (var child in operation.ChildOperations)
-        foreach (var descendant in child.DescendantsAndSelf())
-            yield return descendant;
-    }
-
-    /// <summary>
-    ///     Enumerates all descendants of a specific type in depth-first order.
-    /// </summary>
-    /// <typeparam name="T">The type of operations to find. Must implement <see cref="IOperation" />.</typeparam>
-    /// <param name="operation">The root operation.</param>
-    /// <returns>
-    ///     An enumerable sequence of all descendant operations of type <typeparamref name="T" />.
-    /// </returns>
-    /// <seealso cref="Descendants" />
-    /// <seealso cref="ContainsOperation{T}" />
-    public static IEnumerable<T> DescendantsOfType<T>(this IOperation operation) where T : IOperation
-    {
-        foreach (var descendant in operation.Descendants())
-            if (descendant is T typed)
-                yield return typed;
-    }
-
-    /// <summary>
-    ///     Determines whether the operation contains any descendant of the specified type.
-    /// </summary>
-    /// <typeparam name="T">The type of operation to search for. Must implement <see cref="IOperation" />.</typeparam>
-    /// <param name="operation">The operation to search within.</param>
-    /// <returns>
-    ///     <c>true</c> if any descendant of type <typeparamref name="T" /> exists; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="DescendantsOfType{T}" />
-    public static bool ContainsOperation<T>(this IOperation operation) where T : IOperation
-    {
-        return operation.DescendantsOfType<T>().Any();
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a loop construct.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>for</c>, <c>foreach</c>, <c>while</c>,
-    ///     or <c>do</c> loop; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideTryBlock" />
-    /// <seealso cref="IsInsideLockStatement" />
-    public static bool IsInsideLoop(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent is ILoopOperation);
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a try block.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>try</c> statement; otherwise, <c>false</c>.
-    /// </returns>
-    /// <remarks>
-    ///     This checks if the operation is anywhere within a try operation, including in the
-    ///     try block itself, catch blocks, or finally blocks.
-    /// </remarks>
-    /// <seealso cref="IsInsideCatchBlock" />
-    /// <seealso cref="IsInsideFinallyBlock" />
-    public static bool IsInsideTryBlock(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent is ITryOperation);
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a catch block.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>catch</c> clause; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideTryBlock" />
-    /// <seealso cref="IsInsideFinallyBlock" />
-    public static bool IsInsideCatchBlock(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent is ICatchClauseOperation);
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a finally block.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>finally</c> block; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideTryBlock" />
-    /// <seealso cref="IsInsideCatchBlock" />
-    public static bool IsInsideFinallyBlock(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent.Parent is ITryOperation tryOperation &&
-            ReferenceEquals(tryOperation.Finally, parent));
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a lock statement.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>lock</c> statement; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideUsingStatement" />
-    /// <seealso cref="IsInsideLoop" />
-    public static bool IsInsideLockStatement(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent is ILockOperation);
-    }
-
-    /// <summary>
-    ///     Determines whether the specified operation is a <c>using</c> statement or <c>using</c> declaration.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if <paramref name="operation" /> is an <see cref="IUsingOperation" /> or
-    ///     <see cref="IUsingDeclarationOperation" />; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsInsideUsingStatement" />
-    public static bool IsUsingStatement(this IOperation operation)
-    {
-        return operation is IUsingOperation or IUsingDeclarationOperation;
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is inside a using statement or declaration.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is within a <c>using</c> statement or <c>using</c> declaration;
-    ///     otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsUsingStatement" />
-    /// <seealso cref="IsInsideLockStatement" />
-    public static bool IsInsideUsingStatement(this IOperation operation)
-    {
-        return operation.HasAncestor(static parent => parent is IUsingOperation or IUsingDeclarationOperation);
-    }
-
-    private static bool HasAncestor(this IOperation operation, Func<IOperation, bool> predicate)
-    {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (predicate(parent))
-                return true;
-            parent = parent.Parent;
+            var result = ClassifyStaticContext(member, operation, cancellationToken);
+            if (result.HasValue)
+                return result.Value;
         }
 
         return false;
     }
 
-    /// <summary>
-    ///     Gets the containing block operation for this operation.
-    /// </summary>
-    /// <param name="operation">The operation whose containing block to find.</param>
-    /// <returns>
-    ///     The <see cref="IBlockOperation" /> that contains this operation,
-    ///     or <c>null</c> if no containing block exists.
-    /// </returns>
-    /// <seealso cref="GetContainingMethod" />
-    /// <seealso cref="FindAncestor{T}" />
-    public static IBlockOperation? GetContainingBlock(this IOperation operation)
+    // Returns:
+    //   true  — definitively in a static context (stop searching, answer is yes)
+    //   false — definitively NOT in a static context (stop searching, answer is no)
+    //   null  — this ancestor is irrelevant or a non-static enclosing scope that doesn't
+    //           by itself determine the answer; keep searching outward
+    private static bool? ClassifyStaticContext(
+        Microsoft.CodeAnalysis.SyntaxNode member,
+        IOperation operation,
+        CancellationToken ct)
     {
-        return operation.FindAncestor<IBlockOperation>();
-    }
+        var model = operation.SemanticModel;
 
-    /// <summary>
-    ///     Determines whether the operation is the target of an assignment.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is the left-hand side of a simple assignment,
-    ///     compound assignment, or increment/decrement operation; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsLeftSideOfAssignment" />
-    /// <seealso cref="IsPassedByRef" />
-    public static bool IsAssignmentTarget(this IOperation operation)
-    {
-        var parent = operation.Parent;
-        if (parent is ISimpleAssignmentOperation assignment)
-            return ReferenceEquals(assignment.Target, operation);
-        if (parent is ICompoundAssignmentOperation compound)
-            return ReferenceEquals(compound.Target, operation);
-        return parent is IIncrementOrDecrementOperation;
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is on the left side of an assignment.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation (after unwrapping implicit conversions) is the target
-    ///     of an assignment operation; otherwise, <c>false</c>.
-    /// </returns>
-    /// <remarks>
-    ///     This method unwraps implicit conversions before checking, which is useful when
-    ///     the left-hand side involves an implicit conversion (e.g., assigning to a property
-    ///     of a different but compatible type).
-    /// </remarks>
-    /// <seealso cref="IsAssignmentTarget" />
-    public static bool IsLeftSideOfAssignment(this IOperation operation)
-    {
-        var unwrapped = operation.UnwrapImplicitConversions();
-        return unwrapped.Parent is IAssignmentOperation assignment && ReferenceEquals(assignment.Target, unwrapped);
-    }
-
-    /// <summary>
-    ///     Determines whether the operation is passed by reference to a method.
-    /// </summary>
-    /// <param name="operation">The operation to check.</param>
-    /// <returns>
-    ///     <c>true</c> if the operation is an argument to a parameter with <c>ref</c>, <c>out</c>,
-    ///     <c>in</c>, or <c>ref readonly</c> modifier; otherwise, <c>false</c>.
-    /// </returns>
-    /// <seealso cref="IsAssignmentTarget" />
-    public static bool IsPassedByRef(this IOperation operation)
-    {
-        return operation.Parent is IArgumentOperation { Parameter: { RefKind: not RefKind.None } };
-    }
-
-    // ========== Human-Readable Name Extraction ==========
-
-    /// <summary>
-    ///     Gets a human-readable name for an operation, useful for diagnostic messages.
-    /// </summary>
-    /// <param name="operation">The operation to get the name from.</param>
-    /// <param name="fallback">The fallback name to use if the operation type is not recognized. Defaults to "value".</param>
-    /// <returns>
-    ///     A string representing the operation:
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>For local references: the local variable name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For parameter references: the parameter name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For property references: the property name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For field references: the field name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For method invocations: the method name with "()"</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For string literals: the quoted string value</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For numeric literals: the string representation</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For other operations: the fallback value</description>
-    ///         </item>
-    ///     </list>
-    /// </returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method unwraps implicit conversions before extracting the name,
-    ///         so <c>(object)myVariable</c> will return "myVariable".
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// // In an analyzer, create a readable diagnostic message:
-    /// var operandName = operation.GetOperandName();
-    /// var message = $"Consider using {operandName}.EqualsOrdinal(other)";
-    /// </code>
-    /// </example>
-    /// <seealso cref="GetCollectionSourceName" />
-    public static string GetOperandName(this IOperation? operation, string fallback = "value")
-    {
-        if (operation is null)
-            return fallback;
-
-        // Unwrap conversions
-        operation = operation.UnwrapImplicitConversions();
-
-        return operation switch
+        return member switch
         {
-            ILocalReferenceOperation local => local.Local.Name,
-            IParameterReferenceOperation param => param.Parameter.Name,
-            IPropertyReferenceOperation prop => prop.Property.Name,
-            IFieldReferenceOperation field => field.Field.Name,
-            IInvocationOperation invocation => $"{invocation.TargetMethod.Name}()",
-            ILiteralOperation { ConstantValue: { HasValue: true, Value: string s } } => $"\"{s}\"",
-            ILiteralOperation { ConstantValue: { HasValue: true, Value: { } v } } => v.ToString() ?? fallback,
-            IMemberReferenceOperation member => member.Member.Name,
-            IArrayElementReferenceOperation => "element",
-            IInstanceReferenceOperation => "this",
-            _ => fallback
-        };
-    }
-
-    /// <summary>
-    ///     Gets the source name from a collection operation, useful for foreach analysis.
-    /// </summary>
-    /// <param name="collection">The collection operation to get the name from.</param>
-    /// <returns>
-    ///     The name of the source:
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>For method invocations: the method name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For property references: the property name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For field references: the field name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For local/parameter references: the variable name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For conversions: recursively gets the source name</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>For other operations: <c>null</c></description>
-    ///         </item>
-    ///     </list>
-    /// </returns>
-    /// <remarks>
-    ///     <para>
-    ///         This is particularly useful for analyzers that examine foreach loops
-    ///         and need to identify the source of the enumeration.
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// // Check if iterating over GetAttributes()
-    /// if (foreachOperation.Collection.GetCollectionSourceName() == "GetAttributes")
-    /// {
-    ///     // Suggest using HasAttribute instead
-    /// }
-    /// </code>
-    /// </example>
-    /// <seealso cref="GetOperandName" />
-    public static string? GetCollectionSourceName(this IOperation? collection)
-    {
-        return collection switch
-        {
-            null => null,
-            IInvocationOperation invocation => invocation.TargetMethod.Name,
-            IPropertyReferenceOperation propertyRef => propertyRef.Property.Name,
-            IFieldReferenceOperation fieldRef => fieldRef.Field.Name,
-            ILocalReferenceOperation localRef => localRef.Local.Name,
-            IParameterReferenceOperation paramRef => paramRef.Parameter.Name,
-            IConversionOperation conversion => conversion.Operand.GetCollectionSourceName(),
-            IParenthesizedOperation paren => paren.Operand.GetCollectionSourceName(),
+            LocalFunctionStatementSyntax lf when model?.GetDeclaredSymbol(lf, ct) is { IsStatic: true }
+                => true,
+            LambdaExpressionSyntax lam when model?.GetSymbolInfo(lam, ct).Symbol is { IsStatic: true }
+                => true,
+            AnonymousMethodExpressionSyntax am when model?.GetSymbolInfo(am, ct).Symbol is { IsStatic: true }
+                => true,
+            // Reaching a method/property declaration is the final enclosing scope — its IsStatic flag
+            // is authoritative, so we return it as-is (true OR false; do not continue searching).
+            MethodDeclarationSyntax md
+                => model?.GetDeclaredSymbol(md, ct) is { IsStatic: true },
+            PropertyDeclarationSyntax pd
+                => model?.GetDeclaredSymbol(pd, ct) is { IsStatic: true },
+            // Field initializers are in static context if the field is static; default to true for safety.
+            FieldDeclarationSyntax => true,
             _ => null
         };
     }
