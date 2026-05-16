@@ -141,15 +141,7 @@ internal
     /// </remarks>
     public static bool IsInNameofOperation(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent.Kind is OperationKind.NameOf)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent.Kind is OperationKind.NameOf);
     }
 
     /// <summary>
@@ -605,15 +597,7 @@ internal
     /// <seealso cref="IsInsideLockStatement" />
     public static bool IsInsideLoop(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is ILoopOperation)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent is ILoopOperation);
     }
 
     /// <summary>
@@ -631,15 +615,7 @@ internal
     /// <seealso cref="IsInsideFinallyBlock" />
     public static bool IsInsideTryBlock(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is ITryOperation)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent is ITryOperation);
     }
 
     /// <summary>
@@ -653,15 +629,7 @@ internal
     /// <seealso cref="IsInsideFinallyBlock" />
     public static bool IsInsideCatchBlock(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is ICatchClauseOperation)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent is ICatchClauseOperation);
     }
 
     /// <summary>
@@ -675,16 +643,8 @@ internal
     /// <seealso cref="IsInsideCatchBlock" />
     public static bool IsInsideFinallyBlock(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is ITryOperation tryOp &&
-                tryOp.Finally?.Operations.Any(op => op.Syntax.Contains(operation.Syntax)) is true)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent.Parent is ITryOperation tryOperation &&
+            ReferenceEquals(tryOperation.Finally, parent));
     }
 
     /// <summary>
@@ -698,15 +658,7 @@ internal
     /// <seealso cref="IsInsideLoop" />
     public static bool IsInsideLockStatement(this IOperation operation)
     {
-        var parent = operation.Parent;
-        while (parent is not null)
-        {
-            if (parent is ILockOperation)
-                return true;
-            parent = parent.Parent;
-        }
-
-        return false;
+        return operation.HasAncestor(static parent => parent is ILockOperation);
     }
 
     /// <summary>
@@ -735,10 +687,15 @@ internal
     /// <seealso cref="IsInsideLockStatement" />
     public static bool IsInsideUsingStatement(this IOperation operation)
     {
+        return operation.HasAncestor(static parent => parent is IUsingOperation or IUsingDeclarationOperation);
+    }
+
+    private static bool HasAncestor(this IOperation operation, Func<IOperation, bool> predicate)
+    {
         var parent = operation.Parent;
         while (parent is not null)
         {
-            if (parent is IUsingOperation or IUsingDeclarationOperation)
+            if (predicate(parent))
                 return true;
             parent = parent.Parent;
         }

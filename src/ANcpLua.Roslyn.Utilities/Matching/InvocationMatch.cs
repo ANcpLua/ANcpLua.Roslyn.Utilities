@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using ANcpLua.Roslyn.Utilities;
 
 namespace ANcpLua.Roslyn.Utilities.Matching;
 
@@ -254,7 +255,7 @@ internal
     /// <seealso cref="OnTypeImplementing(string)" />
     public InvocationMatcher OnType(string typeName)
     {
-        return AddPredicate(i => GetReceiverTypeName(i) == typeName);
+        return AddPredicate(i => GetReceiverType(i).TypeNameMatches(typeName));
     }
 
     /// <summary>
@@ -272,12 +273,12 @@ internal
     {
         return AddPredicate(i =>
         {
-            var receiverTypeName = GetReceiverTypeName(i);
-            if (receiverTypeName == typeName)
+            var receiverType = GetReceiverType(i);
+            if (receiverType.TypeNameMatches(typeName))
                 return true;
 
             foreach (var t in additionalTypeNames)
-                if (receiverTypeName == t)
+                if (receiverType.TypeNameMatches(t))
                     return true;
 
             return false;
@@ -296,7 +297,7 @@ internal
         return AddPredicate(i =>
         {
             var receiverType = GetReceiverType(i);
-            return receiverType is not null && InheritsFromName(receiverType, baseTypeName);
+            return receiverType is not null && receiverType.InheritsFromName(baseTypeName);
         });
     }
 
@@ -312,7 +313,7 @@ internal
         return AddPredicate(i =>
         {
             var receiverType = GetReceiverType(i);
-            return receiverType is not null && ImplementsInterface(receiverType, interfaceName);
+            return receiverType is not null && receiverType.ImplementsInterfaceName(interfaceName);
         });
     }
 
@@ -404,8 +405,7 @@ internal
     /// <seealso cref="Returning(string)" />
     public InvocationMatcher ReturningTask()
     {
-        return AddPredicate(static i => i.TargetMethod.ReturnType.Name is "Task" or "ValueTask" ||
-                                        i.TargetMethod.ReturnType.OriginalDefinition.Name is "Task" or "ValueTask");
+        return AddPredicate(static i => i.TargetMethod.ReturnType.IsTaskType());
     }
 
     /// <summary>
@@ -606,17 +606,6 @@ internal
     }
 
     // Helper methods
-    private static string? GetReceiverTypeName(IInvocationOperation invocation)
-    {
-        if (invocation.Instance is not null)
-            return invocation.Instance.Type?.Name;
-
-        if (invocation.TargetMethod.IsExtensionMethod && invocation.Arguments.Length > 0)
-            return invocation.Arguments[0].Value.Type?.Name;
-
-        return invocation.TargetMethod.ContainingType?.Name;
-    }
-
     private static INamedTypeSymbol? GetReceiverType(IInvocationOperation invocation)
     {
         if (invocation.Instance?.Type is INamedTypeSymbol instanceType)
@@ -628,28 +617,6 @@ internal
             return argType;
 
         return invocation.TargetMethod.ContainingType;
-    }
-
-    private static bool InheritsFromName(ITypeSymbol type, string name)
-    {
-        var current = type.BaseType;
-        while (current is not null)
-        {
-            if (current.Name == name || current.ToDisplayString() == name)
-                return true;
-            current = current.BaseType;
-        }
-
-        return false;
-    }
-
-    private static bool ImplementsInterface(ITypeSymbol type, string name)
-    {
-        foreach (var iface in type.AllInterfaces)
-            if (iface.Name == name || iface.ToDisplayString() == name)
-                return true;
-
-        return false;
     }
 
     private static bool AllArgumentsConstant(IInvocationOperation invocation)

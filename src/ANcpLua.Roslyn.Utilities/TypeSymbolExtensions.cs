@@ -157,6 +157,39 @@ internal
         return false;
     }
 
+    internal static bool TypeNameMatches(this ITypeSymbol? symbol, string name)
+    {
+        if (symbol is null)
+            return false;
+
+        var normalizedName = name.StripGlobalPrefix();
+        return symbol.Name == normalizedName ||
+               symbol.ToDisplayString() == normalizedName ||
+               symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).StripGlobalPrefix() == normalizedName;
+    }
+
+    internal static bool InheritsFromName(this ITypeSymbol type, string name)
+    {
+        var current = type.BaseType;
+        while (current is not null)
+        {
+            if (current.TypeNameMatches(name))
+                return true;
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
+    internal static bool ImplementsInterfaceName(this ITypeSymbol type, string name)
+    {
+        foreach (var iface in type.AllInterfaces)
+            if (iface.TypeNameMatches(name))
+                return true;
+
+        return false;
+    }
+
     /// <summary>
     ///     Determines whether a type is or implements a specified interface.
     /// </summary>

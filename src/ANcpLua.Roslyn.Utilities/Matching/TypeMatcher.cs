@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using ANcpLua.Roslyn.Utilities;
 
 namespace ANcpLua.Roslyn.Utilities.Matching;
 
@@ -124,7 +125,7 @@ internal
     /// <seealso cref="Implements" />
     public TypeMatcher InheritsFrom(string baseTypeName)
     {
-        return AddPredicate(t => InheritsFromName(t, baseTypeName));
+        return AddPredicate(t => t.InheritsFromName(baseTypeName));
     }
 
     /// <summary>
@@ -141,7 +142,7 @@ internal
     /// <seealso cref="Disposable" />
     public TypeMatcher Implements(string interfaceName)
     {
-        return AddPredicate(t => ImplementsInterface(t, interfaceName));
+        return AddPredicate(t => t.ImplementsInterfaceName(interfaceName));
     }
 
     /// <summary>
@@ -203,31 +204,6 @@ internal
     public TypeMatcher HasParameterlessConstructor()
     {
         return AddPredicate(HasParameterlessCtor);
-    }
-
-    private static bool InheritsFromName(ITypeSymbol type, string name)
-    {
-        var current = type.BaseType;
-        while (current is not null)
-        {
-            if (current.Name == name || current.ToDisplayString() == name)
-                return true;
-            current = current.BaseType;
-        }
-
-        return false;
-    }
-
-    private static bool ImplementsInterface(ITypeSymbol type, string name)
-    {
-        if (type is not INamedTypeSymbol namedType)
-            return false;
-
-        foreach (var iface in namedType.AllInterfaces)
-            if (iface.Name == name || iface.ToDisplayString() == name)
-                return true;
-
-        return false;
     }
 
     private static bool HasParameterlessCtor(INamedTypeSymbol type)

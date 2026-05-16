@@ -42,7 +42,6 @@ internal
 {
     private static readonly char[] s_newLineSeparator = ['\n'];
 
-
     /// <summary>
     ///     Converts a string to PascalCase by making the first character uppercase.
     /// </summary>
@@ -240,26 +239,7 @@ internal
     /// <seealso cref="ToPropertyName" />
     public static string ToKebabCase(this string input)
     {
-        if (string.IsNullOrEmpty(input)) return input;
-
-        var sb = new StringBuilder(input.Length + 4);
-        for (var i = 0; i < input.Length; i++)
-        {
-            var c = input[i];
-            if (char.IsUpper(c) && i > 0)
-            {
-                var prevIsLower = char.IsLower(input[i - 1]);
-                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
-
-                // Dash before: standard word boundary (aB) or end of acronym (ABc)
-                if (prevIsLower || nextIsLower)
-                    sb.Append('-');
-            }
-
-            sb.Append(char.ToLowerInvariant(c));
-        }
-
-        return sb.ToString();
+        return ToSeparatedCase(input, '-');
     }
 
     /// <summary>
@@ -295,26 +275,7 @@ internal
     /// <seealso cref="ToPropertyName" />
     public static string ToSnakeCase(this string input)
     {
-        if (string.IsNullOrEmpty(input)) return input;
-
-        var sb = new StringBuilder(input.Length + 4);
-        for (var i = 0; i < input.Length; i++)
-        {
-            var c = input[i];
-            if (char.IsUpper(c) && i > 0)
-            {
-                var prevIsLower = char.IsLower(input[i - 1]);
-                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
-
-                // Underscore before: standard word boundary (aB) or end of acronym (ABc)
-                if (prevIsLower || nextIsLower)
-                    sb.Append('_');
-            }
-
-            sb.Append(char.ToLowerInvariant(c));
-        }
-
-        return sb.ToString();
+        return ToSeparatedCase(input, '_');
     }
 
     /// <summary>
@@ -610,8 +571,12 @@ internal
     /// <returns>The C# keyword (e.g., "int"), or <c>null</c> if no keyword exists.</returns>
     public static string? GetCSharpKeyword(this string typeName)
     {
-        var normalized = typeName.NormalizeTypeName();
-        return normalized switch
+        return GetCSharpKeywordCore(typeName.NormalizeTypeName());
+    }
+
+    private static string? GetCSharpKeywordCore(string normalizedTypeName)
+    {
+        return normalizedTypeName switch
         {
             "System.Int32" or "Int32" => "int",
             "System.Int64" or "Int64" => "long",
@@ -641,21 +606,7 @@ internal
     /// <returns><c>true</c> if the type names are equivalent; otherwise, <c>false</c>.</returns>
     public static bool TypeNamesEqual(this string type1, string type2)
     {
-        var normalized1 = type1.NormalizeTypeName();
-        var normalized2 = type2.NormalizeTypeName();
-
-        if (normalized1 == normalized2)
-            return true;
-
-        var alias1 = normalized1.GetCSharpKeyword();
-        var alias2 = normalized2.GetCSharpKeyword();
-
-        if (alias1 is not null && alias1 == normalized2)
-            return true;
-        if (alias2 is not null && alias2 == normalized1)
-            return true;
-
-        return alias1 is not null && alias2 is not null && alias1 == alias2;
+        return GetComparableTypeName(type1) == GetComparableTypeName(type2);
     }
 
     /// <summary>
@@ -665,8 +616,7 @@ internal
     /// <returns><c>true</c> if the type is string; otherwise, <c>false</c>.</returns>
     public static bool IsStringType(this string typeFqn)
     {
-        var normalized = typeFqn.NormalizeTypeName();
-        return normalized is "string" or "String" or "System.String";
+        return typeFqn.TypeNamesEqual("string");
     }
 
     /// <summary>
@@ -676,14 +626,13 @@ internal
     /// <returns><c>true</c> if the type is a primitive JSON type; otherwise, <c>false</c>.</returns>
     public static bool IsPrimitiveJsonType(this string typeFqn)
     {
-        var normalized = typeFqn.NormalizeTypeName();
-        return normalized is
-            "System.String" or "string" or
-            "System.Int32" or "int" or
-            "System.Int64" or "long" or
-            "System.Boolean" or "bool" or
-            "System.Double" or "double" or
-            "System.Decimal" or "decimal";
+        return GetComparableTypeName(typeFqn) is
+            "string" or
+            "int" or
+            "long" or
+            "bool" or
+            "double" or
+            "decimal";
     }
 
     /// <summary>
@@ -808,13 +757,7 @@ internal
     /// <returns>The original string if already quoted or no disallowed chars found; otherwise double-quoted.</returns>
     public static string DoubleQuoteIfNeeded(this string? str, params char[] disallowed)
     {
-        if (string.IsNullOrWhiteSpace(str))
-            return string.Empty;
-
-        if (str is ['"', .., '"'] || str!.AsSpan().IndexOfAny(disallowed) < 0)
-            return str!;
-
-        return str.DoubleQuote();
+        return QuoteIfNeeded(str, '"', disallowed);
     }
 
     /// <summary>
@@ -824,7 +767,7 @@ internal
     /// <returns>The double-quoted string.</returns>
     public static string DoubleQuote(this string? str)
     {
-        return $"\"{str?.Replace("\"", "\\\"")}\"";
+        return Quote(str, '"');
     }
 
     /// <summary>
@@ -846,13 +789,7 @@ internal
     /// <returns>The original string if already quoted or no disallowed chars found; otherwise single-quoted.</returns>
     public static string SingleQuoteIfNeeded(this string? str, params char[] disallowed)
     {
-        if (string.IsNullOrWhiteSpace(str))
-            return string.Empty;
-
-        if (str is ['\'', .., '\''] || str!.AsSpan().IndexOfAny(disallowed) < 0)
-            return str!;
-
-        return str.SingleQuote();
+        return QuoteIfNeeded(str, '\'', disallowed);
     }
 
     /// <summary>
@@ -862,7 +799,7 @@ internal
     /// <returns>The single-quoted string.</returns>
     public static string SingleQuote(this string? str)
     {
-        return $"'{str?.Replace("'", "\\'")}'";
+        return Quote(str, '\'');
     }
 
     /// <summary>
@@ -872,7 +809,7 @@ internal
     /// <returns><c>true</c> if the string starts and ends with a double quote.</returns>
     public static bool IsDoubleQuoted([NotNullWhen(true)] this string? str)
     {
-        return str is ['"', .., '"'];
+        return IsQuoted(str, '"');
     }
 
     /// <summary>
@@ -882,7 +819,7 @@ internal
     /// <returns><c>true</c> if the string starts and ends with a single quote.</returns>
     public static bool IsSingleQuoted([NotNullWhen(true)] this string? str)
     {
-        return str is ['\'', .., '\''];
+        return IsQuoted(str, '\'');
     }
 
     // ========== Graph Label Escaping ==========
@@ -924,6 +861,58 @@ internal
     private static Regex WhitespaceRegex()
     {
         return s_whitespaceRegexInstance;
+    }
+
+    private static string ToSeparatedCase(string input, char separator)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        var sb = new StringBuilder(input.Length + 4);
+        for (var i = 0; i < input.Length; i++)
+        {
+            var c = input[i];
+            if (char.IsUpper(c) && i > 0)
+            {
+                var prevIsLower = char.IsLower(input[i - 1]);
+                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
+
+                // Separator before standard word boundary (aB) or acronym boundary (ABc).
+                if (prevIsLower || nextIsLower)
+                    sb.Append(separator);
+            }
+
+            sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString();
+    }
+
+    private static string GetComparableTypeName(string typeName)
+    {
+        var normalized = typeName.NormalizeTypeName();
+        return GetCSharpKeywordCore(normalized) ?? normalized;
+    }
+
+    private static string QuoteIfNeeded(string? str, char quote, params char[] disallowed)
+    {
+        if (string.IsNullOrWhiteSpace(str))
+            return string.Empty;
+
+        if (IsQuoted(str, quote) || str!.AsSpan().IndexOfAny(disallowed) < 0)
+            return str!;
+
+        return Quote(str, quote);
+    }
+
+    private static string Quote(string? str, char quote)
+    {
+        var escaped = str?.Replace(quote.ToString(), "\\" + quote);
+        return string.Concat(quote, escaped, quote);
+    }
+
+    private static bool IsQuoted([NotNullWhen(true)] string? str, char quote)
+    {
+        return str is [var first, .., var last] && first == quote && last == quote;
     }
 
 }
