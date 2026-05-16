@@ -1,7 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
-
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -9,27 +5,37 @@ namespace ANcpLua.Roslyn.Utilities;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This class contains utility methods commonly needed when generating source code,
-///         including line splitting, casing transformations, and whitespace normalization.
+///         Utility methods commonly needed when generating source code. The implementation is split
+///         across partial files by responsibility:
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>
-///                 Zero-allocation line enumeration via <see cref="SplitLines(string)" /> and
-///                 <see cref="LineSplitEnumerator" />
-///             </description>
+///             <description>This file: PascalCase / kebab / snake casing entry points</description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Identifier casing with C# keyword handling via <see cref="ToPropertyName" /> and
-///                 <see cref="ToParameterName" />
-///             </description>
+///             <description><c>StringExtensions.Lines.cs</c> — zero-allocation line enumeration
+///             (<see cref="SplitLines(string)" />, <see cref="LineSplitEnumerator" />)</description>
 ///         </item>
 ///         <item>
-///             <description>
-///                 Whitespace cleanup for generated code via <see cref="TrimBlankLines" />,
-///                 <see cref="NormalizeLineEndings" />, and <see cref="CleanWhiteSpace" />
-///             </description>
+///             <description><c>StringExtensions.Identifiers.cs</c> — <see cref="ToPropertyName" />,
+///             <see cref="ToParameterName" /> (hashset-based keyword escape),
+///             <see cref="SanitizeIdentifier" />, <see cref="EscapeCSharpString" /></description>
+///         </item>
+///         <item>
+///             <description><c>StringExtensions.Whitespace.cs</c> — <see cref="TrimBlankLines" />,
+///             <see cref="NormalizeLineEndings" />, <see cref="CleanWhiteSpace" />,
+///             <see cref="NormalizeWhitespace" /></description>
+///         </item>
+///         <item>
+///             <description><c>StringExtensions.TypeNames.cs</c> — fully-qualified name manipulation,
+///             C# keyword aliasing, primitive-JSON detection, prefix/suffix strippers</description>
+///         </item>
+///         <item>
+///             <description><c>StringExtensions.Hashing.cs</c> — <see cref="ToShortHash(string)" /></description>
+///         </item>
+///         <item>
+///             <description><c>StringExtensions.Quoting.cs</c> — quoting / unquoting + graph label
+///             escaping (DOT / Mermaid)</description>
 ///         </item>
 ///     </list>
 /// </remarks>
@@ -40,173 +46,6 @@ internal
 #endif
     static partial class StringExtensions
 {
-    private static readonly char[] s_newLineSeparator = ['\n'];
-
-    /// <summary>
-    ///     Converts a string to PascalCase by making the first character uppercase.
-    /// </summary>
-    /// <param name="input">The input string to convert.</param>
-    /// <returns>
-    ///     The input string with its first character converted to uppercase using invariant culture rules.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="input" /> is <c>null</c>.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    ///     Thrown when <paramref name="input" /> is an empty string.
-    /// </exception>
-    /// <remarks>
-    ///     <para>
-    ///         This method is useful for converting field names to property names in source generators.
-    ///         For example, <c>"firstName"</c> becomes <c>"FirstName"</c>.
-    ///     </para>
-    /// </remarks>
-    /// <seealso cref="ToParameterName" />
-    public static string ToPropertyName(this string input)
-    {
-        return input switch
-        {
-            null => throw new ArgumentNullException(nameof(input)),
-            "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-#if NET6_0_OR_GREATER
-            _ => string.Concat(input[0].ToString().ToUpper(CultureInfo.InvariantCulture), input.AsSpan(1)),
-#else
-            _ => input[0].ToString().ToUpper(CultureInfo.InvariantCulture) + input[1..],
-#endif
-        };
-    }
-
-    /// <summary>
-    ///     Converts a string to camelCase by making the first character lowercase,
-    ///     and escapes C# reserved keywords with the <c>@</c> prefix.
-    /// </summary>
-    /// <param name="input">The input string to convert.</param>
-    /// <returns>
-    ///     The input string converted to a valid C# parameter name. If the resulting name
-    ///     is a C# keyword, it is prefixed with <c>@</c> (e.g., <c>"class"</c> becomes <c>"@class"</c>).
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="input" /> is <c>null</c>.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    ///     Thrown when <paramref name="input" /> is an empty string.
-    /// </exception>
-    /// <remarks>
-    ///     <para>
-    ///         This method handles all C# reserved keywords as defined in the C# language specification,
-    ///         ensuring the returned string is always a valid identifier.
-    ///     </para>
-    ///     <para>
-    ///         For example:
-    ///     </para>
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description><c>"FirstName"</c> becomes <c>"firstName"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"Class"</c> becomes <c>"@class"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"Object"</c> becomes <c>"@object"</c></description>
-    ///         </item>
-    ///     </list>
-    /// </remarks>
-    /// <seealso cref="ToPropertyName" />
-    public static string ToParameterName(this string input)
-    {
-        input = input ?? throw new ArgumentNullException(nameof(input));
-
-        return input.ToLowerInvariant() switch
-        {
-            "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
-
-            // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
-            "abstract" => "@abstract",
-            "as" => "@as",
-            "base" => "@base",
-            "bool" => "@bool",
-            "break" => "@break",
-            "byte" => "@byte",
-            "case" => "@case",
-            "catch" => "@catch",
-            "char" => "@char",
-            "checked" => "@checked",
-            "class" => "@class",
-            "const" => "@const",
-            "continue" => "@continue",
-            "decimal" => "@decimal",
-            "default" => "@default",
-            "delegate" => "@delegate",
-            "do" => "@do",
-            "double" => "@double",
-            "else" => "@else",
-            "enum" => "@enum",
-            "event" => "@event",
-            "explicit" => "@explicit",
-            "extern" => "@extern",
-            "false" => "@false",
-            "finally" => "@finally",
-            "fixed" => "@fixed",
-            "float" => "@float",
-            "for" => "@for",
-            "foreach" => "@foreach",
-            "goto" => "@goto",
-            "if" => "@if",
-            "implicit" => "@implicit",
-            "in" => "@in",
-            "int" => "@int",
-            "interface" => "@interface",
-            "internal" => "@internal",
-            "is" => "@is",
-            "lock" => "@lock",
-            "long" => "@long",
-            "namespace" => "@namespace",
-            "new" => "@new",
-            "null" => "@null",
-            "object" => "@object",
-            "operator" => "@operator",
-            "out" => "@out",
-            "override" => "@override",
-            "params" => "@params",
-            "private" => "@private",
-            "protected" => "@protected",
-            "public" => "@public",
-            "readonly" => "@readonly",
-            "ref" => "@ref",
-            "return" => "@return",
-            "sbyte" => "@sbyte",
-            "sealed" => "@sealed",
-            "short" => "@short",
-            "sizeof" => "@sizeof",
-            "stackalloc" => "@stackalloc",
-            "static" => "@static",
-            "string" => "@string",
-            "struct" => "@struct",
-            "switch" => "@switch",
-            "this" => "@this",
-            "throw" => "@throw",
-            "true" => "@true",
-            "try" => "@try",
-            "typeof" => "@typeof",
-            "uint" => "@uint",
-            "ulong" => "@ulong",
-            "unchecked" => "@unchecked",
-            "unsafe" => "@unsafe",
-            "ushort" => "@ushort",
-            "using" => "@using",
-            "virtual" => "@virtual",
-            "void" => "@void",
-            "volatile" => "@volatile",
-            "while" => "@while",
-
-#if NET6_0_OR_GREATER
-            _ => string.Concat(input[0].ToString().ToLower(CultureInfo.InvariantCulture), input.AsSpan(1)),
-#else
-            _ => input[0].ToString().ToLower(CultureInfo.InvariantCulture) + input[1..],
-#endif
-        };
-    }
-
     /// <summary>
     ///     Converts a PascalCase or camelCase string to kebab-case.
     /// </summary>
@@ -221,20 +60,13 @@ internal
     ///         A dash is inserted at the boundary between an acronym and the next word.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item>
-    ///             <description><c>"GetValue"</c> becomes <c>"get-value"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"XMLParser"</c> becomes <c>"xml-parser"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"GetHTTPClient"</c> becomes <c>"get-http-client"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"SimpleTest"</c> becomes <c>"simple-test"</c></description>
-    ///         </item>
+    ///         <item><description><c>"GetValue"</c> becomes <c>"get-value"</c></description></item>
+    ///         <item><description><c>"XMLParser"</c> becomes <c>"xml-parser"</c></description></item>
+    ///         <item><description><c>"GetHTTPClient"</c> becomes <c>"get-http-client"</c></description></item>
+    ///         <item><description><c>"SimpleTest"</c> becomes <c>"simple-test"</c></description></item>
     ///     </list>
     /// </remarks>
+    /// <seealso cref="ToSnakeCase" />
     /// <seealso cref="ToParameterName" />
     /// <seealso cref="ToPropertyName" />
     public static string ToKebabCase(this string input)
@@ -256,18 +88,10 @@ internal
     ///         An underscore is inserted at the boundary between an acronym and the next word.
     ///     </para>
     ///     <list type="bullet">
-    ///         <item>
-    ///             <description><c>"GetValue"</c> becomes <c>"get_value"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"XMLParser"</c> becomes <c>"xml_parser"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"GetHTTPClient"</c> becomes <c>"get_http_client"</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description><c>"SimpleTest"</c> becomes <c>"simple_test"</c></description>
-    ///         </item>
+    ///         <item><description><c>"GetValue"</c> becomes <c>"get_value"</c></description></item>
+    ///         <item><description><c>"XMLParser"</c> becomes <c>"xml_parser"</c></description></item>
+    ///         <item><description><c>"GetHTTPClient"</c> becomes <c>"get_http_client"</c></description></item>
+    ///         <item><description><c>"SimpleTest"</c> becomes <c>"simple_test"</c></description></item>
     ///     </list>
     /// </remarks>
     /// <seealso cref="ToKebabCase" />
@@ -278,591 +102,6 @@ internal
         return ToSeparatedCase(input, '_');
     }
 
-    /// <summary>
-    ///     Removes lines that contain only whitespace characters while preserving empty lines.
-    /// </summary>
-    /// <param name="text">The text to process.</param>
-    /// <returns>
-    ///     The text with whitespace-only lines removed. Lines that are completely empty
-    ///     (zero length) are preserved.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="text" /> is <c>null</c>.
-    /// </exception>
-    /// <remarks>
-    ///     <para>
-    ///         This method is useful for cleaning generated code where conditional sections
-    ///         may leave lines containing only spaces or tabs.
-    ///     </para>
-    ///     <para>
-    ///         A "blank line" is defined as a line containing one or more whitespace characters
-    ///         but no other content. Empty lines (containing no characters) are not considered blank
-    ///         and are preserved in the output.
-    ///     </para>
-    /// </remarks>
-    /// <example>
-    ///     <code>
-    /// var cleaned = """
-    ///     public class Foo
-    ///     {
-    ///
-    ///         public int Value { get; }
-    ///     }
-    ///     """.TrimBlankLines();
-    /// // Result: lines with only spaces are removed, but true empty lines are kept
-    /// </code>
-    /// </example>
-    /// <seealso cref="CleanWhiteSpace" />
-    /// <seealso cref="NormalizeLineEndings" />
-    public static string TrimBlankLines(this string text)
-    {
-        text = text ?? throw new ArgumentNullException(nameof(text));
-        var lines = text.NormalizeLineEndings().Split(s_newLineSeparator, StringSplitOptions.None);
-        var result = new StringBuilder();
-        var first = true;
-
-        foreach (var line in lines)
-            if (!IsBlankLine(line))
-            {
-                if (!first)
-                    result.Append('\n');
-                result.Append(line);
-                first = false;
-            }
-
-        return result.ToString();
-
-        static bool IsBlankLine(string line)
-        {
-            if (line.Length is 0)
-                return false;
-
-            foreach (var c in line)
-                if (!char.IsWhiteSpace(c))
-                    return false;
-
-            return true;
-        }
-    }
-
-    /// <summary>
-    ///     Normalizes all line endings in a string to a consistent format.
-    /// </summary>
-    /// <param name="text">The text to normalize.</param>
-    /// <param name="newLine">
-    ///     The line ending sequence to use. If <c>null</c>, uses <c>\n</c> (Unix-style).
-    /// </param>
-    /// <returns>
-    ///     The text with all line endings (<c>\r\n</c>, <c>\r</c>, and <c>\n</c>)
-    ///     replaced with the specified <paramref name="newLine" /> sequence.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="text" /> is <c>null</c>.
-    /// </exception>
-    /// <remarks>
-    ///     <para>
-    ///         This method first converts all line endings to <c>\n</c>, then optionally
-    ///         converts them to the specified <paramref name="newLine" /> sequence.
-    ///     </para>
-    ///     <para>
-    ///         This is particularly useful for source generators that need to produce
-    ///         consistent output across different platforms.
-    ///     </para>
-    /// </remarks>
-    /// <seealso cref="TrimBlankLines" />
-    /// <seealso cref="CleanWhiteSpace" />
-    public static string NormalizeLineEndings(this string text, string? newLine = null)
-    {
-        text = text ?? throw new ArgumentNullException(nameof(text));
-
-        var newText = text
-            .Replace("\r\n", "\n")
-            .Replace('\r', '\n');
-        if (newLine is not null) newText = newText.Replace("\n", newLine);
-
-        return newText;
-    }
-
-    /// <summary>
-    ///     Cleans whitespace in generated source code for consistent formatting.
-    /// </summary>
-    /// <param name="source">The generated source code to clean.</param>
-    /// <returns>The cleaned source code with normalized whitespace.</returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="source" /> is <c>null</c>.
-    /// </exception>
-    /// <remarks>
-    ///     <para>Performs the following cleanup operations:</para>
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>Strips trailing whitespace (spaces and tabs) from all lines</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>Collapses 3 or more consecutive empty lines to exactly 2</description>
-    ///         </item>
-    ///         <item>
-    ///             <description>Removes empty lines immediately after <c>{</c> or <c>]</c></description>
-    ///         </item>
-    ///         <item>
-    ///             <description>Removes empty lines immediately before <c>}</c></description>
-    ///         </item>
-    ///     </list>
-    ///     <para>
-    ///         This method is designed to produce clean, consistent output from source generators
-    ///         that may have accumulated extra whitespace during conditional code generation.
-    ///     </para>
-    /// </remarks>
-    /// <seealso cref="TrimBlankLines" />
-    /// <seealso cref="NormalizeLineEndings" />
-    public static string CleanWhiteSpace(this string source)
-    {
-        source = source ?? throw new ArgumentNullException(nameof(source));
-
-        // Strip trailing whitespace from lines
-        source = Regex.Replace(source, @"[ \t]+(\r?\n)", "$1");
-
-        // Collapse 3+ empty lines to 2
-        source = Regex.Replace(source, @"(\r?\n){3,}", "$1$1");
-
-        // Remove empty line after { or ]
-        source = Regex.Replace(source, @"([\{\]])(\r?\n){2}", "$1$2");
-
-        // Remove empty line before }
-        source = Regex.Replace(source, @"(\r?\n){2}([\}])", "$1$2");
-
-        return source;
-    }
-
-    /// <summary>
-    ///     Normalizes whitespace by collapsing all whitespace sequences (including newlines) into a single space.
-    /// </summary>
-    /// <param name="input">The string to normalize.</param>
-    /// <returns>
-    ///     A string with all whitespace collapsed to single spaces and trimmed.
-    ///     Returns <see cref="string.Empty" /> if input is null or whitespace.
-    /// </returns>
-    public static string NormalizeWhitespace(this string? input)
-    {
-        return string.IsNullOrWhiteSpace(input)
-            ? string.Empty
-            : WhitespaceRegex().Replace(input, " ").Trim();
-    }
-
-    /// <summary>
-    ///     Sanitizes a string for use as a C# identifier by replacing non-alphanumeric characters with underscores.
-    /// </summary>
-    /// <param name="name">The name to sanitize.</param>
-    /// <returns>A string containing only letters, digits, and underscores.</returns>
-    public static string SanitizeIdentifier(this string name)
-    {
-        if (string.IsNullOrEmpty(name)) return "_";
-
-        var sb = new StringBuilder(name.Length);
-        foreach (var c in name)
-            if (char.IsLetterOrDigit(c) || c == '_')
-                sb.Append(c);
-            else
-                sb.Append('_');
-
-        return sb.ToString();
-    }
-
-    /// <summary>
-    ///     Escapes a string for use as a C# string literal.
-    /// </summary>
-    /// <param name="s">The string to escape.</param>
-    /// <returns>The escaped string, suitable for placement inside double quotes.</returns>
-    public static string EscapeCSharpString(this string s)
-    {
-        if (string.IsNullOrEmpty(s)) return string.Empty;
-
-        return s
-            .Replace("\\", @"\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
-    }
-
-    // ========== Type Name Utilities ==========
-
-    private const string GlobalPrefix = "global::";
-
-    /// <summary>
-    ///     Removes the <c>global::</c> prefix from a fully-qualified type name.
-    /// </summary>
-    /// <param name="typeFqn">The fully-qualified type name.</param>
-    /// <returns>The type name without the global:: prefix.</returns>
-    public static string StripGlobalPrefix(this string typeFqn)
-    {
-        return typeFqn.StartsWith(GlobalPrefix, StringComparison.Ordinal)
-            ? typeFqn[GlobalPrefix.Length..]
-            : typeFqn;
-    }
-
-    /// <summary>
-    ///     Normalizes a type name by removing all <c>global::</c> prefixes (including inside generics)
-    ///     and trailing nullable marker.
-    /// </summary>
-    /// <param name="typeFqn">The fully-qualified type name.</param>
-    /// <returns>The normalized type name.</returns>
-    public static string NormalizeTypeName(this string typeFqn)
-    {
-        var result = typeFqn.Replace(GlobalPrefix, string.Empty);
-
-        if (result.EndsWith("?", StringComparison.Ordinal))
-            result = result[..^1];
-
-        return result;
-    }
-
-    /// <summary>
-    ///     Unwraps <c>Nullable&lt;T&gt;</c> or nullable reference type annotation to get the underlying type.
-    /// </summary>
-    /// <param name="typeFqn">The fully-qualified type name.</param>
-    /// <param name="unwrap">If <c>false</c>, returns the type name unchanged.</param>
-    /// <returns>The unwrapped type name, or the original if not nullable.</returns>
-    public static string UnwrapNullable(this string typeFqn, bool unwrap = true)
-    {
-        if (!unwrap)
-            return typeFqn;
-
-        if (typeFqn.EndsWith("?", StringComparison.Ordinal))
-            return typeFqn[..^1];
-
-        var normalized = typeFqn.NormalizeTypeName();
-        if (normalized.StartsWith("System.Nullable<", StringComparison.Ordinal) &&
-            normalized.EndsWith(">", StringComparison.Ordinal))
-            return normalized["System.Nullable<".Length..^1];
-
-        return typeFqn;
-    }
-
-    /// <summary>
-    ///     Extracts the short type name from a fully-qualified name.
-    /// </summary>
-    /// <param name="typeFqn">The fully-qualified type name.</param>
-    /// <returns>The short type name (e.g., "List" from "System.Collections.Generic.List").</returns>
-    /// <example>
-    ///     <code>
-    /// "global::System.Collections.Generic.List".ExtractShortTypeName() // returns "List"
-    /// "int[]".ExtractShortTypeName() // returns "int[]"
-    /// </code>
-    /// </example>
-    public static string ExtractShortTypeName(this string typeFqn)
-    {
-        var normalized = typeFqn.StripGlobalPrefix();
-
-        var isArray = normalized.EndsWith("[]", StringComparison.Ordinal);
-        var baseName = isArray ? normalized[..^2] : normalized;
-
-        if (baseName.StartsWith("::", StringComparison.Ordinal))
-            baseName = baseName[2..];
-
-        var lastDot = baseName.LastIndexOf('.');
-        var shortName = lastDot >= 0 ? baseName[(lastDot + 1)..] : baseName;
-
-        return isArray ? shortName + "[]" : shortName;
-    }
-
-    /// <summary>
-    ///     Gets the C# keyword alias for a BCL type name, or <c>null</c> if none exists.
-    /// </summary>
-    /// <param name="typeName">The type name (e.g., "System.Int32" or "Int32").</param>
-    /// <returns>The C# keyword (e.g., "int"), or <c>null</c> if no keyword exists.</returns>
-    public static string? GetCSharpKeyword(this string typeName)
-    {
-        return GetCSharpKeywordCore(typeName.NormalizeTypeName());
-    }
-
-    private static string? GetCSharpKeywordCore(string normalizedTypeName)
-    {
-        return normalizedTypeName switch
-        {
-            "System.Int32" or "Int32" => "int",
-            "System.Int64" or "Int64" => "long",
-            "System.Int16" or "Int16" => "short",
-            "System.Byte" or "Byte" => "byte",
-            "System.SByte" or "SByte" => "sbyte",
-            "System.UInt32" or "UInt32" => "uint",
-            "System.UInt64" or "UInt64" => "ulong",
-            "System.UInt16" or "UInt16" => "ushort",
-            "System.Single" or "Single" => "float",
-            "System.Double" or "Double" => "double",
-            "System.Decimal" or "Decimal" => "decimal",
-            "System.Boolean" or "Boolean" => "bool",
-            "System.String" or "String" => "string",
-            "System.Char" or "Char" => "char",
-            "System.Object" or "Object" => "object",
-            "System.Void" or "Void" => "void",
-            _ => null
-        };
-    }
-
-    /// <summary>
-    ///     Compares two type names for equality, handling <c>global::</c> prefixes and C# keyword aliases.
-    /// </summary>
-    /// <param name="type1">The first type name.</param>
-    /// <param name="type2">The second type name.</param>
-    /// <returns><c>true</c> if the type names are equivalent; otherwise, <c>false</c>.</returns>
-    public static bool TypeNamesEqual(this string type1, string type2)
-    {
-        return GetComparableTypeName(type1) == GetComparableTypeName(type2);
-    }
-
-    /// <summary>
-    ///     Checks if the type name represents <see cref="string" />.
-    /// </summary>
-    /// <param name="typeFqn">The type name to check.</param>
-    /// <returns><c>true</c> if the type is string; otherwise, <c>false</c>.</returns>
-    public static bool IsStringType(this string typeFqn)
-    {
-        return typeFqn.TypeNamesEqual("string");
-    }
-
-    /// <summary>
-    ///     Checks if the type name represents a primitive JSON type that doesn't need explicit registration.
-    /// </summary>
-    /// <param name="typeFqn">The type name to check.</param>
-    /// <returns><c>true</c> if the type is a primitive JSON type; otherwise, <c>false</c>.</returns>
-    public static bool IsPrimitiveJsonType(this string typeFqn)
-    {
-        return GetComparableTypeName(typeFqn) is
-            "string" or
-            "int" or
-            "long" or
-            "bool" or
-            "double" or
-            "decimal";
-    }
-
-    /// <summary>
-    ///     Strips a suffix from the end of a string if present.
-    /// </summary>
-    /// <param name="value">The string to process.</param>
-    /// <param name="suffix">The suffix to remove.</param>
-    /// <returns>The string without the suffix if it was present; otherwise, the original string.</returns>
-    public static string StripSuffix(this string value, string suffix)
-    {
-        return value.EndsWith(suffix, StringComparison.Ordinal)
-            ? value[..^suffix.Length]
-            : value;
-    }
-
-    /// <summary>
-    ///     Strips a prefix from the start of a string if present.
-    /// </summary>
-    /// <param name="value">The string to process.</param>
-    /// <param name="prefix">The prefix to remove.</param>
-    /// <returns>The string without the prefix if it was present; otherwise, the original string.</returns>
-    public static string StripPrefix(this string value, string prefix)
-    {
-        return value.StartsWith(prefix, StringComparison.Ordinal)
-            ? value[prefix.Length..]
-            : value;
-    }
-
-    // ========== Hash Utilities ==========
-
-    /// <summary>
-    ///     Computes a deterministic 8-character uppercase hexadecimal hash from a string.
-    /// </summary>
-    /// <param name="input">The input string to hash.</param>
-    /// <returns>
-    ///     An 8-character uppercase hexadecimal string derived from the SHA-256 hash of the input.
-    ///     Returns <c>"00000000"</c> if the input is <c>null</c> or empty.
-    /// </returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method produces a short, deterministic identifier suitable for use as a suffix
-    ///         in generated type names, file hint names, or graph node IDs where full hashes are too long.
-    ///     </para>
-    ///     <para>
-    ///         On .NET 5+ the optimized <c>SHA256.HashData</c> and <c>Convert.ToHexString</c> APIs are used.
-    ///         On older runtimes the traditional <c>SHA256.Create()</c> path is used.
-    ///     </para>
-    /// </remarks>
-    public static string ToShortHash(this string input)
-    {
-        if (string.IsNullOrEmpty(input)) return "00000000";
-
-#if NET5_0_OR_GREATER
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash)[..8];
-#else
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-        return BitConverter.ToString(hash, 0, 4).Replace("-", "");
-#endif
-    }
-
-    /// <summary>
-    ///     Computes a deterministic N-character hexadecimal hash from a string.
-    /// </summary>
-    /// <param name="input">The input string to hash.</param>
-    /// <param name="hexChars">Number of hex characters to return (1–64).</param>
-    /// <param name="lowercase">If <c>true</c>, returns lowercase hex; otherwise uppercase. Defaults to <c>false</c> for visual parity with <see cref="ToShortHash(string)" />.</param>
-    /// <returns>
-    ///     An <paramref name="hexChars" />-character hexadecimal string derived from the SHA-256 hash of the input.
-    ///     Returns a string of <paramref name="hexChars" /> zeroes if the input is <c>null</c> or empty.
-    /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    ///     Thrown when <paramref name="hexChars" /> is not in the range 1–64.
-    /// </exception>
-    /// <remarks>
-    ///     <para>
-    ///         This overload allows callers to select hash length and casing. The parameterless
-    ///         <see cref="ToShortHash(string)" /> remains unchanged (8-char uppercase).
-    ///     </para>
-    /// </remarks>
-    public static string ToShortHash(this string input, int hexChars, bool lowercase = false)
-    {
-        if (hexChars is < 1 or > 64)
-            throw new ArgumentOutOfRangeException(nameof(hexChars), hexChars, "Must be 1–64.");
-
-        if (string.IsNullOrEmpty(input))
-            return new string('0', hexChars);
-
-#if NET5_0_OR_GREATER
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        var hex = Convert.ToHexString(hash);
-        return (lowercase ? hex.ToLowerInvariant() : hex)[..hexChars];
-#else
-        using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
-        var needBytes = (hexChars + 1) / 2;
-        var hex = BitConverter.ToString(hash, 0, needBytes).Replace("-", "");
-        if (lowercase) hex = hex.ToLowerInvariant();
-        return hex[..hexChars];
-#endif
-    }
-
-    // ========== Quoting Utilities ==========
-
-    /// <summary>
-    ///     Wraps the string in double quotes if it contains any of the specified disallowed characters.
-    ///     Defaults to quoting when the string contains a space.
-    /// </summary>
-    /// <param name="str">The string to conditionally quote.</param>
-    /// <returns>The original string if already quoted or no disallowed chars found; otherwise double-quoted.</returns>
-    public static string DoubleQuoteIfNeeded(this string? str)
-    {
-        return str.DoubleQuoteIfNeeded(' ');
-    }
-
-    /// <summary>
-    ///     Wraps the string in double quotes if it contains any of the specified disallowed characters.
-    /// </summary>
-    /// <param name="str">The string to conditionally quote.</param>
-    /// <param name="disallowed">Characters that trigger quoting.</param>
-    /// <returns>The original string if already quoted or no disallowed chars found; otherwise double-quoted.</returns>
-    public static string DoubleQuoteIfNeeded(this string? str, params char[] disallowed)
-    {
-        return QuoteIfNeeded(str, '"', disallowed);
-    }
-
-    /// <summary>
-    ///     Wraps the string in double quotes, escaping any existing double quotes.
-    /// </summary>
-    /// <param name="str">The string to quote.</param>
-    /// <returns>The double-quoted string.</returns>
-    public static string DoubleQuote(this string? str)
-    {
-        return Quote(str, '"');
-    }
-
-    /// <summary>
-    ///     Wraps the string in single quotes if it contains any of the specified disallowed characters.
-    ///     Defaults to quoting when the string contains a space.
-    /// </summary>
-    /// <param name="str">The string to conditionally quote.</param>
-    /// <returns>The original string if already quoted or no disallowed chars found; otherwise single-quoted.</returns>
-    public static string SingleQuoteIfNeeded(this string? str)
-    {
-        return str.SingleQuoteIfNeeded(' ');
-    }
-
-    /// <summary>
-    ///     Wraps the string in single quotes if it contains any of the specified disallowed characters.
-    /// </summary>
-    /// <param name="str">The string to conditionally quote.</param>
-    /// <param name="disallowed">Characters that trigger quoting.</param>
-    /// <returns>The original string if already quoted or no disallowed chars found; otherwise single-quoted.</returns>
-    public static string SingleQuoteIfNeeded(this string? str, params char[] disallowed)
-    {
-        return QuoteIfNeeded(str, '\'', disallowed);
-    }
-
-    /// <summary>
-    ///     Wraps the string in single quotes, escaping any existing single quotes.
-    /// </summary>
-    /// <param name="str">The string to quote.</param>
-    /// <returns>The single-quoted string.</returns>
-    public static string SingleQuote(this string? str)
-    {
-        return Quote(str, '\'');
-    }
-
-    /// <summary>
-    ///     Checks whether the string is wrapped in double quotes.
-    /// </summary>
-    /// <param name="str">The string to check.</param>
-    /// <returns><c>true</c> if the string starts and ends with a double quote.</returns>
-    public static bool IsDoubleQuoted([NotNullWhen(true)] this string? str)
-    {
-        return IsQuoted(str, '"');
-    }
-
-    /// <summary>
-    ///     Checks whether the string is wrapped in single quotes.
-    /// </summary>
-    /// <param name="str">The string to check.</param>
-    /// <returns><c>true</c> if the string starts and ends with a single quote.</returns>
-    public static bool IsSingleQuoted([NotNullWhen(true)] this string? str)
-    {
-        return IsQuoted(str, '\'');
-    }
-
-    // ========== Graph Label Escaping ==========
-
-    /// <summary>
-    ///     Escapes a string for use as a label in Graphviz DOT format.
-    /// </summary>
-    /// <param name="label">The label text to escape.</param>
-    /// <returns>The escaped label safe for use inside DOT double-quoted strings.</returns>
-    /// <remarks>
-    ///     Escapes backslashes, double quotes, and newlines which are special characters in DOT labels.
-    /// </remarks>
-    public static string EscapeDotLabel(this string label)
-    {
-        return label
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\n", "\\n");
-    }
-
-    /// <summary>
-    ///     Escapes a string for use as a label in Mermaid diagram format.
-    /// </summary>
-    /// <param name="label">The label text to escape.</param>
-    /// <returns>The escaped label safe for use in Mermaid node and edge labels.</returns>
-    /// <remarks>
-    ///     Encodes double quotes as HTML entities and newlines as HTML line breaks,
-    ///     which Mermaid renderers interpret correctly.
-    /// </remarks>
-    public static string EscapeMermaidLabel(this string label)
-    {
-        return label
-            .Replace("\"", "&quot;")
-            .Replace("\n", "<br/>");
-    }
-
-    private static readonly Regex s_whitespaceRegexInstance = new(@"\s+", RegexOptions.Compiled);
-
-    private static Regex WhitespaceRegex()
-    {
-        return s_whitespaceRegexInstance;
-    }
-
     private static string ToSeparatedCase(string input, char separator)
     {
         if (string.IsNullOrEmpty(input)) return input;
@@ -871,15 +110,8 @@ internal
         for (var i = 0; i < input.Length; i++)
         {
             var c = input[i];
-            if (char.IsUpper(c) && i > 0)
-            {
-                var prevIsLower = char.IsLower(input[i - 1]);
-                var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
-
-                // Separator before standard word boundary (aB) or acronym boundary (ABc).
-                if (prevIsLower || nextIsLower)
-                    sb.Append(separator);
-            }
+            if (char.IsUpper(c) && i > 0 && NeedsSeparator(input, i))
+                sb.Append(separator);
 
             sb.Append(char.ToLowerInvariant(c));
         }
@@ -887,32 +119,13 @@ internal
         return sb.ToString();
     }
 
-    private static string GetComparableTypeName(string typeName)
+    // Separator goes before a standard word boundary (aB) or an acronym boundary (ABc).
+    // Pulled into its own predicate so ToSeparatedCase reads as one loop with a single
+    // branch instead of three nested condition checks.
+    private static bool NeedsSeparator(string input, int i)
     {
-        var normalized = typeName.NormalizeTypeName();
-        return GetCSharpKeywordCore(normalized) ?? normalized;
+        var prevIsLower = char.IsLower(input[i - 1]);
+        var nextIsLower = i + 1 < input.Length && char.IsLower(input[i + 1]);
+        return prevIsLower || nextIsLower;
     }
-
-    private static string QuoteIfNeeded(string? str, char quote, params char[] disallowed)
-    {
-        if (string.IsNullOrWhiteSpace(str))
-            return string.Empty;
-
-        if (IsQuoted(str, quote) || str!.AsSpan().IndexOfAny(disallowed) < 0)
-            return str!;
-
-        return Quote(str, quote);
-    }
-
-    private static string Quote(string? str, char quote)
-    {
-        var escaped = str?.Replace(quote.ToString(), "\\" + quote);
-        return string.Concat(quote, escaped, quote);
-    }
-
-    private static bool IsQuoted([NotNullWhen(true)] string? str, char quote)
-    {
-        return str is [var first, .., var last] && first == quote && last == quote;
-    }
-
 }
