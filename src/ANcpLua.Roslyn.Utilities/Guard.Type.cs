@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -10,61 +9,76 @@ internal
 #endif
     static partial class Guard
 {
-    #region Value Type Validation
-
     /// <summary>
-    ///     Validates that a value type is not its default value and returns it.
+    ///     Validates that an object is not <c>null</c> and that a member of that object is also not <c>null</c>.
     /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="paramName">
-    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
-    /// </param>
-    /// <returns>The validated value.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> equals <c>default(T)</c>.</exception>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <typeparam name="TMember">The type of the member.</typeparam>
+    /// <param name="argument">The object to validate.</param>
+    /// <param name="member">The member to validate.</param>
+    /// <param name="paramName">The name of the parameter.</param>
+    /// <param name="memberName">The name of the member.</param>
+    /// <returns>The validated member value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="argument" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="member" /> is <c>null</c>.</exception>
     /// <example>
     ///     <code>
-    /// public void SetId(Guid id)
+    /// public void Process(Config? config)
     /// {
-    ///     _id = Guard.NotDefault(id);
+    ///     var connectionString = Guard.NotNullWithMember(config, config?.ConnectionString);
     /// }
     /// </code>
     /// </example>
-    public static T NotDefault<T>(T value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
-        where T : struct
+    [return: NotNull]
+    public static TMember NotNullWithMember<TParam, TMember>(
+        [NotNull] TParam? argument,
+        [NotNull] TMember? member,
+        [CallerArgumentExpression(nameof(argument))]
+        string? paramName = null,
+        [CallerArgumentExpression(nameof(member))]
+        string? memberName = null)
     {
-        return EqualityComparer<T>.Default.Equals(value, default)
-            ? throw new ArgumentException("Value cannot be default.", paramName)
-            : value;
+        if (argument is null)
+            throw new ArgumentNullException(paramName);
+        return member is null
+            ? throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName)
+            : member;
     }
 
     /// <summary>
-    ///     Validates that a <see cref="Guid" /> is not empty and returns it.
+    ///     Validates that a member of an object is not <c>null</c>.
     /// </summary>
-    /// <param name="value">The Guid to validate.</param>
-    /// <param name="paramName">
-    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
-    /// </param>
-    /// <returns>The validated Guid.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="value" /> is <see cref="Guid.Empty" />.</exception>
+    /// <typeparam name="TParam">The type of the parameter (must be non-null).</typeparam>
+    /// <typeparam name="TMember">The type of the member.</typeparam>
+    /// <param name="argument">The object containing the member.</param>
+    /// <param name="member">The member to validate.</param>
+    /// <param name="paramName">The name of the parameter.</param>
+    /// <param name="memberName">The name of the member.</param>
+    /// <returns>The validated member value.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="member" /> is <c>null</c>.</exception>
     /// <example>
     ///     <code>
-    /// public void SetUserId(Guid userId)
+    /// public void Process(Config config)
     /// {
-    ///     _userId = Guard.NotEmpty(userId);
+    ///     var connectionString = Guard.MemberNotNull(config, config.ConnectionString);
     /// }
     /// </code>
     /// </example>
-    public static Guid NotEmpty(Guid value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    [return: NotNull]
+    public static TMember MemberNotNull<TParam, TMember>(
+        TParam argument,
+        [NotNull] TMember? member,
+        [CallerArgumentExpression(nameof(argument))]
+        string? paramName = null,
+        [CallerArgumentExpression(nameof(member))]
+        string? memberName = null)
+        where TParam : notnull
     {
-        return value == Guid.Empty
-            ? throw new ArgumentException("Guid cannot be empty.", paramName)
-            : value;
+        _ = argument;
+        return member is null
+            ? throw new ArgumentException($"Member {memberName} of {paramName} is null", paramName)
+            : member;
     }
-
-    #endregion
-
-    #region Type Validation
 
     /// <summary>
     ///     Validates that a <see cref="Type" /> is not a <see cref="Nullable{T}" />.
@@ -148,6 +162,4 @@ internal
             ? throw new ArgumentException($"Type {typeof(T).Name} is not assignable to {type.Name}.", paramName)
             : type;
     }
-
-    #endregion
 }

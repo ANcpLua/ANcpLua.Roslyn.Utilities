@@ -10,8 +10,6 @@ internal
 #endif
     static partial class Guard
 {
-    #region Path Validation
-
     private static readonly char[] s_invalidFileNameChars = Path.GetInvalidFileNameChars();
 
     private static readonly char[] s_invalidPathChars = Path
@@ -19,6 +17,70 @@ internal
         .Concat(s_invalidFileNameChars.Except(['/', '\\', ':']))
         .Distinct()
         .ToArray();
+
+    /// <summary>
+    ///     Validates that a file exists at the specified path and returns the path.
+    /// </summary>
+    /// <param name="path">The file path to validate.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated path.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="path" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="path" /> is empty or the file does not exist.</exception>
+    /// <example>
+    ///     <code>
+    /// public void LoadConfig(string path)
+    /// {
+    ///     var validPath = Guard.FileExists(path);
+    ///     var content = File.ReadAllText(validPath);
+    /// }
+    /// </code>
+    /// </example>
+    public static string FileExists(
+        [NotNull] string? path,
+        [CallerArgumentExpression(nameof(path))]
+        string? paramName = null)
+    {
+        NotNullOrEmpty(path, paramName);
+#pragma warning disable RS1035 // File I/O is valid for non-analyzer callers (testing, CLI tools)
+        return File.Exists(path)
+#pragma warning restore RS1035
+            ? path
+            : throw new ArgumentException($"File not found: {path}", paramName);
+    }
+
+    /// <summary>
+    ///     Validates that a directory exists at the specified path and returns the path.
+    /// </summary>
+    /// <param name="path">The directory path to validate.</param>
+    /// <param name="paramName">
+    ///     The name of the parameter (automatically captured via <see cref="CallerArgumentExpressionAttribute" />).
+    /// </param>
+    /// <returns>The validated path.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="path" /> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="path" /> is empty or the directory does not exist.</exception>
+    /// <example>
+    ///     <code>
+    /// public void ProcessDirectory(string path)
+    /// {
+    ///     var validPath = Guard.DirectoryExists(path);
+    ///     foreach (var file in Directory.GetFiles(validPath)) { }
+    /// }
+    /// </code>
+    /// </example>
+    public static string DirectoryExists(
+        [NotNull] string? path,
+        [CallerArgumentExpression(nameof(path))]
+        string? paramName = null)
+    {
+        NotNullOrEmpty(path, paramName);
+#pragma warning disable RS1035 // File I/O is valid for non-analyzer callers (testing, CLI tools)
+        return Directory.Exists(path)
+#pragma warning restore RS1035
+            ? path
+            : throw new ArgumentException($"Directory not found: {path}", paramName);
+    }
 
     /// <summary>
     ///     Validates that a string is a valid file name (contains no invalid characters) and returns it.
@@ -175,6 +237,4 @@ internal
 
         return value.StartsWith(".", StringComparison.Ordinal) ? value : $".{value}";
     }
-
-    #endregion
 }

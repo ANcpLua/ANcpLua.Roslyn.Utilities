@@ -10,8 +10,6 @@ internal
 #endif
     static partial class Guard
 {
-    #region ThrowHelpers
-
     // Cold-path throw methods: [NoInlining] keeps exception construction out of
     // inlined Guard callsites, reducing JIT code size at every call.
 
@@ -76,6 +74,4 @@ internal
             if (!seen.Add(item))
                 ThrowArgument($"Duplicate value found: {item}", paramName);
     }
-
-    #endregion
 }
