@@ -108,7 +108,11 @@ jobs:
           if-no-files-found: error
 
   # Publish on push to main (auto-bump-on-merge) or workflow_dispatch override.
-  # The `Must Publish Packages` gate diffs against the latest tag — docs-only PRs skip publish.
+  # The `Must Publish Packages` gate diffs against the latest tag. It counts changes under
+  # `src/**`, `tests/**`, and the root `README.md` — the root README ships as
+  # `PackageReadmeFile` in every shipped pack, so a README change is a real consumer-facing
+  # surface change worth republishing. PRs that touch only repo-internal files (CI workflows,
+  # `.editorconfig`, sub-`CLAUDE.md` files, etc.) still skip publish.
   # The `nuget` environment houses the trusted publishing config.
   #
   # Trusted publishing setup (one-time, per package):
@@ -138,13 +142,13 @@ jobs:
             echo "No previous tag — first publish, proceeding"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           else
-            CHANGES=$(git diff --name-only "$LATEST_TAG" HEAD -- 'src/**' 'tests/**' || true)
+            CHANGES=$(git diff --name-only "$LATEST_TAG" HEAD -- 'src/**' 'tests/**' 'README.md' || true)
             if [ -n "$CHANGES" ]; then
               echo "Changes since $LATEST_TAG:"
               echo "$CHANGES"
               echo "has_changes=true" >> $GITHUB_OUTPUT
             else
-              echo "No src/ or tests/ changes since $LATEST_TAG — skipping publish"
+              echo "No src/, tests/, or README.md changes since $LATEST_TAG — skipping publish"
               echo "has_changes=false" >> $GITHUB_OUTPUT
             fi
           fi
