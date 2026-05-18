@@ -6,7 +6,7 @@ Only this file is kept for review outcomes to avoid spreading findings across di
 Branch protection, auto-merge, CodeRabbit posture, release flow, dependency
 graph, and the cross-repo bootstrap rules for the four ANcpLua framework
 repos are documented in one place at
-[O-ANcppLua/renovate-config](https://github.com/O-ANcppLua/renovate-config#ancplua-framework-conventions--renovate-config).
+[ANcpLua/renovate-config](https://github.com/ANcpLua/renovate-config#ancplua-framework-conventions--renovate-config).
 This file documents conventions specific to this repo only.
 
 
