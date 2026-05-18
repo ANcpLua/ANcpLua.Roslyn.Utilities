@@ -1,6 +1,7 @@
 <Project>
+    <!-- SDK-owned properties - centralized here, NOT in individual csproj files -->
     <PropertyGroup>
-        <!-- Centralize all build output to artifacts/ -->
+        <!-- Centralize build output to artifacts/ -->
         <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts/</ArtifactsPath>
         <BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>
         <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
@@ -13,9 +14,16 @@
 
         <!-- Deterministic builds for reproducibility -->
         <Deterministic>true</Deterministic>
+        <LangVersion Condition="'$(LangVersion)' == ''">latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings Condition="'$(ImplicitUsings)' == ''">enable</ImplicitUsings>
+        <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">true</EnableNETAnalyzers>
+        <AnalysisLevel Condition="'$(AnalysisLevel)' == ''">latest-all</AnalysisLevel>
 
-        <!-- Treat all warnings, suggestions, and hints as errors -->
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <MSBuildTreatWarningsAsErrors Condition="'$(MSBuildTreatWarningsAsErrors)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</MSBuildTreatWarningsAsErrors>
+        <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
+
         <NoWarn>$(NoWarn);NU1604</NoWarn>
         <NoWarn Condition="'$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);NU1701</NoWarn>
 
@@ -25,6 +33,16 @@
         <RepositoryUrl>https://github.com/ANcpLua/ANcpLua.Roslyn.Utilities</RepositoryUrl>
         <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     </PropertyGroup>
+
+    <!-- Pull in the canonical ANcpLua.NET.Sdk analyzer/style conventions without importing the SDK package -->
+    <PropertyGroup>
+        <EnableEditorConfigDogfooding Condition="'$(EnableEditorConfigDogfooding)' == ''">true</EnableEditorConfigDogfooding>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(EnableEditorConfigDogfooding)' == 'true'">
+        <EditorConfigFiles Include="$(MSBuildThisFileDirectory)../ANcpLua.NET.Sdk/src/Config/*.editorconfig"
+                           Exclude="$(MSBuildThisFileDirectory)../ANcpLua.NET.Sdk/src/Config/ANcpLua.NET.Sdk*.editorconfig" />
+    </ItemGroup>
 
     <!-- CI-specific settings -->
     <PropertyGroup Condition="'$(CI)' == 'true'">

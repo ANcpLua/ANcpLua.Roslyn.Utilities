@@ -117,9 +117,9 @@ internal
 #if NET6_0_OR_GREATER
         return (MethodInfo)specializedType.GetMemberWithSameMetadataDefinitionAs(genericMethodDefinition);
 #else
-        const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static |
+        const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static |
                                  BindingFlags.Instance;
-        foreach (var m in specializedType.GetMethods(all))
+        foreach (var m in specializedType.GetMethods(All))
             if (m.MetadataToken == genericMethodDefinition.MetadataToken)
                 return m;
 

@@ -28,6 +28,10 @@ public abstract class IntegrationTestBase<TProgram>
 
     /// <summary>Creates the WebApplicationFactory once per test class.</summary>
     [OneTimeSetUp]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The factory lifetime is stored on the test fixture and disposed by OneTimeTearDownAsync.")]
     public virtual void OneTimeSetUp()
     {
         Factory = new WebApplicationFactory<TProgram>()

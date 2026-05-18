@@ -51,6 +51,10 @@ internal
     ///         parallel branches. Cyclomatic complexity per overload stays at 1–2.
     ///     </para>
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Globalization",
+        "CA1308:Normalize strings to uppercase",
+        Justification = "The lowercase option intentionally formats hexadecimal output for callers that require it.")]
     public static string ToShortHash(this string input, int hexChars, bool lowercase = false)
     {
         if (hexChars is < 1 or > 64)

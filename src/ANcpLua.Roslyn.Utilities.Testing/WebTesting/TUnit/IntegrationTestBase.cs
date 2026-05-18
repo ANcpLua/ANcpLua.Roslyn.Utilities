@@ -31,6 +31,10 @@ public abstract class IntegrationTestBase<TProgram>
 
     /// <summary>Creates the factory, HTTP client, and log collector per test.</summary>
     [Before(HookType.Test)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The factory lifetime is stored in _factory and disposed by TearDown.")]
     public virtual Task SetUp()
     {
         _factory = new WebApplicationFactory<TProgram>()

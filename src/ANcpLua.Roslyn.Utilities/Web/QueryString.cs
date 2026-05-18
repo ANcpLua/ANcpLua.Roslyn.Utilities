@@ -31,7 +31,7 @@ internal
             if (string.IsNullOrWhiteSpace(value)) continue;
             if (!first) sb.Append('&');
             first = false;
-            sb.Append(key).Append('=').Append(Uri.EscapeDataString(value!));
+            sb.Append(key).Append('=').Append(Uri.EscapeDataString(value));
         }
         return sb.ToString();
     }

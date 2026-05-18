@@ -81,6 +81,10 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="ToPropertyName" />
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Globalization",
+        "CA1308:Normalize strings to uppercase",
+        Justification = "Parameter names and C# keyword escaping intentionally produce lowercase or camelCase names.")]
     public static string ToParameterName(this string input)
     {
         if (input is null)

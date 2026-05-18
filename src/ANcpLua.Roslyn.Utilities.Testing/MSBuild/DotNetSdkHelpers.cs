@@ -139,7 +139,7 @@ public static class DotNetSdkHelpers
             if (Path.GetExtension(file.Name) is ".zip")
             {
                 using var ms = new MemoryStream(bytes);
-                var zip = new ZipArchive(ms);
+                using var zip = new ZipArchive(ms);
                 await zip.ExtractToDirectoryAsync(tempFolder, true).ConfigureAwait(false);
             }
             else
