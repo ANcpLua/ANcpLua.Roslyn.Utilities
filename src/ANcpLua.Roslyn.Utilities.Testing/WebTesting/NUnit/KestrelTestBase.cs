@@ -32,6 +32,10 @@ public abstract class KestrelTestBase<TProgram>
 
     /// <summary>Creates a fresh Kestrel server per test.</summary>
     [SetUp]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "The factory lifetime is stored in _factory and disposed by TearDownAsync.")]
     public virtual void SetUp()
     {
         _factory = new WebApplicationFactory<TProgram>()

@@ -74,6 +74,10 @@ internal
     ///         tail is cryptographically strong. Suitable for tokens that appear in URLs or tenant ids.
     ///     </para>
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Globalization",
+        "CA1308:Normalize strings to uppercase",
+        Justification = "This helper's public contract returns lowercase hexadecimal identifiers.")]
     public static string NewPrefixedSortable(string prefix, int randomHexChars = 24)
     {
         if (string.IsNullOrWhiteSpace(prefix))

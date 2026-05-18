@@ -48,7 +48,9 @@ internal
 #endif
     static class Base64Url
 {
+#if NET5_0_OR_GREATER
     private const int StackallocByteThreshold = 192;
+#endif
 
     /// <summary>
     ///     Encodes raw bytes as URL-safe Base64 without <c>=</c> padding.

@@ -176,14 +176,12 @@ internal
     // Each of the four shapes that carry a type contributes one switch arm.
     private static bool HasExpressionType(IOperation op, ISymbol expressionSymbol)
     {
-        var type = op switch
+        return op switch
         {
-            IArgumentOperation { Parameter.Type: { } pt } => pt,
-            IConversionOperation { Type: { } ct } => ct,
-            _ => null
+            IArgumentOperation { Parameter.Type: { } pt } => IsConstructedFromExpressionType(pt, expressionSymbol),
+            IConversionOperation { Type: { } ct } => IsConstructedFromExpressionType(ct, expressionSymbol),
+            _ => false
         };
-
-        return type is not null && IsConstructedFromExpressionType(type, expressionSymbol);
     }
 
     /// <summary>

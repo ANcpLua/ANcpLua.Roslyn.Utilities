@@ -11,20 +11,20 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Emits_PrivateCtor_Sealed_Cases_And_Match_Switch()
     {
-        var source = """
-            using ANcpLua.Analyzers.DiscriminatedUnion;
+        const string source = """
+                              using ANcpLua.Analyzers.DiscriminatedUnion;
 
-            namespace TestNs
-            {
-                [DiscriminatedUnion]
-                public partial record Msg
-                {
-                    public partial record AddPoint(double X, double Y);
-                    public partial record Undo;
-                    public partial record Redo;
-                }
-            }
-            """;
+                              namespace TestNs
+                              {
+                                  [DiscriminatedUnion]
+                                  public partial record Msg
+                                  {
+                                      public partial record AddPoint(double X, double Y);
+                                      public partial record Undo;
+                                      public partial record Redo;
+                                  }
+                              }
+                              """;
 
         var result = GeneratorTestHelper.RunGenerator<DiscriminatedUnionGenerator>(source);
 
@@ -55,7 +55,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Output_Compilation_Has_No_Errors_And_Switch_Is_Exhaustive()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -94,7 +94,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     public void Closed_Hierarchy_Rejects_External_Inheritance()
     {
         // The private base ctor should make derivation outside the union root impossible.
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -122,7 +122,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Reports_AL0300_When_Root_Is_Not_Partial()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -143,7 +143,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Reports_AL0301_When_Root_Has_No_Cases()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -163,7 +163,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Reports_AL0302_When_Case_Is_Not_Partial_Record()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -184,7 +184,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Reports_AL0303_When_Root_Has_PrimaryCtor_Parameters()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs
@@ -205,7 +205,7 @@ public sealed class DiscriminatedUnionGeneratorTests
     [Fact]
     public void Generic_Union_Root_Flows_Type_Parameters_To_Cases()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.DiscriminatedUnion;
 
             namespace TestNs

@@ -121,7 +121,7 @@ public sealed class ExtensibleEnumMirrorGeneratorTests
     [Fact]
     public void Reports_AL0202_When_Target_Is_Not_Extensible_Enum_Struct()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.ExtensibleEnumMirror;
 
             namespace TestNs
@@ -141,7 +141,7 @@ public sealed class ExtensibleEnumMirrorGeneratorTests
     [Fact]
     public void Emits_Mirror_With_Only_Unknown_When_Target_Has_No_Known_Values()
     {
-        var source = """
+        const string source = """
             using ANcpLua.Analyzers.ExtensibleEnumMirror;
 
             namespace TestNs

@@ -20,7 +20,7 @@ public sealed class MatchingDslTests
         var derived = compilation.GetTypeByMetadataName("Probe.Derived");
 
         derived.Should().NotBeNull();
-        Match.Type().InheritsFrom(baseTypeName).Matches(derived!).Should().BeTrue();
+        Match.Type().InheritsFrom(baseTypeName).Matches(derived).Should().BeTrue();
     }
 
     [Theory]
@@ -33,7 +33,7 @@ public sealed class MatchingDslTests
         var derived = compilation.GetTypeByMetadataName("Probe.Derived");
 
         derived.Should().NotBeNull();
-        Match.Type().Implements(interfaceName).Matches(derived!).Should().BeTrue();
+        Match.Type().Implements(interfaceName).Matches(derived).Should().BeTrue();
     }
 
     [Theory]
