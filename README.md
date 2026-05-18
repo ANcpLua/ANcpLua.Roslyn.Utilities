@@ -17,7 +17,7 @@ The library is the author's own. Use it, improve it (the upstream is this repo),
 | **`ANcpLua.Roslyn.Utilities`** | netstandard2.0 | Runtime + Roslyn utilities as a normal NuGet reference |
 | **`ANcpLua.Roslyn.Utilities.Sources`** | source-only | Embeds the utilities as `internal` source into source generators (generators can't load NuGet DLLs at runtime) |
 | **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
-| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Generator/analyzer/codefix test infrastructure, MSBuild/NuGet integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers, `BitNetFixture` live-LLM integration |
+| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Generator/analyzer/codefix test infrastructure, MSBuild/NuGet integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers |
 | **`ANcpLua.Roslyn.Utilities.Testing.Aot`** | netstandard2.0 | AOT/trim test attributes (`[AotTest]`, `[TrimTest]`, `[AotSafe]`, `[TrimSafe]`), `TrimAssert`, `FeatureSwitches`, MSBuild orchestration for standalone AOT verification |
 
 ## Quickstart — writing a source generator
@@ -156,7 +156,6 @@ Generator, analyzer, codefix, refactoring, MSBuild integration, and cross-framew
   - `WebTesting/NUnit/`, `WebTesting/TUnit/`, `WebTesting/Bunit/` — per-framework equivalents
   - Plus `FakeLoggerExtensions` for structured log capture
 - **OTel instrumentation**: `ActivityInstrumentation`, `MetricsInstrumentation`, `LoggingConventions`, `LogEnricherInfrastructure`, `DataClassificationHelpers` (PII/Secret redaction)
-- **Live-LLM integration**: `BitNetFixture`, `BitNetAttribute`, `BitNetTestGroup` — xUnit v3 collection fixture for llama.cpp BitNet server
 
 ## AOT testing — what ships in `.Testing.Aot`
 
