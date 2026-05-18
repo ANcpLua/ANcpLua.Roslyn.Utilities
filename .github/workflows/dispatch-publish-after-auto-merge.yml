@@ -1,0 +1,67 @@
+name: Dispatch publish after auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  dispatch-main-ci:
+    name: Dispatch main CI after native auto-merge
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Dispatch publish workflow when no push workflow was created
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          pr_number="$(jq -r '.workflow_run.pull_requests[0].number // empty' "$GITHUB_EVENT_PATH")"
+          if [ -z "$pr_number" ]; then
+            pr_number="$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" --jq 'map(select(.base.ref == "main")) | .[0].number // empty')"
+          fi
+
+          if [ -z "$pr_number" ]; then
+            echo "No main PR associated with $HEAD_SHA; nothing to dispatch."
+            exit 0
+          fi
+
+          for attempt in $(seq 1 60); do
+            state="$(gh pr view "$pr_number" --repo "$REPO" --json state --jq '.state')"
+            merge_sha="$(gh pr view "$pr_number" --repo "$REPO" --json mergeCommit --jq '.mergeCommit.oid // ""')"
+
+            if [ "$state" = "MERGED" ] && [ -n "$merge_sha" ]; then
+              sleep 30
+
+              push_runs="$(gh run list \
+                --repo "$REPO" \
+                --workflow CI \
+                --branch main \
+                --commit "$merge_sha" \
+                --limit 10 \
+                --json event \
+                --jq '[.[] | select(.event == "push")] | length')"
+
+              if [ "$push_runs" != "0" ]; then
+                echo "Push CI already exists for merge commit $merge_sha; no dispatch needed."
+                exit 0
+              fi
+
+              echo "No push CI exists for merge commit $merge_sha; dispatching publish workflow."
+              gh workflow run nuget-publish.yml --repo "$REPO" --ref main
+              exit 0
+            fi
+
+            echo "PR #$pr_number is $state; waiting for native auto-merge ($attempt/60)."
+            sleep 10
+          done
+
+          echo "PR #$pr_number did not merge within the wait window; no dispatch sent."
