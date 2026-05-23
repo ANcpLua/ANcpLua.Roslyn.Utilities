@@ -47,7 +47,7 @@ internal
     /// <seealso cref="IsCSharp12OrAbove" />
     public static bool IsCSharp10OrAbove(this LanguageVersion languageVersion)
     {
-        return languageVersion >= (LanguageVersion)1000;
+        return languageVersion.IsAtLeast(LanguageVersion.CSharp10);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ internal
     /// <seealso cref="IsCSharp12OrAbove" />
     public static bool IsCSharp11OrAbove(this LanguageVersion languageVersion)
     {
-        return languageVersion >= (LanguageVersion)1100;
+        return languageVersion.IsAtLeast(LanguageVersion.CSharp11);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ internal
     /// <seealso cref="IsCSharp13OrAbove" />
     public static bool IsCSharp12OrAbove(this LanguageVersion languageVersion)
     {
-        return languageVersion >= (LanguageVersion)1200;
+        return languageVersion.IsAtLeast(LanguageVersion.CSharp12);
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ internal
     /// <seealso cref="IsCSharp14OrAbove" />
     public static bool IsCSharp13OrAbove(this LanguageVersion languageVersion)
     {
-        return languageVersion >= (LanguageVersion)1300;
+        return languageVersion.IsAtLeast(LanguageVersion.CSharp13);
     }
 
     /// <summary>
@@ -118,6 +118,18 @@ internal
     /// <seealso cref="IsCSharp13OrAbove" />
     public static bool IsCSharp14OrAbove(this LanguageVersion languageVersion)
     {
-        return languageVersion >= (LanguageVersion)1400;
+        return languageVersion.IsAtLeast(LanguageVersion.CSharp14);
+    }
+
+    private static int ComparableValue(this LanguageVersion languageVersion)
+    {
+        return languageVersion is LanguageVersion.Latest or LanguageVersion.Preview
+            ? int.MaxValue
+            : (int)languageVersion;
+    }
+
+    private static bool IsAtLeast(this LanguageVersion languageVersion, LanguageVersion minimumLanguageVersion)
+    {
+        return languageVersion.ComparableValue() >= minimumLanguageVersion.ComparableValue();
     }
 }

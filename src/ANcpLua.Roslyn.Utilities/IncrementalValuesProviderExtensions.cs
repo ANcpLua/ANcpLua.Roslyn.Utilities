@@ -93,6 +93,29 @@ internal
     }
 
     /// <summary>
+    ///     Registers a nullable source output for a single file with name.
+    /// </summary>
+    /// <remarks>
+    ///     Use this overload after result/diagnostic pipelines where failure is represented as
+    ///     <c>null</c> instead of a sentinel <see cref="FileWithName" /> value.
+    /// </remarks>
+    /// <param name="source">The provider of a single nullable file to register as source output.</param>
+    /// <param name="context">The generator initialization context for registering the output.</param>
+    public static void AddSource(
+        this IncrementalValueProvider<FileWithName?> source,
+        IncrementalGeneratorInitializationContext context)
+    {
+        context.RegisterSourceOutput(source, static (context, file) =>
+        {
+            if (file is not { IsEmpty: false } value) return;
+
+            context.AddSource(
+                value.Name,
+                value.Text);
+        });
+    }
+
+    /// <summary>
     ///     Registers a source output for a single collected array of files.
     ///     Use after <c>.Collect()</c> when you have one array containing all files.
     /// </summary>
@@ -183,10 +206,11 @@ internal
         source
             .CollectAsEquatableArray()
             .Combine(gate)
-            .SelectAndReportExceptions((input, _) =>
+            .SelectAndCaptureExceptions((input, _) =>
                 input.Right && !input.Left.IsDefaultOrEmpty
                     ? emitter(input.Left.AsImmutableArray())
-                    : FileWithName.Empty, context, diagnosticId)
+                    : FileWithName.Empty, diagnosticId)
+            .SelectAndReportDiagnostics(context)
             .AddSource(context);
     }
 
@@ -249,42 +273,39 @@ internal
     }
 
     /// <summary>
-    ///     Transforms values using a selector function and reports any exceptions as diagnostics.
+    ///     Transforms a single value using a selector function and captures any exception as diagnostics.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This method wraps the selector in a try-catch block. If an exception is thrown during transformation,
-    ///         it is caught and reported as a diagnostic, allowing the generator to continue processing other items.
-    ///     </para>
-    ///     <para>
-    ///         Use this when you want to gracefully handle exceptions without failing the entire generator.
+    ///         This method wraps the selector in a try-catch block. If an exception is thrown during
+    ///         transformation, the returned <see cref="ResultWithDiagnostics{T}" /> contains
+    ///         <see cref="ResultWithDiagnostics{T}.HasResult" /> set to <c>false</c> plus an error diagnostic.
+    ///         This keeps failure explicit for single-value providers, where Roslyn cannot filter out only one bad item.
     ///     </para>
     /// </remarks>
     /// <typeparam name="TSource">The type of the source value.</typeparam>
     /// <typeparam name="TResult">The type of the result value.</typeparam>
     /// <param name="source">The provider of source values to transform.</param>
     /// <param name="selector">The transformation function that may throw exceptions.</param>
-    /// <param name="initializationContext">The generator initialization context for reporting diagnostics.</param>
     /// <param name="id">The diagnostic ID to use when reporting exceptions. Defaults to <c>"SRE001"</c>.</param>
     /// <returns>
-    ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces the transformed value,
-    ///     or throws if the transformation failed.
+    ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces a result/diagnostic envelope.
     /// </returns>
     /// <seealso
-    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValuesProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
-    public static IncrementalValueProvider<TResult> SelectAndReportExceptions<TSource, TResult>(
+    ///     cref="SelectAndReportExceptions{TSource, TResult}(IncrementalValueProvider{TSource}, Func{TSource, CancellationToken, TResult}, IncrementalGeneratorInitializationContext, string)" />
+    public static IncrementalValueProvider<ResultWithDiagnostics<TResult>> SelectAndCaptureExceptions<TSource, TResult>(
         this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
-        IncrementalGeneratorInitializationContext initializationContext,
         string id = "SRE001")
+        where TResult : notnull
     {
-        var outputWithErrors = source
-            .Select<TSource, (TResult? Value, GeneratorErrorInfo? Error)>((value, cancellationToken) =>
+        return source
+            .Select<TSource, ResultWithDiagnostics<TResult>>((value, cancellationToken) =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    return (selector(value, cancellationToken), null);
+                    return new ResultWithDiagnostics<TResult>(selector(value, cancellationToken));
                 }
                 catch (OperationCanceledException)
                 {
@@ -293,22 +314,42 @@ internal
                 }
                 catch (Exception exception)
                 {
-                    return (default, GeneratorErrorInfo.From(exception));
+                    var diagnostic = GeneratorErrorInfo.From(exception).ToDiagnosticInfo(id);
+                    return new ResultWithDiagnostics<TResult>(
+                        default!,
+                        ImmutableArray.Create(diagnostic).AsEquatableArray(),
+                        false);
                 }
             });
+    }
 
-        initializationContext.RegisterSourceOutput(outputWithErrors,
-            (context, tuple) =>
-            {
-                if (tuple.Error is { } error)
-                    context.ReportException(id, error);
-            });
+    /// <summary>
+    ///     Transforms a single value using a selector function, reports any exception as diagnostics, and returns the
+    ///     explicit result/diagnostic envelope.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the source value.</typeparam>
+    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <param name="source">The provider of source values to transform.</param>
+    /// <param name="selector">The transformation function that may throw exceptions.</param>
+    /// <param name="initializationContext">The generator initialization context for reporting diagnostics.</param>
+    /// <param name="id">The diagnostic ID to use when reporting exceptions. Defaults to <c>"SRE001"</c>.</param>
+    /// <returns>
+    ///     An <see cref="IncrementalValueProvider{TValue}" /> that produces a result/diagnostic envelope.
+    /// </returns>
+    /// <seealso cref="SelectAndCaptureExceptions{TSource, TResult}" />
+    public static IncrementalValueProvider<ResultWithDiagnostics<TResult>> SelectAndReportExceptions<TSource, TResult>(
+        this IncrementalValueProvider<TSource> source, Func<TSource, CancellationToken, TResult> selector,
+        IncrementalGeneratorInitializationContext initializationContext,
+        string id = "SRE001")
+        where TResult : notnull
+    {
+        var result = source.SelectAndCaptureExceptions(selector, id);
 
-        // The diagnostic registered above is the visible failure for the user. Downstream
-        // consumers receive the selector's value (or default(TResult) on failure) and decide
-        // how to react — record-struct sentinels like FileWithName.Empty, for instance, are
-        // already filtered by AddSource. Throwing here would crash the generator a second time.
-        return outputWithErrors.Select(static (x, _) => x.Value!);
+        initializationContext.RegisterSourceOutput(
+            result.SelectMany(static (x, _) => x.Diagnostics),
+            static (context, diagnostic) => context.ReportDiagnostic(diagnostic));
+
+        return result;
     }
 
     /// <summary>
@@ -322,10 +363,10 @@ internal
     ///                 <description>Reporting all diagnostics from each result.</description>
     ///             </item>
     ///             <item>
-    ///                 <description>Filtering out results where the value is <c>null</c>.</description>
+    ///                 <description>Filtering out results where <see cref="ResultWithDiagnostics{T}.HasResult" /> is <c>false</c>.</description>
     ///             </item>
     ///             <item>
-    ///                 <description>Returning only non-null result values.</description>
+    ///                 <description>Returning only successful result values.</description>
     ///             </item>
     ///         </list>
     ///     </para>
@@ -334,13 +375,13 @@ internal
     /// <param name="source">The provider of results with diagnostics.</param>
     /// <param name="initializationContext">The generator initialization context for reporting diagnostics.</param>
     /// <returns>
-    ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only non-null result values.
+    ///     An <see cref="IncrementalValuesProvider{TValues}" /> containing only successful result values.
     /// </returns>
     /// <seealso
     ///     cref="SelectAndReportDiagnostics{T}(IncrementalValueProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="ResultWithDiagnostics{T}" />
     public static IncrementalValuesProvider<T> SelectAndReportDiagnostics<T>(
-        this IncrementalValuesProvider<ResultWithDiagnostics<T?>> source,
+        this IncrementalValuesProvider<ResultWithDiagnostics<T>> source,
         IncrementalGeneratorInitializationContext initializationContext)
     {
         initializationContext.RegisterSourceOutput(
@@ -348,10 +389,12 @@ internal
             static (context, diagnostic) => context.ReportDiagnostic(diagnostic));
 
         return source
-            .Where(static x => x.Result is not null)
+            .Where(static x => x.HasResult)
             .Select(static (x, _) =>
-                x.Result ?? throw new InvalidOperationException(
-                    "Unexpected null result produced by SelectAndReportDiagnostics"));
+                x.HasResult
+                    ? x.Result
+                    : throw new InvalidOperationException(
+                        "Unexpected no-result value produced by SelectAndReportDiagnostics"));
     }
 
     /// <summary>
@@ -365,7 +408,7 @@ internal
     ///                 <description>Reporting all diagnostics from the result.</description>
     ///             </item>
     ///             <item>
-    ///                 <description>Returning the result value (which may be <c>null</c>).</description>
+    ///                 <description>Returning the result value, or <c>default</c> when <see cref="ResultWithDiagnostics{T}.HasResult" /> is <c>false</c>.</description>
     ///             </item>
     ///         </list>
     ///     </para>
@@ -380,7 +423,7 @@ internal
     ///     cref="SelectAndReportDiagnostics{T}(IncrementalValuesProvider{ResultWithDiagnostics{T}}, IncrementalGeneratorInitializationContext)" />
     /// <seealso cref="ResultWithDiagnostics{T}" />
     public static IncrementalValueProvider<T?> SelectAndReportDiagnostics<T>(
-        this IncrementalValueProvider<ResultWithDiagnostics<T?>> source,
+        this IncrementalValueProvider<ResultWithDiagnostics<T>> source,
         IncrementalGeneratorInitializationContext initializationContext)
     {
         initializationContext.RegisterSourceOutput(
@@ -388,7 +431,7 @@ internal
             static (context, diagnostic) => context.ReportDiagnostic(diagnostic));
 
         return source
-            .Select(static (x, _) => x.Result);
+            .Select(static (x, _) => x.HasResult ? x.Result : default);
     }
 
     /// <summary>

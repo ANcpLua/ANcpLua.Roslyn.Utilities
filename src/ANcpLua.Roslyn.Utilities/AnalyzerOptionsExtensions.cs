@@ -168,10 +168,12 @@ internal
 
     private static bool ParseBoolean(string value, bool defaultValue)
     {
-        if (bool.TryParse(value, out var result))
+        var normalized = value.Trim();
+
+        if (bool.TryParse(normalized, out var result))
             return result;
 
-        return value switch
+        return normalized switch
         {
             "1" => true,
             "0" => false,

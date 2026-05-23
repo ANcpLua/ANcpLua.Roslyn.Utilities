@@ -39,7 +39,7 @@ internal
     ///     Checks whether the specified compilation is using at least the given C# language version.
     /// </summary>
     /// <param name="compilation">
-    ///     The compilation to check. This is assumed to be a C# compilation.
+    ///     The compilation to check.
     /// </param>
     /// <param name="languageVersion">
     ///     The minimum language version to check for.
@@ -49,15 +49,15 @@ internal
     ///     greater than or equal to <paramref name="languageVersion" />; otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    ///     This method casts the compilation to <see cref="CSharpCompilation" /> to access
-    ///     the language version. Ensure that the compilation is a C# compilation before calling.
+    ///     Non-C# compilations return <c>false</c>.
     /// </remarks>
     /// <seealso cref="LanguageVersion" />
     /// <seealso cref="CSharpCompilation.LanguageVersion" />
     public static bool
         HasLanguageVersionAtLeastEqualTo(this Compilation compilation, LanguageVersion languageVersion)
     {
-        return ((CSharpCompilation)compilation).LanguageVersion >= languageVersion;
+        return compilation is CSharpCompilation cSharpCompilation &&
+               cSharpCompilation.LanguageVersion >= languageVersion;
     }
 
     /// <summary>

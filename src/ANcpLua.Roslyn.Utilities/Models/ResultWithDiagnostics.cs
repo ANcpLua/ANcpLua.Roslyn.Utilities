@@ -9,6 +9,10 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///     The diagnostics collected during the operation, wrapped in an <see cref="EquatableArray{T}" />
 ///     to ensure proper equality comparisons for incremental generator caching.
 /// </param>
+/// <param name="HasResult">
+///     <c>true</c> when <paramref name="Result" /> is a legitimate result value. This distinguishes
+///     a successful <c>null</c> result from a failed/no-result value.
+/// </param>
 /// <remarks>
 ///     <para>
 ///         This type is designed specifically for use in Roslyn incremental source generators where
@@ -48,7 +52,8 @@ internal
 #endif
     readonly record struct ResultWithDiagnostics<T>(
         T Result,
-        EquatableArray<DiagnosticInfo> Diagnostics
+        EquatableArray<DiagnosticInfo> Diagnostics,
+        bool HasResult
     )
 {
     /// <summary>
@@ -60,9 +65,19 @@ internal
     ///     Use this when the operation completed successfully without any warnings or errors to report.
     /// </remarks>
     /// <seealso cref="ResultWithDiagnosticsExtensions.ToResultWithDiagnostics{T}(T)" />
-    public ResultWithDiagnostics(T result) : this(result, ImmutableArray<DiagnosticInfo>.Empty.AsEquatableArray())
+    public ResultWithDiagnostics(T result) : this(result, ImmutableArray<DiagnosticInfo>.Empty.AsEquatableArray(), true)
     {
     }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ResultWithDiagnostics{T}" /> struct with diagnostics and a result.
+    /// </summary>
+    /// <param name="result">The result value to wrap.</param>
+    /// <param name="diagnostics">The diagnostics associated with the result.</param>
+    public ResultWithDiagnostics(T result, EquatableArray<DiagnosticInfo> diagnostics) : this(result, diagnostics, true)
+    {
+    }
+
 }
 
 /// <summary>

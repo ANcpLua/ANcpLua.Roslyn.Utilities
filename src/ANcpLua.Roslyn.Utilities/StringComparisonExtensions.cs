@@ -780,13 +780,23 @@ internal
     /// <seealso cref="Truncate" />
     public static string? TruncateWithEllipsis(this string? value, int maxLength, string ellipsis = "...")
     {
-        if (value is null || value.Length <= maxLength)
+        if (value is null)
+            return null;
+
+        if (maxLength <= 0)
+            return string.Empty;
+
+        if (value.Length <= maxLength)
             return value;
 
-        var truncateLength = maxLength - ellipsis.Length;
-        if (truncateLength <= 0)
-            return ellipsis[..maxLength];
+        var safeEllipsis = ellipsis ?? string.Empty;
+        if (maxLength <= safeEllipsis.Length)
+            return safeEllipsis[..maxLength];
 
-        return value[..truncateLength] + ellipsis;
+        var truncateLength = maxLength - safeEllipsis.Length;
+        if (truncateLength <= 0)
+            return string.Empty;
+
+        return value[..truncateLength] + safeEllipsis;
     }
 }

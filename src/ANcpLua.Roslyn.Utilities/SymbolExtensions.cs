@@ -70,7 +70,7 @@ internal
     /// </summary>
     /// <param name="symbol">The type symbol to get the name for.</param>
     /// <returns>The fully qualified name including the <c>global::</c> prefix.</returns>
-    /// <seealso cref="GetMetadataName" />
+    /// <seealso cref="GetMetadataName(ITypeSymbol)" />
     /// <seealso cref="SymbolDisplayFormat.FullyQualifiedFormat" />
     public static string GetFullyQualifiedName(this ITypeSymbol symbol)
     {
@@ -83,10 +83,39 @@ internal
     /// <param name="symbol">The type symbol to get the name for.</param>
     /// <returns>The metadata name without the <c>global::</c> prefix.</returns>
     /// <seealso cref="GetFullyQualifiedName" />
+    /// <seealso cref="GetMetadataName(INamespaceSymbol)" />
     /// <seealso cref="SymbolDisplayFormat.CSharpErrorMessageFormat" />
     public static string GetMetadataName(this ITypeSymbol symbol)
     {
         return symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+    }
+
+    /// <summary>
+    ///     Gets the dotted metadata name of a namespace symbol (e.g. <c>"System.Threading.Tasks"</c>).
+    /// </summary>
+    /// <param name="namespace">The namespace symbol to flatten.</param>
+    /// <returns>
+    ///     The dotted name without the <c>global::</c> prefix. Returns <see cref="string.Empty" /> for the
+    ///     global namespace itself.
+    /// </returns>
+    /// <remarks>
+    ///     Walks the namespace chain directly instead of going through
+    ///     <see cref="ISymbol.ToDisplayString(SymbolDisplayFormat)" /> to keep analyzer hot paths free of
+    ///     <c>SymbolDisplayFormat</c> allocation. Use for cheap namespace identity checks like
+    ///     <c>ns.GetMetadataName() == "System.Threading"</c>.
+    /// </remarks>
+    /// <seealso cref="GetMetadataName(ITypeSymbol)" />
+    public static string GetMetadataName(this INamespaceSymbol @namespace)
+    {
+        var parts = new Stack<string>();
+        var current = @namespace;
+        while (!current.IsGlobalNamespace)
+        {
+            parts.Push(current.Name);
+            current = current.ContainingNamespace;
+        }
+
+        return string.Join(".", parts);
     }
 
     /// <summary>

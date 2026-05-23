@@ -9,10 +9,6 @@ namespace ANcpLua.Roslyn.Utilities.Async;
 
 /// <summary>
 ///     Channel-based parallel fan-out for <see cref="IAsyncEnumerable{T}" />.
-///     <para>
-///         Uses a bounded input channel for backpressure and an unbounded output channel
-///         for maximum throughput. Results arrive in completion order, not source order.
-///     </para>
 /// </summary>
 #if ANCPLUA_ROSLYN_PUBLIC
 public
@@ -38,9 +34,10 @@ internal
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
+
         return Core(source, degreeOfParallelism, selector, cancellationToken);
 
         static async IAsyncEnumerable<TResult> Core(
@@ -49,92 +46,128 @@ internal
             Func<TSource, CancellationToken, ValueTask<TResult>> selector,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var input = Channel.CreateBounded<TSource>(new BoundedChannelOptions(degreeOfParallelism * 2)
+            var capacity = degreeOfParallelism * 2;
+            var input = Channel.CreateBounded<TSource>(new BoundedChannelOptions(capacity)
             {
                 SingleWriter = true,
                 SingleReader = false,
                 FullMode = BoundedChannelFullMode.Wait
             });
 
-            var output = Channel.CreateUnbounded<TResult>(new UnboundedChannelOptions
+            var output = Channel.CreateBounded<TResult>(new BoundedChannelOptions(capacity)
             {
                 SingleWriter = false,
-                SingleReader = true
+                SingleReader = true,
+                FullMode = BoundedChannelFullMode.Wait
             });
 
             Exception? failure = null;
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var token = cts.Token;
 
-            var producer = Task.Run(async () =>
+            void RecordFailure(Exception ex)
             {
-                try
-                {
-                    await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
-                        await input.Writer.WriteAsync(item, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // Expected cancellation — let finally complete the channel.
-                }
-                catch (Exception ex)
-                {
-                    Interlocked.CompareExchange(ref failure, ex, null);
-                }
-                finally
-                {
-                    input.Writer.TryComplete(failure);
-                }
-            }, CancellationToken.None);
+                if (ex is OperationCanceledException)
+                    return;
 
-            var workers = new Task[degreeOfParallelism];
-            for (var w = 0; w < degreeOfParallelism; w++)
-            {
-                workers[w] = Task.Run(async () =>
+                if (Interlocked.CompareExchange(ref failure, ex, null) is null)
+                    cts.Cancel();
+            }
+
+            var producer = Task.Run(
+                async () =>
                 {
                     try
                     {
-                        while (await input.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-                        {
-                            while (input.Reader.TryRead(out var item))
-                            {
-                                var result = await selector(item, cancellationToken).ConfigureAwait(false);
-                                await output.Writer.WriteAsync(result, cancellationToken).ConfigureAwait(false);
-                            }
-                        }
+                        await foreach (var item in source.WithCancellation(token).ConfigureAwait(false))
+                            await input.Writer.WriteAsync(item, token).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    catch (OperationCanceledException) when (token.IsCancellationRequested)
                     {
                     }
                     catch (Exception ex)
                     {
-                        Interlocked.CompareExchange(ref failure, ex, null);
+                        RecordFailure(ex);
                     }
-                }, CancellationToken.None);
+                    finally
+                    {
+                        input.Writer.TryComplete(failure);
+                    }
+                },
+                token);
+
+            var workers = new Task[degreeOfParallelism];
+            for (var w = 0; w < degreeOfParallelism; w++)
+            {
+                workers[w] = Task.Run(
+                    async () =>
+                    {
+                        try
+                        {
+                            while (await input.Reader.WaitToReadAsync(token).ConfigureAwait(false))
+                            {
+                                while (input.Reader.TryRead(out var item))
+                                {
+                                    var result = await selector(item, token).ConfigureAwait(false);
+                                    await output.Writer.WriteAsync(result, token).ConfigureAwait(false);
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested)
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            RecordFailure(ex);
+                        }
+                    },
+                    token);
             }
 
-            _ = Task.Run(async () =>
+            var completion = Task.Run(
+                async () =>
+                {
+                    try
+                    {
+                        await producer.ConfigureAwait(false);
+                        await Task.WhenAll(workers).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        output.Writer.TryComplete(failure);
+                    }
+                },
+                CancellationToken.None);
+
+            // completedReading flips true only after the reader loop drained cleanly. When the consumer
+            // disposes the enumerator mid-stream, the await throws OperationCanceledException out to the
+            // finally block, completedReading stays false, and the captured worker failure is intentionally
+            // suppressed — if the consumer walked away, secondary worker errors are noise, not signal.
+            var completedReading = false;
+
+            try
             {
+                while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (output.Reader.TryRead(out var item))
+                        yield return item;
+                }
+
+                completedReading = true;
+            }
+            finally
+            {
+                cts.Cancel();
                 try
                 {
-                    await producer.ConfigureAwait(false);
-                    await Task.WhenAll(workers).ConfigureAwait(false);
+                    await completion.ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException)
                 {
-                    Interlocked.CompareExchange(ref failure, ex, null);
                 }
-                finally
-                {
-                    output.Writer.TryComplete(failure);
-                }
-            }, CancellationToken.None);
-
-            while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                while (output.Reader.TryRead(out var item))
-                    yield return item;
             }
 
-            if (failure is not null)
+            if (completedReading && failure is not null)
                 ExceptionDispatchInfo.Capture(failure).Throw();
         }
     }
@@ -144,31 +177,16 @@ internal
     ///     <paramref name="degreeOfParallelism" /> concurrent workers backed by channels,
     ///     yielding results in the <b>original source order</b>.
     /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Unlike <see cref="SelectParallel{TSource,TResult}" /> which returns results
-    ///         in completion order, this method buffers out-of-order results and yields them
-    ///         only when all preceding items have been emitted.
-    ///     </para>
-    ///     <para>
-    ///         The reorder buffer is bounded by the number of in-flight items
-    ///         (<paramref name="degreeOfParallelism" /> × 2 channel capacity + workers),
-    ///         so memory usage stays proportional to concurrency, not source size.
-    ///     </para>
-    ///     <para>
-    ///         The first exception from any worker is captured and re-thrown with its original
-    ///         stack trace after all successfully completed results have been yielded.
-    ///     </para>
-    /// </remarks>
     public static IAsyncEnumerable<TResult> SelectParallelOrdered<TSource, TResult>(
         this IAsyncEnumerable<TSource> source,
         int degreeOfParallelism,
         Func<TSource, CancellationToken, ValueTask<TResult>> selector,
         CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
         Guard.NotNull(selector);
         Guard.Positive(degreeOfParallelism);
+
         return CoreOrdered(source, degreeOfParallelism, selector, cancellationToken);
 
         static async IAsyncEnumerable<TResult> CoreOrdered(
@@ -177,114 +195,143 @@ internal
             Func<TSource, CancellationToken, ValueTask<TResult>> selector,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var input = Channel.CreateBounded<(int Index, TSource Item)>(
-                new BoundedChannelOptions(degreeOfParallelism * 2)
-                {
-                    SingleWriter = true,
-                    SingleReader = false,
-                    FullMode = BoundedChannelFullMode.Wait
-                });
+            var capacity = degreeOfParallelism * 2;
+            var input = Channel.CreateBounded<(int Index, TSource Item)>(new BoundedChannelOptions(capacity)
+            {
+                SingleWriter = true,
+                SingleReader = false,
+                FullMode = BoundedChannelFullMode.Wait
+            });
 
-            var output = Channel.CreateUnbounded<(int Index, TResult Result)>(
-                new UnboundedChannelOptions
-                {
-                    SingleWriter = false,
-                    SingleReader = true
-                });
+            var output = Channel.CreateBounded<(int Index, TResult Result)>(new BoundedChannelOptions(capacity)
+            {
+                SingleWriter = false,
+                SingleReader = true,
+                FullMode = BoundedChannelFullMode.Wait
+            });
 
             Exception? failure = null;
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var token = cts.Token;
 
-            var producer = Task.Run(async () =>
+            void RecordFailure(Exception ex)
             {
-                try
-                {
-                    var index = 0;
-                    await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
-                        await input.Writer.WriteAsync((index++, item), cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                }
-                catch (Exception ex)
-                {
-                    Interlocked.CompareExchange(ref failure, ex, null);
-                }
-                finally
-                {
-                    input.Writer.TryComplete(failure);
-                }
-            }, CancellationToken.None);
+                if (ex is OperationCanceledException)
+                    return;
 
-            var workers = new Task[degreeOfParallelism];
-            for (var w = 0; w < degreeOfParallelism; w++)
-            {
-                workers[w] = Task.Run(async () =>
+                if (Interlocked.CompareExchange(ref failure, ex, null) is null)
+                    cts.Cancel();
+            }
+
+            var producer = Task.Run(
+                async () =>
                 {
                     try
                     {
-                        while (await input.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-                        {
-                            while (input.Reader.TryRead(out var entry))
-                            {
-                                var result = await selector(entry.Item, cancellationToken).ConfigureAwait(false);
-                                await output.Writer.WriteAsync((entry.Index, result), cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
-                        }
+                        var index = 0;
+                        await foreach (var item in source.WithCancellation(token).ConfigureAwait(false))
+                            await input.Writer.WriteAsync((index++, item), token).ConfigureAwait(false);
                     }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    catch (OperationCanceledException) when (token.IsCancellationRequested)
                     {
                     }
                     catch (Exception ex)
                     {
-                        Interlocked.CompareExchange(ref failure, ex, null);
+                        RecordFailure(ex);
                     }
-                }, CancellationToken.None);
+                    finally
+                    {
+                        input.Writer.TryComplete(failure);
+                    }
+                },
+                token);
+
+            var workers = new Task[degreeOfParallelism];
+            for (var w = 0; w < degreeOfParallelism; w++)
+            {
+                workers[w] = Task.Run(
+                    async () =>
+                    {
+                        try
+                        {
+                            while (await input.Reader.WaitToReadAsync(token).ConfigureAwait(false))
+                            {
+                                while (input.Reader.TryRead(out var entry))
+                                {
+                                    var result = await selector(entry.Item, token).ConfigureAwait(false);
+                                    await output.Writer.WriteAsync((entry.Index, result), token).ConfigureAwait(false);
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException) when (token.IsCancellationRequested)
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            RecordFailure(ex);
+                        }
+                    },
+                    token);
             }
 
-            _ = Task.Run(async () =>
-            {
-                try
+            var completion = Task.Run(
+                async () =>
                 {
-                    await producer.ConfigureAwait(false);
-                    await Task.WhenAll(workers).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Interlocked.CompareExchange(ref failure, ex, null);
-                }
-                finally
-                {
-                    output.Writer.TryComplete(failure);
-                }
-            }, CancellationToken.None);
+                    try
+                    {
+                        await producer.ConfigureAwait(false);
+                        await Task.WhenAll(workers).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        output.Writer.TryComplete(failure);
+                    }
+                },
+                CancellationToken.None);
 
-            // Reorder buffer: hold results that arrived ahead of their turn
             var pending = new SortedDictionary<int, TResult>();
             var nextExpected = 0;
 
-            while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                while (output.Reader.TryRead(out var entry))
-                {
-                    pending[entry.Index] = entry.Result;
+            // See Core(...) for the rationale on completedReading: it gates both the failure rethrow
+            // and the structural-gap check so that consumer-side dispose doesn't surface secondary errors.
+            var completedReading = false;
 
-                    // Flush consecutive items starting from nextExpected
-                    while (pending.TryGetValue(nextExpected, out var next))
+            try
+            {
+                while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    while (output.Reader.TryRead(out var entry))
                     {
-                        pending.Remove(nextExpected);
-                        yield return next;
-                        nextExpected++;
+                        pending[entry.Index] = entry.Result;
+
+                        while (pending.TryGetValue(nextExpected, out var next))
+                        {
+                            pending.Remove(nextExpected);
+                            yield return next;
+                            nextExpected++;
+                        }
                     }
+                }
+
+                completedReading = true;
+            }
+            finally
+            {
+                cts.Cancel();
+                try
+                {
+                    await completion.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
                 }
             }
 
-            // Drain any remaining buffered items in order
-            foreach (var remaining in pending.Values)
-                yield return remaining;
-
-            if (failure is not null)
+            if (completedReading && failure is not null)
                 ExceptionDispatchInfo.Capture(failure).Throw();
+
+            if (completedReading && pending.Count > 0)
+                throw new InvalidOperationException("Ordered parallel sequence completed with a gap in the result stream.");
         }
     }
 }

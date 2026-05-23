@@ -48,6 +48,16 @@ internal
         EquatableMessageArgs MessageArgs)
 {
     /// <summary>
+    ///     Gets a value indicating whether this instance is the default, uninitialized value.
+    /// </summary>
+    public bool IsDefault => Descriptor is null;
+
+    /// <summary>
+    ///     Gets a value indicating whether this diagnostic has error severity.
+    /// </summary>
+    public bool IsError => Descriptor is { DefaultSeverity: DiagnosticSeverity.Error };
+
+    /// <summary>
     ///     Creates a <see cref="DiagnosticInfo" /> with a single argument from a syntax token.
     /// </summary>
     /// <param name="descriptor">The diagnostic descriptor defining the diagnostic metadata.</param>
@@ -136,6 +146,9 @@ internal
     /// </returns>
     public Diagnostic ToDiagnostic()
     {
+        if (Descriptor is null)
+            throw new InvalidOperationException("Cannot convert default DiagnosticInfo to a Diagnostic.");
+
         return MessageArgs.IsEmpty
             ? Diagnostic.Create(Descriptor, Location.ToLocation())
             : Diagnostic.Create(Descriptor, Location.ToLocation(), [.. MessageArgs.Args]);

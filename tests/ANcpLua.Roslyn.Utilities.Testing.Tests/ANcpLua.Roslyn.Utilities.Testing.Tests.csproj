@@ -23,6 +23,13 @@
             Include="..\..\src\ANcpLua.Roslyn.Utilities.Testing\ANcpLua.Roslyn.Utilities.Testing.csproj"/>
     </ItemGroup>
 
+    <!-- The async helpers are source-package-only (#if !NETSTANDARD), so link them into this
+         net10 test assembly to exercise the same code consumers compile from contentFiles. -->
+    <ItemGroup>
+        <Compile Include="..\..\src\ANcpLua.Roslyn.Utilities\Async\ParallelAsyncExtensions.cs"
+                 Link="SourcePackage\ParallelAsyncExtensions.cs"/>
+    </ItemGroup>
+
     <!-- TUnit migration analyzers flag xUnit calls as TUXU0001 ("xUnit code can be converted to
          TUnit code"). This project deliberately uses xUnit; strip the TUnit analyzers, mirroring
          the pattern used by the Testing project itself. -->

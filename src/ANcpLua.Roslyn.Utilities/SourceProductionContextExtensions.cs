@@ -116,6 +116,9 @@ internal
     /// <seealso cref="ReportDiagnostics{T}(SourceProductionContext, ResultWithDiagnostics{T})" />
     public static void ReportDiagnostic(this SourceProductionContext context, DiagnosticInfo diagnosticInfo)
     {
+        if (diagnosticInfo.IsDefault)
+            return;
+
         context.ReportDiagnostic(diagnosticInfo.ToDiagnostic());
     }
 
@@ -130,7 +133,12 @@ internal
         EquatableArray<DiagnosticInfo> diagnostics)
     {
         foreach (var diagnostic in diagnostics)
+        {
+            if (diagnostic.IsDefault)
+                continue;
+
             context.ReportDiagnostic(diagnostic.ToDiagnostic());
+        }
     }
 
     /// <summary>
@@ -201,18 +209,7 @@ internal
         GeneratorErrorInfo error,
         string? prefix = null)
     {
-        id = id ?? throw new ArgumentNullException(nameof(id));
-        if (prefix is not null) id = $"{prefix}{id}";
-
-        context.ReportDiagnostic(Diagnostic.Create(
-            new DiagnosticDescriptor(
-                id,
-                "Exception: ",
-                error.ToString(),
-                "Usage",
-                DiagnosticSeverity.Error,
-                true),
-            Location.None));
+        context.ReportDiagnostic(error.ToDiagnosticInfo(id, prefix));
     }
 
     /// <summary>

@@ -165,7 +165,7 @@ internal
     /// <returns>The current matcher instance for fluent chaining.</returns>
     public MethodMatcher WithCancellationToken()
     {
-        return AddPredicate(static m => HasParameterOfType(m.Parameters, "CancellationToken"));
+        return AddPredicate(static m => HasCancellationTokenParameter(m.Parameters));
     }
 
     /// <summary>
@@ -205,8 +205,7 @@ internal
     /// <seealso cref="ReturningVoid" />
     public MethodMatcher ReturningTask()
     {
-        return AddPredicate(static m => m.ReturnType.Name is "Task" or "ValueTask" ||
-                                        m.ReturnType.OriginalDefinition.Name is "Task" or "ValueTask");
+        return AddPredicate(static m => m.ReturnType.IsTaskType());
     }
 
     /// <summary>
@@ -238,10 +237,12 @@ internal
         return AddPredicate(static m => m.ExplicitInterfaceImplementations.Length > 0);
     }
 
-    private static bool HasParameterOfType(ImmutableArray<IParameterSymbol> parameters, string typeName)
+    private static bool HasCancellationTokenParameter(ImmutableArray<IParameterSymbol> parameters)
     {
         foreach (var param in parameters)
-            if (param.Type.Name == typeName)
+            if (param.Type is INamedTypeSymbol namedType &&
+                namedType.Name is "CancellationToken" &&
+                namedType.ContainingNamespace.GetMetadataName() == "System.Threading")
                 return true;
 
         return false;
