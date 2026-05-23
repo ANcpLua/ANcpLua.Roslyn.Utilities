@@ -11,21 +11,25 @@ internal
     static partial class OperationExtensions
 {
     /// <summary>
-    ///     Determines whether the operation represents the constant value <c>0</c>.
+    ///     Determines whether the operation represents the numeric constant <c>0</c> in any built-in
+    ///     numeric type (<see cref="int" />, <see cref="long" />, <see cref="uint" />, <see cref="ulong" />,
+    ///     <see cref="float" />, <see cref="double" />, <see cref="decimal" />).
     /// </summary>
     /// <param name="operation">The operation to check.</param>
     /// <returns>
-    ///     <c>true</c> if the operation has a constant integer value of <c>0</c>; otherwise, <c>false</c>.
+    ///     <c>true</c> if <paramref name="operation" />.<c>ConstantValue</c> is a numeric zero in any of the
+    ///     supported types; otherwise, <c>false</c>.
     /// </returns>
     /// <remarks>
-    ///     This is a convenience method for the common pattern of checking for zero in comparisons
-    ///     and arithmetic operations.
+    ///     The pattern explicitly lists each numeric-type zero because the C# pattern literal <c>0</c>
+    ///     alone is <c>(int)0</c>, which would silently reject <c>0L</c>, <c>0.0f</c>, <c>0.0</c>,
+    ///     <c>0m</c> — defeating the "check for zero in comparisons" use case the helper exists for.
     /// </remarks>
     /// <seealso cref="IsConstantNull" />
     /// <seealso cref="IsConstant{T}" />
     public static bool IsConstantZero(this IOperation operation)
     {
-        return operation.ConstantValue is { HasValue: true, Value: 0 };
+        return operation.ConstantValue is { HasValue: true, Value: 0 or 0L or 0u or 0uL or 0f or 0d or 0m };
     }
 
     /// <summary>
