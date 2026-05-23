@@ -68,7 +68,10 @@ internal
     public static FileLinePositionSpan?
         GetLineSpan(this SyntaxNode node, CancellationToken cancellationToken = default)
     {
-        return node.SyntaxTree.GetLineSpan(node.Span, cancellationToken);
+        if (node is null || node.IsDetachedSyntaxNode())
+            return null;
+
+        return node.SyntaxTree?.GetLineSpan(node.Span, cancellationToken);
     }
 
     /// <summary>
@@ -213,8 +216,30 @@ internal
     /// <seealso cref="GetEndLine(SyntaxNode, CancellationToken)" />
     public static bool SpansMultipleLines(this SyntaxNode node, CancellationToken cancellationToken = default)
     {
+        if (node is null)
+            return false;
+
         var lineSpan = node.GetLineSpan(cancellationToken);
         return lineSpan is not null && lineSpan.Value.StartLinePosition.Line < lineSpan.Value.EndLinePosition.Line;
+    }
+
+    // A parent-less node is detached unless its RawKind is the C# CompilationUnit. We cannot use
+    // `tree.GetRoot() == node` here because hand-built nodes (SyntaxFactory.X(...)) are also the
+    // root of their synthetic tree by reference — that approach misclassifies them as attached.
+    // The library is C#-focused; a VB.NET root would be misclassified as detached, which fails safely
+    // (GetLineSpan returns null) rather than crashing.
+    private static bool IsDetachedSyntaxNode(this SyntaxNode node)
+    {
+        if (node is null)
+            return true;
+
+        if (node.SyntaxTree is null)
+            return true;
+
+        if (node.Parent is not null)
+            return false;
+
+        return node.RawKind != (int)Microsoft.CodeAnalysis.CSharp.SyntaxKind.CompilationUnit;
     }
 
     /// <summary>

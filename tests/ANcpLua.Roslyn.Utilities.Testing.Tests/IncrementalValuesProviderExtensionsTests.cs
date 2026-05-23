@@ -19,7 +19,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Tests;
 public sealed class IncrementalValuesProviderExtensionsTests
 {
     [Fact]
-    public void GeneratorErrorInfo_From_CapturesType_Message_AndStackTrace()
+    public void GeneratorErrorInfo_From_CapturesType_AndMessage()
     {
         var caught = CaptureThrow();
 
@@ -27,8 +27,6 @@ public sealed class IncrementalValuesProviderExtensionsTests
 
         info.TypeName.Should().Be(typeof(InvalidOperationException).FullName);
         info.Message.Should().Be("boom");
-        info.StackTrace.Should().NotBeNullOrEmpty();
-        info.StackTrace.Should().Contain(nameof(ThrowDeep));
         info.ToString().Should().StartWith($"{typeof(InvalidOperationException).FullName}: boom");
     }
 
@@ -40,8 +38,8 @@ public sealed class IncrementalValuesProviderExtensionsTests
         var first = CaptureThrow();
         var second = CaptureThrow();
 
-        var a = GeneratorErrorInfo.From(first) with { StackTrace = "fixed" };
-        var b = GeneratorErrorInfo.From(second) with { StackTrace = "fixed" };
+        var a = GeneratorErrorInfo.From(first);
+        var b = GeneratorErrorInfo.From(second);
 
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());
@@ -80,6 +78,26 @@ public sealed class IncrementalValuesProviderExtensionsTests
 #pragma warning restore xUnit1051
 
         act.Should().Throw<OperationCanceledException>();
+    }
+
+    [Fact]
+    public void SelectAndReportExceptions_SingleValueOverload_ReportsDiagnosticWithoutThrowing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var compilation = CSharpCompilation.Create(
+            "Test",
+            [CSharpSyntaxTree.ParseText("class C { }", cancellationToken: ct)],
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(new SingleValueFailingGenerator());
+        driver = driver.RunGenerators(compilation, ct);
+        var result = driver.GetRunResult().Results.Single();
+
+        result.Exception.Should().BeNull();
+        result.Diagnostics.Should().ContainSingle(diagnostic =>
+            diagnostic.Id == "SINGLE001" &&
+            diagnostic.GetMessage().Contains("single boom", StringComparison.Ordinal));
     }
 
     private static InvalidOperationException CaptureThrow()
@@ -178,6 +196,22 @@ public sealed class IncrementalValuesProviderExtensionsTests
                     },
                     context)
                 .AddSource(context);
+        }
+    }
+
+    /// <summary>
+    /// Probes the single-value exception helper. It cannot filter out a bad item like
+    /// <see cref="IncrementalValuesProvider{TValues}" />, so the API must expose an explicit
+    /// result/diagnostic envelope and report the captured diagnostic.
+    /// </summary>
+    private sealed class SingleValueFailingGenerator : IIncrementalGenerator
+    {
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+        {
+            context.CompilationProvider.SelectAndReportExceptions<Compilation, FileWithName>(
+                static (_, _) => throw new InvalidOperationException("single boom"),
+                context,
+                "SINGLE001");
         }
     }
 }

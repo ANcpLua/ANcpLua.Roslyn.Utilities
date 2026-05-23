@@ -431,7 +431,7 @@ internal
     public static bool HasCancellationTokenParameter(this IInvocationOperation operation)
     {
         foreach (var param in operation.TargetMethod.Parameters)
-            if (param.Type.ToDisplayString() == "System.Threading.CancellationToken")
+            if (param.Type.IsCancellationTokenType())
                 return true;
 
         return false;
@@ -449,12 +449,20 @@ internal
     public static bool IsCancellationTokenPassed(this IInvocationOperation operation)
     {
         foreach (var arg in operation.Arguments)
-            if (arg.Parameter?.Type.ToDisplayString() == "System.Threading.CancellationToken" &&
-                !arg.Value.IsConstantNull())
+            if (arg.Parameter?.Type.IsCancellationTokenType() is true && !arg.Value.IsConstantNull())
                 return true;
 
         return false;
     }
+
+    private static bool IsCancellationTokenType(this ITypeSymbol? type)
+    {
+        if (type is not INamedTypeSymbol namedType || namedType.Name != "CancellationToken")
+            return false;
+
+        return namedType.ContainingNamespace.GetMetadataName() == "System.Threading";
+    }
+
 
     /// <summary>
     ///     Determines whether the invocation is a LINQ method from <c>System.Linq.Enumerable</c> or

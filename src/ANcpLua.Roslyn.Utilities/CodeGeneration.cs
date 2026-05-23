@@ -156,7 +156,7 @@ internal
     /// <seealso cref="RestoreWarnings" />
     public static string SuppressWarnings(params string[] warningIds)
     {
-        return warningIds.Length is 0 ? string.Empty : $"#pragma warning disable {string.Join(", ", warningIds)}";
+        return warningIds.Length is 0 ? string.Empty : $"#pragma warning disable {string.Join(", ", ValidateWarningIds(warningIds))}";
     }
 
     /// <summary>
@@ -170,7 +170,52 @@ internal
     /// <seealso cref="SuppressWarnings" />
     public static string RestoreWarnings(params string[] warningIds)
     {
-        return warningIds.Length is 0 ? string.Empty : $"#pragma warning restore {string.Join(", ", warningIds)}";
+        return warningIds.Length is 0 ? string.Empty : $"#pragma warning restore {string.Join(", ", ValidateWarningIds(warningIds))}";
+    }
+
+    private static IReadOnlyList<string> ValidateWarningIds(string[] warningIds)
+    {
+        foreach (var warningId in warningIds)
+            if (!IsValidWarningId(warningId))
+                throw new ArgumentException("Invalid warning ID.", nameof(warningIds));
+
+        return warningIds;
+    }
+
+    private static bool IsValidWarningId(string warningId)
+    {
+        if (string.IsNullOrWhiteSpace(warningId))
+            return false;
+
+        var hasDigit = false;
+        var hasLetter = false;
+
+        foreach (var ch in warningId)
+        {
+            if (char.IsWhiteSpace(ch) || ch is ',' or ';')
+                return false;
+
+            if (char.IsLetter(ch))
+                hasLetter = true;
+            else if (char.IsDigit(ch))
+                hasDigit = true;
+            else
+                return false;
+        }
+
+        if (!hasDigit)
+            return false;
+
+        return hasLetter || IsPureNumeric(warningId);
+    }
+
+    private static bool IsPureNumeric(string warningId)
+    {
+        foreach (var ch in warningId)
+            if (!char.IsDigit(ch))
+                return false;
+
+        return warningId.Length > 0;
     }
 }
 

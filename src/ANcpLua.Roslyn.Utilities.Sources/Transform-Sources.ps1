@@ -40,24 +40,24 @@ foreach ($file in $files)
 
     # Collapse ANCPLUA_ROSLYN_PUBLIC guards (Sources package is always internal)
     # Pattern A: #if / public / #else / internal / #endif -> "internal"
-    $content = $content -replace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\npublic\r?\n#else\r?\ninternal\r?\n#endif', 'internal'
+    $content = $content -creplace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\npublic\r?\n#else\r?\ninternal\r?\n#endif', 'internal'
     # Pattern B: #if / #else / internal / #endif -> "" (class line already has modifier)
-    $content = $content -replace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\n#else\r?\ninternal\r?\n#endif\r?\n', ''
+    $content = $content -creplace '(?m)^#if ANCPLUA_ROSLYN_PUBLIC\r?\n#else\r?\ninternal\r?\n#endif\r?\n', ''
 
     # Transform visibility: public -> internal
-    $content = $content -replace 'public static class', 'internal static class'
-    $content = $content -replace 'public readonly struct', 'internal readonly struct'
-    $content = $content -replace 'public readonly record struct', 'internal readonly record struct'
-    $content = $content -replace 'public sealed class', 'internal sealed class'
-    $content = $content -replace 'public record struct', 'internal record struct'
-    $content = $content -replace 'public static partial class', 'internal static partial class'
-    $content = $content -replace 'public partial class', 'internal partial class'
-    $content = $content -replace 'public class', 'internal class'
-    $content = $content -replace 'public interface', 'internal interface'
-    $content = $content -replace 'public enum', 'internal enum'
-    $content = $content -replace 'public delegate', 'internal delegate'
-    $content = $content -replace 'public abstract class', 'internal abstract class'
-    $content = $content -replace 'public record', 'internal record'
+    $content = $content -creplace '\bpublic\s+static\s+partial\s+class\b', 'internal static partial class'
+    $content = $content -creplace '\bpublic\s+static\s+class\b', 'internal static class'
+    $content = $content -creplace '\bpublic\s+readonly\s+record\s+struct\b', 'internal readonly record struct'
+    $content = $content -creplace '\bpublic\s+readonly\s+struct\b', 'internal readonly struct'
+    $content = $content -creplace '\bpublic\s+sealed\s+class\b', 'internal sealed class'
+    $content = $content -creplace '\bpublic\s+abstract\s+class\b', 'internal abstract class'
+    $content = $content -creplace '\bpublic\s+partial\s+class\b', 'internal partial class'
+    $content = $content -creplace '\bpublic\s+class\b', 'internal class'
+    $content = $content -creplace '\bpublic\s+record\s+struct\b', 'internal record struct'
+    $content = $content -creplace '\bpublic\s+record\b', 'internal record'
+    $content = $content -creplace '\bpublic\s+interface\b', 'internal interface'
+    $content = $content -creplace '\bpublic\s+enum\b', 'internal enum'
+    $content = $content -creplace '\bpublic\s+delegate\b', 'internal delegate'
 
     # Mark as auto-generated so consumer analyzers skip these files.
     # Include #nullable enable because auto-generated files ignore project-level nullable settings.

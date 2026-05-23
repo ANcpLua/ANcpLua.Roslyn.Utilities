@@ -52,8 +52,7 @@ internal
         get
         {
             foreach (var d in Diagnostics.AsImmutableArray())
-                // Defensive: guard against default(DiagnosticInfo) with null Descriptor
-                if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
+                if (d.IsError)
                     return true;
             return false;
         }
@@ -361,6 +360,10 @@ internal
         {
             return Ok(factory());
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             return Fail<T>(onException(ex));
@@ -450,7 +453,7 @@ internal
 
         var hasErrors = false;
         foreach (var d in diagnostics)
-            if (d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error)
+            if (d.IsError)
             {
                 hasErrors = true;
                 break;
@@ -532,7 +535,12 @@ internal
     public static void Report<T>(this DiagnosticFlow<T> flow, SourceProductionContext context)
     {
         foreach (var diagnosticInfo in flow.Diagnostics.AsImmutableArray())
+        {
+            if (diagnosticInfo.IsDefault)
+                continue;
+
             context.ReportDiagnostic(diagnosticInfo.ToDiagnostic());
+        }
     }
 
     /// <summary>

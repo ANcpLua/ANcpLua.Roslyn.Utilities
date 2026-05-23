@@ -1,6 +1,20 @@
 # ANcpLua.Roslyn.Utilities - Consolidated Review Log
 
 Only this file is kept for review outcomes to avoid spreading findings across directories.
+
+## Current state (2026-05-23)
+
+160+ tests passing across `tests/ANcpLua.Roslyn.Utilities.Testing.Tests/` (xUnit v3 + MTP). Five packages ship from this repo: `ANcpLua.Roslyn.Utilities`, `.Polyfills`, `.Sources`, `.Testing`, `.Testing.Aot` — version line is `2.2.x` (latest published 2.2.21).
+
+Notable recent invariants worth knowing before touching the hot paths:
+
+- `OperationExtensions.IsConstantZero` matches every built-in numeric zero (`0`, `0L`, `0u`, `0uL`, `0.0f`, `0.0`, `0m`). The single-pattern shortcut `Value: 0` matches `int 0` only and was the AL0014 regression — keep the full alternation, guarded by `OperationExtensionsConstantsTests`.
+- Symbol identity beats `ToDisplayString()` on hot paths: `IsTaskType` / `IsSpanType` / `IsMemoryType` / `IsCancellationTokenType` compare namespace + name via `INamespaceSymbol.GetMetadataName()` (one shared walker in `SymbolExtensions.cs`, do not re-introduce per-file copies).
+- `IsEnumerableType` / `GetElementType` consult `OriginalDefinition.SpecialType` because closed generics like `IEnumerable<int>` carry `SpecialType.None` — the marker lives on the open generic only.
+- `TryExtensions.TryParse*` is pinned to `CultureInfo.InvariantCulture` with explicit `NumberStyles` / `DateTimeStyles`. Do not regress to current-culture overloads.
+- `ParallelAsyncExtensions` uses a linked CTS so a single selector exception cancels every sibling worker; the `completedReading` flag suppresses secondary errors on consumer-side dispose by design.
+- `ExpiringCache<TKey,TValue>` is access-order LRU + single-flight via `Lazy<TValue?>`; the factory runs outside the `_lock` so cache reads never block on the factory.
+
 ## Framework conventions
 
 Branch protection, auto-merge, CodeRabbit posture, release flow, dependency

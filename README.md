@@ -74,14 +74,14 @@ Agent test doubles (`FakeChatClient`, `FakeReplayAgent`, `ActivityCollector`), t
 - **`SourceProductionContextExtensions`** — context helpers
 - **`EquatableArray<T>`** + **`EquatableArrayExtensions`** (`.ToEquatableArray`, `.ToEquatableArrayOrDefault`, `.AsEquatableArray`) — value equality so the cache actually hits
 - **`FileWithName`** — record for emitted-file payload
-- **`DiagnosticInfo`** + **`LocationInfo`** + **`EquatableMessageArgs`** — value-equatable diagnostic carriers
-- **`ResultWithDiagnostics<T>`** — result payload paired with diagnostics, for pipelines where the value survives errors
+- **`DiagnosticInfo`** + **`LocationInfo`** + **`EquatableMessageArgs`** — value-equatable diagnostic carriers; `IsDefault`/`IsError` predicates let pipeline code skip default sentinels at the boundary instead of NRE'ing inside Roslyn
+- **`ResultWithDiagnostics<T>`** — result payload paired with diagnostics, with `HasResult` distinguishing a successful `null` from a no-result envelope. Pair with `SelectAndCaptureExceptions` (side-effect-free) or `SelectAndReportExceptions` (chains capture + register-source-output) on `IncrementalValuesProviderExtensions`.
 
 ### Symbol analysis & matching
 
 - **`Match` fluent DSL** — `Match.Type()` / `Match.Method()` / `Match.Property()` / `Match.Field()` / `Match.Parameter()` with the per-kind matchers under `Matching/` (`MethodMatcher`, `TypeMatcher`, etc.)
 - **`Invoke`** / **`InvocationMatcher`** — invocation-shape matching
-- **`SymbolExtensions`**, **`TypeSymbolExtensions`**, **`MethodSymbolExtensions`**, **`NamespaceExtensions`** — `IsEqualTo`, `ImplementsInterface`, `GetAllBaseTypesAndSelf`, and the usual suspects
+- **`SymbolExtensions`**, **`TypeSymbolExtensions`**, **`MethodSymbolExtensions`**, **`NamespaceExtensions`** — `IsEqualTo`, `Implements`, `InheritsFrom`, `IsOrImplements`, `GetMetadataName` (overloaded for type and namespace symbols), and the usual suspects. Symbol identity beats `ToDisplayString()` for predicate hot paths — see `IsSpanType`/`IsMemoryType`/`IsTaskType` for the pattern.
 - **`AttributeExtensions`** — `GetAttribute`, `HasAttribute`, `TryGetAttribute` with constructor-arg accessors
 - **`InvocationExtensions`** / **`OperationExtensions`** / **`OperationHelper`** — `IInvocationOperation` analysis helpers
 - **`SemanticGuard<T>`** + **`SemanticGuard`** — chain semantic predicates with early-exit
@@ -107,8 +107,8 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 ### Async & time
 
 - **`AsyncSequenceExtensions`** — LINQ-ish operators over `IAsyncEnumerable<T>`
-- **`ParallelAsyncExtensions`** — channel-based parallel enumeration with ordering control
-- **`ExpiringCache<TKey,TValue>`** — TTL cache for analyzer results
+- **`ParallelAsyncExtensions`** — `SelectParallel` (completion order) / `SelectParallelOrdered` (source order), channel-based fan-out with linked-CTS cancellation so a single selector exception cancels every sibling worker
+- **`ExpiringCache<TKey,TValue>`** — access-order LRU with single-flight factory invocation via `Lazy<TValue?>` (no thundering herd on concurrent misses for the same key)
 - **`TimeConversions`** — OTel nanosecond helpers
 
 ### Dictionary & collection ergonomics
@@ -121,7 +121,7 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 
 - **`Guard`** — null / range / path / type guards
 - **`NullableExtensions`** — `Map`-style combinators for `T?`
-- **`TryExtensions`** — `TryParseX`, dictionary `GetOrNull` / `GetOrDefault` / `GetOrElse`
+- **`TryExtensions`** — `TryParseX` (every overload pinned to `CultureInfo.InvariantCulture` so a German dev's `"1,5"` doesn't silently parse as `1.5` in production), dictionary `GetOrNull` / `GetOrDefault` / `GetOrElse`
 
 ### Models & OTel enums
 

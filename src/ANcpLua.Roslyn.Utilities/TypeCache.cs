@@ -17,6 +17,7 @@ internal
     private readonly INamedTypeSymbol?[] _cache;
     private readonly bool[] _resolved;
     private readonly Func<TEnum, INamedTypeSymbol?> _resolver;
+    private readonly object _sync = new();
 
     /// <summary>
     ///     Creates a new type cache with the specified resolver function.
@@ -62,10 +63,18 @@ internal
         if (index < 0 || index >= _cache.Length)
             return null;
 
-        if (!_resolved[index])
+        // Volatile.Read pairs with the lock-exit release semantics below so the fast path observes a
+        // fully published _cache[index] write on weakly-ordered architectures (e.g. ARM, Apple Silicon).
+        if (Volatile.Read(ref _resolved[index]))
+            return _cache[index];
+
+        lock (_sync)
         {
-            _cache[index] = _resolver(type);
-            _resolved[index] = true;
+            if (!_resolved[index])
+            {
+                _cache[index] = _resolver(type);
+                Volatile.Write(ref _resolved[index], true);
+            }
         }
 
         return _cache[index];

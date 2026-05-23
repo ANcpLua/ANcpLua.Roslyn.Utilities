@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -12,9 +14,11 @@ internal
 #endif
     sealed class ExpiringCache<TKey, TValue> where TKey : notnull
 {
-    private readonly ConcurrentDictionary<TKey, CacheEntry> _cache;
+    private readonly Dictionary<TKey, CacheEntry> _cache;
+    private readonly ConcurrentDictionary<TKey, Lazy<TValue?>> _inFlight;
+    private readonly LinkedList<TKey> _lru = new();
+    private readonly object _lock = new();
     private readonly TimeSpan _idleTimeout;
-    private readonly ConcurrentQueue<TKey> _insertionOrder = new();
     private readonly int _maxEntries;
 
     /// <summary>
@@ -33,13 +37,21 @@ internal
 
         _maxEntries = maxEntries;
         _idleTimeout = idleTimeout ?? TimeSpan.FromMinutes(60);
-        _cache = new ConcurrentDictionary<TKey, CacheEntry>(keyComparer ?? EqualityComparer<TKey>.Default);
+        _cache = new Dictionary<TKey, CacheEntry>(keyComparer ?? EqualityComparer<TKey>.Default);
+        _inFlight = new ConcurrentDictionary<TKey, Lazy<TValue?>>(keyComparer ?? EqualityComparer<TKey>.Default);
     }
 
     /// <summary>
     ///     Gets the current number of entries in the cache.
     /// </summary>
-    public int Count => _cache.Count;
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+                return _cache.Count;
+        }
+    }
 
     /// <summary>
     ///     Gets the value associated with the specified key, or creates and caches a new value
@@ -50,60 +62,111 @@ internal
     /// <returns>The cached or newly created value.</returns>
     public TValue? GetOrAdd(TKey key, Func<TValue?> factory)
     {
-        var now = TimeProviderShim.System.GetUtcNow();
+        var now = DateTimeOffset.UtcNow;
+        TValue? cached;
 
-        if (_cache.TryGetValue(key, out var existing))
+        lock (_lock)
         {
-            existing.Touch(now);
-            return existing.Value;
+            if (TryGetValueLocked(key, now, out cached))
+                return cached;
         }
 
-        var created = factory();
-        var entry = new CacheEntry(created, now);
+        var created = CreateOrWaitForInflight(key, factory);
 
-        if (_cache.TryAdd(key, entry))
+        lock (_lock)
         {
-            _insertionOrder.Enqueue(key);
+            now = DateTimeOffset.UtcNow;
+
+            if (TryGetValueLocked(key, now, out cached))
+                return cached;
+
+            var node = _lru.AddLast(key);
+            _cache[key] = new CacheEntry(created, now, node);
             EvictIfNeeded(now);
             return created;
         }
+    }
 
-        if (_cache.TryGetValue(key, out existing))
+    private TValue? CreateOrWaitForInflight(TKey key, Func<TValue?> factory)
+    {
+        // ExecutionAndPublication makes Lazy<T> replay any factory exception to all concurrent waiters.
+        // The owner's finally clears the in-flight entry, so the replay window is bounded to a single
+        // factory invocation; a subsequent GetOrAdd for the same key will create a fresh Lazy and retry.
+        var entry = new Lazy<TValue?>(factory, LazyThreadSafetyMode.ExecutionAndPublication);
+        var owner = _inFlight.GetOrAdd(key, entry);
+        var isOwner = ReferenceEquals(entry, owner);
+
+        try
         {
-            existing.Touch(now);
-            return existing.Value;
+            return owner.Value;
+        }
+        finally
+        {
+            if (isOwner)
+                _inFlight.TryRemove(key, out _);
+        }
+    }
+
+    private bool TryGetValueLocked(TKey key, DateTimeOffset now, out TValue? value)
+    {
+        if (!_cache.TryGetValue(key, out var entry))
+        {
+            value = default;
+            return false;
         }
 
-        return created;
+        if (!entry.IsFresh(now, _idleTimeout))
+        {
+            RemoveLocked(key);
+            value = default;
+            return false;
+        }
+
+        entry.Touch(now, _lru);
+        value = entry.Value;
+        return true;
     }
 
     private void EvictIfNeeded(DateTimeOffset now)
     {
-        while (_cache.Count > _maxEntries && _insertionOrder.TryDequeue(out var oldest))
-        {
-            _cache.TryRemove(oldest, out _);
-        }
+        while (_lru.First is not null && _cache.TryGetValue(_lru.First.Value, out var entry) && !entry.IsFresh(now, _idleTimeout))
+            RemoveLocked(_lru.First.Value);
 
-        foreach (var kvp in _cache)
-        {
-            if (now - kvp.Value.LastAccessUtc <= _idleTimeout)
-                continue;
+        while (_cache.Count > _maxEntries && _lru.First is not null)
+            RemoveLocked(_lru.First.Value);
+    }
 
-            _cache.TryRemove(kvp.Key, out _);
+    private void RemoveLocked(TKey key)
+    {
+        if (_cache.TryGetValue(key, out var removed))
+        {
+            _cache.Remove(key);
+            _lru.Remove(removed.Node);
         }
     }
 
     private sealed class CacheEntry
     {
-        public CacheEntry(TValue? value, DateTimeOffset lastAccessUtc)
+        public CacheEntry(TValue? value, DateTimeOffset lastAccessUtc, LinkedListNode<TKey> node)
         {
             Value = value;
             LastAccessUtc = lastAccessUtc;
+            Node = node;
         }
 
         public TValue? Value { get; }
         public DateTimeOffset LastAccessUtc { get; private set; }
+        public LinkedListNode<TKey> Node { get; }
 
-        public void Touch(DateTimeOffset now) => LastAccessUtc = now;
+        public bool IsFresh(DateTimeOffset now, TimeSpan timeout)
+            => now - LastAccessUtc <= timeout;
+
+        public void Touch(DateTimeOffset now, LinkedList<TKey> lru)
+        {
+            LastAccessUtc = now;
+
+            lru.Remove(Node);
+            lru.AddLast(Node);
+        }
     }
 }

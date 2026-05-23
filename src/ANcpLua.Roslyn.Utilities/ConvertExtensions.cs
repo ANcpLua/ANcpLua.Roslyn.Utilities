@@ -84,9 +84,12 @@ internal
     ///     or <paramref name="defaultValue" /> if the value is <c>null</c>.
     /// </returns>
     /// <seealso cref="ToEnum{T}(TypedConstant)" />
-    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : Enum
+    public static T ToEnum<T>(this TypedConstant typedConstant, T defaultValue) where T : struct, Enum
     {
-        return (T?)typedConstant.Value ?? defaultValue;
+        if (!typedConstant.TryGetEnumValue<T>(out var value))
+            return defaultValue;
+
+        return value.GetValueOrDefault();
     }
 
     /// <summary>
@@ -101,9 +104,36 @@ internal
     /// <seealso cref="ToEnum{T}(TypedConstant, T)" />
     public static T? ToEnum<T>(this TypedConstant typedConstant) where T : struct, Enum
     {
-        if (typedConstant.Value is null) return null;
+        if (!typedConstant.TryGetEnumValue<T>(out var value))
+            return null;
 
-        return (T)typedConstant.Value;
+        return value;
+    }
+
+    private static bool TryGetEnumValue<T>(this TypedConstant typedConstant, out T? value) where T : struct, Enum
+    {
+        if (typedConstant.Value is null || typedConstant.Value is not object rawValue)
+        {
+            value = null;
+            return false;
+        }
+
+        if (rawValue is T typedValue)
+        {
+            value = typedValue;
+            return true;
+        }
+
+        try
+        {
+            value = (T)Enum.ToObject(typeof(T), rawValue);
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or OverflowException)
+        {
+            value = null;
+            return false;
+        }
     }
 
     // ========== Hex Conversion ==========

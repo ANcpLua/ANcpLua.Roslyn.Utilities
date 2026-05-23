@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -9,99 +10,61 @@ internal
 #endif
     static partial class TypeSymbolExtensions
 {
-    // Original-definition display strings for well-known generic framework types.
-    // Centralising these sets makes the predicates one hashset lookup each.
-    private static readonly HashSet<string> s_spanOriginalDefinitions =
-    [
-        "System.Span<T>",
-        "System.ReadOnlySpan<T>"
-    ];
-
-    private static readonly HashSet<string> s_memoryOriginalDefinitions =
-    [
-        "System.Memory<T>",
-        "System.ReadOnlyMemory<T>"
-    ];
-
-    private static readonly HashSet<string> s_taskOriginalDefinitions =
-    [
-        "System.Threading.Tasks.Task",
-        "System.Threading.Tasks.Task<TResult>",
-        "System.Threading.Tasks.ValueTask",
-        "System.Threading.Tasks.ValueTask<TResult>"
-    ];
-
-    private static readonly HashSet<string> s_genericTaskOriginalDefinitions =
-    [
-        "System.Threading.Tasks.Task<TResult>",
-        "System.Threading.Tasks.ValueTask<TResult>"
-    ];
-
-    private static readonly HashSet<string> s_elementTypeOriginalDefinitions =
-    [
-        "System.Span<T>",
-        "System.ReadOnlySpan<T>",
-        "System.Memory<T>",
-        "System.ReadOnlyMemory<T>",
-        "System.Collections.Generic.IEnumerable<T>"
-    ];
-
     /// <summary>
-    ///     Determines whether the type symbol matches any of the supplied <c>OriginalDefinition</c> display strings.
+    ///     Determines whether the type symbol matches a namespace + name pair.
     /// </summary>
     /// <param name="symbol">The type symbol to check.</param>
-    /// <param name="originalDefinitions">Display strings of <c>OriginalDefinition</c> (e.g. <c>"System.Span&lt;T&gt;"</c>).</param>
-    /// <returns><c>true</c> if the symbol is an <see cref="INamedTypeSymbol" /> whose original definition matches a string in the set.</returns>
-    /// <remarks>
-    ///     Single chokepoint used by <see cref="IsSpanType" />, <see cref="IsMemoryType" />, and <see cref="IsTaskType" />;
-    ///     keeps each predicate at cyclomatic complexity 1.
-    /// </remarks>
-    private static bool IsKnownNamedType(this ITypeSymbol? symbol, HashSet<string> originalDefinitions)
+    /// <param name="metadataNamespace">The expected namespace name.</param>
+    /// <param name="metadataTypeName">The expected type name.</param>
+    /// <returns><c>true</c> if the symbol matches.</returns>
+    private static bool HasMetadataIdentity(this INamedTypeSymbol symbol, string metadataNamespace, string metadataTypeName)
     {
-        return symbol is INamedTypeSymbol named
-               && originalDefinitions.Contains(named.OriginalDefinition.ToDisplayString());
+        if (symbol.Name != metadataTypeName)
+            return false;
+
+        return metadataNamespace == symbol.ContainingNamespace.GetMetadataName();
     }
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="Span{T}" /> or <see cref="ReadOnlySpan{T}" />.
     /// </summary>
-    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <param name="symbol">The type symbol to check.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is a span type; otherwise, <c>false</c>.</returns>
     /// <seealso cref="IsMemoryType" />
     /// <seealso cref="GetElementType" />
     public static bool IsSpanType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
-        return symbol.IsKnownNamedType(s_spanOriginalDefinitions);
+        return symbol is INamedTypeSymbol named &&
+               (named.HasMetadataIdentity("System", "Span") || named.HasMetadataIdentity("System", "ReadOnlySpan"));
     }
 
     /// <summary>
     ///     Determines whether the type symbol represents <see cref="Memory{T}" /> or <see cref="ReadOnlyMemory{T}" />.
     /// </summary>
-    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <param name="symbol">The type symbol to check.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is a memory type; otherwise, <c>false</c>.</returns>
     /// <seealso cref="IsSpanType" />
     /// <seealso cref="GetElementType" />
     public static bool IsMemoryType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
-        return symbol.IsKnownNamedType(s_memoryOriginalDefinitions);
+        return symbol is INamedTypeSymbol named &&
+               (named.HasMetadataIdentity("System", "Memory") ||
+                named.HasMetadataIdentity("System", "ReadOnlyMemory"));
     }
 
     /// <summary>
     ///     Determines whether the type symbol represents a task type.
     /// </summary>
-    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <param name="symbol">The type symbol to check.</param>
     /// <returns><c>true</c> if <paramref name="symbol" /> is a task type; otherwise, <c>false</c>.</returns>
     /// <remarks>
     ///     <para>Task types include <c>Task</c>, <c>Task&lt;T&gt;</c>, <c>ValueTask</c>, and <c>ValueTask&lt;T&gt;</c>.</para>
     /// </remarks>
     public static bool IsTaskType([NotNullWhen(true)] this ITypeSymbol? symbol)
     {
-        // Generic task types funnel through the standard named-type check; for the
-        // non-generic Task / ValueTask, fall back to the symbol's own display string.
-        return symbol.IsKnownNamedType(s_taskOriginalDefinitions)
-               || (symbol is not null
-                   && symbol is not INamedTypeSymbol
-                   && s_taskOriginalDefinitions.Contains(symbol.ToDisplayString()));
+        return symbol is INamedTypeSymbol named &&
+               (named.HasMetadataIdentity("System.Threading.Tasks", "Task") ||
+                named.HasMetadataIdentity("System.Threading.Tasks", "ValueTask"));
     }
 
     /// <summary>
@@ -115,8 +78,8 @@ internal
     /// <remarks>
     ///     <para>
     ///         This is a context-free alternative to <c>AwaitableContext.GetTaskResultType()</c>
-    ///         that uses string matching instead of cached type symbols. Useful in source generators
-    ///         that don't create an <c>AwaitableContext</c>.
+    ///         that uses symbol matching instead of cached type strings. Useful in source generators
+    ///         that do not create an <c>AwaitableContext</c>.
     ///     </para>
     ///     <para>
     ///         Returns <c>null</c> for non-generic <c>Task</c>, non-generic <c>ValueTask</c>,
@@ -125,18 +88,16 @@ internal
     /// </remarks>
     public static ITypeSymbol? GetTaskResultType(this ITypeSymbol type)
     {
-        if (type is not INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } named)
+        if (type is not INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } named || !named.IsTaskType())
             return null;
 
-        return s_genericTaskOriginalDefinitions.Contains(named.OriginalDefinition.ToDisplayString())
-            ? named.TypeArguments[0]
-            : null;
+        return named.TypeArguments[0];
     }
 
     /// <summary>
     ///     Determines whether the type symbol represents an enumerable type.
     /// </summary>
-    /// <param name="symbol">The type symbol to check, or <c>null</c>.</param>
+    /// <param name="symbol">The type symbol to check.</param>
     /// <returns>
     ///     <c>true</c> if <paramref name="symbol" /> is <see cref="System.Collections.IEnumerable" />
     ///     or <see cref="System.Collections.Generic.IEnumerable{T}" />; otherwise, <c>false</c>.
@@ -150,8 +111,10 @@ internal
         if (symbol.SpecialType is SpecialType.System_Collections_IEnumerable)
             return true;
 
-        return symbol is INamedTypeSymbol namedType
-               && namedType.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T;
+        // Closed generics like IEnumerable<int> carry SpecialType.None; the SpecialType marker lives
+        // on the open generic only, so we must consult OriginalDefinition.SpecialType here.
+        return symbol is INamedTypeSymbol namedType &&
+               namedType.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T;
     }
 
     /// <summary>
@@ -177,8 +140,11 @@ internal
         if (symbol is not INamedTypeSymbol { TypeArguments.Length: 1 } namedType)
             return null;
 
-        return s_elementTypeOriginalDefinitions.Contains(namedType.OriginalDefinition.ToDisplayString())
-            ? namedType.TypeArguments[0]
-            : null;
+        if (namedType.IsSpanType() ||
+            namedType.IsMemoryType() ||
+            namedType.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T)
+            return namedType.TypeArguments[0];
+
+        return null;
     }
 }

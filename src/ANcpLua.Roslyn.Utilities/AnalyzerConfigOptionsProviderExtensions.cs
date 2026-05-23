@@ -398,12 +398,14 @@ internal
             return false;
         }
 
-        if (bool.TryParse(text, out value))
+        var normalized = text.Trim();
+
+        if (bool.TryParse(normalized, out value))
             return true;
 
         // MSBuild sometimes uses 1/0 for boolean-ish values
-        if (text.Length == 1)
-            switch (text[0])
+        if (normalized.Length == 1)
+            switch (normalized[0])
             {
                 case '1':
                     value = true;

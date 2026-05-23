@@ -36,7 +36,7 @@
             <_TransformedDir>$(IntermediateOutputPath)transformed/</_TransformedDir>
         </PropertyGroup>
 
-        <Exec Command="pwsh -NoProfile -File Transform-Sources.ps1 -SourceDir ../ANcpLua.Roslyn.Utilities -OutputDir $(_TransformedDir)"
+        <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildProjectDirectory)/Transform-Sources.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)/../ANcpLua.Roslyn.Utilities&quot; -OutputDir &quot;$(_TransformedDir)&quot;"
               WorkingDirectory="$(MSBuildProjectDirectory)"/>
 
         <ItemGroup>

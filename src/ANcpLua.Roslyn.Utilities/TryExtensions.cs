@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace ANcpLua.Roslyn.Utilities;
 
 /// <summary>
@@ -66,7 +68,9 @@ internal
     /// <returns>The parsed byte if successful; otherwise, <c>null</c>.</returns>
     public static byte? TryParseByte(this string? value)
     {
-        return byte.TryParse(value, out var result) ? result : null;
+        return byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -77,7 +81,9 @@ internal
     /// <returns>The parsed byte if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static byte TryParseByte(this string? value, byte defaultValue)
     {
-        return byte.TryParse(value, out var result) ? result : defaultValue;
+        return byte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -87,7 +93,9 @@ internal
     /// <returns>The parsed sbyte if successful; otherwise, <c>null</c>.</returns>
     public static sbyte? TryParseSByte(this string? value)
     {
-        return sbyte.TryParse(value, out var result) ? result : null;
+        return sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -98,7 +106,9 @@ internal
     /// <returns>The parsed sbyte if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static sbyte TryParseSByte(this string? value, sbyte defaultValue)
     {
-        return sbyte.TryParse(value, out var result) ? result : defaultValue;
+        return sbyte.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     // ========== 16-bit Integer Parsing ==========
@@ -110,7 +120,9 @@ internal
     /// <returns>The parsed short if successful; otherwise, <c>null</c>.</returns>
     public static short? TryParseInt16(this string? value)
     {
-        return short.TryParse(value, out var result) ? result : null;
+        return short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -121,7 +133,9 @@ internal
     /// <returns>The parsed short if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static short TryParseInt16(this string? value, short defaultValue)
     {
-        return short.TryParse(value, out var result) ? result : defaultValue;
+        return short.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -131,7 +145,9 @@ internal
     /// <returns>The parsed ushort if successful; otherwise, <c>null</c>.</returns>
     public static ushort? TryParseUInt16(this string? value)
     {
-        return ushort.TryParse(value, out var result) ? result : null;
+        return ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -142,7 +158,9 @@ internal
     /// <returns>The parsed ushort if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static ushort TryParseUInt16(this string? value, ushort defaultValue)
     {
-        return ushort.TryParse(value, out var result) ? result : defaultValue;
+        return ushort.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     // ========== 32-bit Integer Parsing ==========
@@ -164,7 +182,9 @@ internal
     /// </example>
     public static int? TryParseInt32(this string? value)
     {
-        return int.TryParse(value, out var result) ? result : null;
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -180,7 +200,9 @@ internal
     /// </example>
     public static int TryParseInt32(this string? value, int defaultValue)
     {
-        return int.TryParse(value, out var result) ? result : defaultValue;
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -190,7 +212,9 @@ internal
     /// <returns>The parsed uint if successful; otherwise, <c>null</c>.</returns>
     public static uint? TryParseUInt32(this string? value)
     {
-        return uint.TryParse(value, out var result) ? result : null;
+        return uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -201,7 +225,9 @@ internal
     /// <returns>The parsed uint if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static uint TryParseUInt32(this string? value, uint defaultValue)
     {
-        return uint.TryParse(value, out var result) ? result : defaultValue;
+        return uint.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     // ========== 64-bit Integer Parsing ==========
@@ -213,7 +239,9 @@ internal
     /// <returns>The parsed long if successful; otherwise, <c>null</c>.</returns>
     public static long? TryParseInt64(this string? value)
     {
-        return long.TryParse(value, out var result) ? result : null;
+        return long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -224,7 +252,9 @@ internal
     /// <returns>The parsed long if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static long TryParseInt64(this string? value, long defaultValue)
     {
-        return long.TryParse(value, out var result) ? result : defaultValue;
+        return long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -234,7 +264,9 @@ internal
     /// <returns>The parsed ulong if successful; otherwise, <c>null</c>.</returns>
     public static ulong? TryParseUInt64(this string? value)
     {
-        return ulong.TryParse(value, out var result) ? result : null;
+        return ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -245,7 +277,9 @@ internal
     /// <returns>The parsed ulong if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static ulong TryParseUInt64(this string? value, ulong defaultValue)
     {
-        return ulong.TryParse(value, out var result) ? result : defaultValue;
+        return ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     // ========== Floating-Point Parsing ==========
@@ -257,7 +291,9 @@ internal
     /// <returns>The parsed float if successful; otherwise, <c>null</c>.</returns>
     public static float? TryParseSingle(this string? value)
     {
-        return float.TryParse(value, out var result) ? result : null;
+        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -268,7 +304,9 @@ internal
     /// <returns>The parsed float if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static float TryParseSingle(this string? value, float defaultValue)
     {
-        return float.TryParse(value, out var result) ? result : defaultValue;
+        return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -278,7 +316,9 @@ internal
     /// <returns>The parsed number if successful; otherwise, <c>null</c>.</returns>
     public static double? TryParseDouble(this string? value)
     {
-        return double.TryParse(value, out var result) ? result : null;
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -289,7 +329,9 @@ internal
     /// <returns>The parsed number if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static double TryParseDouble(this string? value, double defaultValue)
     {
-        return double.TryParse(value, out var result) ? result : defaultValue;
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -299,7 +341,9 @@ internal
     /// <returns>The parsed decimal if successful; otherwise, <c>null</c>.</returns>
     public static decimal? TryParseDecimal(this string? value)
     {
-        return decimal.TryParse(value, out var result) ? result : null;
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -310,7 +354,9 @@ internal
     /// <returns>The parsed decimal if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static decimal TryParseDecimal(this string? value, decimal defaultValue)
     {
-        return decimal.TryParse(value, out var result) ? result : defaultValue;
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
     // ========== Boolean and Character Parsing ==========
@@ -451,7 +497,9 @@ internal
     /// <returns>The parsed date/time if successful; otherwise, <c>null</c>.</returns>
     public static DateTime? TryParseDateTime(this string? value)
     {
-        return DateTime.TryParse(value, out var result) ? result : null;
+        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -462,7 +510,9 @@ internal
     /// <returns>The parsed date/time if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static DateTime TryParseDateTime(this string? value, DateTime defaultValue)
     {
-        return DateTime.TryParse(value, out var result) ? result : defaultValue;
+        return DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -472,7 +522,9 @@ internal
     /// <returns>The parsed date/time offset if successful; otherwise, <c>null</c>.</returns>
     public static DateTimeOffset? TryParseDateTimeOffset(this string? value)
     {
-        return DateTimeOffset.TryParse(value, out var result) ? result : null;
+        return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)
+            ? result
+            : null;
     }
 
     /// <summary>
@@ -483,7 +535,9 @@ internal
     /// <returns>The parsed date/time offset if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static DateTimeOffset TryParseDateTimeOffset(this string? value, DateTimeOffset defaultValue)
     {
-        return DateTimeOffset.TryParse(value, out var result) ? result : defaultValue;
+        return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)
+            ? result
+            : defaultValue;
     }
 
     /// <summary>
@@ -493,7 +547,7 @@ internal
     /// <returns>The parsed time span if successful; otherwise, <c>null</c>.</returns>
     public static TimeSpan? TryParseTimeSpan(this string? value)
     {
-        return TimeSpan.TryParse(value, out var result) ? result : null;
+        return TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out var result) ? result : null;
     }
 
     /// <summary>
@@ -504,7 +558,7 @@ internal
     /// <returns>The parsed time span if successful; otherwise, <paramref name="defaultValue" />.</returns>
     public static TimeSpan TryParseTimeSpan(this string? value, TimeSpan defaultValue)
     {
-        return TimeSpan.TryParse(value, out var result) ? result : defaultValue;
+        return TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out var result) ? result : defaultValue;
     }
 
     // ========== Collection Safe Access ==========
