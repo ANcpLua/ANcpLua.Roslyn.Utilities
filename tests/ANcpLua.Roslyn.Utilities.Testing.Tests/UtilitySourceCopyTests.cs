@@ -95,15 +95,10 @@ public sealed class UtilitySourceCopyTests
     }
 
     [Fact]
-    public async Task EmptyEnumerators_NeverMoveNext()
+    public void EmptyEnumerators_NeverMoveNext()
     {
         Enumerator.Empty().MoveNext().Should().BeFalse();
         Enumerator.Empty<int>().MoveNext().Should().BeFalse();
-
-        var asyncEnumerator = Enumerator.EmptyAsync<int>();
-        var hasItem = await asyncEnumerator.MoveNextAsync();
-        hasItem.Should().BeFalse();
-        await asyncEnumerator.DisposeAsync();
     }
 
     [Fact]

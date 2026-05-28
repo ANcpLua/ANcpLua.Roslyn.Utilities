@@ -198,7 +198,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     ///         &lt;/Project&gt;
     ///         """;
     /// 
-    ///     var expected = new DiagnosticResult("AL0018", DiagnosticSeverity.Warning)
+    ///     var expected = new DiagnosticResult("AL1601", DiagnosticSeverity.Warning)
     ///         .WithLocation("Directory.Build.props", 1, 1);
     /// 
     ///     await VerifyAsync(
