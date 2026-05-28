@@ -44,7 +44,7 @@ internal
 
         public object? Value => Entry.Value;
 
-        public object? Current => Entry;
+        public object Current => Entry;
 
         public bool MoveNext()
         {
