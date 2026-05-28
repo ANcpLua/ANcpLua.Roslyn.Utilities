@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup Label="Roslyn">
     <!-- Core Roslyn packages -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(BclAsyncInterfacesVersion)" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
