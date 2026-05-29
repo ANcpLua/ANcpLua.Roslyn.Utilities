@@ -127,66 +127,87 @@ internal
     /// </summary>
     /// <param name="s">The string to escape.</param>
     /// <returns>
-    ///     The escaped body (without the surrounding quotes). Handles the full set of C# simple-escape
-    ///     sequences (<c>\" \\ \0 \a \b \f \n \r \t \v</c>) and emits <c>\uXXXX</c> for any remaining control
-    ///     character. Printable non-ASCII (e.g. em-dash, accented letters) is left as-is, matching the C#
-    ///     compiler's acceptance of raw Unicode in UTF-8 string literals.
+    ///     The escaped body (without the surrounding quotes), or the input unchanged (no allocation) when no
+    ///     escaping is required. Handles the full set of C# simple-escape sequences
+    ///     (<c>\" \\ \0 \a \b \f \n \r \t \v</c>) and emits <c>\uXXXX</c> for any remaining control character.
+    ///     Printable non-ASCII (e.g. em-dash, accented letters) is left as-is, matching the C# compiler's
+    ///     acceptance of raw Unicode in UTF-8 string literals.
     /// </returns>
     public static string EscapeCSharpString(this string s)
     {
         if (string.IsNullOrEmpty(s)) return string.Empty;
 
-        var builder = new StringBuilder(s.Length);
+        var needsEscape = false;
         foreach (var ch in s)
         {
-            switch (ch)
+            if (ch is '"' or '\\' || char.IsControl(ch))
             {
-                case '"':
-                    builder.Append("\\\"");
-                    break;
-                case '\\':
-                    builder.Append("\\\\");
-                    break;
-                case '\0':
-                    builder.Append("\\0");
-                    break;
-                case '\a':
-                    builder.Append("\\a");
-                    break;
-                case '\b':
-                    builder.Append("\\b");
-                    break;
-                case '\f':
-                    builder.Append("\\f");
-                    break;
-                case '\n':
-                    builder.Append("\\n");
-                    break;
-                case '\r':
-                    builder.Append("\\r");
-                    break;
-                case '\t':
-                    builder.Append("\\t");
-                    break;
-                case '\v':
-                    builder.Append("\\v");
-                    break;
-                default:
-                    if (char.IsControl(ch))
-                    {
-                        builder.Append("\\u");
-                        builder.Append(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
-                    }
-                    else
-                    {
-                        builder.Append(ch);
-                    }
-
-                    break;
+                needsEscape = true;
+                break;
             }
         }
 
-        return builder.ToString();
+        if (!needsEscape) return s;
+
+        Span<char> initial = stackalloc char[256];
+        var builder = new ValueStringBuilder(initial);
+        try
+        {
+            foreach (var ch in s)
+            {
+                switch (ch)
+                {
+                    case '"':
+                        builder.Append("\\\"");
+                        break;
+                    case '\\':
+                        builder.Append("\\\\");
+                        break;
+                    case '\0':
+                        builder.Append("\\0");
+                        break;
+                    case '\a':
+                        builder.Append("\\a");
+                        break;
+                    case '\b':
+                        builder.Append("\\b");
+                        break;
+                    case '\f':
+                        builder.Append("\\f");
+                        break;
+                    case '\n':
+                        builder.Append("\\n");
+                        break;
+                    case '\r':
+                        builder.Append("\\r");
+                        break;
+                    case '\t':
+                        builder.Append("\\t");
+                        break;
+                    case '\v':
+                        builder.Append("\\v");
+                        break;
+                    default:
+                        if (char.IsControl(ch))
+                        {
+                            builder.Append("\\u");
+                            builder.Append(((int)ch).ToString("x4", CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            builder.Append(ch);
+                        }
+
+                        break;
+                }
+            }
+
+            return builder.ToString();
+        }
+        finally
+        {
+            builder.Dispose();
+        }
     }
 
     /// <summary>
