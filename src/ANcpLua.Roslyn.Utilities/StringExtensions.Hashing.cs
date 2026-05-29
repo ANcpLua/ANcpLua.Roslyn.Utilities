@@ -68,6 +68,34 @@ internal
         return hex[..hexChars];
     }
 
+    /// <summary>
+    ///     Computes a deterministic 8-character lowercase hexadecimal 32-bit FNV-1a hash from a string.
+    /// </summary>
+    /// <param name="input">The input string to hash.</param>
+    /// <returns>
+    ///     An 8-character lowercase hexadecimal string from the 32-bit FNV-1a hash of <paramref name="input" />'s
+    ///     UTF-16 code units. Returns <c>"811c9dc5"</c> (the FNV-1a offset basis) for an empty string.
+    /// </returns>
+    /// <remarks>
+    ///     A fast, allocation-free, non-cryptographic alternative to <see cref="ToShortHash(string)" /> for
+    ///     disambiguating generated identifier suffixes where a SHA-256 hash is unnecessary overhead. Hashes
+    ///     UTF-16 code units directly, so results are stable across runs but not equal to a byte-level FNV-1a.
+    /// </remarks>
+    public static string ToFnv1aHash(this string input)
+    {
+        const uint OffsetBasis = 2166136261;
+        const uint Prime = 16777619;
+
+        var hash = OffsetBasis;
+        foreach (var ch in input)
+        {
+            hash ^= ch;
+            hash *= Prime;
+        }
+
+        return hash.ToString("x8", CultureInfo.InvariantCulture);
+    }
+
     private static string ComputeSha256Hex(string input)
     {
 #if NET5_0_OR_GREATER
