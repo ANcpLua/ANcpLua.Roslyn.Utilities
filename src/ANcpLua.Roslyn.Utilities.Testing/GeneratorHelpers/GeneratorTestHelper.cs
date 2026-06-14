@@ -36,14 +36,7 @@ public static class GeneratorTestHelper
     public static GeneratorRunResult RunGenerator<TGenerator>(params string[] sources)
         where TGenerator : IIncrementalGenerator, new()
     {
-        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s)).ToArray();
-        var references = GetBaseReferences();
-
-        var compilation = CSharpCompilation.Create(
-            assemblyName: "TestAssembly",
-            syntaxTrees: syntaxTrees,
-            references: references,
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var compilation = CreateCompilation(sources);
 
         var generator = new TGenerator();
 
@@ -52,6 +45,18 @@ public static class GeneratorTestHelper
 
         return new GeneratorRunResult(driver.GetRunResult(), outputCompilation, diagnostics);
     }
+
+    /// <summary>
+    /// Create a <see cref="CSharpCompilation"/> over <paramref name="sources"/> using the standard
+    /// base references. Exposed so tests can drive a <see cref="GeneratorDriver"/> directly — for
+    /// example to replace a syntax tree and re-run for incremental-update scenarios.
+    /// </summary>
+    public static CSharpCompilation CreateCompilation(params string[] sources)
+        => CSharpCompilation.Create(
+            assemblyName: "TestAssembly",
+            syntaxTrees: [.. sources.Select(s => CSharpSyntaxTree.ParseText(s))],
+            references: GetBaseReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     /// <summary>Assert that <typeparamref name="TGenerator"/> generates exactly one file containing <paramref name="expectedGeneratedSource"/>.</summary>
     public static void AssertGeneratesSource<TGenerator>(string source, string expectedGeneratedSource)
