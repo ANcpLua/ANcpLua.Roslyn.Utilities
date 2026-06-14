@@ -86,6 +86,12 @@ jobs:
       - name: Build
         run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release --no-restore -p:Version=${{ needs.version.outputs.version }}
 
+      # Run the suites against the just-built output. publish `needs: build`, so a runtime
+      # regression here fails the job and a broken package can never reach nuget.org — the
+      # build alone only proves the tests compile, not that they pass.
+      - name: Test
+        run: dotnet test ANcpLua.Roslyn.Utilities.slnx -c Release --no-build
+
       # Stable packages — packed once on Linux only.
       - name: Pack (stable)
         if: matrix.os == 'ubuntu-latest'
