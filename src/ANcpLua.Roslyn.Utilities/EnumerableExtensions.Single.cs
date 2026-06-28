@@ -23,6 +23,8 @@ internal
     /// </remarks>
     public static T? SingleOrDefaultIfMultiple<T>(this IEnumerable<T> source)
     {
+        Guard.NotNull(source);
+
         using var enumerator = source.GetEnumerator();
         if (!enumerator.MoveNext())
             return default;
