@@ -116,6 +116,7 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 - **`DictionaryExtensions`** — `GetOrInsert(key, context, factory)` (closure-free, hot-path), `GetOrAdd(key)` / `GetOrAdd(key, factory)` (ergonomic), `MapIfAbsent(src, dst, transform)` (cross-key copy for vendor-adapter telemetry mappers)
 - **`EnumerableExtensions`** — dedup, partition, chunking, `MinBy`/`MaxBy`
 - **`ListExtensions`** — in-place mutation helpers
+- **`Delta`** + **`SetDelta<T>`** — set difference for incremental "what changed between snapshots" logic. `Delta.Difference(first, second)` is the relative complement `second \ first`; `Delta.Compute(previous, current)` returns a value-equatable `SetDelta<T>` carrying `Added` / `Removed` so a diff flows through the generator cache. Works on `ImmutableArray<T>` and `EquatableArray<T>`.
 
 ### Guards & null handling
 
