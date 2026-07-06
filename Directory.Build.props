@@ -20,6 +20,9 @@
         <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">true</EnableNETAnalyzers>
         <AnalysisLevel Condition="'$(AnalysisLevel)' == ''">latest-all</AnalysisLevel>
 
+        <!-- GitHub Actions only sets CI=true; without this mapping the warnings-as-errors gate below never fires in CI. -->
+        <ContinuousIntegrationBuild Condition="'$(ContinuousIntegrationBuild)' == '' AND '$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
         <MSBuildTreatWarningsAsErrors Condition="'$(MSBuildTreatWarningsAsErrors)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</MSBuildTreatWarningsAsErrors>
         <TreatWarningsAsErrors Condition="'$(TreatWarningsAsErrors)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
         <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>

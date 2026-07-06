@@ -49,10 +49,6 @@ internal
         public void Reset()
         {
         }
-
-        public void Dispose()
-        {
-        }
     }
 
     private static class EmptyEnumeratorCache<T>

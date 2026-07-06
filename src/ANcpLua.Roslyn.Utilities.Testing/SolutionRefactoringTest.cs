@@ -66,8 +66,20 @@ public abstract class SolutionRefactoringTest<TRefactoring> : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _workspace.Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    ///     Disposes the underlying workspace when <paramref name="disposing" /> is <c>true</c>.
+    /// </summary>
+    /// <param name="disposing">
+    ///     <c>true</c> when called from <see cref="Dispose()" />; <c>false</c> when called from a finalizer.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+            _workspace.Dispose();
     }
 
     /// <summary>

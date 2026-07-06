@@ -187,11 +187,15 @@ partial class Standalone
 
         var compilation = CSharpCompilation.Create(
             "PartialMerge",
-            [CSharpSyntaxTree.ParseText(NestedSource), CSharpSyntaxTree.ParseText(builder.ToString())],
+            [
+                CSharpSyntaxTree.ParseText(NestedSource, cancellationToken: TestContext.Current.CancellationToken),
+                CSharpSyntaxTree.ParseText(builder.ToString(), cancellationToken: TestContext.Current.CancellationToken)
+            ],
             [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var errors = compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Error).ToArray();
+        var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity is DiagnosticSeverity.Error).ToArray();
         errors.Should().BeEmpty();
     }
 
@@ -318,7 +322,8 @@ namespace A.B
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var driver = CSharpGeneratorDriver.Create(new AddSourceProbeGenerator(hintName).AsSourceGenerator());
-        var result = driver.RunGenerators(compilation).GetRunResult().Results.Single();
+        var result = driver.RunGenerators(compilation, TestContext.Current.CancellationToken)
+            .GetRunResult().Results.Single();
 
         result.Exception.Should().BeNull();
         result.GeneratedSources.Length.Should().Be(1);
@@ -337,7 +342,7 @@ namespace A.B
     {
         var compilation = CSharpCompilation.Create(
             "TypeDeclarationShapes",
-            [CSharpSyntaxTree.ParseText(source)],
+            [CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)],
             [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -347,6 +352,6 @@ namespace A.B
 
     private static string Normalize(string text)
     {
-        return text.Replace("\r\n", "\n");
+        return text.Replace("\r\n", "\n", StringComparison.Ordinal);
     }
 }

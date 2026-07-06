@@ -60,7 +60,7 @@ public sealed class ConvertExtensionsTests
             }
             """;
 
-        var tree = CSharpSyntaxTree.ParseText(source.Replace("ARG", argumentExpression));
+        var tree = CSharpSyntaxTree.ParseText(source.Replace("ARG", argumentExpression, StringComparison.Ordinal));
         var semanticModel = GetSemanticModel(tree);
         var method = tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
 
@@ -89,7 +89,7 @@ public sealed class ConvertExtensionsTests
             }
             """;
 
-        var tree = CSharpSyntaxTree.ParseText(source.Replace("ARG", argumentExpression));
+        var tree = CSharpSyntaxTree.ParseText(source.Replace("ARG", argumentExpression, StringComparison.Ordinal));
         var semanticModel = GetSemanticModel(tree);
         var method = tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
 

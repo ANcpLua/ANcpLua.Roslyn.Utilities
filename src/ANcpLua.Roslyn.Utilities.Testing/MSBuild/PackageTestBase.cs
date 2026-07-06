@@ -290,11 +290,12 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
         string tfm = Tfm.Net100,
         params (string Key, string Value)[] extraProps)
     {
-        await using var project = CreateProjectBuilder(
+        var project = CreateProjectBuilder(
             TestOutputHelper,
             Fixture.PackageDirectory,
             "TestPackage",
             Fixture.Version);
+        await using var projectScope = project.ConfigureAwait(false);
 
         return await project
             .WithTargetFramework(tfm)
@@ -341,11 +342,12 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
         string tfm = Tfm.Net100,
         params (string Key, string Value)[] extraProps)
     {
-        await using var project = CreateProjectBuilder(
+        var project = CreateProjectBuilder(
             TestOutputHelper,
             Fixture.PackageDirectory,
             "TestPackage",
             Fixture.Version);
+        await using var projectScope = project.ConfigureAwait(false);
 
         return await project
             .WithTargetFramework(tfm)

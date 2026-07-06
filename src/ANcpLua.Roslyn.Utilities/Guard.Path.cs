@@ -201,7 +201,7 @@ internal
         if (value.StartsWith(".", StringComparison.Ordinal))
             throw new ArgumentException("Extension must not start with a period ('.').", paramName);
 
-        if (value.Contains('\\') || value.Contains('/'))
+        if (value.Contains('\\', StringComparison.Ordinal) || value.Contains('/', StringComparison.Ordinal))
             throw new ArgumentException("Extension must not contain path separators.", paramName);
 
         return value;
@@ -232,7 +232,7 @@ internal
     {
         NotNullOrEmpty(value, paramName);
 
-        if (value.Contains('\\') || value.Contains('/'))
+        if (value.Contains('\\', StringComparison.Ordinal) || value.Contains('/', StringComparison.Ordinal))
             throw new ArgumentException("Extension must not contain path separators.", paramName);
 
         return value.StartsWith(".", StringComparison.Ordinal) ? value : $".{value}";

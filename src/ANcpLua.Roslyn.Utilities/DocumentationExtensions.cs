@@ -193,7 +193,7 @@ internal
         }
     }
 
-    private static IEnumerable<XNode> RewriteInheritdocElements(
+    private static XNode[] RewriteInheritdocElements(
         ISymbol symbol,
         HashSet<ISymbol>? visitedSymbols,
         Compilation compilation,

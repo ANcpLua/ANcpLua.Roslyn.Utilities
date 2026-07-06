@@ -34,7 +34,7 @@ internal
         var maxValue = 0;
         foreach (TEnum value in enumValues)
         {
-            var intValue = Convert.ToInt32(value);
+            var intValue = Convert.ToInt32(value, CultureInfo.InvariantCulture);
             if (intValue > maxValue)
                 maxValue = intValue;
         }
@@ -59,7 +59,7 @@ internal
     /// </remarks>
     public INamedTypeSymbol? Get(TEnum type)
     {
-        var index = Convert.ToInt32(type);
+        var index = Convert.ToInt32(type, CultureInfo.InvariantCulture);
         if (index < 0 || index >= _cache.Length)
             return null;
 
