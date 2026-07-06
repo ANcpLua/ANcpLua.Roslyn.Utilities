@@ -83,7 +83,9 @@ internal
     /// <seealso cref="SymbolExtensions.GetTypeParameters" />
     public static string? GetGenericParameterClause(this INamedTypeSymbol type)
     {
-        return type.IsGenericType
+        // Not IsGenericType: that is true when any *containing* type has type parameters,
+        // which would produce a bogus "<>" clause for non-generic nested types.
+        return type.TypeParameters.Length > 0
             ? $"<{string.Join(", ", type.TypeParameters.Select(static p => p.Name))}>"
             : null;
     }

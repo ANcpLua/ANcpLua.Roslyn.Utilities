@@ -146,11 +146,32 @@ internal
     /// </returns>
     public Diagnostic ToDiagnostic()
     {
+        return ToDiagnostic(null);
+    }
+
+    /// <summary>
+    ///     Converts this <see cref="DiagnosticInfo" /> to a <see cref="Diagnostic" /> whose location is
+    ///     bound to the specified syntax tree when possible.
+    /// </summary>
+    /// <param name="syntaxTree">
+    ///     The syntax tree the diagnostic's location originated from, or <c>null</c> to use a path-based
+    ///     location.
+    /// </param>
+    /// <returns>A <see cref="Diagnostic" /> instance ready for reporting.</returns>
+    /// <remarks>
+    ///     A tree-bound location enables IDE navigation and live squiggles. See
+    ///     <see cref="LocationInfo.ToLocation(SyntaxTree?)" /> for the binding rules and the
+    ///     changed-tree fallback behavior.
+    /// </remarks>
+    /// <seealso cref="ToDiagnostic()" />
+    public Diagnostic ToDiagnostic(SyntaxTree? syntaxTree)
+    {
         if (Descriptor is null)
             throw new InvalidOperationException("Cannot convert default DiagnosticInfo to a Diagnostic.");
 
+        var location = Location.ToLocation(syntaxTree);
         return MessageArgs.IsEmpty
-            ? Diagnostic.Create(Descriptor, Location.ToLocation())
-            : Diagnostic.Create(Descriptor, Location.ToLocation(), [.. MessageArgs.Args]);
+            ? Diagnostic.Create(Descriptor, location)
+            : Diagnostic.Create(Descriptor, location, [.. MessageArgs.Args]);
     }
 }
