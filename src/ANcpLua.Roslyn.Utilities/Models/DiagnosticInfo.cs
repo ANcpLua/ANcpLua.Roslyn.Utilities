@@ -21,7 +21,7 @@ namespace ANcpLua.Roslyn.Utilities.Models;
 ///             <description>Use factory methods to create instances from syntax nodes, tokens, symbols, or locations.</description>
 ///         </item>
 ///         <item>
-///             <description>Call <see cref="ToDiagnostic" /> to convert back to a <see cref="Diagnostic" /> for reporting.</description>
+///             <description>Call <see cref="ToDiagnostic()" /> to convert back to a <see cref="Diagnostic" /> for reporting.</description>
 ///         </item>
 ///         <item>
 ///             <description>Safe for use in generator caching scenarios due to value equality.</description>

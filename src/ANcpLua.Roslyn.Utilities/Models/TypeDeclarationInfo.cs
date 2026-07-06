@@ -121,6 +121,54 @@ internal
     }
 
     /// <summary>
+    ///     Gets a deterministic, collision-free hint name for
+    ///     <see cref="SourceProductionContext.AddSource" />, derived from the namespace, the
+    ///     containing-type chain, and the type name, with generic levels marked by an <c>_N</c>
+    ///     arity suffix (e.g. <c>"Deep.Outer_1.Middle.Inner_1.g.cs"</c>).
+    /// </summary>
+    /// <returns>The hint name, ending in <c>.g.cs</c>.</returns>
+    /// <remarks>
+    ///     <para>
+    ///         The arity suffix keeps hint names unique when a generic and a non-generic type share a
+    ///         name (e.g. <c>Result</c> and <c>Result&lt;T&gt;</c>), and the namespace + chain prefix
+    ///         keeps same-named types in different scopes apart — the two collision classes a
+    ///         name-only hint runs into. The output is stable across runs, so incremental outputs
+    ///         map to the same generated file every time.
+    ///     </para>
+    /// </remarks>
+    public string GetHintName()
+    {
+        var builder = new StringBuilder(64);
+
+        if (Namespace is not null)
+            builder.Append(Namespace).Append('.');
+
+        foreach (var containing in ContainingTypes.AsImmutableArray())
+            AppendHintNameLevel(builder, containing.Name, containing.GenericParameterClause);
+
+        AppendHintNameLevel(builder, Name, GenericParameterClause);
+
+        return builder.Append("g.cs").ToString();
+    }
+
+    private static void AppendHintNameLevel(StringBuilder builder, string name, string? genericParameterClause)
+    {
+        builder.Append(name);
+
+        if (genericParameterClause is not null)
+        {
+            var arity = 1;
+            foreach (var c in genericParameterClause)
+                if (c == ',')
+                    arity++;
+
+            builder.Append('_').Append(arity);
+        }
+
+        builder.Append('.');
+    }
+
+    /// <summary>
     ///     Creates a <see cref="TypeDeclarationInfo" /> from an <see cref="INamedTypeSymbol" />.
     /// </summary>
     /// <param name="type">The type symbol to snapshot.</param>
