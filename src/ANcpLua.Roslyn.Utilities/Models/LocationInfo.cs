@@ -99,4 +99,36 @@ internal
     {
         return Location.Create(Path, Span, LineSpan);
     }
+
+    /// <summary>
+    ///     Converts this <see cref="LocationInfo" /> back to a <see cref="Location" />, binding it to
+    ///     the specified syntax tree when possible.
+    /// </summary>
+    /// <param name="syntaxTree">
+    ///     The syntax tree this location originated from, or <c>null</c> to create a path-based location.
+    /// </param>
+    /// <returns>
+    ///     A tree-bound <see cref="Location" /> when <paramref name="syntaxTree" /> is provided and the
+    ///     stored span fits within it; otherwise the path-based location from <see cref="ToLocation()" />.
+    /// </returns>
+    /// <remarks>
+    ///     <para>
+    ///         A tree-bound location (<see cref="Location.IsInSource" /> <c>true</c>) enables IDE
+    ///         navigation and live squiggles, whereas the path-based fallback only carries file/span
+    ///         coordinates. Pass the tree the location was captured from — typically available in the
+    ///         generator's output stage alongside the cached model.
+    ///     </para>
+    ///     <para>
+    ///         The span-bounds guard makes this safe to call with a tree that has since changed: if the
+    ///         stored span no longer fits, the method falls back to the path-based location instead of
+    ///         throwing.
+    ///     </para>
+    /// </remarks>
+    /// <seealso cref="ToLocation()" />
+    public Location ToLocation(SyntaxTree? syntaxTree)
+    {
+        return syntaxTree is not null && Span.End <= syntaxTree.Length
+            ? Location.Create(syntaxTree, Span)
+            : ToLocation();
+    }
 }
