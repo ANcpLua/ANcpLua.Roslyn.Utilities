@@ -330,6 +330,84 @@ namespace A.B
         result.GeneratedSources[0].HintName.Should().Be(hintName);
     }
 
+    [Fact]
+    public void GetFullyQualifiedMetadataName_RoundTripsThroughGetTypeByMetadataName()
+    {
+        var compilation = CreateCompilation(NestedSource);
+        var original = compilation.GetTypeByMetadataName("Deep.Outer`1+Middle+Inner`1")
+                       ?? throw new InvalidOperationException("Expected test symbol to resolve.");
+
+        var info = TypeDeclarationInfo.From(original);
+        var metadataName = info.GetFullyQualifiedMetadataName();
+
+        metadataName.Should().Be("Deep.Outer`1+Middle+Inner`1");
+        var resolved = compilation.GetTypeByMetadataName(metadataName);
+        SymbolEqualityComparer.Default.Equals(resolved, original).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(ShapesSource, "Shapes.PlainClass", "Shapes.PlainClass")]
+    [InlineData("public class Standalone { }", "Standalone", "Standalone")]
+    public void GetFullyQualifiedMetadataName_SimpleShapes(string source, string metadataName, string expected)
+    {
+        var info = TypeDeclarationInfo.From(GetType(source, metadataName));
+
+        info.GetFullyQualifiedMetadataName().Should().Be(expected);
+
+        var resolved = CreateCompilation(source).GetTypeByMetadataName(expected);
+        resolved.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_NestedGenericChain_UsesGlobalAliasAndParameterNames()
+    {
+        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
+
+        info.GetFullyQualifiedName().Should().Be("global::Deep.Outer<T>.Middle.Inner<U>");
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_GlobalNamespaceType_KeepsGlobalAlias()
+    {
+        var info = TypeDeclarationInfo.From(GetType("public class Standalone { }", "Standalone"));
+
+        info.GetFullyQualifiedName().Should().Be("global::Standalone");
+    }
+
+    [Fact]
+    public void GetFullyQualifiedName_IsValidInsideGeneratedPartial()
+    {
+        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
+
+        var builder = new IndentedStringBuilder();
+        using (info.BeginDeclaration(builder))
+        {
+            builder.AppendLine($"public {info.GetFullyQualifiedName()} Self() => this;");
+        }
+
+        var compilation = CSharpCompilation.Create(
+            "SelfReference",
+            [
+                CSharpSyntaxTree.ParseText(NestedSource, cancellationToken: TestContext.Current.CancellationToken),
+                CSharpSyntaxTree.ParseText(builder.ToString(), cancellationToken: TestContext.Current.CancellationToken)
+            ],
+            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity is DiagnosticSeverity.Error).ToArray();
+        errors.Should().BeEmpty();
+    }
+
+    private static CSharpCompilation CreateCompilation(string source)
+    {
+        return CSharpCompilation.Create(
+            "TypeDeclarationShapes",
+            [CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)],
+            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    }
+
     private sealed class AddSourceProbeGenerator(string hintName) : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -340,13 +418,7 @@ namespace A.B
 
     private static INamedTypeSymbol GetType(string source, string metadataName)
     {
-        var compilation = CSharpCompilation.Create(
-            "TypeDeclarationShapes",
-            [CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)],
-            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        return compilation.GetTypeByMetadataName(metadataName)
+        return CreateCompilation(source).GetTypeByMetadataName(metadataName)
                ?? throw new InvalidOperationException($"Expected test symbol '{metadataName}' to resolve.");
     }
 

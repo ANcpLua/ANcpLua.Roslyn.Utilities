@@ -162,14 +162,79 @@ internal
         builder.Append(name);
 
         if (genericParameterClause is not null)
-        {
-            var arity = 1;
-            foreach (var c in genericParameterClause)
-                if (c == ',')
-                    arity++;
+            builder.Append('(').Append(GetArity(genericParameterClause)).Append(')');
+    }
 
-            builder.Append('(').Append(arity).Append(')');
+    /// <summary>
+    ///     Gets the CLR metadata name of the type, suitable for
+    ///     <see cref="Compilation.GetTypeByMetadataName(string)" /> — namespace-qualified, with
+    ///     containing types joined by <c>+</c> and generic levels carrying a backtick arity suffix
+    ///     (e.g. <c>"Deep.Outer`1+Middle+Inner`1"</c>).
+    /// </summary>
+    /// <returns>The fully qualified metadata name.</returns>
+    /// <remarks>
+    ///     This closes the round-trip: a later pipeline stage that only has the cached snapshot can
+    ///     re-resolve the live <see cref="INamedTypeSymbol" /> from a current
+    ///     <see cref="Compilation" /> without having retained the original symbol.
+    /// </remarks>
+    public string GetFullyQualifiedMetadataName()
+    {
+        var builder = new StringBuilder(64);
+
+        if (Namespace is not null)
+            builder.Append(Namespace).Append('.');
+
+        foreach (var containing in ContainingTypes.AsImmutableArray())
+        {
+            AppendMetadataNameLevel(builder, containing.Name, containing.GenericParameterClause);
+            builder.Append('+');
         }
+
+        AppendMetadataNameLevel(builder, Name, GenericParameterClause);
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    ///     Gets the fully qualified C# name of the type with a <c>global::</c> alias qualifier and
+    ///     generic parameter names (e.g. <c>"global::Deep.Outer&lt;T&gt;.Middle.Inner&lt;U&gt;"</c>),
+    ///     suitable for referencing the type from generated code.
+    /// </summary>
+    /// <returns>The fully qualified, alias-qualified type reference.</returns>
+    /// <remarks>
+    ///     The generic levels carry the declaration's type <i>parameter</i> names, so the reference is
+    ///     valid inside the partial declaration opened by <see cref="BeginDeclaration" /> (where those
+    ///     parameters are in scope) — the usual place generated code needs a self-reference.
+    /// </remarks>
+    public string GetFullyQualifiedName()
+    {
+        var builder = new StringBuilder(64).Append("global::");
+
+        if (Namespace is not null)
+            builder.Append(Namespace).Append('.');
+
+        foreach (var containing in ContainingTypes.AsImmutableArray())
+            builder.Append(containing.DisplayName).Append('.');
+
+        return builder.Append(DisplayName).ToString();
+    }
+
+    private static void AppendMetadataNameLevel(StringBuilder builder, string name, string? genericParameterClause)
+    {
+        builder.Append(name);
+
+        if (genericParameterClause is not null)
+            builder.Append('`').Append(GetArity(genericParameterClause));
+    }
+
+    private static int GetArity(string genericParameterClause)
+    {
+        var arity = 1;
+        foreach (var c in genericParameterClause)
+            if (c == ',')
+                arity++;
+
+        return arity;
     }
 
     /// <summary>

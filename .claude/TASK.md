@@ -18,16 +18,18 @@ builds green with ~236 unique analyzer warnings. Plan:
 - [x] `CI=true` clean rebuild: **0 warnings, 0 errors**; 215 tests passed.
 - [ ] PR → auto-merge → publish **2.2.34** (auto-bump), verify tag+index, bump qyl.
 
-## Arc B — features (branch: `claude/metadata-name-caching-assertions`, after A merges)
-- [ ] `TypeDeclarationInfo.GetFullyQualifiedMetadataName()` — reconstruct
-      ``Deep.Outer`1+Middle+Inner`1`` from the snapshot (inverse of `From` w.r.t. lookup), for
-      `Compilation.GetTypeByMetadataName` in later pipeline stages. Tests incl. round-trip:
-      `GetTypeByMetadataName(info.GetFullyQualifiedMetadataName())` resolves the original symbol.
-- [ ] Cachability assertions in `.Testing`: run-twice helper asserting all tracked incremental
-      steps report `IncrementalStepRunReason.Cached`/`Unchanged` on the second run (TrackingNames
-      pattern). Integrate with existing CachingHintBuilder/ModelEqualityClassifier if they overlap.
-- [ ] Tests, README, build+test green.
-- [ ] PR → merge → publish **2.2.35**, verify, bump qyl 2.2.34 → 2.2.35.
+## Arc B — features (branch: `claude/metadata-name-caching-assertions`, after A merged)
+**Scope correction:** the pitched cachability assertion already exists —
+`GeneratorResult.IsCached(params string[])` is the run-twice, all-steps-cached, forbidden-types
+one-liner, more complete than proposed. Arc B is therefore the honest remainder: complete the
+TypeDeclarationInfo round-trip surface.
+- [x] `GetFullyQualifiedMetadataName()` — ``Deep.Outer`1+Middle+Inner`1``; round-trip test via
+      `GetTypeByMetadataName` resolves the original symbol (SymbolEqualityComparer).
+- [x] `GetFullyQualifiedName()` — `global::Deep.Outer<T>.Middle.Inner<U>`; compile-test proves it
+      is valid as a self-reference inside the generated partial.
+- [x] Tests (6 new, 221 total green), README, clean rebuild 0 warnings / 0 errors under armed gate.
+- [ ] PR → merge → publish **2.2.35**, verify, bump qyl 2.2.33 → 2.2.35 (2.2.34 qyl bump
+      intentionally skipped — consolidated into one bump since both arcs were commissioned together).
 - [ ] Remove this file in a final `.claude/`-only PR.
 
 ## Notes
