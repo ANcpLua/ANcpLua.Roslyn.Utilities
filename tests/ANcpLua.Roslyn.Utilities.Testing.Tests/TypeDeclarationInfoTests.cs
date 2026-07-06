@@ -211,6 +211,52 @@ partial class Standalone
         default(TypeDeclarationInfo).IsDefault.Should().BeTrue();
     }
 
+    [Fact]
+    public void GetHintName_NestedGenericChain_EncodesEveryLevelWithArity()
+    {
+        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
+
+        info.GetHintName().Should().Be("Deep.Outer_1.Middle.Inner_1.g.cs");
+    }
+
+    [Fact]
+    public void GetHintName_GlobalNamespaceType_OmitsNamespacePrefix()
+    {
+        var info = TypeDeclarationInfo.From(GetType("public class Standalone { }", "Standalone"));
+
+        info.GetHintName().Should().Be("Standalone.g.cs");
+    }
+
+    [Fact]
+    public void GetHintName_SimpleNamespacedType_UsesQualifiedName()
+    {
+        var info = TypeDeclarationInfo.From(GetType(ShapesSource, "Shapes.PlainClass"));
+
+        info.GetHintName().Should().Be("Shapes.PlainClass.g.cs");
+    }
+
+    [Fact]
+    public void GetHintName_AritySuffix_DisambiguatesGenericOverloads()
+    {
+        const string source = """
+namespace Overloads
+{
+    public class Result { }
+    public class Result<T> { }
+    public class Result<T1, T2> { }
+}
+""";
+
+        var plain = TypeDeclarationInfo.From(GetType(source, "Overloads.Result")).GetHintName();
+        var one = TypeDeclarationInfo.From(GetType(source, "Overloads.Result`1")).GetHintName();
+        var two = TypeDeclarationInfo.From(GetType(source, "Overloads.Result`2")).GetHintName();
+
+        plain.Should().Be("Overloads.Result.g.cs");
+        one.Should().Be("Overloads.Result_1.g.cs");
+        two.Should().Be("Overloads.Result_2.g.cs");
+        new[] { plain, one, two }.Distinct().Should().HaveCount(3);
+    }
+
     private static INamedTypeSymbol GetType(string source, string metadataName)
     {
         var compilation = CSharpCompilation.Create(
