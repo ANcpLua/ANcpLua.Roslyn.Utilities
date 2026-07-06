@@ -173,7 +173,7 @@ internal
         return warningIds.Length is 0 ? string.Empty : $"#pragma warning restore {string.Join(", ", ValidateWarningIds(warningIds))}";
     }
 
-    private static IReadOnlyList<string> ValidateWarningIds(string[] warningIds)
+    private static string[] ValidateWarningIds(string[] warningIds)
     {
         foreach (var warningId in warningIds)
             if (!IsValidWarningId(warningId))

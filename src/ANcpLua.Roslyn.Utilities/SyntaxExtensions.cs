@@ -605,7 +605,7 @@ internal
     ///     from <c>"Dictionary&lt;string, List&lt;int&gt;&gt;"</c>).
     /// </param>
     /// <returns>A list of individual type argument strings, trimmed of whitespace.</returns>
-    private static IEnumerable<string> ParseGenericArguments(string argsContent)
+    private static List<string> ParseGenericArguments(string argsContent)
     {
         var args = new List<string>();
         var depth = 0;

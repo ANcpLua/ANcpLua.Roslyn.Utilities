@@ -157,7 +157,9 @@ internal
             }
             finally
             {
+#pragma warning disable CA1849 // CancelAsync is unavailable on netstandard2.0
                 cts.Cancel();
+#pragma warning restore CA1849
                 try
                 {
                     await completion.ConfigureAwait(false);
@@ -317,7 +319,9 @@ internal
             }
             finally
             {
+#pragma warning disable CA1849 // CancelAsync is unavailable on netstandard2.0
                 cts.Cancel();
+#pragma warning restore CA1849
                 try
                 {
                     await completion.ConfigureAwait(false);

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using ANcpLua.Roslyn.Utilities.Models;
 using AwesomeAssertions;
@@ -18,6 +19,7 @@ public class Widget
 }
 """;
 
+#pragma warning disable RS2008 // release tracking does not apply to a test-only descriptor
     private static readonly DiagnosticDescriptor Descriptor = new(
         "TST001",
         "Test title",
@@ -25,6 +27,7 @@ public class Widget
         "Tests",
         DiagnosticSeverity.Warning,
         true);
+#pragma warning restore RS2008
 
     [Fact]
     public void ToLocation_WithOriginTree_ReturnsTreeBoundLocation()
@@ -57,7 +60,7 @@ public class Widget
     {
         var (_, node) = ParseWidget();
         var info = LocationInfo.From(node);
-        var unrelatedShortTree = CSharpSyntaxTree.ParseText("//");
+        var unrelatedShortTree = CSharpSyntaxTree.ParseText("//", cancellationToken: TestContext.Current.CancellationToken);
 
         var location = info.ToLocation(unrelatedShortTree);
 
@@ -75,7 +78,7 @@ public class Widget
 
         diagnostic.Location.IsInSource.Should().BeTrue();
         diagnostic.Location.SourceTree.Should().BeSameAs(tree);
-        diagnostic.GetMessage().Should().Be("message");
+        diagnostic.GetMessage(CultureInfo.InvariantCulture).Should().Be("message");
     }
 
     [Fact]
@@ -89,7 +92,7 @@ public class Widget
 
         withNull.Location.IsInSource.Should().BeFalse();
         withNull.Location.GetLineSpan().Should().Be(parameterless.Location.GetLineSpan());
-        withNull.GetMessage().Should().Be(parameterless.GetMessage());
+        withNull.GetMessage(CultureInfo.InvariantCulture).Should().Be(parameterless.GetMessage(CultureInfo.InvariantCulture));
     }
 
     private static (SyntaxTree Tree, ClassDeclarationSyntax Node) ParseWidget()

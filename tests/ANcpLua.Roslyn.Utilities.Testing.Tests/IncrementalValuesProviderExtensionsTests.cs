@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using ANcpLua.Roslyn.Utilities;
@@ -97,7 +98,7 @@ public sealed class IncrementalValuesProviderExtensionsTests
         result.Exception.Should().BeNull();
         result.Diagnostics.Should().ContainSingle(diagnostic =>
             diagnostic.Id == "SINGLE001" &&
-            diagnostic.GetMessage().Contains("single boom", StringComparison.Ordinal));
+            diagnostic.GetMessage(CultureInfo.InvariantCulture).Contains("single boom", StringComparison.Ordinal));
     }
 
     private static InvalidOperationException CaptureThrow()

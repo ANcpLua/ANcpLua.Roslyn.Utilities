@@ -145,8 +145,10 @@ public static class DotNetSdkHelpers
             else
             {
                 using var ms = new MemoryStream(bytes);
-                await using var gz = new GZipStream(ms, CompressionMode.Decompress);
-                await using var tar = new TarReader(gz);
+                var gz = new GZipStream(ms, CompressionMode.Decompress);
+                await using var gzScope = gz.ConfigureAwait(false);
+                var tar = new TarReader(gz);
+                await using var tarScope = tar.ConfigureAwait(false);
                 while ((await tar.GetNextEntryAsync().ConfigureAwait(false)) is { } entry)
                 {
                     var destinationPath = tempFolder / entry.Name;
@@ -160,7 +162,8 @@ public static class DotNetSdkHelpers
                             if (Path.GetDirectoryName(destinationPath) is { } parentDir)
                                 Directory.CreateDirectory(parentDir);
                             var entryStream = entry.DataStream;
-                            await using var outputStream = File.Create(destinationPath);
+                            var outputStream = File.Create(destinationPath);
+                            await using var outputScope = outputStream.ConfigureAwait(false);
                             if (entryStream is not null) await entryStream.CopyToAsync(outputStream).ConfigureAwait(false);
                             break;
                         }

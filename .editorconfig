@@ -1,1 +1,47 @@
 root = true
+
+# Analyzer tuning for a Roslyn utility library (AnalysisLevel=latest-all baseline).
+# Every disabled rule below is a deliberate, categorical decision — new warning IDs
+# not listed here fail the CI build (warnings-as-errors when ContinuousIntegrationBuild=true).
+
+[*.cs]
+# Nullable reference types are enabled and enforced repo-wide; inputs are Roslyn pipeline
+# objects that are non-null by contract. Null guards on ~390 public members would add
+# hot-path cost and churn without catching real defects NRT doesn't already catch.
+dotnet_diagnostic.CA1062.severity = none
+
+# Value types here are scopes (IndentScope, TypeDeclarationScope, ScopedActivity), builders
+# (HashCombiner), and enumerator/entry structs — equality on them is meaningless by design.
+dotnet_diagnostic.CA1815.severity = none
+
+# Deliberate catch-alls: Try*/SelectAndCaptureExceptions/DiagnosticFlow.Try exist to convert
+# arbitrary user-code exceptions into data (diagnostics/results). OperationCanceledException
+# is rethrown where it matters.
+dotnet_diagnostic.CA1031.severity = none
+
+# Nested public types are the established zero-allocation enumerator pattern
+# (LineSplitEnumerator/LineSplitEntry) and intentional grouping (TimeConversions.Iso8601).
+dotnet_diagnostic.CA1034.severity = none
+
+# String-typed URLs are intentional: OTel schema URLs are opaque identifiers, and the
+# QueryString/ShortId helpers are string-in/string-out by design.
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1055.severity = none
+
+# OTel enums are byte-backed to match the wire format.
+dotnet_diagnostic.CA1028.severity = none
+
+# Method-vs-property and naming rules would break shipped public API
+# (EquatableArray<T>, ReadOnlyCollection, ReadOnlyDictionary, HashCombiner.HashCode).
+dotnet_diagnostic.CA1024.severity = none
+dotnet_diagnostic.CA1710.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1721.severity = none
+
+# Implicit operators ship documented named alternates using the As* naming family
+# (AsImmutableArray, AsEquatableArray); CA2225 only recognizes To*/From* names.
+dotnet_diagnostic.CA2225.severity = none
+
+# Array-returning properties on result/report types (BuildResult, DataReaderExtensions)
+# expose materialized snapshots by design.
+dotnet_diagnostic.CA1819.severity = none
