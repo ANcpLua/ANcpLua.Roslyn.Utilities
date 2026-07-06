@@ -216,7 +216,7 @@ partial class Standalone
     {
         var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
 
-        info.GetHintName().Should().Be("Deep.Outer_1.Middle.Inner_1.g.cs");
+        info.GetHintName().Should().Be("Deep.Outer(1)-Middle-Inner(1).g.cs");
     }
 
     [Fact]
@@ -236,7 +236,7 @@ partial class Standalone
     }
 
     [Fact]
-    public void GetHintName_AritySuffix_DisambiguatesGenericOverloads()
+    public void GetHintName_ArityMarker_DisambiguatesGenericOverloads()
     {
         const string source = """
 namespace Overloads
@@ -252,9 +252,85 @@ namespace Overloads
         var two = TypeDeclarationInfo.From(GetType(source, "Overloads.Result`2")).GetHintName();
 
         plain.Should().Be("Overloads.Result.g.cs");
-        one.Should().Be("Overloads.Result_1.g.cs");
-        two.Should().Be("Overloads.Result_2.g.cs");
+        one.Should().Be("Overloads.Result(1).g.cs");
+        two.Should().Be("Overloads.Result(2).g.cs");
         new[] { plain, one, two }.Distinct().Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void GetHintName_ArityMarker_CannotBeForgedByIdentifier()
+    {
+        // A type literally named Result_1 must not collide with Result<T>.
+        const string source = """
+namespace Forgery
+{
+    public class Result_1 { }
+    public class Result<T> { }
+}
+""";
+
+        var literal = TypeDeclarationInfo.From(GetType(source, "Forgery.Result_1")).GetHintName();
+        var generic = TypeDeclarationInfo.From(GetType(source, "Forgery.Result`1")).GetHintName();
+
+        literal.Should().Be("Forgery.Result_1.g.cs");
+        generic.Should().Be("Forgery.Result(1).g.cs");
+        literal.Should().NotBe(generic);
+    }
+
+    [Fact]
+    public void GetHintName_NestingSeparator_DistinguishesNamespaceFromContainingType()
+    {
+        // namespace A { class B { class C } } must not collide with namespace A.B { class C }.
+        const string nestedShape = """
+namespace A
+{
+    public class B
+    {
+        public class C { }
+    }
+}
+""";
+        const string namespacedShape = """
+namespace A.B
+{
+    public class C { }
+}
+""";
+
+        var nested = TypeDeclarationInfo.From(GetType(nestedShape, "A.B+C")).GetHintName();
+        var namespaced = TypeDeclarationInfo.From(GetType(namespacedShape, "A.B.C")).GetHintName();
+
+        nested.Should().Be("A.B-C.g.cs");
+        namespaced.Should().Be("A.B.C.g.cs");
+        nested.Should().NotBe(namespaced);
+    }
+
+    [Fact]
+    public void GetHintName_IsAcceptedByRoslynHintNameValidation()
+    {
+        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
+        var hintName = info.GetHintName();
+
+        var compilation = CSharpCompilation.Create(
+            "HintNameProbe",
+            [],
+            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var driver = CSharpGeneratorDriver.Create(new AddSourceProbeGenerator(hintName).AsSourceGenerator());
+        var result = driver.RunGenerators(compilation).GetRunResult().Results.Single();
+
+        result.Exception.Should().BeNull();
+        result.GeneratedSources.Length.Should().Be(1);
+        result.GeneratedSources[0].HintName.Should().Be(hintName);
+    }
+
+    private sealed class AddSourceProbeGenerator(string hintName) : IIncrementalGenerator
+    {
+        public void Initialize(IncrementalGeneratorInitializationContext context)
+        {
+            context.RegisterPostInitializationOutput(ctx => ctx.AddSource(hintName, "// probe"));
+        }
     }
 
     private static INamedTypeSymbol GetType(string source, string metadataName)
