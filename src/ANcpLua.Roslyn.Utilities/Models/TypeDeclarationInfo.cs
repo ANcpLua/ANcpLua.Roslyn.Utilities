@@ -122,18 +122,21 @@ internal
 
     /// <summary>
     ///     Gets a deterministic, collision-free hint name for
-    ///     <see cref="SourceProductionContext.AddSource" />, derived from the namespace, the
-    ///     containing-type chain, and the type name, with generic levels marked by an <c>_N</c>
-    ///     arity suffix (e.g. <c>"Deep.Outer_1.Middle.Inner_1.g.cs"</c>).
+    ///     <see cref="SourceProductionContext.AddSource(string, string)" />, derived from the
+    ///     namespace, the containing-type chain, and the type name. Nested levels are joined with
+    ///     <c>-</c> and generic levels carry a <c>(N)</c> arity marker
+    ///     (e.g. <c>"Deep.Outer(1)-Middle-Inner(1).g.cs"</c>).
     /// </summary>
     /// <returns>The hint name, ending in <c>.g.cs</c>.</returns>
     /// <remarks>
     ///     <para>
-    ///         The arity suffix keeps hint names unique when a generic and a non-generic type share a
-    ///         name (e.g. <c>Result</c> and <c>Result&lt;T&gt;</c>), and the namespace + chain prefix
-    ///         keeps same-named types in different scopes apart — the two collision classes a
-    ///         name-only hint runs into. The output is stable across runs, so incremental outputs
-    ///         map to the same generated file every time.
+    ///         The encoding is injective because both markers are characters no C# identifier (and no
+    ///         namespace segment) can contain: <c>(N)</c> distinguishes <c>Result&lt;T&gt;</c> from a
+    ///         type literally named <c>Result_1</c>, and the <c>-</c> nesting separator distinguishes
+    ///         <c>namespace A { class B { class C } }</c> (<c>A.B-C</c>) from
+    ///         <c>namespace A.B { class C }</c> (<c>A.B.C</c>). Both characters are accepted by
+    ///         Roslyn's hint-name validation. The output is stable across runs, so incremental
+    ///         outputs map to the same generated file every time.
     ///     </para>
     /// </remarks>
     public string GetHintName()
@@ -144,11 +147,14 @@ internal
             builder.Append(Namespace).Append('.');
 
         foreach (var containing in ContainingTypes.AsImmutableArray())
+        {
             AppendHintNameLevel(builder, containing.Name, containing.GenericParameterClause);
+            builder.Append('-');
+        }
 
         AppendHintNameLevel(builder, Name, GenericParameterClause);
 
-        return builder.Append("g.cs").ToString();
+        return builder.Append(".g.cs").ToString();
     }
 
     private static void AppendHintNameLevel(StringBuilder builder, string name, string? genericParameterClause)
@@ -162,10 +168,8 @@ internal
                 if (c == ',')
                     arity++;
 
-            builder.Append('_').Append(arity);
+            builder.Append('(').Append(arity).Append(')');
         }
-
-        builder.Append('.');
     }
 
     /// <summary>

@@ -27,9 +27,22 @@ Native auto-merge (github-actions token) ⇒ no push CI run ⇒
 - [x] README: mention `GetHintName` in the TypeDeclarationInfo bullet.
 - [x] Local verify: solution build 0 errors + 212 tests passed (4 new).
 - [ ] Commit on `claude/hint-name`, push, PR (auto-merge enables itself for claude/ branches).
-- [ ] After merge: cancel auto-dispatched run, dispatch with `version=2.2.32`, watch to success.
-- [ ] Verify tag `v2.2.32` + nuget.org indexing (active wait ≤5 min; else report pending, verify later).
-- [ ] Bump qyl `global.json` pins 2.2.30 → 2.2.32, build, PR, merge.
+- [x] After merge: cancel auto-dispatched run (28765141614), dispatch with `version=2.2.32` → success.
+- [x] Verify tag `v2.2.32` + nuget.org indexing (both packages, ~4 min).
+- [x] Bump qyl `global.json` pins 2.2.30 → 2.2.32 (qyl#490, merged).
+
+## Extension: CodeRabbit findings on #152 → hint-name encoding fix (→ 2.2.33)
+Both PR #152 review findings survived adversarial verification (real, constructible collisions
+in an API documented as collision-free):
+1. `_N` arity suffix is forgeable by an identifier: `class Result_1` vs `Result<T>` collide.
+2. `.` for both namespace and nesting: `A { B { C } }` vs `A.B { C }` collide.
+Fix (before anyone depends on the format): arity `(N)`, nesting separator `-` — characters no
+identifier can contain, so the encoding is injective. Verified accepted by Roslyn hint-name
+validation via a real CSharpGeneratorDriver probe test.
+- [x] New encoding + regression tests for both collision classes + driver-validation test (215 passed).
+- [x] Fix new ambiguous `AddSource` cref from #152 while touching the file.
+- [ ] PR `claude/hint-name-collisions`, auto-merge, auto-publish **2.2.33** (normal auto-bump — no override).
+- [ ] Verify v2.2.33 + indexing, bump qyl 2.2.32 → 2.2.33.
 - [ ] Remove this file in a final `.claude/`-only PR.
 
 ## Notes
