@@ -1,7 +1,8 @@
 # ANcpLua.Roslyn.Utilities.Testing
 
-Testing support package for Roslyn utilities and related generators.
+Fluent test framework (net10.0) for Roslyn analyzers, code fixes, and incremental
+generators: caching validation, forbidden-type detection, cross-framework web
+testing, and OTel instrumentation helpers.
 
 - Project: [ANcpLua.Roslyn.Utilities.Testing.csproj](ANcpLua.Roslyn.Utilities.Testing.csproj)
-- Keep test helpers focused on this repo's utilities.
-- Agent workflow helpers belong in [ANcpLua.Agents](https://github.com/ANcpLua/ANcpLua.Agents), not here.
+- Source of truth: `Test.cs`, `GeneratorTestEngine.cs`, `AnalyzerTest.cs`, `CodeFixTest.cs`, `Analysis/`, `WebTesting/`, `Instrumentation/`.

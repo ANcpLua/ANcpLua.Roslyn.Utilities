@@ -1,7 +1,8 @@
 # ANcpLua.ExtensibleEnumMirror
 
-Extensible enum mirror source generator/analyzer project.
+Roslyn incremental generator (netstandard2.0) mirroring TypeSpec `[CodeGenType]`
+extensible-enum structs as real CLR enums. Marker attr emitted post-init.
 
 - Project: [ANcpLua.Analyzers.ExtensibleEnumMirror.csproj](ANcpLua.Analyzers.ExtensibleEnumMirror.csproj)
-- Use core Roslyn helpers from [ANcpLua.Roslyn.Utilities](../ANcpLua.Roslyn.Utilities/CLAUDE.md) where they already fit.
-- Keep package metadata generic enough that it does not drift with implementation details.
+- Source of truth: `ExtensibleEnumMirrorGenerator.cs`, `Extraction/`, `Generation/`, `Models/`.
+- Shared helpers: [../ANcpLua.Roslyn.Utilities](../ANcpLua.Roslyn.Utilities/CLAUDE.md).
