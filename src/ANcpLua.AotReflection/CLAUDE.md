@@ -1,7 +1,8 @@
 # ANcpLua.AotReflection
 
-Source generator/analyzer project.
+Roslyn incremental source generator (netstandard2.0, `DevelopmentDependency`)
+emitting AOT reflection metadata.
 
 - Project: [ANcpLua.Analyzers.AotReflection.csproj](ANcpLua.Analyzers.AotReflection.csproj)
-- Attribute contracts live next door in [ANcpLua.AotReflection.Attributes](../ANcpLua.AotReflection.Attributes/CLAUDE.md).
-- Keep generator behavior in source; keep usage examples and verification in tests.
+- Source of truth: `AotReflectionGenerator.cs`, `Extraction/`, `Generation/`, `Models/`, `DiagnosticDescriptors.cs`.
+- Attribute contracts: [../ANcpLua.AotReflection.Attributes](../ANcpLua.AotReflection.Attributes/CLAUDE.md).

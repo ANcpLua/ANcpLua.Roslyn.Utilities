@@ -1,7 +1,9 @@
 # ANcpLua.AotReflection.Attributes
 
-Small attribute and metadata contract package for AOT reflection.
+Runtime metadata contract (netstandard2.0; net10.0) for the AotReflection
+generator: `ClassMetadata`, `PropertyMetadata`, `MethodMetadata`, etc.
+Dependency-light; referenced by generator and consumers.
 
 - Project: [ANcpLua.Analyzers.AotReflection.Attributes.csproj](ANcpLua.Analyzers.AotReflection.Attributes.csproj)
-- Keep this layer dependency-light because generators and consumers both reference it.
-- Runtime convenience helpers belong here only when they are part of the public contract.
+- Source of truth: `*Metadata.cs` and `AotReflectionAttribute.cs`.
+- Generator: [../ANcpLua.AotReflection](../ANcpLua.AotReflection/CLAUDE.md).
