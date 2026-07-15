@@ -86,7 +86,7 @@
         <MicrosoftExtensionsAIAbstractionsVersion>10.5.0</MicrosoftExtensionsAIAbstractionsVersion>
         <AspNetCoreVersion>10.0.7</AspNetCoreVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
-        <SystemThreadingChannelsVersion>10.0.7</SystemThreadingChannelsVersion>
+        <SystemThreadingChannelsVersion>10.0.10</SystemThreadingChannelsVersion>
         <OpenAIVersion>2.10.0</OpenAIVersion>
     </PropertyGroup>
 
