@@ -2,6 +2,10 @@
 
 Minimal navigation for Claude/Codex agents. Keep policy in `AGENTS.md`; keep findings in issues, PRs, or tests.
 
+This repo lives in `~/RiderProjects/qyl-workspace/`; workspace-level rules are in
+the router at `../AGENTS.md`. Downstream chain: this repo → `ANcpLua.NET.Sdk` →
+`ANcpLua.Agents` (`../ANcpLua.Agents/`) → qyl (`../qyl/`).
+
 ## Project Index
 
 1. [AOT reflection generator](src/ANcpLua.AotReflection/CLAUDE.md)

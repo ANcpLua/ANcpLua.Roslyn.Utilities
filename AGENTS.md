@@ -2,6 +2,9 @@
 
 Only this file is kept for review outcomes to avoid spreading findings across directories.
 
+This repo lives in `~/RiderProjects/qyl-workspace/`; workspace-level rules are in
+the router at `../AGENTS.md`. Ultimate downstream consumer is qyl (`../qyl/`).
+
 ## Current state (2026-05-23)
 
 160+ tests passing across `tests/ANcpLua.Roslyn.Utilities.Testing.Tests/` (xUnit v3 + MTP). Five packages ship from this repo: `ANcpLua.Roslyn.Utilities`, `.Polyfills`, `.Sources`, `.Testing`, `.Testing.Aot` — version line is `2.2.x` (latest published 2.2.21).
