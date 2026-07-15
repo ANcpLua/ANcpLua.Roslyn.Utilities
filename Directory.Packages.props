@@ -24,7 +24,8 @@
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)" />
+    <!-- Microsoft.CodeAnalysis.Workspaces.Common is provided transitively (exact [x] range) by
+         Microsoft.CodeAnalysis.CSharp.Workspaces; no explicit PackageVersion pin needed. -->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>

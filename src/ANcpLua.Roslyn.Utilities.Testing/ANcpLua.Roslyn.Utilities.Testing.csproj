@@ -27,7 +27,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+        <!-- Microsoft.CodeAnalysis.CSharp is provided transitively (exact [x] range) by CSharp.Workspaces below. -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
         <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
         <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
