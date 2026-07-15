@@ -1,75 +1,102 @@
-# ANcpLua.Roslyn.Utilities - Consolidated Review Log
+# ANcpLua.Roslyn.Utilities engineering contract
 
-Only this file is kept for review outcomes to avoid spreading findings across directories.
+This is the repository's policy file for AI agents and contributors. `CLAUDE.md`
+is the navigation index (project map + sibling repos), not a second rules file;
+keep findings in issues, PRs, and tests, not in this document. This repo lives in
+`~/RiderProjects/qyl-workspace/`; workspace-level rules are in the router at
+`../AGENTS.md`. Downstream chain: this repo → `ANcpLua.NET.Sdk` (GitHub-only) →
+`ANcpLua.Agents` → qyl agent runtime, so a broken restore or a signature change
+here propagates the whole way down.
 
-This repo lives in `~/RiderProjects/qyl-workspace/`; workspace-level rules are in
-the router at `../AGENTS.md`. Ultimate downstream consumer is qyl (`../qyl/`).
+## Purpose
 
-## Current state (2026-05-23)
+Foundation Roslyn helpers, source generators, and `netstandard2.0` utilities shared
+across the ANcpLua framework. Two families ship from `src/`:
 
-160+ tests passing across `tests/ANcpLua.Roslyn.Utilities.Testing.Tests/` (xUnit v3 + MTP). Five packages ship from this repo: `ANcpLua.Roslyn.Utilities`, `.Polyfills`, `.Sources`, `.Testing`, `.Testing.Aot` — version line is `2.2.x` (latest published 2.2.21).
+- **`ANcpLua.Analyzers.*` generators** — AOT reflection (`AotReflection` +
+  `AotReflection.Attributes` runtime metadata types), discriminated unions, and the
+  extensible-enum mirror. These are the product.
+- **`ANcpLua.Roslyn.Utilities.*` helpers** — the core analyzer/generator utility
+  library, its `.Polyfills`, the source-only `.Sources` package, and the `.Testing`
+  / `.Testing.Aot` harnesses.
 
-Notable recent invariants worth knowing before touching the hot paths:
-
-- `OperationExtensions.IsConstantZero` matches every built-in numeric zero (`0`, `0L`, `0u`, `0uL`, `0.0f`, `0.0`, `0m`). The single-pattern shortcut `Value: 0` matches `int 0` only and was the AL0014 regression — keep the full alternation, guarded by `OperationExtensionsConstantsTests`.
-- Symbol identity beats `ToDisplayString()` on hot paths: `IsTaskType` / `IsSpanType` / `IsMemoryType` / `IsCancellationTokenType` compare namespace + name via `INamespaceSymbol.GetMetadataName()` (one shared walker in `SymbolExtensions.cs`, do not re-introduce per-file copies).
-- `IsEnumerableType` / `GetElementType` consult `OriginalDefinition.SpecialType` because closed generics like `IEnumerable<int>` carry `SpecialType.None` — the marker lives on the open generic only.
-- `TryExtensions.TryParse*` is pinned to `CultureInfo.InvariantCulture` with explicit `NumberStyles` / `DateTimeStyles`. Do not regress to current-culture overloads.
-- `ParallelAsyncExtensions` uses a linked CTS so a single selector exception cancels every sibling worker; the `completedReading` flag suppresses secondary errors on consumer-side dispose by design.
-- `ExpiringCache<TKey,TValue>` is access-order LRU + single-flight via `Lazy<TValue?>`; the factory runs outside the `_lock` so cache reads never block on the factory.
+The authoritative package set is the packable projects under `src/`; do not hardcode
+a package count or a version in prose — `Version.props` owns the version line and git
+tags (`v*`) own what is published. State the source of truth, not a snapshot.
 
 ## Framework conventions
 
-Branch protection, auto-merge, CodeRabbit posture, release flow, dependency
-graph, and the cross-repo bootstrap rules for the four ANcpLua framework
-repos are documented in one place at
+Branch protection, auto-merge, CodeRabbit posture, release flow, dependency graph,
+and the cross-repo bootstrap rules for the four ANcpLua framework repos live in one
+place at
 [ANcpLua/renovate-config](https://github.com/ANcpLua/renovate-config#ancplua-framework-conventions--renovate-config).
-This file documents conventions specific to this repo only.
+This file documents only what is specific to this repo.
 
+## Hot-path invariants
 
-## 1) src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj
-- No blocking defects confirmed in first pass.
-- Follow-ups to decide:
-  - Confirm whether analyzer consumers must manually reference `ANcpLua.AotReflection.Attributes`.
-  - Confirm `LangVersion=latest` policy if repo-wide pinning is adopted.
-- One second-pass reviewer flagged packaging/lock-in risks; keep an eye on analyzer dependency closure and namespace/API stability.
+These are correctness-critical and easy to regress. Each is guarded by a named test;
+keep the test green rather than trusting the prose.
 
-## 2) src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj
-- High: `ClassMetadata.InvokeMethod` matches by name + arity only, not parameter types; overload calls can dispatch to wrong target when arities collide.
-- Medium: null instance can leak into generated convenience paths (`GetPropertyValue`/`SetPropertyValue` and non-static `InvokeMethod`), producing confusing runtime errors.
+- `OperationExtensions.IsConstantZero` matches every built-in numeric zero (`0`,
+  `0L`, `0u`, `0uL`, `0.0f`, `0.0`, `0m`). The `Value: 0` shortcut matches `int 0`
+  only and was the AL0014 regression — keep the full alternation, guarded by
+  `OperationExtensionsConstantsTests`.
+- Symbol identity beats `ToDisplayString()` on hot paths. `IsTaskType` / `IsSpanType`
+  / `IsMemoryType` / `IsCancellationTokenType` compare namespace + name via
+  `INamespaceSymbol.GetMetadataName()` through one shared walker in
+  `SymbolExtensions.cs`; do not re-introduce per-file copies.
+- `IsEnumerableType` / `GetElementType` consult `OriginalDefinition.SpecialType`
+  because closed generics like `IEnumerable<int>` carry `SpecialType.None` — the
+  marker lives on the open generic only.
+- `TryExtensions.TryParse*` is pinned to `CultureInfo.InvariantCulture` with explicit
+  `NumberStyles` / `DateTimeStyles`; do not regress to current-culture overloads.
+- `ParallelAsyncExtensions` uses a linked CTS so a single selector exception cancels
+  every sibling worker; the `completedReading` flag suppresses secondary errors on
+  consumer-side dispose by design.
+- `ExpiringCache<TKey,TValue>` is access-order LRU + single-flight via
+  `Lazy<TValue?>`; the factory runs outside the `_lock` so cache reads never block on
+  the factory.
 
-## 3) src/ANcpLua.DiscriminatedUnion/ANcpLua.Analyzers.DiscriminatedUnion.csproj
-- No verified defects found.
-- Note: no build/pack validation was run in this review pass.
+## Known limitations (open)
 
-## 4) src/ANcpLua.ExtensibleEnumMirror/ANcpLua.Analyzers.ExtensibleEnumMirror.csproj
-- No blocking issues found.
-- Low: keep package metadata text/provider tags stable to avoid drift.
+- `ClassMetadata.InvokeMethod` and `CreateInstance` (AOT reflection Attributes)
+  resolve a call by **method/constructor name + argument arity only** — same-arity
+  overloads are not disambiguated by parameter type, so the first arity match wins.
+  `ParameterMetadata.Type` is available, so the planned resolution is to prefer a
+  parameter-type-exact overload and fall back to the current first-match behavior.
+  Track this until fixed; do not silently drop it.
 
-## 5) src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj
-- Medium: `LangVersion=latest` is non-reproducible across SDK changes.
-- Medium: `AutoUnifyAssemblyReferences` should be removed or documented.
-- Medium: `ANCPLUA_ROSLYN_PUBLIC` should stay controlled per-consumer; avoid bleeding API-visibility mode into source-only/internal pack surfaces.
-- Medium: `ImplicitUsings` and package input handling should be explicit for reproducibility.
-- Medium: add explicit `PrivateAssets` guardrails where needed to control public restore surface.
-- Non-blocking: README/LICENSE are included as package inputs; verify this is intended.
+## Conventions
 
-## 6) src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj
-- No blocking issues identified.
-- Packaging path logic was reviewed as consistent for deterministic source packaging.
+Imported from `ANcpLua.NET.Sdk`. Repo-specific points that are deliberate (not
+oversights — earlier review flagged them and they resolved to these choices):
 
-## 7) src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj
-- Medium: pack-time hard dependency on `pwsh` in `_TransformSourcesForPack` can fail on nodes without PowerShell.
-- Low: `-SourceDir` and `-OutputDir` args are unquoted and can break on paths with spaces.
-- Medium: declaration rewrite logic is pattern-based and brittle for atypical modifier ordering.
+- Generator projects set `ImplicitUsings=disable` and pin analyzer/CodeAnalysis
+  `PackageReference`s and the utilities `ProjectReference` with `PrivateAssets="all"`
+  so nothing leaks transitively into consumers.
+- Public-surface visibility is gated by the `ANCPLUA_ROSLYN_PUBLIC` compilation
+  symbol; the source-only `.Sources` package collapses those guards to `internal` at
+  pack time (`Transform-Sources.ps1`), so it is always internal to its consumer.
+- The `.Sources` pack step shells out to `pwsh`. That is an accepted CI-time
+  dependency; if you move packing off PowerShell, remove the dependency rather than
+  documenting around it.
 
-## 8) src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj
-- Medium: packages may flow transitively due to missing `PrivateAssets` controls.
+## Build and test
 
-## 9) src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj
-- Medium: `LangVersion=latest` is non-deterministic across SDK updates.
-- Note: `build` vs `buildTransitive` expectations should be validated explicitly.
-- Note: `NoWarn` includes `CS1591` and `NETSDK1212` (watch for masked diagnostics).
+```bash
+dotnet build -c Release
+dotnet test  -c Release   # xUnit v3 + Microsoft Testing Platform
+```
 
-## Validation that was already run
-- `dotnet test -c Release` passed previously in the reviewed scope (51 total, 51 passed).
+Tests live under `tests/` across per-generator suites and the `Testing.Tests`
+utility suite; the projects are the source of truth for what is covered. A public-API
+change updates the analyzer-managed shipped/unshipped baselines in the same commit.
+
+## Publishing
+
+Publication is GitHub Actions OIDC trusted publishing, triggered on a `v*` tag push
+and gated by CI. Never add a long-lived NuGet API key or publish locally. Per the
+framework bootstrap rules, a self-referencing package version points at the
+last-published release, not the version coming up — CI stamps the new version at
+pack time. Tag a build-broken commit and it will not publish; use the next patch
+rather than reassigning a ghost tag.
