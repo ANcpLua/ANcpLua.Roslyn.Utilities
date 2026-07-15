@@ -90,9 +90,11 @@ change updates the analyzer-managed shipped/unshipped baselines in the same comm
 
 ## Publishing
 
-Publication is GitHub Actions OIDC trusted publishing, triggered on a `v*` tag push
-and gated by CI. Never add a long-lived NuGet API key or publish locally. Per the
-framework bootstrap rules, a self-referencing package version points at the
-last-published release, not the version coming up — CI stamps the new version at
-pack time. Tag a build-broken commit and it will not publish; use the next patch
-rather than reassigning a ghost tag.
+Publication is GitHub Actions OIDC trusted publishing (`nuget-publish.yml`) that runs
+on **push to `main`** — not on a manual tag. CI reads the latest `v*` tag, auto-bumps
+the patch, builds and tests on Linux + Windows, and publishes only when the diff since
+that tag touches a shipped surface (the gate watches `src/**`, `tests/**`, and
+`README.md`); it then creates the matching `v*` tag and GitHub release. A doc-only or
+CI-only change builds but publishes nothing. Never add a long-lived NuGet API key or
+publish locally, and a build-broken `main` cannot publish — the version is CI-computed,
+so just push a fix and the next patch ships.
