@@ -23,5 +23,6 @@
         <Project Path="tests/ANcpLua.Roslyn.Utilities.Testing.Tests/ANcpLua.Roslyn.Utilities.Testing.Tests.csproj"/>
         <Project Path="tests/ANcpLua.Roslyn.Utilities.ExtensibleEnumMirror.Tests/ANcpLua.Roslyn.Utilities.ExtensibleEnumMirror.Tests.csproj"/>
         <Project Path="tests/ANcpLua.Roslyn.Utilities.DiscriminatedUnion.Tests/ANcpLua.Roslyn.Utilities.DiscriminatedUnion.Tests.csproj"/>
+        <Project Path="tests/ANcpLua.Roslyn.Utilities.AotReflection.Tests/ANcpLua.Roslyn.Utilities.AotReflection.Tests.csproj"/>
     </Folder>
 </Solution>

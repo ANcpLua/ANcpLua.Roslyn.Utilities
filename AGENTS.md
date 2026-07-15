@@ -56,15 +56,11 @@ keep the test green rather than trusting the prose.
 - `ExpiringCache<TKey,TValue>` is access-order LRU + single-flight via
   `Lazy<TValue?>`; the factory runs outside the `_lock` so cache reads never block on
   the factory.
-
-## Known limitations (open)
-
-- `ClassMetadata.InvokeMethod` and `CreateInstance` (AOT reflection Attributes)
-  resolve a call by **method/constructor name + argument arity only** — same-arity
-  overloads are not disambiguated by parameter type, so the first arity match wins.
-  `ParameterMetadata.Type` is available, so the planned resolution is to prefer a
-  parameter-type-exact overload and fall back to the current first-match behavior.
-  Track this until fixed; do not silently drop it.
+- `ClassMetadata.InvokeMethod` / `CreateInstance` disambiguate same-name, same-arity
+  overloads by matching each argument's runtime type against `ParameterMetadata.Type`:
+  the parameter-type-exact overload wins, with the first name+arity match as the
+  fallback when no exact match exists (e.g. all-null arguments). Guarded by
+  `ClassMetadataDispatchTests`.
 
 ## Conventions
 
