@@ -148,13 +148,15 @@ jobs:
             echo "No previous tag — first publish, proceeding"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           else
-            CHANGES=$(git diff --name-only "$LATEST_TAG" HEAD -- 'src/**' 'tests/**' 'README.md' || true)
+            # Version.props / Directory.Packages.props drive the shipped nuspecs' dependency
+            # versions — a dep bump with no src/ change must still publish.
+            CHANGES=$(git diff --name-only "$LATEST_TAG" HEAD -- 'src/**' 'tests/**' 'README.md' 'Version.props' 'Directory.Packages.props' '.github/workflows/nuget-publish.yml' || true)
             if [ -n "$CHANGES" ]; then
               echo "Changes since $LATEST_TAG:"
               echo "$CHANGES"
               echo "has_changes=true" >> $GITHUB_OUTPUT
             else
-              echo "No src/, tests/, or README.md changes since $LATEST_TAG — skipping publish"
+              echo "No publishable changes (src/, tests/, README.md, Version.props, Directory.Packages.props) since $LATEST_TAG — skipping publish"
               echo "has_changes=false" >> $GITHUB_OUTPUT
             fi
           fi
