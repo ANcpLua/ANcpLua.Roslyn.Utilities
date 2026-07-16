@@ -1,12 +1,30 @@
 # ANcpLua.Roslyn.Utilities engineering contract
 
-This is the repository's policy file for AI agents and contributors. `CLAUDE.md`
-is the navigation index (project map + sibling repos), not a second rules file;
-keep findings in issues, PRs, and tests, not in this document. This repo lives in
+This is the repository's single policy + navigation file for AI agents and
+contributors (`CLAUDE.md` is a symlink to this file). Keep findings in issues,
+PRs, and tests, not in this document. This repo lives in
 `~/RiderProjects/qyl-workspace/`; workspace-level rules are in the router at
 `../AGENTS.md`. Downstream chain: this repo → `ANcpLua.NET.Sdk` (GitHub-only) →
 `ANcpLua.Agents` → qyl agent runtime, so a broken restore or a signature change
 here propagates the whole way down.
+
+## Project index
+
+1. [AOT reflection generator](src/ANcpLua.AotReflection/CLAUDE.md)
+2. [AOT reflection attributes](src/ANcpLua.AotReflection.Attributes/CLAUDE.md)
+3. [Discriminated union generator](src/ANcpLua.DiscriminatedUnion/CLAUDE.md)
+4. [Extensible enum mirror generator](src/ANcpLua.ExtensibleEnumMirror/CLAUDE.md)
+5. [Core Roslyn utilities](src/ANcpLua.Roslyn.Utilities/CLAUDE.md)
+6. [Polyfills package](src/ANcpLua.Roslyn.Utilities.Polyfills/CLAUDE.md)
+7. [Source-only package](src/ANcpLua.Roslyn.Utilities.Sources/CLAUDE.md)
+8. [Testing utilities](src/ANcpLua.Roslyn.Utilities.Testing/CLAUDE.md)
+9. [AOT testing utilities](src/ANcpLua.Roslyn.Utilities.Testing.Aot/CLAUDE.md)
+
+## Nearby repos
+
+- [ANcpLua.NET.Sdk](https://github.com/ANcpLua/ANcpLua.NET.Sdk): shared SDK/version truth for the ANcpLua repos.
+- [ANcpLua.Analyzers](https://github.com/ANcpLua/ANcpLua.Analyzers): analyzer consumer of the source-only utilities.
+- [ANcpLua.Agents](https://github.com/ANcpLua/ANcpLua.Agents): successor location for agent workflow/test helpers; do not describe this repo as the MAF runtime home.
 
 ## Purpose
 
@@ -93,8 +111,10 @@ change updates the analyzer-managed shipped/unshipped baselines in the same comm
 Publication is GitHub Actions OIDC trusted publishing (`nuget-publish.yml`) that runs
 on **push to `main`** — not on a manual tag. CI reads the latest `v*` tag, auto-bumps
 the patch, builds and tests on Linux + Windows, and publishes only when the diff since
-that tag touches a shipped surface (the gate watches `src/**`, `tests/**`, and
-`README.md`); it then creates the matching `v*` tag and GitHub release. A doc-only or
+that tag touches a shipped surface (the gate watches `src/**`, `tests/**`,
+`README.md`, `Version.props`, `Directory.Packages.props`, and the workflow file
+itself — root dep bumps change shipped nuspec floors and must publish); it then
+creates the matching `v*` tag and GitHub release. A doc-only or
 CI-only change builds but publishes nothing. Never add a long-lived NuGet API key or
 publish locally, and a build-broken `main` cannot publish — the version is CI-computed,
 so just push a fix and the next patch ships.
