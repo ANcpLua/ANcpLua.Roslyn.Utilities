@@ -9,7 +9,7 @@
 
     <PropertyGroup Label="Roslyn">
         <RoslynVersion>5.6.0</RoslynVersion>
-        <RoslynAnalyzersVersion>5.3.0</RoslynAnalyzersVersion>
+        <RoslynAnalyzersVersion>5.6.0</RoslynAnalyzersVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
