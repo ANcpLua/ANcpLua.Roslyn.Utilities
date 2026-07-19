@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace ANcpLua.Roslyn.Utilities;
 
@@ -98,7 +99,7 @@ internal
     /// </code>
     /// </example>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T NotNull<T>([NotNull] T? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    public static T NotNull<T>([NotNull] [NoEnumeration] T? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         return value ?? ThrowArgumentNull<T>(paramName);
     }
@@ -123,7 +124,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, Func{T})" />
-    public static T NotNullOrElse<T>(T? value, T defaultValue) where T : class
+    public static T NotNullOrElse<T>([NoEnumeration] T? value, T defaultValue) where T : class
     {
         return value ?? defaultValue;
     }
@@ -154,7 +155,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="NotNullOrElse{T}(T?, T)" />
-    public static T NotNullOrElse<T>(T? value, Func<T> factory) where T : class
+    public static T NotNullOrElse<T>([NoEnumeration] T? value, Func<T> factory) where T : class
     {
         return value ?? factory();
     }
