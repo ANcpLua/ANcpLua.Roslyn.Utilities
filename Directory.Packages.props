@@ -51,6 +51,7 @@
     <PackageVersion Include="NUnit" Version="$(NUnitVersion)" />
     <PackageVersion Include="TUnit.Core" Version="$(TUnitCoreVersion)" />
     <PackageVersion Include="bunit" Version="$(BunitVersion)" />
+    <PackageVersion Include="AngleSharp" Version="$(AngleSharpVersion)" />
     <PackageVersion Include="Meziantou.Framework" Version="$(MeziantouFrameworkVersion)" />
   </ItemGroup>
   <ItemGroup Label="MSBuild Testing">
