@@ -1,8 +1,4 @@
 {
-  "enabledPlugins": {
-    "commit-commands@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true
-  },
   "hooks": {
     "SessionStart": [
       {
