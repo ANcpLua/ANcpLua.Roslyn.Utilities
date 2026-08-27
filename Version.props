@@ -54,8 +54,8 @@
         <XunitV3Version>3.2.2</XunitV3Version>
         <NUnitVersion>4.6.1</NUnitVersion>
         <TUnitCoreVersion>1.60.0</TUnitCoreVersion>
-        <BunitVersion>2.7.2</BunitVersion>
-        <AngleSharpVersion>1.5.2</AngleSharpVersion>
+        <BunitVersion>2.9.0</BunitVersion>
+        <AngleSharpVersion>1.7.2</AngleSharpVersion>
         <AwesomeAssertionsVersion>9.4.0</AwesomeAssertionsVersion>
         <AwesomeAssertionsAnalyzersVersion>9.0.8</AwesomeAssertionsAnalyzersVersion>
     </PropertyGroup>
