@@ -77,7 +77,6 @@
          ANALYZERS (SDK-injected)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Analyzers">
-        <ANcpLuaAnalyzersVersion>2.1.1</ANcpLuaAnalyzersVersion>
         <SbomTargetsVersion>4.1.5</SbomTargetsVersion>
         <BannedApiAnalyzersVersion>5.6.0</BannedApiAnalyzersVersion>
         <JonSkeetAnalyzersVersion>1.0.0-beta.7</JonSkeetAnalyzersVersion>
