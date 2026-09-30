@@ -118,7 +118,7 @@ internal
     /// <seealso cref="IsCSharp13OrAbove" />
     public static bool IsCSharp14OrAbove(this LanguageVersion languageVersion)
     {
-        // The enum member LanguageVersion.CSharp14 exists from Microsoft.CodeAnalysis 4.14.1 on; the numeric value keeps
+        // The enum member LanguageVersion.CSharp14 exists from Microsoft.CodeAnalysis 5.0.0 on; the numeric value keeps
         // this file compiling against 4.14.0, the floor the .Sources package supports.
         return languageVersion.IsAtLeast((LanguageVersion)1400);
     }

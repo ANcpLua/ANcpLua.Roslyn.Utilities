@@ -78,14 +78,20 @@ var contents = files.ToDictionary(f => f, f => File.ReadAllText(f));
 // A file depends on Roslyn when it names Microsoft.CodeAnalysis, or uses a type declared in such a file
 // (to a fixpoint). Those files land under Roslyn/, so InjectRoslynSources=false can leave them out and a
 // consumer without a Microsoft.CodeAnalysis reference still compiles the rest. Comments and string literals
-// do not count, and neither does a method (declared or called, generic or not) that shares a type's name;
-// its type arguments still count, and so does a constructor call.
+// do not count, except the cref targets of a doc comment, which the compiler resolves whenever the consumer
+// generates documentation; neither does a method (declared or called, generic or not) that shares a type's
+// name, while its type arguments still count, and so does a constructor call.
 string Code(string text)
 {
     var lines = text.Split('\n');
     for (var i = 0; i < lines.Length; i++)
     {
         var line = lines[i];
+        if (line.TrimStart().StartsWith("///", StringComparison.Ordinal))
+        {
+            lines[i] = string.Join(" ", Regex.Matches(line, "cref=\"([^\"]*)\"").Cast<Match>().Select(m => m.Groups[1].Value.Replace('{', '<').Replace('}', '>')));
+            continue;
+        }
         if (line.TrimStart().StartsWith("//", StringComparison.Ordinal)) { lines[i] = ""; continue; }
         line = Regex.Replace(line, "\\$?@?\"(?:[^\"\\\\]|\\\\.)*\"", "\"\"");
         var comment = line.IndexOf("//", StringComparison.Ordinal);

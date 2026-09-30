@@ -2,7 +2,7 @@ namespace ANcpLua.Roslyn.Utilities.Web;
 
 /// <summary>
 ///     URL query-string assembly that skips <c>null</c>/empty values and escapes every value with
-///     <see cref="Uri.EscapeDataString" />. Replaces the <c>List&lt;string&gt; + conditional Add + string.Join("&amp;",...)</c>
+///     <see cref="Uri.EscapeDataString(string)" />. Replaces the <c>List&lt;string&gt; + conditional Add + string.Join("&amp;",...)</c>
 ///     pattern that accumulates anywhere an HTTP client composes a URL from a few optional filters.
 /// </summary>
 /// <example><code>

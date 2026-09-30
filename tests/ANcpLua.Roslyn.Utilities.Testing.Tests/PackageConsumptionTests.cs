@@ -41,9 +41,9 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 
             public static EquatableArray<int> Equatable(int[] values) => values.ToEquatableArray();
 
-            // A List<T> is a reference type, so the nullable Where and Select (T? where T : class) apply to it with
-            // T = List<Cat> whenever the lambda binds for the list as well; their identity conversion beat
-            // Enumerable's until OverloadResolutionPriority put them last. Hijacked, this returns string?.
+            // A List<T> is a reference type, so a nullable combinator (T? where T : class) under a LINQ name applied to
+            // it with T = List<Cat> whenever the lambda bound for the list as well, and its identity conversion beat
+            // Enumerable's: this returned string?. The combinators are Map, Bind and Filter for that reason.
             public static System.Collections.Generic.IEnumerable<string> Names(System.Collections.Generic.List<Cat> cats) =>
                 cats.Where(static cat => cat.GetHashCode() != 0).Select(static cat => cat.ToString());
         }
@@ -119,6 +119,8 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 
     private static readonly string[] BuildArguments = ["-nodeReuse:false"];
 
+    // Documentation is generated too: the compiler then resolves every cref, so a Roslyn-free file must not point
+    // at a type that ships under Roslyn/.
     [Fact]
     public async Task SourcesPackage_CompilesWithoutRoslyn_WhenRoslynSourcesAreNotInjected()
     {
@@ -129,6 +131,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
             .WithTargetFramework(Tfm.Net100)
             .WithLangVersion()
             .WithProperty("Nullable", "enable")
+            .WithProperty("GenerateDocumentationFile", Val.True)
             .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
             .WithProperty(Prop.InjectRoslynSources, Val.False)
             .WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version)

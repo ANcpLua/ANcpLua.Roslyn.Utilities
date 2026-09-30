@@ -148,7 +148,7 @@ Language and API backports for `netstandard2.0` consumers (via the separate `.Po
 
 Disable all at once: `<InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>`
 
-Without Roslyn: a project that does not reference `Microsoft.CodeAnalysis` sets `<InjectRoslynSources>false</InjectRoslynSources>` and gets only the Roslyn-free helpers (guards, string comparison, try-parse, dictionary, security, time, text, async). The package sorts its files at pack time: everything that names `Microsoft.CodeAnalysis`, or a type declared in such a file, ships under `Roslyn/`.
+Without Roslyn: a project that does not reference `Microsoft.CodeAnalysis` sets `<InjectRoslynSources>false</InjectRoslynSources>` and gets only the Roslyn-free helpers (guards, string comparison, try-parse, dictionary, security, time, text, async). The package sorts its files at pack time: everything that names `Microsoft.CodeAnalysis`, or a type declared in such a file, ships under `Roslyn/`. On `netstandard2.0` such a project also references `System.Collections.Immutable`, `System.Memory`, `System.Threading.Channels` and `Microsoft.Bcl.HashCode`, which the framework there lacks.
 
 `.Sources` embeds the same polyfills, so referencing `.Sources` and `.Polyfills` together is supported: the `.Sources` copy steps aside. An opt-out removes only this package's files, never a consumer's own file of the same name.
 
