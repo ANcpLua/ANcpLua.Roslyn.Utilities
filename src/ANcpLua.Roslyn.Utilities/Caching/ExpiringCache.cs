@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -12,7 +13,10 @@ public
 #else
 internal
 #endif
-    sealed class ExpiringCache<TKey, TValue> where TKey : notnull
+    // Lazy<T> declares PublicParameterlessConstructor on its T; the in-flight entries are Lazy<TValue?>, so the trim
+    // analyzer needs the same annotation here (IL2091 otherwise, in every trimmed or AOT consumer).
+    sealed class ExpiringCache<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue>
+    where TKey : notnull
 {
     private readonly Dictionary<TKey, CacheEntry> _cache;
     private readonly ConcurrentDictionary<TKey, Lazy<TValue?>> _inFlight;

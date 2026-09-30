@@ -44,10 +44,10 @@ internal
     /// </code>
     /// </example>
     /// <seealso
-    ///     cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
+    ///     cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
     /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
-        this Dictionary<TKey, TValue> dictionary,
+        this IDictionary<TKey, TValue> dictionary,
         TKey key,
         TContext context,
         Func<TContext, TValue> factory)
@@ -86,10 +86,10 @@ internal
     ///         This avoids the need to capture the key in a closure.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
+    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
     /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
-        this Dictionary<TKey, TValue> dictionary,
+        this IDictionary<TKey, TValue> dictionary,
         TKey key,
         TContext context,
         Func<TKey, TContext, TValue> factory)
@@ -121,9 +121,9 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetOrInsertNull{TKey, TValue}" />
-    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
+    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
     public static TValue GetOrInsertDefault<TKey, TValue>(
-        this Dictionary<TKey, TValue> dictionary,
+        this IDictionary<TKey, TValue> dictionary,
         TKey key)
         where TKey : notnull
         where TValue : struct
@@ -152,10 +152,10 @@ internal
     ///         to explicitly indicate that null values are allowed.
     ///     </para>
     /// </remarks>
-    /// <seealso cref="GetOrInsertDefault{TKey, TValue}(Dictionary{TKey, TValue}, TKey)" />
-    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
+    /// <seealso cref="GetOrInsertDefault{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
+    /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
     public static TValue? GetOrInsertNull<TKey, TValue>(
-        this Dictionary<TKey, TValue?> dictionary,
+        this IDictionary<TKey, TValue?> dictionary,
         TKey key)
         where TKey : notnull
         where TValue : class
@@ -174,9 +174,9 @@ internal
     ///     Ergonomic overload for the common case of bucket-style aggregation (dictionary of lists, sets, counters).
     ///     Matches <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey,TValue}.GetOrAdd(TKey,Func{TKey,TValue})" />
     ///     shape. For closure-free factories use
-    ///     <see cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />.
+    ///     <see cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />.
     /// </remarks>
-    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
+    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull
         where TValue : new()
     {
@@ -193,10 +193,10 @@ internal
     /// </summary>
     /// <remarks>
     ///     Use a <c>static</c> lambda to avoid closure allocation. For lambdas that need external state, prefer the
-    ///     closure-free <see cref="GetOrInsert{TKey, TValue, TContext}(Dictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" /> overload.
+    ///     closure-free <see cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" /> overload.
     /// </remarks>
     public static TValue GetOrAdd<TKey, TValue>(
-        this Dictionary<TKey, TValue> dictionary,
+        this IDictionary<TKey, TValue> dictionary,
         TKey key,
         Func<TKey, TValue> factory)
         where TKey : notnull

@@ -110,6 +110,10 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 
             public static int Inserted(System.Collections.Generic.Dictionary<string, int> counts) =>
                 counts.GetOrInsert("key", 1, static seed => seed);
+
+            // Any IDictionary, not only Dictionary: a SortedDictionary is the common other one.
+            public static System.Collections.Generic.List<string> Members(System.Collections.Generic.SortedDictionary<string, System.Collections.Generic.List<string>> groups) =>
+                groups.GetOrAdd("key");
         }
         """;
 
@@ -125,6 +129,27 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
             .WithTargetFramework(Tfm.Net100)
             .WithLangVersion()
             .WithProperty("Nullable", "enable")
+            .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
+            .WithProperty(Prop.InjectRoslynSources, Val.False)
+            .WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version)
+            .AddSource("Uses.cs", UsesRoslynFreeHelpers);
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+    }
+
+    // A NativeAOT tool compiles every injected file under the trim and AOT analyzers, reachable or not, so the
+    // Roslyn-free helpers carry their reflection requirements as annotations (IL2070, IL2075, IL2091 otherwise).
+    [Fact]
+    public async Task SourcesPackage_IsTrimAndAotAnalyzerClean_WithoutRoslyn()
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        project
+            .WithDotnetSdkVersion(NetSdkVersion.Ambient)
+            .WithNuGetConfig(feed.NuGetConfig)
+            .WithTargetFramework(Tfm.Net100)
+            .WithLangVersion()
+            .WithProperty("Nullable", "enable")
+            .WithProperty("IsAotCompatible", Val.True)
             .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
             .WithProperty(Prop.InjectRoslynSources, Val.False)
             .WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version)

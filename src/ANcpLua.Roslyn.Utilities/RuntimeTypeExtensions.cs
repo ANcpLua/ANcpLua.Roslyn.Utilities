@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -117,7 +118,7 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static bool ImplementsOpenGeneric(this Type type, Type openGenericInterface)
+    public static bool ImplementsOpenGeneric([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type, Type openGenericInterface)
     {
         foreach (var iface in type.GetInterfaces())
             if (iface.IsGenericType && iface.GetGenericTypeDefinition() == openGenericInterface)
@@ -153,7 +154,7 @@ internal
     /// }
     /// </code>
     /// </example>
-    public static Type[] GetClosedImplementations(this Type type, Type openGenericInterface)
+    public static Type[] GetClosedImplementations([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type, Type openGenericInterface)
     {
         var interfaces = type.GetInterfaces();
         var results = new List<Type>();
