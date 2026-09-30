@@ -12,6 +12,10 @@
 
   Or disable ALL polyfills (keeps only Roslyn utilities):
     <InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>
+
+  A project without a Microsoft.CodeAnalysis reference keeps only the Roslyn-free helpers
+  (guards, string, dictionary, try-parse, security, time, text, ...):
+    <InjectRoslynSources>false</InjectRoslynSources>
 -->
 <Project>
 
@@ -27,6 +31,8 @@
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup>
         <InjectAllPolyfillsOnLegacy Condition="'$(InjectAllPolyfillsOnLegacy)' == ''">true</InjectAllPolyfillsOnLegacy>
+        <!-- The files under Roslyn/ name Microsoft.CodeAnalysis or a type declared in a file that does. -->
+        <InjectRoslynSources Condition="'$(InjectRoslynSources)' == ''">true</InjectRoslynSources>
     </PropertyGroup>
 
     <!-- Individual polyfill defaults (follow the bundle unless explicitly overridden) -->
@@ -86,6 +92,7 @@
             <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectStringExtensionsPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Polyfills/StringExtensions/'))"/>
             <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectLinqPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Polyfills/Linq/'))"/>
             <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(ANcpLuaRoslynUtilitiesPolyfillsImported)' == 'true' AND $([System.String]::new('%(NormalizedPath)').Contains('/Polyfills/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectRoslynSources)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/ANcpLua.Roslyn.Utilities/Roslyn/'))"/>
             <Compile Remove="@(_ANcpLuaExcluded)"/>
             <_ANcpLuaOwnFile Remove="@(_ANcpLuaOwnFile)"/>
             <_ANcpLuaExcluded Remove="@(_ANcpLuaExcluded)"/>

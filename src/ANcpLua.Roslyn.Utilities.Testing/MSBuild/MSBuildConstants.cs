@@ -317,6 +317,9 @@ public static class Prop
     /// <summary>Injects StringOrdinalComparer extension.</summary>
     public const string InjectStringOrdinalComparer = "InjectStringOrdinalComparer";
 
+    /// <summary>Injects the Roslyn-dependent utility sources; <c>false</c> keeps only the Roslyn-free helpers.</summary>
+    public const string InjectRoslynSources = "InjectRoslynSources";
+
     /// <summary>Injects <c>System.Threading.Lock</c> polyfill.</summary>
     public const string InjectLockPolyfill = "InjectLockPolyfill";
 

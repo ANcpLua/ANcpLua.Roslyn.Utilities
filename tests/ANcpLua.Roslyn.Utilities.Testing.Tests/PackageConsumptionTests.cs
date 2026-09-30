@@ -77,7 +77,48 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         }
         """;
 
+    // A consumer without any Microsoft.CodeAnalysis reference: an application or tool that only wants the
+    // Roslyn-free helpers. Every call below resolves to a file the package ships outside Roslyn/.
+    private const string UsesRoslynFreeHelpers = """
+        using ANcpLua.Roslyn.Utilities;
+        using ANcpLua.Roslyn.Utilities.Security;
+
+        namespace Consumer;
+
+        internal static class Uses
+        {
+            public static string Guarded(string? name) => Guard.NotNullOrWhiteSpace(name);
+
+            public static bool Same(string a, string b) => a.EqualsIgnoreCase(b) && a.StartsWithOrdinal("x");
+
+            public static int? Parsed(string text) => text.TryParseInt32();
+
+            public static string Hashed(string text) => Sha256Hex.Hash(text);
+
+            public static int Inserted(System.Collections.Generic.Dictionary<string, int> counts) =>
+                counts.GetOrInsert("key", 1, static seed => seed);
+        }
+        """;
+
     private static readonly string[] BuildArguments = ["-nodeReuse:false"];
+
+    [Fact]
+    public async Task SourcesPackage_CompilesWithoutRoslyn_WhenRoslynSourcesAreNotInjected()
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        project
+            .WithDotnetSdkVersion(NetSdkVersion.Ambient)
+            .WithNuGetConfig(feed.NuGetConfig)
+            .WithTargetFramework(Tfm.Net100)
+            .WithLangVersion()
+            .WithProperty("Nullable", "enable")
+            .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
+            .WithProperty(Prop.InjectRoslynSources, Val.False)
+            .WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version)
+            .AddSource("Uses.cs", UsesRoslynFreeHelpers);
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+    }
 
     [Theory]
     [InlineData(false)]
