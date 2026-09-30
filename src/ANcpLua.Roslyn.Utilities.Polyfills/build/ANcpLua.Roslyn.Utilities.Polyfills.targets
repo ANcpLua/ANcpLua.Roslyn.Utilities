@@ -32,6 +32,7 @@
         <InjectCompilerFeatureRequiredOnLegacy Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectCompilerFeatureRequiredOnLegacy>
         <InjectSetsRequiredMembersOnLegacy Condition="'$(InjectSetsRequiredMembersOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectSetsRequiredMembersOnLegacy>
         <InjectParamCollectionOnLegacy Condition="'$(InjectParamCollectionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectParamCollectionOnLegacy>
+        <InjectUnionOnLegacy Condition="'$(InjectUnionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectUnionOnLegacy>
         <InjectUnreachableExceptionOnLegacy Condition="'$(InjectUnreachableExceptionOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectUnreachableExceptionOnLegacy>
         <InjectExperimentalAttributeOnLegacy Condition="'$(InjectExperimentalAttributeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectExperimentalAttributeOnLegacy>
         <InjectIndexRangeOnLegacy Condition="'$(InjectIndexRangeOnLegacy)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectIndexRangeOnLegacy>
@@ -39,72 +40,46 @@
         <InjectLockPolyfill Condition="'$(InjectLockPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectLockPolyfill>
         <InjectTimeProviderPolyfill Condition="'$(InjectTimeProviderPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectTimeProviderPolyfill>
         <InjectStringExtensionsPolyfill Condition="'$(InjectStringExtensionsPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectStringExtensionsPolyfill>
+        <InjectLinqPolyfill Condition="'$(InjectLinqPolyfill)' == ''">$(InjectAllPolyfillsOnLegacy)</InjectLinqPolyfill>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          CONDITIONAL EXCLUSION
-         Remove polyfill contentFiles from Compile when opted out.
+         Remove this package's polyfill contentFiles from Compile when opted out.
+         Files self-gate via #if guards, so exclusion is only needed to
+         avoid duplicate type definitions from other polyfill sources.
+         A target, not a top-level ItemGroup: MSBuild applies a per-item condition
+         only inside a target, and only there can it read NuGetPackageId, which
+         keeps a consumer's own file of the same name (e.g. IsExternalInit.cs).
          ═══════════════════════════════════════════════════════════════════════ -->
-
-    <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TrimAttributes/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('DiagnosticAttributes/'))"/>
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('NullabilityAttributes/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectIsExternalInitOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IsExternalInit.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectRequiredMemberOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('RequiredMemberAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectCallerAttributesOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CallerArgumentExpressionAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('CompilerFeatureRequiredAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectSetsRequiredMembersOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('SetsRequiredMembersAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectParamCollectionOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('ParamCollectionAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectStackTraceHiddenOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Diagnostics/StackTraceHiddenAttribute.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Exceptions/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Experimental/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectIndexRangeOnLegacy)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('IndexRange/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectLockPolyfill)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('Lock.cs'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectTimeProviderPolyfill)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('TimeProvider/'))"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(InjectStringExtensionsPolyfill)' == 'false'">
-        <Compile Remove="@(Compile)" Condition="$([System.String]::new('%(Identity)').Contains('StringExtensions/'))"/>
-    </ItemGroup>
+    <Target Name="_ANcpLuaPolyfillsExclusions" BeforeTargets="BeforeCompile;CoreCompile">
+        <ItemGroup>
+            <_ANcpLuaOwnFile Include="@(Compile)"
+                             Condition="'%(Compile.NuGetPackageId)' == 'ANcpLua.Roslyn.Utilities.Polyfills'"
+                             NormalizedPath="$([System.String]::new('%(Compile.Identity)').Replace('\', '/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectTrimAttributesOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/TrimAttributes/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/DiagnosticAttributes/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectNullabilityAttributesOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/NullabilityAttributes/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectIsExternalInitOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/IsExternalInit.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectRequiredMemberOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/RequiredMemberAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectCallerAttributesOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/CallerArgumentExpressionAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/CompilerFeatureRequiredAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectSetsRequiredMembersOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/SetsRequiredMembersAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectParamCollectionOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/ParamCollectionAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectUnionOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/UnionAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectUnionOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/IUnion.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectStackTraceHiddenOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Diagnostics/StackTraceHiddenAttribute.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Exceptions/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Experimental/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectIndexRangeOnLegacy)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/IndexRange/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectLockPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Lock.cs'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectTimeProviderPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/TimeProvider/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectStringExtensionsPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/StringExtensions/'))"/>
+            <_ANcpLuaExcluded Include="@(_ANcpLuaOwnFile)" Condition="'$(InjectLinqPolyfill)' == 'false' AND $([System.String]::new('%(NormalizedPath)').Contains('/Linq/'))"/>
+            <Compile Remove="@(_ANcpLuaExcluded)"/>
+            <_ANcpLuaOwnFile Remove="@(_ANcpLuaOwnFile)"/>
+            <_ANcpLuaExcluded Remove="@(_ANcpLuaExcluded)"/>
+        </ItemGroup>
+    </Target>
 
 </Project>

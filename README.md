@@ -138,13 +138,17 @@ Language and API backports for `netstandard2.0` consumers (via the separate `.Po
 |----------|---------|---------|
 | `Index` / `Range` | `array[^1]`, `array[1..3]` | `InjectIndexRangeOnLegacy=false` |
 | `IsExternalInit` | `record` types, `init` setters | `InjectIsExternalInitOnLegacy=false` |
+| `UnionAttribute` / `IUnion` | C# 15 `union` declarations | `InjectUnionOnLegacy=false` |
 | Nullable attributes | `[NotNull]`, `[MaybeNull]`, `[MemberNotNull]`, `[NotNullWhen]` | `InjectNullabilityAttributesOnLegacy=false` |
 | Trim/AOT attributes | `[RequiresUnreferencedCode]`, `[DynamicallyAccessedMembers]` | `InjectTrimAttributesOnLegacy=false` |
 | `TimeProvider` | Testable time abstraction | `InjectTimeProviderPolyfill=false` |
 | `Lock` | `System.Threading.Lock` | `InjectLockPolyfill=false` |
+| LINQ `DistinctBy` / `SkipLast` / `TakeLast` | `System.Linq` operators ns2.0 lacks; modern TFMs bind to the BCL | `InjectLinqPolyfill=false` |
 | `required`, `params collections`, `CallerArgumentExpression`, `UnreachableException`, `StackTraceHidden`, `ExperimentalAttribute` | C# 11–13 language features on ns2.0 | per-feature MSBuild props |
 
 Disable all at once: `<InjectAllPolyfillsOnLegacy>false</InjectAllPolyfillsOnLegacy>`
+
+`.Sources` embeds the same polyfills, so referencing `.Sources` and `.Polyfills` together is supported: the `.Sources` copy steps aside. An opt-out removes only this package's files, never a consumer's own file of the same name.
 
 ## Testing — what ships in `.Testing`
 
@@ -165,7 +169,7 @@ Separate package (netstandard2.0, zero runtime deps). Attributes + MSBuild props
 
 - `[AotTest]`, `[AotSafe]`, `[AotUnsafe]` — mark methods as AOT-verified or AOT-excluded
 - `[TrimTest]`, `[TrimSafe]`, `[TrimUnsafe]` — same for IL trimming; `TrimMode` enum selects `Partial` / `Full`
-- `TrimAssert.TypePreserved(...)` / `TypeRemoved(...)` — runtime assertions against the trimmed binary
+- `TrimAssert.TypePreserved(...)` / `TypeTrimmed(...)` — runtime assertions against the trimmed binary
 - `FeatureSwitches` — constants for common AOT feature switches (e.g. `JsonReflection`)
 - `AotRuntime` — runtime AOT/trim detection
 - MSBuild orchestration (`build/*.props` + `*.targets` + `ProjectTemplate.csproj.txt`) ships inside the package itself; no external SDK dependency
@@ -180,7 +184,7 @@ This repo also ships **`ANcpLua.Analyzers.AotReflection`** — an incremental so
 - **Allocation-conscious in analyzer hot paths.** `ValueStringBuilder` for stack-allocated string building, `Boxes` for cached boxed primitives, closure-free `GetOrInsert<TContext>` for dictionary inserts.
 - **OTel semconv 1.40 native.** `DeprecatedOtelAttributes` catches `gen_ai.system` and 50+ other deprecated attribute names during analysis.
 - **Test discipline.** `GeneratorCachingReport` over hand-rolled cache assertions. `Test<TGenerator>` fluent runner over hand-rolled `CSharpGeneratorDriver` plumbing. The shipped-internally `ForbiddenTypeAnalyzer` catches `ISymbol`/`Compilation` snuck into pipeline models. Agent-specific test doubles live in the sibling [`ANcpLua.Agents`](https://www.nuget.org/packages/ANcpLua.Agents/) package.
-- **Source-only delivery for generators.** The `.Sources` package rewrites the utilities to `internal` via a pack-time PowerShell transform (`Transform-Sources.ps1`), because source generators can't load NuGet DLLs at runtime.
+- **Source-only delivery for generators.** The `.Sources` package rewrites the utilities to `internal` via a pack-time MSBuild task in its csproj, because source generators can't load NuGet DLLs at runtime.
 
 ## Documentation
 

@@ -23,7 +23,14 @@ public enum NetSdkVersion
     /// <summary>
     ///     .NET 10.0 SDK.
     /// </summary>
-    Net100
+    Net100,
+
+    /// <summary>
+    ///     The SDK already installed where the tests run: the <c>dotnet</c> that launched them
+    ///     (<c>DOTNET_HOST_PATH</c>), else the first <c>dotnet</c> on <c>PATH</c>. Nothing is downloaded and
+    ///     the project carries no <c>global.json</c> pin, so the SDK resolves as for any project in that directory.
+    /// </summary>
+    Ambient
 }
 
 /// <summary>
@@ -100,6 +107,9 @@ public static class DotNetSdkHelpers
     /// <seealso cref="ClearCache" />
     public static async Task<FullPath> Get(NetSdkVersion version)
     {
+        if (version is NetSdkVersion.Ambient)
+            return s_values.GetOrAdd(version, static _ => FindAmbientDotnet());
+
         if (s_values.TryGetValue(version, out var result))
             return result;
 
@@ -214,5 +224,19 @@ public static class DotNetSdkHelpers
     public static void ClearCache()
     {
         s_values.Clear();
+    }
+
+    private static FullPath FindAmbientDotnet()
+    {
+        var executable = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
+        if (Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") is { Length: > 0 } hostPath && File.Exists(hostPath))
+            return FullPath.FromPath(hostPath);
+
+        foreach (var directory in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator,
+                     StringSplitOptions.RemoveEmptyEntries))
+            if (File.Exists(Path.Combine(directory, executable)))
+                return FullPath.FromPath(Path.Combine(directory, executable));
+
+        throw new InvalidOperationException($"No {executable} found through DOTNET_HOST_PATH or PATH.");
     }
 }

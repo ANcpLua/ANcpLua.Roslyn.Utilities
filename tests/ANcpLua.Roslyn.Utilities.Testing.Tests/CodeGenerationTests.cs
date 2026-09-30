@@ -7,17 +7,13 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Tests;
 
 public sealed class CodeGenerationTests
 {
-    [Fact]
-    public void SuppressWarnings_And_RestoreWarnings_RenderPragmasForValidInputs()
+    [Theory]
+    [InlineData(new[] { "CS0168", "CA1822" }, "CS0168, CA1822")]
+    [InlineData(new[] { "0168", "CS0168", "IDE0051" }, "0168, CS0168, IDE0051")]
+    public void SuppressWarnings_And_RestoreWarnings_RenderPragmasForValidInputs(string[] warningIds, string rendered)
     {
-        GeneratedCodeHelpers.SuppressWarnings("CS0168", "CA1822").Should().Be("#pragma warning disable CS0168, CA1822");
-        GeneratedCodeHelpers.RestoreWarnings("CS0168", "IDE0051").Should().Be("#pragma warning restore CS0168, IDE0051");
-    }
-
-    [Fact]
-    public void SuppressWarnings_AcceptsNumericAndWellKnownPrefixes()
-    {
-        GeneratedCodeHelpers.SuppressWarnings("0168", "CS0168", "IDE0051").Should().Be("#pragma warning disable 0168, CS0168, IDE0051");
+        GeneratedCodeHelpers.SuppressWarnings(warningIds).Should().Be($"#pragma warning disable {rendered}");
+        GeneratedCodeHelpers.RestoreWarnings(warningIds).Should().Be($"#pragma warning restore {rendered}");
     }
 
     [Fact]

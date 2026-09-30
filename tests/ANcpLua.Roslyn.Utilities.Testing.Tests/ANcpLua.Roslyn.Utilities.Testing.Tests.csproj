@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -24,10 +24,12 @@
     </ItemGroup>
 
     <!-- The async helpers are source-package-only (#if !NETSTANDARD), so link them into this
-         net10 test assembly to exercise the same code consumers compile from contentFiles. -->
+         test assembly to exercise the same code modern consumers compile from contentFiles. -->
     <ItemGroup>
         <Compile Include="..\..\src\ANcpLua.Roslyn.Utilities\Async\ParallelAsyncExtensions.cs"
                  Link="SourcePackage\ParallelAsyncExtensions.cs"/>
+        <Compile Include="..\..\src\ANcpLua.Roslyn.Utilities\Async\AsyncSequenceExtensions.cs"
+                 Link="SourcePackage\AsyncSequenceExtensions.cs"/>
     </ItemGroup>
 
     <!-- TUnit migration analyzers flag xUnit calls as TUXU0001 ("xUnit code can be converted to

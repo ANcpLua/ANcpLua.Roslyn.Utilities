@@ -24,18 +24,18 @@ public sealed class ParallelAsyncExtensionsTests
     }
 
     [Fact]
-    public async Task SelectParallel_RethrowsSelectorExceptionWithoutHanging()
+    public async Task SelectParallel_SelectorFailureCancelsSiblingsAndRethrows()
     {
+        // Siblings wait forever unless the failure cancels them through the linked token.
         var ct = TestContext.Current.CancellationToken;
         var act = () => WithTimeout(CollectAsync(Range(32, ct).SelectParallel(
             4,
             async (item, ct) =>
             {
-                await Task.Yield();
-                ct.ThrowIfCancellationRequested();
-                if (item == 7)
+                if (item == 0)
                     throw new InvalidOperationException("parallel boom");
 
+                await Task.Delay(Timeout.Infinite, ct);
                 return item;
             },
             ct), ct));
@@ -48,7 +48,8 @@ public sealed class ParallelAsyncExtensionsTests
     public async Task SelectParallel_DisposeStopsProducerAndWorkers_WhenConsumerStopsEarly()
     {
         var ct = TestContext.Current.CancellationToken;
-        var enumerator = Endless(ct).SelectParallel(
+        var producerStopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var enumerator = Endless(producerStopped, ct).SelectParallel(
                 4,
                 async (item, ct) =>
                 {
@@ -67,6 +68,8 @@ public sealed class ParallelAsyncExtensionsTests
         {
             await WithTimeout(enumerator.DisposeAsync().AsTask());
         }
+
+        producerStopped.Task.IsCompleted.Should().BeTrue();
     }
 
     [Fact]
@@ -128,14 +131,25 @@ public sealed class ParallelAsyncExtensionsTests
     }
 
     private static async IAsyncEnumerable<int> Endless(
+        TaskCompletionSource stopped,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var i = 0;
-        while (true)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return i++;
-            await Task.Delay(1, cancellationToken);
+            var i = 0;
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return i++;
+                await Task.Delay(1, cancellationToken);
+            }
+        }
+        finally
+        {
+            // Cancellation resumes this iterator inline; stopping asynchronously means only a DisposeAsync
+            // that waits for the producer sees it finished.
+            await Task.Delay(20, CancellationToken.None);
+            stopped.TrySetResult();
         }
     }
 }

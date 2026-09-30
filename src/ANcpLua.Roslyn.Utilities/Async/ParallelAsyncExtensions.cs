@@ -139,12 +139,8 @@ internal
                 },
                 CancellationToken.None);
 
-            // completedReading flips true only after the reader loop drained cleanly. When the consumer
-            // disposes the enumerator mid-stream, the await throws OperationCanceledException out to the
-            // finally block, completedReading stays false, and the captured worker failure is intentionally
-            // suppressed — if the consumer walked away, secondary worker errors are noise, not signal.
-            var completedReading = false;
-
+            // Code after this try/finally runs only once the reader has drained the channel. A consumer that
+            // disposes mid-stream leaves through the finally, so secondary worker errors never reach it.
             try
             {
                 while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
@@ -152,8 +148,6 @@ internal
                     while (output.Reader.TryRead(out var item))
                         yield return item;
                 }
-
-                completedReading = true;
             }
             finally
             {
@@ -169,7 +163,7 @@ internal
                 }
             }
 
-            if (completedReading && failure is not null)
+            if (failure is not null)
                 ExceptionDispatchInfo.Capture(failure).Throw();
         }
     }
@@ -294,10 +288,7 @@ internal
             var pending = new SortedDictionary<int, TResult>();
             var nextExpected = 0;
 
-            // See Core(...) for the rationale on completedReading: it gates both the failure rethrow
-            // and the structural-gap check so that consumer-side dispose doesn't surface secondary errors.
-            var completedReading = false;
-
+            // As in Core(...): the failure rethrow and the gap check below run only after a full drain.
             try
             {
                 while (await output.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
@@ -314,8 +305,6 @@ internal
                         }
                     }
                 }
-
-                completedReading = true;
             }
             finally
             {
@@ -331,10 +320,10 @@ internal
                 }
             }
 
-            if (completedReading && failure is not null)
+            if (failure is not null)
                 ExceptionDispatchInfo.Capture(failure).Throw();
 
-            if (completedReading && pending.Count > 0)
+            if (pending.Count > 0)
                 throw new InvalidOperationException("Ordered parallel sequence completed with a gap in the result stream.");
         }
     }

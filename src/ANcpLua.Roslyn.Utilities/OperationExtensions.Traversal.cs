@@ -11,39 +11,6 @@ internal
     static partial class OperationExtensions
 {
     /// <summary>
-    ///     Enumerates the operation and all its descendants in depth-first order.
-    /// </summary>
-    /// <param name="operation">The root operation.</param>
-    /// <returns>
-    ///     An enumerable sequence containing <paramref name="operation" /> followed by all its descendants.
-    /// </returns>
-    /// <seealso cref="Descendants" />
-    /// <seealso cref="DescendantsOfType{T}" />
-    public static IEnumerable<IOperation> DescendantsAndSelf(this IOperation operation)
-    {
-        yield return operation;
-        foreach (var child in operation.ChildOperations)
-        foreach (var descendant in child.DescendantsAndSelf())
-            yield return descendant;
-    }
-
-    /// <summary>
-    ///     Enumerates all descendants of the operation in depth-first order.
-    /// </summary>
-    /// <param name="operation">The root operation.</param>
-    /// <returns>
-    ///     An enumerable sequence of all descendant operations, not including <paramref name="operation" /> itself.
-    /// </returns>
-    /// <seealso cref="DescendantsAndSelf" />
-    /// <seealso cref="DescendantsOfType{T}" />
-    public static IEnumerable<IOperation> Descendants(this IOperation operation)
-    {
-        foreach (var child in operation.ChildOperations)
-        foreach (var descendant in child.DescendantsAndSelf())
-            yield return descendant;
-    }
-
-    /// <summary>
     ///     Enumerates all descendants of a specific type in depth-first order.
     /// </summary>
     /// <typeparam name="T">The type of operations to find. Must implement <see cref="IOperation" />.</typeparam>
@@ -51,7 +18,7 @@ internal
     /// <returns>
     ///     An enumerable sequence of all descendant operations of type <typeparamref name="T" />.
     /// </returns>
-    /// <seealso cref="Descendants" />
+    /// <seealso cref="Microsoft.CodeAnalysis.Operations.OperationExtensions.Descendants(IOperation)" />
     /// <seealso cref="ContainsOperation{T}" />
     public static IEnumerable<T> DescendantsOfType<T>(this IOperation operation) where T : IOperation
     {

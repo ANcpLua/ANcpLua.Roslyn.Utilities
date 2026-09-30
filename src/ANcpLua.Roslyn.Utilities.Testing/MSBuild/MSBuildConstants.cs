@@ -341,6 +341,9 @@ public static class Prop
     /// <summary>Injects <c>ParamCollectionAttribute</c> polyfill.</summary>
     public const string InjectParamCollectionOnLegacy = "InjectParamCollectionOnLegacy";
 
+    /// <summary>Injects <c>UnionAttribute</c>/<c>IUnion</c> polyfills for C# 15 <c>union</c> declarations.</summary>
+    public const string InjectUnionOnLegacy = "InjectUnionOnLegacy";
+
     /// <summary>Injects <c>UnreachableException</c> polyfill.</summary>
     public const string InjectUnreachableExceptionOnLegacy = "InjectUnreachableExceptionOnLegacy";
 
@@ -361,6 +364,9 @@ public static class Prop
 
     /// <summary>Injects <c>String.Contains</c>/<c>String.Replace</c> with <c>StringComparison</c> overloads.</summary>
     public const string InjectStringExtensionsPolyfill = "InjectStringExtensionsPolyfill";
+
+    /// <summary>Injects LINQ <c>DistinctBy</c>/<c>SkipLast</c>/<c>TakeLast</c> polyfills.</summary>
+    public const string InjectLinqPolyfill = "InjectLinqPolyfill";
 }
 
 /// <summary>

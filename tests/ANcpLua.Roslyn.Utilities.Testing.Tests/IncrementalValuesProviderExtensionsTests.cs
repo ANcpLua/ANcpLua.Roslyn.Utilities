@@ -22,37 +22,29 @@ public sealed class IncrementalValuesProviderExtensionsTests
     [Fact]
     public void GeneratorErrorInfo_From_CapturesType_AndMessage()
     {
-        var caught = CaptureThrow();
-
-        var info = GeneratorErrorInfo.From(caught);
+        var info = GeneratorErrorInfo.From(Capture(ThrowDeep));
 
         info.TypeName.Should().Be(typeof(InvalidOperationException).FullName);
         info.Message.Should().Be("boom");
-        info.ToString().Should().StartWith($"{typeof(InvalidOperationException).FullName}: boom");
+        info.ToString().Should().Be($"{typeof(InvalidOperationException).FullName}: boom");
     }
 
     [Fact]
     public void GeneratorErrorInfo_HasValueEquality_SoItIsCacheStable()
     {
-        // Two distinct Exception instances with identical surface produce equal GeneratorErrorInfos.
-        // This is the property that makes the type safe to flow through the incremental cache.
-        var first = CaptureThrow();
-        var second = CaptureThrow();
-
-        var a = GeneratorErrorInfo.From(first);
-        var b = GeneratorErrorInfo.From(second);
+        // Same type and message, thrown from different sites: the infos must still be equal, which is
+        // what makes the type safe to flow through the incremental cache.
+        var a = GeneratorErrorInfo.From(Capture(ThrowDeep));
+        var b = GeneratorErrorInfo.From(Capture(ThrowShallow));
 
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());
-        ReferenceEquals(first, second).Should().BeFalse();
     }
 
     [Fact]
     public void GroupBy_PreservesKeyInsertionOrder()
     {
-        // The previous implementation iterated a Dictionary directly, which has no documented
-        // iteration order. Generators that consume GroupBy output must see a stable, deterministic
-        // sequence so generated source is reproducible across runs.
+        // Keys come out in first-appearance order, so generated source is reproducible across runs.
         var observed = RunGroupByGenerator(GroupByOrderingGenerator.Source);
 
         observed.Should().Equal("Beta", "Alpha", "Gamma");
@@ -61,13 +53,12 @@ public sealed class IncrementalValuesProviderExtensionsTests
     [Fact]
     public void SelectAndReportExceptions_ValuesOverload_PropagatesCancellation()
     {
-        // The pre-cancelled token is the *system under test* — using
-        // TestContext.Current.CancellationToken would defeat the purpose, so xUnit1051 is
-        // suppressed for this test only.
+        // The selector cancels the run's own token mid-step; the helper must rethrow that cancellation
+        // instead of reporting it as a generator error. The token is the system under test, so
+        // xUnit1051 is suppressed for this test only.
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
 
-        var driver = CSharpGeneratorDriver.Create(new CancellingGenerator());
+        var driver = CSharpGeneratorDriver.Create(new CancellingGenerator(cts));
         var ct = TestContext.Current.CancellationToken;
         var compilation = CSharpCompilation.Create(
             "Test",
@@ -101,23 +92,23 @@ public sealed class IncrementalValuesProviderExtensionsTests
             diagnostic.GetMessage(CultureInfo.InvariantCulture).Contains("single boom", StringComparison.Ordinal));
     }
 
-    private static InvalidOperationException CaptureThrow()
+    private static InvalidOperationException Capture(Action throwing)
     {
         try
         {
-            ThrowDeep();
-            throw new InvalidOperationException("unreachable");
+            throwing();
         }
         catch (InvalidOperationException ex)
         {
             return ex;
         }
+
+        throw new InvalidOperationException("The action did not throw.");
     }
 
-    private static void ThrowDeep()
-    {
-        throw new InvalidOperationException("boom");
-    }
+    private static void ThrowDeep() => ThrowShallow();
+
+    private static void ThrowShallow() => throw new InvalidOperationException("boom");
 
     private static List<string> RunGroupByGenerator(string source)
     {
@@ -179,10 +170,10 @@ public sealed class IncrementalValuesProviderExtensionsTests
 
     /// <summary>
     /// Drives <see cref="IncrementalValuesProviderExtensions.SelectAndReportExceptions{TSource,TResult}"
-    /// /> with a selector that observes the cancellation token to confirm cancellation flows out
-    /// of the pipeline rather than being swallowed.
+    /// /> with a selector that cancels the run from inside, past the helper's own up-front check,
+    /// to confirm cancellation flows out of the pipeline rather than being swallowed.
     /// </summary>
-    private sealed class CancellingGenerator : IIncrementalGenerator
+    private sealed class CancellingGenerator(CancellationTokenSource cancellation) : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -190,8 +181,9 @@ public sealed class IncrementalValuesProviderExtensionsTests
                 .SelectMany(static (_, _) => ImmutableArray.Create(0));
 
             seed.SelectAndReportExceptions(
-                    static (_, ct) =>
+                    (_, ct) =>
                     {
+                        cancellation.Cancel();
                         ct.ThrowIfCancellationRequested();
                         return FileWithName.Empty;
                     },

@@ -12,13 +12,12 @@ here propagates the whole way down.
 
 1. [AOT reflection generator](src/ANcpLua.AotReflection/CLAUDE.md)
 2. [AOT reflection attributes](src/ANcpLua.AotReflection.Attributes/CLAUDE.md)
-3. [Discriminated union generator](src/ANcpLua.DiscriminatedUnion/CLAUDE.md)
-4. [Extensible enum mirror generator](src/ANcpLua.ExtensibleEnumMirror/CLAUDE.md)
-5. [Core Roslyn utilities](src/ANcpLua.Roslyn.Utilities/CLAUDE.md)
-6. [Polyfills package](src/ANcpLua.Roslyn.Utilities.Polyfills/CLAUDE.md)
-7. [Source-only package](src/ANcpLua.Roslyn.Utilities.Sources/CLAUDE.md)
-8. [Testing utilities](src/ANcpLua.Roslyn.Utilities.Testing/CLAUDE.md)
-9. [AOT testing utilities](src/ANcpLua.Roslyn.Utilities.Testing.Aot/CLAUDE.md)
+3. [Extensible enum mirror generator](src/ANcpLua.ExtensibleEnumMirror/CLAUDE.md)
+4. [Core Roslyn utilities](src/ANcpLua.Roslyn.Utilities/CLAUDE.md)
+5. [Polyfills package](src/ANcpLua.Roslyn.Utilities.Polyfills/CLAUDE.md)
+6. [Source-only package](src/ANcpLua.Roslyn.Utilities.Sources/CLAUDE.md)
+7. [Testing utilities](src/ANcpLua.Roslyn.Utilities.Testing/CLAUDE.md)
+8. [AOT testing utilities](src/ANcpLua.Roslyn.Utilities.Testing.Aot/CLAUDE.md)
 
 ## Nearby repos
 
@@ -32,8 +31,8 @@ Foundation Roslyn helpers, source generators, and `netstandard2.0` utilities sha
 across the ANcpLua framework. Two families ship from `src/`:
 
 - **`ANcpLua.Analyzers.*` generators** — AOT reflection (`AotReflection` +
-  `AotReflection.Attributes` runtime metadata types), discriminated unions, and the
-  extensible-enum mirror. These are the product.
+  `AotReflection.Attributes` runtime metadata types) and the extensible-enum mirror.
+  These are the product.
 - **`ANcpLua.Roslyn.Utilities.*` helpers** — the core analyzer/generator utility
   library, its `.Polyfills`, the source-only `.Sources` package, and the `.Testing`
   / `.Testing.Aot` harnesses.
@@ -69,16 +68,28 @@ keep the test green rather than trusting the prose.
 - `TryExtensions.TryParse*` is pinned to `CultureInfo.InvariantCulture` with explicit
   `NumberStyles` / `DateTimeStyles`; do not regress to current-culture overloads.
 - `ParallelAsyncExtensions` uses a linked CTS so a single selector exception cancels
-  every sibling worker; the `completedReading` flag suppresses secondary errors on
-  consumer-side dispose by design.
+  every sibling worker, and `DisposeAsync` returns only after the producer and workers
+  have stopped; a consumer that disposes early never sees secondary worker errors.
+  Guarded by `ParallelAsyncExtensionsTests`.
 - `ExpiringCache<TKey,TValue>` is access-order LRU + single-flight via
   `Lazy<TValue?>`; the factory runs outside the `_lock` so cache reads never block on
-  the factory.
+  the factory. The in-flight `Lazy` re-checks the cache before it runs the factory and
+  the owner releases it only after publishing, so while an entry is live a miss never
+  starts a second factory run and concurrent callers return the one published instance.
+  Guarded by `ExpiringCacheTests`.
 - `ClassMetadata.InvokeMethod` / `CreateInstance` disambiguate same-name, same-arity
   overloads by matching each argument's runtime type against `ParameterMetadata.Type`:
   the parameter-type-exact overload wins, with the first name+arity match as the
   fallback when no exact match exists (e.g. all-null arguments). Guarded by
   `ClassMetadataDispatchTests`.
+- No public extension method repeats the name and parameter types of a BCL or Roslyn
+  one: consumers import this namespace next to `System.Linq` and
+  `Microsoft.CodeAnalysis.Operations`, so a duplicate makes every call CS0121. Guarded
+  by `PublicSurfaceTests`.
+- `.Sources` and `.Polyfills` compile side by side (the `.Sources` polyfill copy
+  steps aside), and an `Inject*=false` switch removes only that package's files. The
+  removal runs in a target because MSBuild applies per-item conditions only there.
+  Guarded by `PackageConsumptionTests`.
 
 ## Conventions
 
@@ -90,10 +101,8 @@ oversights — earlier review flagged them and they resolved to these choices):
   so nothing leaks transitively into consumers.
 - Public-surface visibility is gated by the `ANCPLUA_ROSLYN_PUBLIC` compilation
   symbol; the source-only `.Sources` package collapses those guards to `internal` at
-  pack time (`Transform-Sources.ps1`), so it is always internal to its consumer.
-- The `.Sources` pack step shells out to `pwsh`. That is an accepted CI-time
-  dependency; if you move packing off PowerShell, remove the dependency rather than
-  documenting around it.
+  pack time (inline MSBuild task in its csproj), so it is always internal to its
+  consumer.
 
 ## Build and test
 

@@ -70,10 +70,15 @@ public sealed class ClassMetadataDispatchTests
         // Arrange
         var metadata = new ClassMetadata
         {
-            Methods = [Method("Name", typeof(string), args => args[0] is null ? "null" : "value")],
+            Methods =
+            [
+                Method("Name", typeof(int), _ => "int"),
+                Method("Name", typeof(string), args => args[0] is null ? "null" : "value"),
+            ],
         };
 
-        // Act & Assert — null fits a reference-type parameter, so it dispatches rather than throwing.
+        // Act & Assert — null fits the reference-type overload only; the int overload comes first, so the
+        // name+arity fallback alone would pick it.
         metadata.InvokeMethod(null, "Name", [null]).Should().Be("null");
     }
 

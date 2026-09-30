@@ -104,7 +104,7 @@ public sealed class StringExtensionsTests
     [InlineData(null, "")]
     [InlineData("hello", "hello")]
     [InlineData("hello world", "\"hello world\"")]
-    [InlineData("\"x\"", "\"x\"")]
+    [InlineData("\"hello world\"", "\"hello world\"")]
     public void DoubleQuoteIfNeeded_PreservesExistingSemantics(string? input, string expected)
     {
         input.DoubleQuoteIfNeeded().Should().Be(expected);
@@ -114,7 +114,7 @@ public sealed class StringExtensionsTests
     [InlineData(null, "")]
     [InlineData("hello", "hello")]
     [InlineData("hello world", "'hello world'")]
-    [InlineData("'x'", "'x'")]
+    [InlineData("'hello world'", "'hello world'")]
     public void SingleQuoteIfNeeded_PreservesExistingSemantics(string? input, string expected)
     {
         input.SingleQuoteIfNeeded().Should().Be(expected);

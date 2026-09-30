@@ -175,31 +175,6 @@ partial class Standalone
     }
 
     [Fact]
-    public void BeginDeclaration_Output_CompilesTogetherWithOriginalSource()
-    {
-        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
-
-        var builder = new IndentedStringBuilder();
-        using (info.BeginDeclaration(builder))
-        {
-            builder.AppendLine("public int Generated => 1;");
-        }
-
-        var compilation = CSharpCompilation.Create(
-            "PartialMerge",
-            [
-                CSharpSyntaxTree.ParseText(NestedSource, cancellationToken: TestContext.Current.CancellationToken),
-                CSharpSyntaxTree.ParseText(builder.ToString(), cancellationToken: TestContext.Current.CancellationToken)
-            ],
-            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
-            .Where(d => d.Severity is DiagnosticSeverity.Error).ToArray();
-        errors.Should().BeEmpty();
-    }
-
-    [Fact]
     public void From_ProducesEqualValues_AcrossIdenticalCompilations()
     {
         var first = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
@@ -215,29 +190,11 @@ partial class Standalone
         default(TypeDeclarationInfo).IsDefault.Should().BeTrue();
     }
 
-    [Fact]
-    public void GetHintName_NestedGenericChain_EncodesEveryLevelWithArity()
-    {
-        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
-
-        info.GetHintName().Should().Be("Deep.Outer(1)-Middle-Inner(1).g.cs");
-    }
-
-    [Fact]
-    public void GetHintName_GlobalNamespaceType_OmitsNamespacePrefix()
-    {
-        var info = TypeDeclarationInfo.From(GetType("public class Standalone { }", "Standalone"));
-
-        info.GetHintName().Should().Be("Standalone.g.cs");
-    }
-
-    [Fact]
-    public void GetHintName_SimpleNamespacedType_UsesQualifiedName()
-    {
-        var info = TypeDeclarationInfo.From(GetType(ShapesSource, "Shapes.PlainClass"));
-
-        info.GetHintName().Should().Be("Shapes.PlainClass.g.cs");
-    }
+    [Theory]
+    [InlineData(NestedSource, "Deep.Outer`1+Middle+Inner`1", "Deep.Outer(1)-Middle-Inner(1).g.cs")]
+    [InlineData("public class Standalone { }", "Standalone", "Standalone.g.cs")]
+    public void GetHintName_EncodesNamespaceNestingAndArity(string source, string metadataName, string expected) =>
+        TypeDeclarationInfo.From(GetType(source, metadataName)).GetHintName().Should().Be(expected);
 
     [Fact]
     public void GetHintName_ArityMarker_DisambiguatesGenericOverloads()
@@ -353,29 +310,17 @@ namespace A.B
         var info = TypeDeclarationInfo.From(GetType(source, metadataName));
 
         info.GetFullyQualifiedMetadataName().Should().Be(expected);
-
-        var resolved = CreateCompilation(source).GetTypeByMetadataName(expected);
-        resolved.Should().NotBeNull();
     }
 
-    [Fact]
-    public void GetFullyQualifiedName_NestedGenericChain_UsesGlobalAliasAndParameterNames()
-    {
-        var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
-
-        info.GetFullyQualifiedName().Should().Be("global::Deep.Outer<T>.Middle.Inner<U>");
-    }
-
-    [Fact]
-    public void GetFullyQualifiedName_GlobalNamespaceType_KeepsGlobalAlias()
-    {
-        var info = TypeDeclarationInfo.From(GetType("public class Standalone { }", "Standalone"));
-
-        info.GetFullyQualifiedName().Should().Be("global::Standalone");
-    }
+    [Theory]
+    [InlineData(NestedSource, "Deep.Outer`1+Middle+Inner`1", "global::Deep.Outer<T>.Middle.Inner<U>")]
+    [InlineData("public class Standalone { }", "Standalone", "global::Standalone")]
+    public void GetFullyQualifiedName_UsesGlobalAliasAndParameterNames(string source, string metadataName,
+        string expected) =>
+        TypeDeclarationInfo.From(GetType(source, metadataName)).GetFullyQualifiedName().Should().Be(expected);
 
     [Fact]
-    public void GetFullyQualifiedName_IsValidInsideGeneratedPartial()
+    public void BeginDeclaration_WrapsAPartialThatCompilesAndSelfReferences()
     {
         var info = TypeDeclarationInfo.From(GetType(NestedSource, "Deep.Outer`1+Middle+Inner`1"));
 

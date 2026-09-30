@@ -82,17 +82,17 @@ public class Widget
     }
 
     [Fact]
-    public void ToDiagnostic_WithNullTree_MatchesParameterlessBehavior()
+    public void ToDiagnostic_WithoutTree_ReportsPathBasedLocation()
     {
         var (_, node) = ParseWidget();
         var info = DiagnosticInfo.Create(Descriptor, node, "message");
 
-        var withNull = info.ToDiagnostic(null);
-        var parameterless = info.ToDiagnostic();
+        var diagnostic = info.ToDiagnostic();
 
-        withNull.Location.IsInSource.Should().BeFalse();
-        withNull.Location.GetLineSpan().Should().Be(parameterless.Location.GetLineSpan());
-        withNull.GetMessage(CultureInfo.InvariantCulture).Should().Be(parameterless.GetMessage(CultureInfo.InvariantCulture));
+        diagnostic.Location.IsInSource.Should().BeFalse();
+        diagnostic.Location.GetLineSpan().Path.Should().Be("Widget.cs");
+        diagnostic.Location.SourceSpan.Should().Be(node.Span);
+        diagnostic.GetMessage(CultureInfo.InvariantCulture).Should().Be("message");
     }
 
     private static (SyntaxTree Tree, ClassDeclarationSyntax Node) ParseWidget()

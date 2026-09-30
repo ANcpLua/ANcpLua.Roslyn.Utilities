@@ -9,73 +9,19 @@ public sealed class DeltaTests
 {
     private static EquatableArray<int> Eq(params int[] items) => ImmutableArray.Create(items).AsEquatableArray();
 
-    [Fact]
-    public void Difference_ReturnsItemsInSecondNotInFirst()
-    {
-        var result = Delta.Difference(Eq(1, 2, 3), Eq(2, 3, 4, 5));
-
-        result.AsImmutableArray().Should().Equal(4, 5);
-    }
-
-    [Fact]
-    public void Difference_FirstEmpty_ReturnsAllOfSecond()
-    {
-        Delta.Difference(Eq(), Eq(1, 2, 3)).AsImmutableArray().Should().Equal(1, 2, 3);
-    }
-
-    [Fact]
-    public void Difference_SecondEmpty_ReturnsEmpty()
-    {
-        Delta.Difference(Eq(1, 2, 3), Eq()).IsDefaultOrEmpty.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Difference_AllOfSecondPresentInFirst_ReturnsEmpty()
-    {
-        Delta.Difference(Eq(1, 2, 3, 4), Eq(2, 3)).IsDefaultOrEmpty.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Difference_DisjointInputs_ReturnsAllOfSecond()
-    {
-        Delta.Difference(Eq(1, 2), Eq(3, 4)).AsImmutableArray().Should().Equal(3, 4);
-    }
-
-    [Fact]
-    public void Difference_PreservesOrderOfSecond()
-    {
-        Delta.Difference(Eq(9), Eq(3, 1, 2)).AsImmutableArray().Should().Equal(3, 1, 2);
-    }
-
-    [Fact]
-    public void Difference_PreservesDuplicatesInSecond_WhenAbsentFromFirst()
-    {
-        // Documented behavior: filters second, does not deduplicate.
-        Delta.Difference(Eq(1), Eq(2, 2, 3)).AsImmutableArray().Should().Equal(2, 2, 3);
-    }
-
-    [Fact]
-    public void Difference_IsNotSymmetric()
-    {
-        var forward = Delta.Difference(Eq(1, 2, 3), Eq(3, 4)).AsImmutableArray();
-        var backward = Delta.Difference(Eq(3, 4), Eq(1, 2, 3)).AsImmutableArray();
-
-        forward.Should().Equal(4);
-        backward.Should().Equal(1, 2);
-    }
-
-    [Fact]
-    public void Difference_ImmutableArrayAndEquatableArrayOverloads_Agree()
-    {
-        var first = ImmutableArray.Create(1, 2, 3);
-        var second = ImmutableArray.Create(2, 3, 4);
-
-        var viaImmutable = Delta.Difference(first, second);
-        var viaEquatable = Delta.Difference(first.AsEquatableArray(), second.AsEquatableArray());
-
-        viaImmutable.Equals(viaEquatable).Should().BeTrue();
-        viaImmutable.AsImmutableArray().Should().Equal(4);
-    }
+    [Theory]
+    [InlineData(new[] { 1, 2, 3 }, new[] { 2, 3, 4, 5 }, new[] { 4, 5 })]
+    [InlineData(new int[0], new[] { 1, 2, 3 }, new[] { 1, 2, 3 })]
+    [InlineData(new[] { 1, 2, 3 }, new int[0], new int[0])]
+    [InlineData(new[] { 1, 2, 3, 4 }, new[] { 2, 3 }, new int[0])]
+    [InlineData(new[] { 1, 2 }, new[] { 3, 4 }, new[] { 3, 4 })]
+    [InlineData(new[] { 1 }, new[] { 3, 1, 2 }, new[] { 3, 2 })]
+    [InlineData(new[] { 1 }, new[] { 2, 1, 2, 3 }, new[] { 2, 2, 3 })]
+    [InlineData(new[] { 1, 2, 3 }, new[] { 3, 4 }, new[] { 4 })]
+    [InlineData(new[] { 3, 4 }, new[] { 1, 2, 3 }, new[] { 1, 2 })]
+    public void Difference_KeepsItemsOfSecondMissingFromFirst_InOrderWithDuplicates(int[] first, int[] second,
+        int[] expected) =>
+        Delta.Difference(Eq(first), Eq(second)).AsImmutableArray().Should().Equal(expected);
 
     [Fact]
     public void Difference_DefaultImmutableArrayInputs_TreatedAsEmpty()

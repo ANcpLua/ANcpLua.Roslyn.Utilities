@@ -35,22 +35,11 @@ public sealed class TypeSymbolExtensionsTests
     {
         var compilation = CreateCompilation(SymbolShapesSource);
 
-        var serviceType = compilation.GetTypeByMetadataName("NamespaceA.IService");
-        var matchingServiceType = compilation.GetTypeByMetadataName("NamespaceA.IService");
-        var otherServiceType = compilation.GetTypeByMetadataName("NamespaceB.IService");
-        var implType = compilation.GetTypeByMetadataName("Probe.UserType");
+        var implType = RequireSymbol(compilation.GetTypeByMetadataName("Probe.UserType"));
 
-        serviceType.Should().NotBeNull();
-        matchingServiceType.Should().NotBeNull();
-        otherServiceType.Should().NotBeNull();
-        implType.Should().NotBeNull();
-
-        var resolvedImplType = RequireSymbol(implType);
-        var resolvedMatchingServiceType = RequireSymbol(matchingServiceType);
-        var resolvedOtherServiceType = RequireSymbol(otherServiceType);
-        resolvedImplType.Implements(serviceType).Should().BeTrue();
-        resolvedImplType.Implements(resolvedMatchingServiceType).Should().BeTrue();
-        resolvedImplType.Implements(resolvedOtherServiceType).Should().BeFalse();
+        implType.Implements(compilation.GetTypeByMetadataName("NamespaceA.IService")).Should().BeTrue();
+        implType.Implements(compilation.GetTypeByMetadataName("NamespaceA.IHandler`1")).Should().BeTrue();
+        implType.Implements(compilation.GetTypeByMetadataName("NamespaceB.IService")).Should().BeFalse();
     }
 
     private const string SymbolShapesSource = """
@@ -58,6 +47,7 @@ namespace NamespaceA
 {
     public class Base { }
     public interface IService { }
+    public interface IHandler<T> { }
 }
 
 namespace NamespaceB
@@ -68,9 +58,7 @@ namespace NamespaceB
 
 namespace Probe
 {
-    public class UserType : NamespaceA.Base, NamespaceA.IService { }
-
-    public class ServiceConsumer : NamespaceB.IService { }
+    public class UserType : NamespaceA.Base, NamespaceA.IService, NamespaceA.IHandler<int> { }
 }
 """;
 
