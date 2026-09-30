@@ -122,7 +122,7 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 ### Guards & null handling
 
 - **`Guard`** — null / range / path / type guards
-- **`NullableExtensions`** — `Map`-style combinators for `T?`
+- **`NullableExtensions`** — `Map`, `Bind`, `Filter`, `Or`, `Match` combinators for `T?` (never LINQ names: a bare `T` receiver would win over `Enumerable` on any concrete collection)
 - **`TryExtensions`** — `TryParseX` (every overload pinned to `CultureInfo.InvariantCulture` so a German dev's `"1,5"` doesn't silently parse as `1.5` in production), dictionary `GetOrNull` / `GetOrDefault` / `GetOrElse`
 
 ### Models & OTel enums

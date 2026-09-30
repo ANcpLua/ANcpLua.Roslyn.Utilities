@@ -40,6 +40,12 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
             };
 
             public static EquatableArray<int> Equatable(int[] values) => values.ToEquatableArray();
+
+            // A List<T> is a reference type, so the nullable Where and Select (T? where T : class) apply to it with
+            // T = List<Cat> whenever the lambda binds for the list as well; their identity conversion beat
+            // Enumerable's until OverloadResolutionPriority put them last. Hijacked, this returns string?.
+            public static System.Collections.Generic.IEnumerable<string> Names(System.Collections.Generic.List<Cat> cats) =>
+                cats.Where(static cat => cat.GetHashCode() != 0).Select(static cat => cat.ToString());
         }
         """;
 
@@ -80,6 +86,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     // A consumer without any Microsoft.CodeAnalysis reference: an application or tool that only wants the
     // Roslyn-free helpers. Every call below resolves to a file the package ships outside Roslyn/.
     private const string UsesRoslynFreeHelpers = """
+        using System.Linq;
         using ANcpLua.Roslyn.Utilities;
         using ANcpLua.Roslyn.Utilities.Security;
 
@@ -88,6 +95,12 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         internal static class Uses
         {
             public static string Guarded(string? name) => Guard.NotNullOrWhiteSpace(name);
+
+            // NullableExtensions ships outside Roslyn/ (its Match method shares the name of the Roslyn-side Match class).
+            public static string Fallback(string? name) => name.Match(static n => n, static () => "none");
+
+            public static System.Collections.Generic.IEnumerable<string> Names(System.Collections.Generic.List<string> values) =>
+                values.Where(static v => v.GetHashCode() != 0).Select(static v => v.ToString());
 
             public static bool Same(string a, string b) => a.EqualsIgnoreCase(b) && a.StartsWithOrdinal("x");
 
@@ -131,6 +144,16 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         (await project.BuildAsync(BuildArguments)).ShouldSucceed();
     }
 
+    // The oldest Microsoft.CodeAnalysis the .Sources package supports; newer enum members and APIs stay out of it.
+    [Fact]
+    public async Task SourcesPackage_CompilesInGenerator_OnRoslyn414()
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        AsGenerator(project, withPolyfills: true, roslynVersion: "4.14.0").AddSource("Uses.cs", UsesUtilities);
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+    }
+
     [Fact]
     public async Task OptOutSwitches_YieldToConsumerOwnPolyfills()
     {
@@ -147,7 +170,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         (await project.BuildAsync(BuildArguments)).ShouldSucceed();
     }
 
-    private ProjectBuilder AsGenerator(ProjectBuilder project, bool withPolyfills)
+    private ProjectBuilder AsGenerator(ProjectBuilder project, bool withPolyfills, string? roslynVersion = null)
     {
         project
             .WithDotnetSdkVersion(NetSdkVersion.Ambient)
@@ -158,7 +181,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
             .WithProperty("IsRoslynComponent", Val.True)
             .WithProperty("EnforceExtendedAnalyzerRules", Val.True)
             .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
-            .WithPackage("Microsoft.CodeAnalysis.CSharp", typeof(SyntaxNode).Assembly.GetName().Version!.ToString(3))
+            .WithPackage("Microsoft.CodeAnalysis.CSharp", roslynVersion ?? typeof(SyntaxNode).Assembly.GetName().Version!.ToString(3))
             .WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version);
 
         return withPolyfills ? project.WithPackage("ANcpLua.Roslyn.Utilities.Polyfills", LocalPackageFeed.Version) : project;

@@ -7,18 +7,21 @@ namespace ANcpLua.Roslyn.Utilities;
 /// <remarks>
 ///     <para>
 ///         These extensions help reduce boilerplate when working with nullable values,
-///         providing a more functional style of null handling.
+///         providing a more functional style of null handling. The combinators are named Map, Bind and
+///         Filter rather than Select, SelectMany and Where: a bare <c>T</c> receiver applies to every
+///         reference type, and under a LINQ name it would win over the Enumerable overload for any
+///         concrete collection type (see PublicSurfaceTests).
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
 ///             <description>
-///                 <b>Transformation:</b> <see cref="Select{T,TResult}(T?, Func{T,TResult})" /> for mapping nullable
+///                 <b>Transformation:</b> <see cref="Map{T,TResult}(T?, Func{T,TResult})" /> for mapping nullable
 ///                 values.
 ///             </description>
 ///         </item>
 ///         <item>
 ///             <description>
-///                 <b>Filtering:</b> <see cref="Where{T}(T?, Func{T,bool})" /> for conditional unwrapping.
+///                 <b>Filtering:</b> <see cref="Filter{T}(T?, Func{T,bool})" /> for conditional unwrapping.
 ///             </description>
 ///         </item>
 ///         <item>
@@ -63,14 +66,14 @@ internal
     /// <example>
     ///     <code>
     /// // Get length of a nullable string
-    /// int? length = nullableString.Select(s => s.Length);
+    /// int? length = nullableString.Map(s => s.Length);
     ///
     /// // Chain transformations
-    /// var result = user.Select(u => u.Address).Select(a => a.City);
+    /// var result = user.Map(u => u.Address).Map(a => a.City);
     /// </code>
     /// </example>
-    /// <seealso cref="SelectMany{T,TResult}(T?, Func{T,TResult?})" />
-    public static TResult? Select<T, TResult>(this T? value, Func<T, TResult> selector)
+    /// <seealso cref="Bind{T,TResult}(T?, Func{T,TResult?})" />
+    public static TResult? Map<T, TResult>(this T? value, Func<T, TResult> selector)
         where T : class
     {
         return value is not null ? selector(value) : default;
@@ -95,11 +98,11 @@ internal
     /// <example>
     ///     <code>
     /// // Navigate nested nullable properties
-    /// var city = order.SelectMany(o => o.Customer).SelectMany(c => c.Address).Select(a => a.City);
+    /// var city = order.Bind(o => o.Customer).Bind(c => c.Address).Map(a => a.City);
     /// </code>
     /// </example>
-    /// <seealso cref="Select{T,TResult}(T?, Func{T,TResult})" />
-    public static TResult? SelectMany<T, TResult>(this T? value, Func<T, TResult?> selector)
+    /// <seealso cref="Map{T,TResult}(T?, Func{T,TResult})" />
+    public static TResult? Bind<T, TResult>(this T? value, Func<T, TResult?> selector)
         where T : class
         where TResult : class
     {
@@ -119,14 +122,14 @@ internal
     /// <example>
     ///     <code>
     /// // Only keep non-empty strings
-    /// var nonEmpty = str.Where(s => s.Length > 0);
+    /// var nonEmpty = str.Filter(s => s.Length > 0);
     ///
     /// // Filter based on conditions
-    /// var validUser = user.Where(u => u.IsActive);
+    /// var validUser = user.Filter(u => u.IsActive);
     /// </code>
     /// </example>
-    /// <seealso cref="Select{T,TResult}(T?, Func{T,TResult})" />
-    public static T? Where<T>(this T? value, Func<T, bool> predicate)
+    /// <seealso cref="Map{T,TResult}(T?, Func{T,TResult})" />
+    public static T? Filter<T>(this T? value, Func<T, bool> predicate)
         where T : class
     {
         return value is not null && predicate(value) ? value : null;
@@ -150,7 +153,7 @@ internal
     /// // Log and continue processing
     /// var result = item
     ///     .Do(i => logger.Log(i.Name))
-    ///     .Select(i => Process(i));
+    ///     .Map(i => Process(i));
     ///
     /// // Conditional side effects
     /// user.Do(u => NotifyUser(u));
@@ -180,7 +183,7 @@ internal
     /// </remarks>
     /// <example>
     ///     <code>
-    /// var name = user.Select(u => u.Name).Or("Guest");
+    /// var name = user.Map(u => u.Name).Or("Guest");
     /// </code>
     /// </example>
     /// <seealso cref="OrElse{T}(T?, Func{T})" />
@@ -303,10 +306,10 @@ internal
     /// <example>
     ///     <code>
     /// int? count = GetCount();
-    /// string? countStr = count.Select(c => c.ToString());
+    /// string? countStr = count.Map(c => c.ToString());
     /// </code>
     /// </example>
-    public static TResult? Select<T, TResult>(this T? value, Func<T, TResult> selector)
+    public static TResult? Map<T, TResult>(this T? value, Func<T, TResult> selector)
         where T : struct
     {
         return value.HasValue ? selector(value.Value) : default;
@@ -323,7 +326,7 @@ internal
     ///     The result of <paramref name="selector" /> if <paramref name="value" /> has a value;
     ///     otherwise, <c>null</c>.
     /// </returns>
-    public static TResult? SelectMany<T, TResult>(this T? value, Func<T, TResult?> selector)
+    public static TResult? Bind<T, TResult>(this T? value, Func<T, TResult?> selector)
         where T : struct
         where TResult : struct
     {
@@ -342,10 +345,10 @@ internal
     /// </returns>
     /// <example>
     ///     <code>
-    /// int? positiveOnly = number.Where(n => n > 0);
+    /// int? positiveOnly = number.Filter(n => n > 0);
     /// </code>
     /// </example>
-    public static T? Where<T>(this T? value, Func<T, bool> predicate)
+    public static T? Filter<T>(this T? value, Func<T, bool> predicate)
         where T : struct
     {
         return value.HasValue && predicate(value.Value) ? value : null;
