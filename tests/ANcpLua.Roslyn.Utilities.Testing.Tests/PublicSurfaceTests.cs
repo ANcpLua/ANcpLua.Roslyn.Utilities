@@ -43,6 +43,28 @@ public sealed class PublicSurfaceTests
         hijackers.Should().BeEmpty("each wins over the BCL overload for any concrete collection type: {0}", string.Join("; ", hijackers));
     }
 
+    // Releases up to 2.2.46 shipped these helpers on Dictionary<TKey, TValue>; 2.2.47 had only the
+    // IDictionary<TKey, TValue> overloads, so an assembly compiled against the earlier signatures threw
+    // MissingMethodException. The Dictionary overloads forward to the IDictionary ones and must stay.
+    [Fact]
+    public void DictionaryHelpers_KeepTheDictionaryReceiverSignaturesEarlierReleasesShipped()
+    {
+        const string receiver = "System.Collections.Generic.Dictionary`2<M0, M1>";
+        string[] shipped =
+        [
+            $"GetOrInsert({receiver}, M0, M2, System.Func`2<M2, M1>)",
+            $"GetOrInsert({receiver}, M0, M2, System.Func`3<M0, M2, M1>)",
+            $"GetOrInsertDefault({receiver}, M0)",
+            $"GetOrInsertNull({receiver}, M0)",
+            $"GetOrAdd({receiver}, M0)",
+            $"GetOrAdd({receiver}, M0, System.Func`2<M0, M1>)"
+        ];
+
+        var ours = typeof(DictionaryExtensions).GetMethods(BindingFlags.Public | BindingFlags.Static).Select(Signature);
+
+        shipped.Except(ours, StringComparer.Ordinal).Should().BeEmpty("removing one breaks compiled consumers");
+    }
+
     private static IEnumerable<MethodInfo> Theirs() =>
         new[]
             {
