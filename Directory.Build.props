@@ -18,7 +18,9 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings Condition="'$(ImplicitUsings)' == ''">enable</ImplicitUsings>
         <EnableNETAnalyzers Condition="'$(EnableNETAnalyzers)' == ''">true</EnableNETAnalyzers>
-        <AnalysisLevel Condition="'$(AnalysisLevel)' == ''">latest-all</AnalysisLevel>
+        <!-- 10.0-all, not latest-all: on SDK 11, latest-all reports every IDE style rule as a warning unless the
+             ANcpLua.NET.Sdk editorconfigs below set them, and CI checks out this repository alone. -->
+        <AnalysisLevel Condition="'$(AnalysisLevel)' == ''">10.0-all</AnalysisLevel>
 
         <!-- GitHub Actions only sets CI=true; without this mapping the warnings-as-errors gate below never fires in CI. -->
         <ContinuousIntegrationBuild Condition="'$(ContinuousIntegrationBuild)' == '' AND '$(CI)' == 'true'">true</ContinuousIntegrationBuild>

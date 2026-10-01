@@ -38,6 +38,10 @@ dotnet_diagnostic.CA1710.severity = none
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1721.severity = none
 
+# Test fixtures such as LocalPackageFeed are constructor parameters of public test classes, so they
+# must be public too. ANcpLua.NET.Sdk turns CA1515 off; CI builds this repository without that config.
+dotnet_diagnostic.CA1515.severity = none
+
 # Implicit operators ship documented named alternates using the As* naming family
 # (AsImmutableArray, AsEquatableArray); CA2225 only recognizes To*/From* names.
 dotnet_diagnostic.CA2225.severity = none
