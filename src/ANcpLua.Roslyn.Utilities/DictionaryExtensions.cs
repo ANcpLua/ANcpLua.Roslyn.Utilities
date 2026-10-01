@@ -45,7 +45,7 @@ internal
     /// </example>
     /// <seealso
     ///     cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
-    /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
+    /// <seealso cref="GetOrInsertDefault{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
@@ -87,7 +87,7 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
-    /// <seealso cref="GetOrInsertDefault{TKey, TValue}" />
+    /// <seealso cref="GetOrInsertDefault{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
     public static TValue GetOrInsert<TKey, TValue, TContext>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
@@ -120,7 +120,7 @@ internal
     ///         (e.g., <c>0</c> for numeric types, <c>false</c> for <see cref="bool" />).
     ///     </para>
     /// </remarks>
-    /// <seealso cref="GetOrInsertNull{TKey, TValue}" />
+    /// <seealso cref="GetOrInsertNull{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
     /// <seealso cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
     public static TValue GetOrInsertDefault<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
@@ -234,4 +234,49 @@ internal
         dictionary[destinationKey] = transform is null ? value : transform(value);
         return true;
     }
+
+    // The Dictionary<TKey, TValue> overloads below keep the signatures earlier releases shipped, so assemblies
+    // compiled against them still bind. They forward to the IDictionary<TKey, TValue> overloads, which also take
+    // SortedDictionary and other implementations; overload resolution prefers these for a Dictionary receiver.
+
+    /// <inheritdoc cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TContext, TValue})" />
+    public static TValue GetOrInsert<TKey, TValue, TContext>(
+        this Dictionary<TKey, TValue> dictionary,
+        TKey key,
+        TContext context,
+        Func<TContext, TValue> factory)
+        where TKey : notnull =>
+        GetOrInsert((IDictionary<TKey, TValue>)dictionary, key, context, factory);
+
+    /// <inheritdoc cref="GetOrInsert{TKey, TValue, TContext}(IDictionary{TKey, TValue}, TKey, TContext, Func{TKey, TContext, TValue})" />
+    public static TValue GetOrInsert<TKey, TValue, TContext>(
+        this Dictionary<TKey, TValue> dictionary,
+        TKey key,
+        TContext context,
+        Func<TKey, TContext, TValue> factory)
+        where TKey : notnull =>
+        GetOrInsert((IDictionary<TKey, TValue>)dictionary, key, context, factory);
+
+    /// <inheritdoc cref="GetOrInsertDefault{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
+    public static TValue GetOrInsertDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
+        where TKey : notnull
+        where TValue : struct =>
+        GetOrInsertDefault((IDictionary<TKey, TValue>)dictionary, key);
+
+    /// <inheritdoc cref="GetOrInsertNull{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
+    public static TValue? GetOrInsertNull<TKey, TValue>(this Dictionary<TKey, TValue?> dictionary, TKey key)
+        where TKey : notnull
+        where TValue : class =>
+        GetOrInsertNull((IDictionary<TKey, TValue?>)dictionary, key);
+
+    /// <inheritdoc cref="GetOrAdd{TKey, TValue}(IDictionary{TKey, TValue}, TKey)" />
+    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
+        where TKey : notnull
+        where TValue : new() =>
+        GetOrAdd((IDictionary<TKey, TValue>)dictionary, key);
+
+    /// <inheritdoc cref="GetOrAdd{TKey, TValue}(IDictionary{TKey, TValue}, TKey, Func{TKey, TValue})" />
+    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> factory)
+        where TKey : notnull =>
+        GetOrAdd((IDictionary<TKey, TValue>)dictionary, key, factory);
 }
