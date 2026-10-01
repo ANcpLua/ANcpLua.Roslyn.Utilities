@@ -113,7 +113,8 @@ public partial class ProjectBuilder
     /// <param name="dotnetSdkVersion">The SDK version to use.</param>
     /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
-    ///     The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers" /> if not already present.
+    ///     The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers" /> if not already present;
+    ///     <see cref="NetSdkVersion.Ambient" /> uses the installed SDK instead and drops the <c>global.json</c> pin.
     ///     The default SDK version is <see cref="NetSdkVersion.Net100" />.
     /// </remarks>
     /// <seealso cref="NetSdkVersion" />
@@ -121,6 +122,8 @@ public partial class ProjectBuilder
     public ProjectBuilder WithDotnetSdkVersion(NetSdkVersion dotnetSdkVersion)
     {
         SdkVersion = dotnetSdkVersion;
+        if (dotnetSdkVersion is NetSdkVersion.Ambient)
+            File.Delete(Directory.FullPath / "global.json");
         return this;
     }
 

@@ -52,6 +52,38 @@ public sealed class ExpiringCacheTests
         calls.Should().Be(1);
     }
 
+    // B misses the cache, then A runs a whole miss (create, publish, release) before B registers as the
+    // in-flight owner. B must take A's published value instead of running the factory a second time.
+    // The key comparer is the only user code on that path, so it parks B exactly there.
+    [Fact]
+    public async Task GetOrAdd_CallerThatMissedBeforeAPublishReusesThePublishedValue()
+    {
+        var comparer = new ParkingComparer();
+        var cache = new ExpiringCache<string, object>(keyComparer: comparer);
+        cache.GetOrAdd("warm-up", static () => new object());
+        var factoryRuns = 0;
+
+        object Factory()
+        {
+            Interlocked.Increment(ref factoryRuns);
+            return new object();
+        }
+
+        var late = Task.Run(() =>
+        {
+            comparer.ParkThisThreadOnSecondHash();
+            return cache.GetOrAdd("k", Factory);
+        }, TestContext.Current.CancellationToken);
+
+        await comparer.Parked.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        var published = cache.GetOrAdd("k", Factory);
+        comparer.Release();
+
+        (await late.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken)).Should().BeSameAs(published);
+        comparer.ParkedOutsideTheLock.Should().BeTrue();
+        factoryRuns.Should().Be(1);
+    }
+
     [Fact]
     public void GetOrAdd_EvictionUsesAccessOrderLru()
     {
@@ -64,5 +96,37 @@ public sealed class ExpiringCacheTests
 
         cache.GetOrAdd(2, () => 4).Should().Be(4);
         cache.Count.Should().Be(2);
+    }
+
+    // Parks one thread on its second key hash: after the warm-up the first is the cache lookup under the
+    // lock, the second is the in-flight registration outside it.
+    private sealed class ParkingComparer : IEqualityComparer<string>
+    {
+        private readonly TaskCompletionSource _parked = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _parkingThread = -1;
+        private int _hashes;
+
+        public Task Parked => _parked.Task;
+
+        // False when the park sat under the cache lock: the other caller could not finish, so no release came.
+        public bool ParkedOutsideTheLock { get; private set; }
+
+        public void ParkThisThreadOnSecondHash() => _parkingThread = Environment.CurrentManagedThreadId;
+
+        public void Release() => _released.TrySetResult();
+
+        public bool Equals(string? x, string? y) => string.Equals(x, y, StringComparison.Ordinal);
+
+        public int GetHashCode(string obj)
+        {
+            if (Environment.CurrentManagedThreadId == _parkingThread && ++_hashes == 2)
+            {
+                _parked.TrySetResult();
+                ParkedOutsideTheLock = _released.Task.Wait(TimeSpan.FromSeconds(5));
+            }
+
+            return StringComparer.Ordinal.GetHashCode(obj);
+        }
     }
 }

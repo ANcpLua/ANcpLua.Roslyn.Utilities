@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -189,6 +190,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="TryGetPropertyValue{T}(object?, string, T)" />
+    [RequiresUnreferencedCode("Looks a property up by name on the runtime type of the object, which the trimmer cannot see; the property may have been removed.")]
     public static bool HasProperty(this object? obj, string propertyName)
     {
         return obj?.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) is not null;
@@ -238,6 +240,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="HasProperty" />
+    [RequiresUnreferencedCode("Looks a property up by name on the runtime type of the object, which the trimmer cannot see; the property may have been removed.")]
     public static T? TryGetPropertyValue<T>(this object? obj, string propertyName, T? defaultValue = default)
     {
         if (obj is null)
@@ -274,6 +277,7 @@ internal
     /// </code>
     /// </example>
     /// <seealso cref="TryGetPropertyValue{T}(object?, string, T)" />
+    [RequiresUnreferencedCode("Looks a property up by name on the runtime type of the object, which the trimmer cannot see; the property may have been removed.")]
     public static bool TryGetPropertyValue<T>(this object? obj, string propertyName, out T? value)
     {
         value = default;

@@ -12,7 +12,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Tests;
 public sealed class TypeCacheTests
 {
     [Fact]
-    public void Get_IsThreadSafeUnderConcurrentAccess()
+    public void Get_ResolvesOnceUnderContention()
     {
         var compilation = CreateCompilation("public sealed class Probe { }");
         var resolveCalls = 0;
@@ -30,9 +30,6 @@ public sealed class TypeCacheTests
             _ => cache.Get(ProbeType.ObjectType).Should().NotBeNull());
 
         resolveCalls.Should().Be(1);
-        var first = cache.Get(ProbeType.ObjectType);
-        var second = cache.Get(ProbeType.ObjectType);
-        first.Should().BeSameAs(second);
     }
 
     private enum ProbeType

@@ -38,6 +38,16 @@ public sealed class OperationExtensionsConstantsTests
         GetLiteralOperation(nonZeroLiteral).IsConstantZero().Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("null", true)]
+    [InlineData("default(string)", true)]
+    [InlineData("\"\"", false)]
+    [InlineData("0", false)]
+    public void IsConstantNull_MatchesOnlyTheNullConstant(string expression, bool expected)
+    {
+        GetLiteralOperation(expression).IsConstantNull().Should().Be(expected);
+    }
+
     private static IOperation GetLiteralOperation(string literalExpression)
     {
         var source = $$"""

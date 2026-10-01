@@ -23,13 +23,16 @@ internal
         this IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
         var list = new List<T>();
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             list.Add(item);
         return list;
     }
 
+#if !NET10_0_OR_GREATER
+    // .NET 10 ships System.Linq.AsyncEnumerable.ToArrayAsync with this signature; a second copy would make
+    // every call ambiguous (CS0121) for code that also imports System.Linq.
     /// <summary>
     ///     Materializes the async sequence into an array.
     /// </summary>
@@ -37,12 +40,13 @@ internal
         this IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
         var list = new List<T>();
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
             list.Add(item);
         return list.ToArray();
     }
+#endif
 
     /// <summary>
     ///     Injects a synchronous side-effect for each element without altering the sequence.
@@ -52,7 +56,7 @@ internal
         Action<T> onNext,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
         Guard.NotNull(onNext);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -70,7 +74,7 @@ internal
         Func<T, CancellationToken, ValueTask> onNext,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
         Guard.NotNull(onNext);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -88,7 +92,7 @@ internal
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where T : class
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -105,8 +109,8 @@ internal
         int size,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
-        if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
+        Guard.NotNull(source);
+        Guard.Positive(size);
 
         var buffer = new List<T>(size);
 
@@ -132,7 +136,7 @@ internal
         this IAsyncEnumerable<IEnumerable<T>> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
 
         await foreach (var batch in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -152,7 +156,7 @@ internal
         Func<TSource, CancellationToken, IAsyncEnumerable<TResult>> selector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (source is null) throw new ArgumentNullException(nameof(source));
+        Guard.NotNull(source);
         Guard.NotNull(selector);
 
         await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))

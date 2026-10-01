@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace ANcpLua.Roslyn.Utilities;
@@ -12,7 +13,10 @@ public
 #else
 internal
 #endif
-    sealed class ExpiringCache<TKey, TValue> where TKey : notnull
+    // Lazy<T> declares PublicParameterlessConstructor on its T; the in-flight entries are Lazy<TValue?>, so the trim
+    // analyzer needs the same annotation here (IL2091 otherwise, in every trimmed or AOT consumer).
+    sealed class ExpiringCache<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue>
+    where TKey : notnull
 {
     private readonly Dictionary<TKey, CacheEntry> _cache;
     private readonly ConcurrentDictionary<TKey, Lazy<TValue?>> _inFlight;
@@ -62,49 +66,45 @@ internal
     /// <returns>The cached or newly created value.</returns>
     public TValue? GetOrAdd(TKey key, Func<TValue?> factory)
     {
-        var now = DateTimeOffset.UtcNow;
-        TValue? cached;
+        if (TryGetFresh(key, out var cached))
+            return cached;
 
-        lock (_lock)
-        {
-            if (TryGetValueLocked(key, now, out cached))
-                return cached;
-        }
-
-        var created = CreateOrWaitForInflight(key, factory);
-
-        lock (_lock)
-        {
-            now = DateTimeOffset.UtcNow;
-
-            if (TryGetValueLocked(key, now, out cached))
-                return cached;
-
-            var node = _lru.AddLast(key);
-            _cache[key] = new CacheEntry(created, now, node);
-            EvictIfNeeded(now);
-            return created;
-        }
-    }
-
-    private TValue? CreateOrWaitForInflight(TKey key, Func<TValue?> factory)
-    {
-        // ExecutionAndPublication makes Lazy<T> replay any factory exception to all concurrent waiters.
-        // The owner's finally clears the in-flight entry, so the replay window is bounded to a single
-        // factory invocation; a subsequent GetOrAdd for the same key will create a fresh Lazy and retry.
-        var entry = new Lazy<TValue?>(factory, LazyThreadSafetyMode.ExecutionAndPublication);
+        // One Lazy per in-flight key. Its value re-checks the cache first, so a caller that registers after
+        // another owner has published and left takes that value instead of running the factory again.
+        // ExecutionAndPublication replays the value, or the factory exception, to every concurrent waiter.
+        var entry = new Lazy<TValue?>(
+            () => TryGetFresh(key, out var published) ? published : factory(),
+            LazyThreadSafetyMode.ExecutionAndPublication);
         var owner = _inFlight.GetOrAdd(key, entry);
-        var isOwner = ReferenceEquals(entry, owner);
 
         try
         {
-            return owner.Value;
+            var created = owner.Value;
+
+            // Every caller returns the one published instance; the first to get here publishes it.
+            lock (_lock)
+            {
+                var now = DateTimeOffset.UtcNow;
+                if (TryGetValueLocked(key, now, out cached))
+                    return cached;
+
+                _cache[key] = new CacheEntry(created, now, _lru.AddLast(key));
+                EvictIfNeeded(now);
+                return created;
+            }
         }
         finally
         {
-            if (isOwner)
+            // Only after the value is published, or the factory has failed and the next call may retry.
+            if (ReferenceEquals(entry, owner))
                 _inFlight.TryRemove(key, out _);
         }
+    }
+
+    private bool TryGetFresh(TKey key, out TValue? value)
+    {
+        lock (_lock)
+            return TryGetValueLocked(key, DateTimeOffset.UtcNow, out value);
     }
 
     private bool TryGetValueLocked(TKey key, DateTimeOffset now, out TValue? value)

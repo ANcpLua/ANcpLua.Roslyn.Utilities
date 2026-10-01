@@ -16,13 +16,13 @@ namespace ANcpLua.Roslyn.Utilities;
 ///             <description><c>EnumerableExtensions.Single.cs</c> — Only / OnlyOrDefault / SingleOrDefaultIfMultiple</description>
 ///         </item>
 ///         <item>
-///             <description><c>EnumerableExtensions.Duplicates.cs</c> — HasDuplicates / DistinctBy / Partition</description>
+///             <description><c>EnumerableExtensions.Duplicates.cs</c> — HasDuplicates / Partition</description>
 ///         </item>
 ///         <item>
 ///             <description><c>EnumerableExtensions.Indexing.cs</c> — Indexed / ConsecutivePairs / IndexOf / ForEach</description>
 ///         </item>
 ///         <item>
-///             <description><c>EnumerableExtensions.Aggregation.cs</c> — MinBy / MaxBy / Batch / Join / SkipLast / TakeLast / SafeCast</description>
+///             <description><c>EnumerableExtensions.Aggregation.cs</c> — MinBy / MaxBy / Batch / Join / SafeCast</description>
 ///         </item>
 ///     </list>
 /// </remarks>

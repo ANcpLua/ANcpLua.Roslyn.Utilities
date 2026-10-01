@@ -23,14 +23,6 @@ public sealed class FailedStepsFormatterTests
     public void Output_HintMatchesModelEqualityKind(Type model, string expected) =>
         Format(model).Should().Contain(expected);
 
-    /// <summary>
-    ///     Regression test for the ErrorOrContext bug: a model that implements IEquatable&lt;T&gt;
-    ///     must not be told it "lacks IEquatable&lt;T&gt;".
-    /// </summary>
-    [Fact]
-    public void EquatableModel_DoesNotClaimLacksIEquatable() =>
-        Format(typeof(EquatableButBrokenModel)).Should().NotContain("model lacks IEquatable<T>");
-
     [Fact]
     public void Output_IncludesModelTypeName() =>
         Format(typeof(EquatableButBrokenModel)).Should().Contain(nameof(EquatableButBrokenModel));

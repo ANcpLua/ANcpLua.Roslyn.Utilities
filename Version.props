@@ -3,7 +3,7 @@
         <ANcpSdkPackageVersion>999.9.9</ANcpSdkPackageVersion>
     </PropertyGroup>
     <PropertyGroup Label=".NET SDK">
-        <DotNetSdkVersion>10.0.301</DotNetSdkVersion>
+        <DotNetSdkVersion>11.0.100-rc.1.26425.128</DotNetSdkVersion>
         <DotNetSdkRollForward>latestMinor</DotNetSdkRollForward>
     </PropertyGroup>
 

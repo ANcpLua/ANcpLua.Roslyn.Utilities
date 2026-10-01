@@ -438,18 +438,19 @@ internal
     }
 
     /// <summary>
-    ///     Determines whether a non-null <see cref="System.Threading.CancellationToken" /> is passed to the invocation.
+    ///     Determines whether the call site passes a <see cref="System.Threading.CancellationToken" /> argument.
     /// </summary>
     /// <param name="operation">The invocation operation to examine.</param>
     /// <returns>
-    ///     <c>true</c> if a non-null cancellation token argument is provided; otherwise, <c>false</c>.
+    ///     <c>true</c> if a cancellation token argument is written at the call site; <c>false</c> when there is
+    ///     none, or when an optional token parameter is left to its default.
     /// </returns>
     /// <seealso cref="HasCancellationTokenParameter" />
     /// <seealso cref="IsAsyncMethod" />
     public static bool IsCancellationTokenPassed(this IInvocationOperation operation)
     {
         foreach (var arg in operation.Arguments)
-            if (arg.Parameter?.Type.IsCancellationTokenType() is true && !arg.Value.IsConstantNull())
+            if (arg.ArgumentKind is not ArgumentKind.DefaultValue && arg.Parameter?.Type.IsCancellationTokenType() is true)
                 return true;
 
         return false;

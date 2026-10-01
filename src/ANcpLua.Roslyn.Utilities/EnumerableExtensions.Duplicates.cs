@@ -23,7 +23,6 @@ internal
     ///     </para>
     /// </remarks>
     /// <seealso cref="HasDuplicates{T,TKey}(IEnumerable{T},Func{T,TKey})" />
-    /// <seealso cref="DistinctBy{T,TKey}" />
     public static bool HasDuplicates<T>(this IEnumerable<T> source)
     {
         return ScanForDuplicate<T, T>(source, static x => x);
@@ -40,7 +39,6 @@ internal
     ///     <c>true</c> if <paramref name="source" /> contains elements with duplicate keys; otherwise, <c>false</c>.
     /// </returns>
     /// <seealso cref="HasDuplicates{T}(IEnumerable{T})" />
-    /// <seealso cref="DistinctBy{T,TKey}" />
     public static bool HasDuplicates<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
     {
         return ScanForDuplicate(source, keySelector);
@@ -56,29 +54,6 @@ internal
                 return true;
 
         return false;
-    }
-
-    /// <summary>
-    ///     Returns distinct elements from a sequence based on a key selector function.
-    /// </summary>
-    /// <typeparam name="T">The type of the elements in the source sequence.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector" />.</typeparam>
-    /// <param name="source">The source sequence.</param>
-    /// <param name="keySelector">A function to extract the key for each element.</param>
-    /// <returns>
-    ///     An <see cref="IEnumerable{T}" /> that contains distinct elements from
-    ///     <paramref name="source" /> based on the keys. Preserves order; the first occurrence of each
-    ///     unique key is yielded.
-    /// </returns>
-    /// <seealso cref="HasDuplicates{T,TKey}(IEnumerable{T},Func{T,TKey})" />
-    public static IEnumerable<T> DistinctBy<T, TKey>(
-        this IEnumerable<T> source,
-        Func<T, TKey> keySelector)
-    {
-        var seen = new HashSet<TKey>();
-        foreach (var item in source)
-            if (seen.Add(keySelector(item)))
-                yield return item;
     }
 
     /// <summary>

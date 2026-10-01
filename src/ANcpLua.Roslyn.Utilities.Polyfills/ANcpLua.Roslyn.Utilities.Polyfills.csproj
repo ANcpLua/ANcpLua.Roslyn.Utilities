@@ -9,9 +9,9 @@
         <DevelopmentDependency>true</DevelopmentDependency>
 
         <PackageId>ANcpLua.Roslyn.Utilities.Polyfills</PackageId>
-        <Description>Source-only polyfills for netstandard2.0: nullable attributes, language features (init, required, params collections), trim attributes, Index/Range, Lock, TimeProvider, StackTraceHidden, UnreachableException, and more. All types are internal and #if-gated by target framework.</Description>
+        <Description>Source-only polyfills for netstandard2.0: nullable attributes, language features (init, required, params collections, union), trim attributes, Index/Range, Lock, TimeProvider, LINQ DistinctBy/SkipLast/TakeLast, StackTraceHidden, UnreachableException, and more. All types are internal and #if-gated by target framework.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageTags>polyfills;netstandard2.0;source-only;backport;init;required;index;range;lock</PackageTags>
+        <PackageTags>polyfills;netstandard2.0;source-only;backport;init;required;union;linq;index;range;lock</PackageTags>
 
         <IsPackable>true</IsPackable>
         <NoPackageAnalysis>true</NoPackageAnalysis>

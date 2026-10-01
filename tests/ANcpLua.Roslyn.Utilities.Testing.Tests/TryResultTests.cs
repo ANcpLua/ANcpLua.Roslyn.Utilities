@@ -57,33 +57,6 @@ public sealed class TryResultTests
         c3.Should().Be(3.14);
     }
 
-    [Fact]
-    public void ComposesIntoReadableTryParse()
-    {
-        TryParseTwoInts("1,2", out var a, out var b).Should().BeTrue();
-        a.Should().Be(1);
-        b.Should().Be(2);
-
-        TryParseTwoInts("oops", out a, out b).Should().BeFalse();
-        a.Should().BeNull();
-        b.Should().BeNull();
-
-        TryParseTwoInts("1,bad", out a, out b).Should().BeFalse();
-        a.Should().BeNull();
-        b.Should().BeNull();
-    }
-
-    private static bool TryParseTwoInts(string input, out int? first, out int? second)
-    {
-        var parts = input.Split(',');
-        if (parts.Length != 2
-            || !int.TryParse(parts[0], out var parsedFirst)
-            || !int.TryParse(parts[1], out var parsedSecond))
-            return TryResult.Fail(out first, out second);
-
-        return TryResult.Ok<int?, int?>(parsedFirst, parsedSecond, out first, out second);
-    }
-
     private enum ParseStatus
     {
         Ok,

@@ -11,23 +11,25 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Tests;
 public sealed class InvocationExtensionsTests
 {
     [Fact]
-    public void HasCancellationTokenParameter_UsesSymbolIdentity()
+    public void HasCancellationTokenParameter_MatchesSystemThreadingTokenBySymbol()
     {
         var invocations = GetInvocations(InvocationSource);
 
         invocations["WithSystemToken"].HasCancellationTokenParameter().Should().BeTrue();
         invocations["WithAliasToken"].HasCancellationTokenParameter().Should().BeTrue();
-        invocations["WithCustomToken"].HasCancellationTokenParameter().Should().BeFalse();
+        invocations["WithOptionalToken"].HasCancellationTokenParameter().Should().BeTrue();
+        invocations["WithLookalikeToken"].HasCancellationTokenParameter().Should().BeFalse();
     }
 
     [Fact]
-    public void IsCancellationTokenPassed_UsesSymbolIdentityWhenTokenIsPassed()
+    public void IsCancellationTokenPassed_RequiresATokenWrittenAtTheCallSite()
     {
         var invocations = GetInvocations(InvocationSource);
 
         invocations["WithSystemToken"].IsCancellationTokenPassed().Should().BeTrue();
         invocations["WithAliasToken"].IsCancellationTokenPassed().Should().BeTrue();
-        invocations["WithCustomToken"].IsCancellationTokenPassed().Should().BeFalse();
+        invocations["WithOptionalToken"].IsCancellationTokenPassed().Should().BeFalse();
+        invocations["WithLookalikeToken"].IsCancellationTokenPassed().Should().BeFalse();
     }
 
     private static System.Collections.Generic.Dictionary<string, IInvocationOperation> GetInvocations(string source)
@@ -62,36 +64,39 @@ public sealed class InvocationExtensionsTests
                 },
                 op => op);
 
-        invocations.Should().NotBeEmpty();
-        invocations.Count.Should().Be(3);
+        invocations.Count.Should().Be(4);
         return invocations;
     }
 
     private const string InvocationSource = """
-using System;
 using System.Threading;
 using Alias = System.Threading.CancellationToken;
 
+namespace Probe.Lookalike
+{
+    public readonly struct CancellationToken { }
+}
+
 namespace Probe
 {
-    public sealed class CustomCancellationToken { }
-
     public sealed class Subject
     {
         public void WithSystemToken(CancellationToken token) { }
 
         public void WithAliasToken(Alias token) { }
 
-        public void WithCustomToken(CustomCancellationToken token) { }
+        public void WithOptionalToken(CancellationToken token = default) { }
+
+        public void WithLookalikeToken(Lookalike.CancellationToken token) { }
 
         public void Run()
         {
             var token = new CancellationToken();
-            var aliasToken = new Alias();
 
             WithSystemToken(token);
-            WithAliasToken(aliasToken);
-            WithCustomToken(new CustomCancellationToken());
+            WithAliasToken(token);
+            WithOptionalToken();
+            WithLookalikeToken(new Lookalike.CancellationToken());
         }
     }
 }

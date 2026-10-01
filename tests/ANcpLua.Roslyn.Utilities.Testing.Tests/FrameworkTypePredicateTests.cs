@@ -52,18 +52,21 @@ public sealed class FrameworkTypePredicateTests
     }
 
     [Fact]
-    public void IsSpanType_AcceptsSpanAndReadOnlySpan_RejectsUnrelatedTypes()
+    public void IsSpanType_AcceptsSpanAndReadOnlySpan_RejectsLookalikes()
     {
         var methods = GetMethods("""
-            using System;
-            public class Subject
+            namespace Probe
             {
-                public Span<byte> A() => default;
-                public ReadOnlySpan<byte> B() => default;
-                public string C() => "";
-                public int D() => 0;
+                public struct Span<T> { }
+                public class Subject
+                {
+                    public System.Span<byte> A() => default;
+                    public System.ReadOnlySpan<byte> B() => default;
+                    public Span<byte> C() => default;
+                    public string D() => "";
+                }
             }
-            """);
+            """, subjectMetadataName: "Probe.Subject");
 
         methods["A"].ReturnType.IsSpanType().Should().BeTrue();
         methods["B"].ReturnType.IsSpanType().Should().BeTrue();
@@ -72,21 +75,26 @@ public sealed class FrameworkTypePredicateTests
     }
 
     [Fact]
-    public void IsMemoryType_AcceptsMemoryAndReadOnlyMemory_RejectsUnrelatedTypes()
+    public void IsMemoryType_AcceptsMemoryAndReadOnlyMemory_RejectsLookalikes()
     {
         var methods = GetMethods("""
-            using System;
-            public class Subject
+            namespace Probe
             {
-                public Memory<byte> A() => default;
-                public ReadOnlyMemory<byte> B() => default;
-                public string C() => "";
+                public struct Memory<T> { }
+                public class Subject
+                {
+                    public System.Memory<byte> A() => default;
+                    public System.ReadOnlyMemory<byte> B() => default;
+                    public Memory<byte> C() => default;
+                    public string D() => "";
+                }
             }
-            """);
+            """, subjectMetadataName: "Probe.Subject");
 
         methods["A"].ReturnType.IsMemoryType().Should().BeTrue();
         methods["B"].ReturnType.IsMemoryType().Should().BeTrue();
         methods["C"].ReturnType.IsMemoryType().Should().BeFalse();
+        methods["D"].ReturnType.IsMemoryType().Should().BeFalse();
     }
 
     [Fact]

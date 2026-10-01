@@ -146,53 +146,6 @@ internal
     }
 
     /// <summary>
-    ///     Returns all elements except the last <paramref name="count" /> elements.
-    /// </summary>
-    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
-    /// <param name="source">The source sequence.</param>
-    /// <param name="count">The number of elements to skip from the end.</param>
-    /// <returns>
-    ///     An <see cref="IEnumerable{T}" /> containing all elements of <paramref name="source" />
-    ///     except for the last <paramref name="count" /> elements.
-    /// </returns>
-    /// <seealso cref="TakeLast{T}" />
-    public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int count)
-    {
-        var queue = new Queue<T>(count + 1);
-        foreach (var item in source)
-        {
-            queue.Enqueue(item);
-            if (queue.Count > count)
-                yield return queue.Dequeue();
-        }
-    }
-
-    /// <summary>
-    ///     Returns the last <paramref name="count" /> elements from the sequence.
-    /// </summary>
-    /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
-    /// <param name="source">The source sequence.</param>
-    /// <param name="count">The number of elements to return from the end.</param>
-    /// <returns>
-    ///     An <see cref="IEnumerable{T}" /> containing the last <paramref name="count" /> elements
-    ///     of <paramref name="source" />, or all elements if the sequence contains fewer than
-    ///     <paramref name="count" /> elements.
-    /// </returns>
-    /// <seealso cref="SkipLast{T}" />
-    public static IEnumerable<T> TakeLast<T>(this IEnumerable<T> source, int count)
-    {
-        var queue = new Queue<T>(count + 1);
-        foreach (var item in source)
-        {
-            queue.Enqueue(item);
-            if (queue.Count > count)
-                queue.Dequeue();
-        }
-
-        return queue;
-    }
-
-    /// <summary>
     ///     Safely casts elements to a target type, filtering out <c>null</c> values and elements
     ///     that cannot be cast.
     /// </summary>
