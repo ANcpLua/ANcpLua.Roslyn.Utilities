@@ -1,6 +1,6 @@
 # ANcpLua.AotReflection.Attributes
 
-Runtime metadata contract (netstandard2.0; net10.0) for the AotReflection
+Runtime metadata contract (netstandard2.0; net10.0; net11.0) for the AotReflection
 generator: `ClassMetadata`, `PropertyMetadata`, `MethodMetadata`, etc.
 Dependency-light; referenced by generator and consumers.
 

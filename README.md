@@ -17,7 +17,7 @@ The library is the author's own. Use it, improve it (the upstream is this repo),
 | **`ANcpLua.Roslyn.Utilities`** | netstandard2.0 | Runtime + Roslyn utilities as a normal NuGet reference |
 | **`ANcpLua.Roslyn.Utilities.Sources`** | source-only | Embeds the utilities as `internal` source into source generators (generators can't load NuGet DLLs at runtime) |
 | **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
-| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Generator/analyzer/codefix test infrastructure, MSBuild/NuGet integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers |
+| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0; net11.0 | Generator/analyzer/codefix test infrastructure, MSBuild/NuGet integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers |
 | **`ANcpLua.Roslyn.Utilities.Testing.Aot`** | netstandard2.0 | AOT/trim test attributes (`[AotTest]`, `[TrimTest]`, `[AotSafe]`, `[TrimSafe]`), `TrimAssert`, `FeatureSwitches`, MSBuild orchestration for standalone AOT verification |
 
 ## Quickstart — writing a source generator
@@ -114,7 +114,7 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 
 ### Dictionary & collection ergonomics
 
-- **`DictionaryExtensions`** — `GetOrInsert(key, context, factory)` (closure-free, hot-path), `GetOrAdd(key)` / `GetOrAdd(key, factory)` (ergonomic), `MapIfAbsent(src, dst, transform)` (cross-key copy for vendor-adapter telemetry mappers)
+- **`DictionaryExtensions`** — `GetOrInsert(key, context, factory)` (closure-free, hot-path), `GetOrAdd(key)` / `GetOrAdd(key, factory)` (ergonomic), `MapIfAbsent(src, dst, transform)` (cross-key copy for vendor-adapter telemetry mappers); every helper takes any `IDictionary<TKey, TValue>` (`SortedDictionary` included), and the `Dictionary<TKey, TValue>` overloads stay for binary compatibility
 - **`EnumerableExtensions`** — dedup, partition, chunking, `MinBy`/`MaxBy`
 - **`ListExtensions`** — in-place mutation helpers
 - **`Delta`** + **`SetDelta<T>`** — set difference for incremental "what changed between snapshots" logic. `Delta.Difference(first, second)` is the relative complement `second \ first`; `Delta.Compute(previous, current)` returns a value-equatable `SetDelta<T>` carrying `Added` / `Removed` so a diff flows through the generator cache. Works on `ImmutableArray<T>` and `EquatableArray<T>`.
