@@ -1,6 +1,6 @@
 # ANcpLua.Roslyn.Utilities.Testing
 
-Fluent test framework (net10.0) for Roslyn analyzers, code fixes, and incremental
+Fluent test framework (net10.0; net11.0) for Roslyn analyzers, code fixes, and incremental
 generators: caching validation, forbidden-type detection, cross-framework web
 testing, and OTel instrumentation helpers.
 
