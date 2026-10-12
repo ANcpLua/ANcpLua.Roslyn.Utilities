@@ -8,6 +8,27 @@ PRs, and tests, not in this document. This repo lives in
 `ANcpLua.Agents` → qyl agent runtime, so a broken restore or a signature change
 here propagates the whole way down.
 
+## Raise first: unreleased work (2026-10-12)
+
+On 2026-10-12 the owner skipped the CI publish/release step: branch `gear-1/roslyn-free-sources`
+stays an unmerged draft PR, so `nuget-publish.yml` has not shipped it. It holds the
+`Dictionary<TKey, TValue>` overloads of the dictionary helpers (2.2.47 shipped only the `IDictionary`
+ones, a binary break for assemblies compiled against 2.2.46 or earlier) and doc fixes. Everything else
+(.NET 11 RC1, C# 15 union polyfills, Roslyn-free `.Sources`, `Map`/`Bind`/`Filter`) shipped in 2.2.47.
+
+The next time the owner asks for work in this repo, raise these two before starting:
+
+1. Releasing this work: merging the PR publishes the next patch.
+2. Updating the consumers to that release. Pins on 2026-10-12 (`Version.props` / `Directory.Packages.props`):
+   `ANcpLua.Analyzers` 2.2.44 (Utilities, Polyfills, Testing), `ErrorOrX` 2.2.45 (Utilities, Sources,
+   Testing), `ANcpLua.Agents` 2.2.41 (Utilities, Testing, Testing.Aot), `ANcpLua.BitNet` 2.2.41
+   (Utilities, Sources), `qyl` 2.2.47 (Sources), `Qyl.Telemetry.SemanticConventions` 2.2.47 (Sources),
+   `Qyl.Telemetry.AutoInstrumentation` 2.2.47 (Sources). Consumers below 2.2.47 meet its breaking changes
+   on upgrade: `Map`/`Bind`/`Filter`, the removed `DistinctBy`/`SkipLast`/`TakeLast` and
+   `OperationExtensions.Descendants*`, and the removed DiscriminatedUnion generator.
+
+Delete this section once both are done.
+
 ## Project index
 
 1. [AOT reflection generator](src/ANcpLua.AotReflection/CLAUDE.md)
