@@ -107,10 +107,32 @@ public readonly record struct RepositoryRoot
     /// <seealso cref="FullPath" />
     public static RepositoryRoot Locate(params string[] markerFiles)
     {
+        return LocateFrom(FullPath.CurrentDirectory(), markerFiles);
+    }
+
+    /// <summary>
+    ///     Locates the repository root by searching upward from <paramref name="startDirectory" /> for marker files.
+    /// </summary>
+    /// <param name="startDirectory">
+    ///     The directory the search starts in. Pass <see cref="AppContext.BaseDirectory" /> to anchor the search on the
+    ///     test assembly's output directory, which, unlike the working directory, no test runner moves.
+    /// </param>
+    /// <param name="markerFiles">
+    ///     Files or directories that indicate the repository root, as for <see cref="Locate" />.
+    /// </param>
+    /// <returns>The first directory at or above <paramref name="startDirectory" /> that contains a marker.</returns>
+    /// <exception cref="DirectoryNotFoundException">Thrown when no directory up to the file system root has a marker.</exception>
+    /// <example>
+    ///     <code>
+    /// var catalog = RepositoryRoot.LocateFrom(AppContext.BaseDirectory, "MyRepo.slnx")["eng/catalog.json"];
+    /// </code>
+    /// </example>
+    public static RepositoryRoot LocateFrom(string startDirectory, params string[] markerFiles)
+    {
         if (markerFiles.Length is 0)
             markerFiles = ["*.sln", "*.slnx", ".git"];
 
-        var directory = FullPath.CurrentDirectory();
+        var directory = FullPath.FromPath(startDirectory);
         while (true)
         {
             foreach (var marker in markerFiles)

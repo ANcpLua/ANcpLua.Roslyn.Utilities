@@ -5,4 +5,4 @@ generators: caching validation, forbidden-type detection, cross-framework web
 testing, and OTel instrumentation helpers.
 
 - Project: [ANcpLua.Roslyn.Utilities.Testing.csproj](ANcpLua.Roslyn.Utilities.Testing.csproj)
-- Source of truth: `Test.cs`, `GeneratorTestEngine.cs`, `AnalyzerTest.cs`, `CodeFixTest.cs`, `Analysis/`, `WebTesting/`, `Instrumentation/`.
+- Source of truth: `Test.cs`, `GeneratorTestEngine.cs`, `AnalyzerTest.cs`, `CodeFixTest.cs`, `DictionaryAnalyzerConfigOptionsProvider.cs`, `SourceFixture.cs`, `MSBuild/RepositoryRoot.cs`, `Analysis/`, `WebTesting/`, `Instrumentation/`.

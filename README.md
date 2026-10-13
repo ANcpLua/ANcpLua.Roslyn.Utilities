@@ -158,6 +158,7 @@ Generator, analyzer, codefix, refactoring, MSBuild integration, and cross-framew
 
 - **Generator tests**: `Test<TGenerator>` (fluent entry), `GeneratorTestHelper.RunGenerator<TGenerator>()` (assertion-oriented one-liners), `GeneratorCachingReport` (compares two runs, detects cache hits), `Compile` / `CompileResult` (dynamic compilation with Shouldly-style assertions)
 - **Analyzer / CodeFix / Refactoring tests**: `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer,TCodeFix>`, `CodeFixTestWithEditorConfig<TAnalyzer,TCodeFix>`, `RefactoringTest<TRefactoring>`, `SolutionRefactoringTest<TRefactoring>`, `LogAssert`
+- **Analyzer test fixtures**: `DictionaryAnalyzerConfigOptionsProvider` (MSBuild properties and `.editorconfig` keys for `AnalyzerOptions` without a build), `SourceFixture.InMethod` (wraps the statements under test in a compilable method), `RepositoryRoot.LocateFrom(AppContext.BaseDirectory, "<marker>")` (repository root from the test assembly, independent of the working directory)
 - **MSBuild integration tests**: `ProjectBuilder`, `PackageProjectBuilder`, `PackageTestBase<TFixture>` / `NuGetPackageTestBase`, `NuGetPackageFixture`, `BuildResult` + `BuildResultAssertions`, `SarifFile` parsers, `DotNetSdkHelpers` / `NetSdkVersion`, `MSBuildConstants`
 - **Web testing** — one base per framework:
   - xUnit (root): `IntegrationTestBase<TProgram>`, `KestrelTestBase<TProgram>`
