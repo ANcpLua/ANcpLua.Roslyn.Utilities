@@ -10,7 +10,6 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Tests;
 public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixture<LocalPackageFeed>
 {
     private const string UsesUtilities = """
-        using System.Globalization;
         using System.Linq;
         using ANcpLua.Roslyn.Utilities;
         using Microsoft.CodeAnalysis;
@@ -20,10 +19,6 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 
         public sealed record Cat(string Name);
 
-        public sealed record Dog(int Age);
-
-        public union Pet(Cat, Dog);
-
         internal static class Uses
         {
             public static int Operations(IOperation operation) =>
@@ -32,12 +27,6 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 
             public static int Linq(int[] values) =>
                 values.DistinctBy(static v => v).Count() + values.SkipLast(1).Count() + values.TakeLast(1).Count();
-
-            public static string Name(Pet pet) => pet switch
-            {
-                Cat cat => cat.Name,
-                Dog dog => dog.Age.ToString(CultureInfo.InvariantCulture)
-            };
 
             public static EquatableArray<int> Equatable(int[] values) => values.ToEquatableArray();
 

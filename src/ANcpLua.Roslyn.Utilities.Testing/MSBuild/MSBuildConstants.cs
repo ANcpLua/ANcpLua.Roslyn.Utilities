@@ -344,9 +344,6 @@ public static class Prop
     /// <summary>Injects <c>ParamCollectionAttribute</c> polyfill.</summary>
     public const string InjectParamCollectionOnLegacy = "InjectParamCollectionOnLegacy";
 
-    /// <summary>Injects <c>UnionAttribute</c>/<c>IUnion</c> polyfills for C# 15 <c>union</c> declarations.</summary>
-    public const string InjectUnionOnLegacy = "InjectUnionOnLegacy";
-
     /// <summary>Injects <c>UnreachableException</c> polyfill.</summary>
     public const string InjectUnreachableExceptionOnLegacy = "InjectUnreachableExceptionOnLegacy";
 
