@@ -2,11 +2,31 @@
 
 This is the repository's single policy + navigation file for AI agents and
 contributors (`CLAUDE.md` is a symlink to this file). Keep findings in issues,
-PRs, and tests, not in this document. This repo lives in
-`~/RiderProjects/qyl-workspace/`; workspace-level rules are in the router at
-`../AGENTS.md`. Downstream chain: this repo → `ANcpLua.NET.Sdk` (GitHub-only) →
+PRs, and tests, not in this document. Downstream chain: this repo → `ANcpLua.NET.Sdk` (GitHub-only) →
 `ANcpLua.Agents` → qyl agent runtime, so a broken restore or a signature change
 here propagates the whole way down.
+
+## Release lines
+
+Until .NET 11 GA two lines ship from this repository:
+
+| Branch | Line | Toolchain | NuGet version | GitHub release |
+|---|---|---|---|---|
+| `main` | 2.2, stable | .NET SDK 10 (`global.json`), net10.0, no C# 15 unions | `2.2.N` | `v2.2.N`, marked latest |
+| `release/5.0` | 5.0, preview | .NET SDK 11 RC, net10.0 + net11.0, C# 15 union polyfills | `5.0.0-preview.N` | `v5.0.0-preview.N`, pre-release |
+
+- NuGet has no branches: the SemVer suffix makes a prerelease. nuget.org lists `5.0.0-preview.N` as
+  prerelease and never as the latest version; a consumer opts in by naming the exact version.
+- `nuget-publish.yml` derives both versions from tags: on `main` the latest stable `v*` tag plus one patch,
+  on `release/X.Y` the next `vX.Y.0-preview.N`, and on `main` after `release/X.Y` is merged in, `X.Y.0`.
+  Each publish creates its tag and GitHub release.
+- A fix both lines need lands on `main` by PR and is cherry-picked onto `release/5.0`. Never merge `main`
+  into `release/5.0`: that would carry the SDK 10 rollback across. SDK 11 and union work goes to
+  `release/5.0` only.
+- At .NET 11 GA: move `release/5.0` to the GA SDK, merge it into `main` with a merge commit, not a
+  squash, so its preview tags enter main's history (on conflicts keep the `release/5.0` side of
+  `global.json`, `Version.props`, the TFMs and the union files). The push publishes `5.0.0`; delete
+  `release/5.0` afterwards. main's patch bump then continues from `v5.0.0`.
 
 ## Project index
 
@@ -118,8 +138,8 @@ change updates the analyzer-managed shipped/unshipped baselines in the same comm
 ## Publishing
 
 Publication is GitHub Actions OIDC trusted publishing (`nuget-publish.yml`) that runs
-on **push to `main`** — not on a manual tag. CI reads the latest `v*` tag, auto-bumps
-the patch, builds and tests on Linux + Windows, and publishes only when the diff since
+on **push to `main` or `release/**`** — not on a manual tag. CI computes the version from
+the tags (see [Release lines](#release-lines)), builds and tests on Linux + Windows, and publishes only when the diff since
 that tag touches a shipped surface (the gate watches `src/**`, `tests/**`,
 `README.md`, `Version.props`, `Directory.Packages.props`, and the workflow file
 itself — root dep bumps change shipped nuspec floors and must publish); it then

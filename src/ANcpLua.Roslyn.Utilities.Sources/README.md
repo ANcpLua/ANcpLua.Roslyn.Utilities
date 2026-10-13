@@ -40,6 +40,15 @@ All utilities from `ANcpLua.Roslyn.Utilities`:
 - **Domain Contexts** - Pre-cached symbol lookups (AwaitableContext, AspNetContext, etc.)
 - **Code Generation** - IndentedStringBuilder, ValueStringBuilder, GeneratedCodeHelpers
 
+## Without Roslyn
+
+A project that does not reference `Microsoft.CodeAnalysis` sets
+`<InjectRoslynSources>false</InjectRoslynSources>` and keeps only the Roslyn-free helpers (guards, string
+comparison, try-parse, dictionary, security, time, text, async). The pack step sorts every file that names
+`Microsoft.CodeAnalysis`, or uses a type declared in such a file, under `Roslyn/`, and the switch drops that folder.
+On `netstandard2.0` such a project also references `System.Collections.Immutable`, `System.Memory`,
+`System.Threading.Channels` and `Microsoft.Bcl.HashCode`.
+
 ## Visibility
 
 All types are compiled as `internal` in your assembly. This is intentional:

@@ -114,7 +114,7 @@ Reusable infrastructure for writing analyzers and code fixes — concrete rules 
 
 ### Dictionary & collection ergonomics
 
-- **`DictionaryExtensions`** — `GetOrInsert(key, context, factory)` (closure-free, hot-path), `GetOrAdd(key)` / `GetOrAdd(key, factory)` (ergonomic), `MapIfAbsent(src, dst, transform)` (cross-key copy for vendor-adapter telemetry mappers)
+- **`DictionaryExtensions`** — `GetOrInsert(key, context, factory)` (closure-free, hot-path), `GetOrAdd(key)` / `GetOrAdd(key, factory)` (ergonomic), `MapIfAbsent(src, dst, transform)` (cross-key copy for vendor-adapter telemetry mappers); every helper takes any `IDictionary<TKey, TValue>` (`SortedDictionary` included), and the `Dictionary<TKey, TValue>` overloads stay for binary compatibility
 - **`EnumerableExtensions`** — dedup, partition, chunking, `MinBy`/`MaxBy`
 - **`ListExtensions`** — in-place mutation helpers
 - **`Delta`** + **`SetDelta<T>`** — set difference for incremental "what changed between snapshots" logic. `Delta.Difference(first, second)` is the relative complement `second \ first`; `Delta.Compute(previous, current)` returns a value-equatable `SetDelta<T>` carrying `Added` / `Removed` so a diff flows through the generator cache. Works on `ImmutableArray<T>` and `EquatableArray<T>`.
@@ -138,7 +138,6 @@ Language and API backports for `netstandard2.0` consumers (via the separate `.Po
 |----------|---------|---------|
 | `Index` / `Range` | `array[^1]`, `array[1..3]` | `InjectIndexRangeOnLegacy=false` |
 | `IsExternalInit` | `record` types, `init` setters | `InjectIsExternalInitOnLegacy=false` |
-| `UnionAttribute` / `IUnion` | C# 15 `union` declarations | `InjectUnionOnLegacy=false` |
 | Nullable attributes | `[NotNull]`, `[MaybeNull]`, `[MemberNotNull]`, `[NotNullWhen]` | `InjectNullabilityAttributesOnLegacy=false` |
 | Trim/AOT attributes | `[RequiresUnreferencedCode]`, `[DynamicallyAccessedMembers]` | `InjectTrimAttributesOnLegacy=false` |
 | `TimeProvider` | Testable time abstraction | `InjectTimeProviderPolyfill=false` |
@@ -158,6 +157,7 @@ Generator, analyzer, codefix, refactoring, MSBuild integration, and cross-framew
 
 - **Generator tests**: `Test<TGenerator>` (fluent entry), `GeneratorTestHelper.RunGenerator<TGenerator>()` (assertion-oriented one-liners), `GeneratorCachingReport` (compares two runs, detects cache hits), `Compile` / `CompileResult` (dynamic compilation with Shouldly-style assertions)
 - **Analyzer / CodeFix / Refactoring tests**: `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer,TCodeFix>`, `CodeFixTestWithEditorConfig<TAnalyzer,TCodeFix>`, `RefactoringTest<TRefactoring>`, `SolutionRefactoringTest<TRefactoring>`, `LogAssert`
+- **Analyzer test fixtures**: `DictionaryAnalyzerConfigOptionsProvider` (MSBuild properties and `.editorconfig` keys for `AnalyzerOptions` without a build), `SourceFixture.InMethod` (wraps the statements under test in a compilable method), `RepositoryRoot.LocateFrom(AppContext.BaseDirectory, "<marker>")` (repository root from the test assembly, independent of the working directory)
 - **MSBuild integration tests**: `ProjectBuilder`, `PackageProjectBuilder`, `PackageTestBase<TFixture>` / `NuGetPackageTestBase`, `NuGetPackageFixture`, `BuildResult` + `BuildResultAssertions`, `SarifFile` parsers, `DotNetSdkHelpers` / `NetSdkVersion`, `MSBuildConstants`
 - **Web testing** — one base per framework:
   - xUnit (root): `IntegrationTestBase<TProgram>`, `KestrelTestBase<TProgram>`
