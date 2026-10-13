@@ -1,10 +1,11 @@
 name: CI
 
+# main is the stable line (vX.Y.Z); release/X.Y branches are prerelease lines (vX.Y.0-preview.N).
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   pull_request:
-    branches: [main]
+    branches: [main, 'release/**']
   workflow_dispatch:
     inputs:
       version:
@@ -26,8 +27,9 @@ env:
   CI: true
 
 jobs:
-  # Compute version by reading the latest v* tag and bumping the patch.
-  # If HEAD is exactly the tag, reuse the version (re-run safe).
+  # main: read the latest stable v* tag and bump the patch; after a release/X.Y merge, X.Y.0.
+  # release/X.Y: X.Y.0-preview.N, N one above the highest vX.Y.0-preview.* tag in the branch history.
+  # If HEAD already carries the tag, reuse its version (re-run safe).
   # workflow_dispatch with an explicit version overrides the auto-bump.
   version:
     runs-on: ubuntu-latest
@@ -40,12 +42,32 @@ jobs:
           fetch-tags: true
       - id: ver
         run: |
+          BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION="${{ github.event.inputs.version }}"
             echo "Workflow dispatch override: $VERSION"
+          elif [[ "$BRANCH" =~ ^release/([0-9]+)\.([0-9]+)$ ]]; then
+            BASE="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.0"
+            HEAD_TAG=$(git tag --points-at HEAD --list "v$BASE-preview.*" | sort -V | tail -n1)
+            if [ -n "$HEAD_TAG" ]; then
+              VERSION="${HEAD_TAG#v}"
+              echo "HEAD is tagged $HEAD_TAG — reusing version: $VERSION"
+            else
+              LAST=$(git tag --merged HEAD --list "v$BASE-preview.*" | sed -E 's/^.*-preview\.//' | sort -n | tail -n1)
+              VERSION="$BASE-preview.$(( ${LAST:-0} + 1 ))"
+              echo "Prerelease line $BRANCH — next preview: $VERSION"
+            fi
           else
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-            if [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            # Stable tags only: preview tags merged in from a release/X.Y line never feed the patch bump.
+            LATEST_TAG=$(git describe --tags --abbrev=0 --exclude '*-*' 2>/dev/null || echo "")
+            # Once a release/X.Y line is merged in, its vX.Y.0-preview.* tags are in the history: ship X.Y.0
+            # if it is newer than the latest stable tag and not tagged yet (the .NET GA merge).
+            PREVIEW_BASE=$(git tag --merged HEAD --list 'v*-preview.*' | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)-.*$/\1/' | sort -V | tail -n1)
+            if [ -n "$PREVIEW_BASE" ] && ! git rev-parse -q --verify "refs/tags/v$PREVIEW_BASE" >/dev/null \
+              && [ "$(printf '%s\n%s\n' "${LATEST_TAG#v}" "$PREVIEW_BASE" | sort -V | tail -n1)" = "$PREVIEW_BASE" ]; then
+              VERSION="$PREVIEW_BASE"
+              echo "Preview line v$PREVIEW_BASE-preview.* merged — releasing: $VERSION"
+            elif [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               MAJOR=${BASH_REMATCH[1]}
               MINOR=${BASH_REMATCH[2]}
               PATCH=${BASH_REMATCH[3]}
@@ -62,7 +84,7 @@ jobs:
               echo "No v* tag found — defaulting to: $VERSION"
             fi
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   # Build on both Linux and Windows to catch path-case and platform-specific build issues
   # early. Pack/upload only from Linux to avoid duplicate artifacts (output is netstandard2.0,
@@ -113,7 +135,8 @@ jobs:
           path: artifacts/*.nupkg
           if-no-files-found: error
 
-  # Publish on push to main (auto-bump-on-merge) or workflow_dispatch override.
+  # Publish on push to main (auto-bump-on-merge), on push to release/** (the branch's next
+  # prerelease, listed on nuget.org as prerelease and never as latest), or workflow_dispatch.
   # The `Must Publish Packages` gate diffs against the latest tag. It counts changes under
   # `src/**`, `tests/**`, and the root `README.md` — the root README ships as
   # `PackageReadmeFile` in every shipped pack, so a README change is a real consumer-facing
@@ -128,7 +151,7 @@ jobs:
   #   3. No NUGET_API_KEY secret required — OIDC handles auth.
   publish:
     needs: [version, build]
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
@@ -146,7 +169,7 @@ jobs:
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LATEST_TAG" ]; then
             echo "No previous tag — first publish, proceeding"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             # Version.props / Directory.Packages.props drive the shipped nuspecs' dependency
             # versions — a dep bump with no src/ change must still publish.
@@ -154,10 +177,10 @@ jobs:
             if [ -n "$CHANGES" ]; then
               echo "Changes since $LATEST_TAG:"
               echo "$CHANGES"
-              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "has_changes=true" >> "$GITHUB_OUTPUT"
             else
               echo "No publishable changes (src/, tests/, README.md, Version.props, Directory.Packages.props) since $LATEST_TAG — skipping publish"
-              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "has_changes=false" >> "$GITHUB_OUTPUT"
             fi
           fi
 
@@ -200,6 +223,8 @@ jobs:
           TAG="v${VERSION}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping"
+          elif [[ "$VERSION" == *-* ]]; then
+            gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --generate-notes --title "$TAG"
           else
-            gh release create "$TAG" --generate-notes --title "$TAG"
+            gh release create "$TAG" --target "$GITHUB_SHA" --generate-notes --title "$TAG"
           fi

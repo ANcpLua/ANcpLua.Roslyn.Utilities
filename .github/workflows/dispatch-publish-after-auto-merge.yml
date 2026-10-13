@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   dispatch-main-ci:
-    name: Dispatch main CI after native auto-merge
+    name: Dispatch publish CI after native auto-merge
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     steps:
@@ -26,11 +26,18 @@ jobs:
 
           pr_number="$(jq -r '.workflow_run.pull_requests[0].number // empty' "$GITHUB_EVENT_PATH")"
           if [ -z "$pr_number" ]; then
-            pr_number="$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" --jq 'map(select(.base.ref == "main")) | .[0].number // empty')"
+            pr_number="$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" --jq 'map(select(.base.ref == "main" or (.base.ref | startswith("release/")))) | .[0].number // empty')"
           fi
 
           if [ -z "$pr_number" ]; then
-            echo "No main PR associated with $HEAD_SHA; nothing to dispatch."
+            echo "No main or release/** PR associated with $HEAD_SHA; nothing to dispatch."
+            exit 0
+          fi
+
+          # The publish workflow runs on the branch the PR merged into: main or a release/** line.
+          base_ref="$(gh pr view "$pr_number" --repo "$REPO" --json baseRefName --jq '.baseRefName')"
+          if [ "$base_ref" != "main" ] && [[ "$base_ref" != release/* ]]; then
+            echo "PR #$pr_number targets $base_ref; nothing to dispatch."
             exit 0
           fi
 
@@ -44,7 +51,7 @@ jobs:
               push_runs="$(gh run list \
                 --repo "$REPO" \
                 --workflow CI \
-                --branch main \
+                --branch "$base_ref" \
                 --commit "$merge_sha" \
                 --limit 10 \
                 --json event \
@@ -56,7 +63,7 @@ jobs:
               fi
 
               echo "No push CI exists for merge commit $merge_sha; dispatching publish workflow."
-              gh workflow run nuget-publish.yml --repo "$REPO" --ref main
+              gh workflow run nuget-publish.yml --repo "$REPO" --ref "$base_ref"
               exit 0
             fi
 
