@@ -307,7 +307,7 @@ public sealed record BuildResult(
     /// </remarks>
     /// <seealso cref="GetMsBuildPropertyValue(string)" />
     /// <seealso cref="GetBinLogFiles" />
-    public List<string> GetMsBuildItems(string name)
+    public IReadOnlyList<string> GetMsBuildItems(string name)
     {
         var result = new List<string>();
         var build = GetBuild();

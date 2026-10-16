@@ -256,7 +256,8 @@ public partial class ProjectBuilder
     /// <seealso cref="WithProperty" />
     public ProjectBuilder WithProperties(params (string Key, string Value)[] properties)
     {
-        Properties.AddRange(properties);
+        foreach (var property in properties)
+            Properties.Add(property);
         return this;
     }
 
@@ -366,7 +367,7 @@ public partial class ProjectBuilder
             var props = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var line in File.ReadLines(file))
             {
-                var idx = line.IndexOf('=');
+                var idx = line.IndexOf('=', StringComparison.Ordinal);
                 if (idx <= 0)
                     continue;
 

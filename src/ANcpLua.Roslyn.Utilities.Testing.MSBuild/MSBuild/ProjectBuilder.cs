@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Meziantou.Framework;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
@@ -125,17 +126,17 @@ public partial class ProjectBuilder : IAsyncDisposable
     /// <summary>
     ///     The NuGet package references configured for this project.
     /// </summary>
-    protected List<NuGetReference> NuGetPackages { get; } = [];
+    protected Collection<NuGetReference> NuGetPackages { get; } = [];
 
     /// <summary>
     ///     The MSBuild properties configured for this project.
     /// </summary>
-    protected List<(string Key, string Value)> Properties { get; } = [];
+    protected Collection<(string Key, string Value)> Properties { get; } = [];
 
     /// <summary>
     ///     The source files to be added to the project.
     /// </summary>
-    protected List<(string Name, string Content)> SourceFiles { get; } = [];
+    protected Collection<(string Name, string Content)> SourceFiles { get; } = [];
 
     /// <summary>
     ///     Names of MSBuild properties to record during the build.
