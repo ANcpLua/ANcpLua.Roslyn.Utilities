@@ -1,5 +1,6 @@
 using ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 using Meziantou.Framework;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
@@ -106,6 +107,39 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         }
         """;
 
+    [Fact]
+    public async Task TestingCorePackage_RunsCompilationWithoutInstallingAnyTestFramework()
+    {
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
+        project.WithDotnetSdkVersion(NetSdkVersion.Ambient)
+            .WithNuGetConfig(feed.NuGetConfig)
+            .WithTargetFramework(Tfm.Net100)
+            .WithOutputType(Val.Exe)
+            .WithPackage("ANcpLua.Roslyn.Utilities.Testing", LocalPackageFeed.Version)
+            .AddSource("Program.cs", """
+                using System;
+                using ANcpLua.Roslyn.Utilities.Testing;
+                if (args.Length != 0) return 2;
+                var result = Compile.Source("public class C { }").Build();
+                if (!result.Succeeded || !result.ContainsType("C")) return 1;
+                Console.WriteLine("neutral compilation passed");
+                return 0;
+                """);
+        var result = await project.RunAsync();
+        result.ShouldSucceed();
+        Assert.True(result.OutputContains("neutral compilation passed"));
+        Assert.NotEmpty(result.BinaryLogContent);
+        using var assets = JsonDocument.Parse(await File.ReadAllTextAsync(
+            project.RootFolder / "obj" / "project.assets.json", TestContext.Current.CancellationToken));
+        var packages = assets.RootElement.GetProperty("libraries").EnumerateObject().Select(static entry => entry.Name).ToArray();
+        Assert.Contains(packages, static package => package.StartsWith("ANcpLua.Roslyn.Utilities.Testing/", StringComparison.Ordinal));
+        Assert.DoesNotContain(packages, static package =>
+            package.StartsWith("xunit", StringComparison.OrdinalIgnoreCase) ||
+            package.StartsWith("NUnit/", StringComparison.OrdinalIgnoreCase) ||
+            package.StartsWith("TUnit", StringComparison.OrdinalIgnoreCase) ||
+            package.StartsWith("bunit/", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static readonly string[] BuildArguments = ["-nodeReuse:false"];
 
     // Documentation is generated too: the compiler then resolves every cref, so a Roslyn-free file must not point
@@ -113,7 +147,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     [Fact]
     public async Task SourcesPackage_CompilesWithoutRoslyn_WhenRoslynSourcesAreNotInjected()
     {
-        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
         project
             .WithDotnetSdkVersion(NetSdkVersion.Ambient)
             .WithNuGetConfig(feed.NuGetConfig)
@@ -134,7 +168,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     [Fact]
     public async Task SourcesPackage_IsTrimAndAotAnalyzerClean_WithoutRoslyn()
     {
-        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
         project
             .WithDotnetSdkVersion(NetSdkVersion.Ambient)
             .WithNuGetConfig(feed.NuGetConfig)
@@ -155,7 +189,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     [InlineData(true)]
     public async Task SourcesPackage_CompilesInGenerator_WithAndWithoutPolyfills(bool withPolyfills)
     {
-        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
         AsGenerator(project, withPolyfills).AddSource("Uses.cs", UsesUtilities);
 
         (await project.BuildAsync(BuildArguments)).ShouldSucceed();
@@ -165,7 +199,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     [Fact]
     public async Task SourcesPackage_CompilesInGenerator_OnRoslyn414()
     {
-        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
         AsGenerator(project, withPolyfills: true, roslynVersion: "4.14.0").AddSource("Uses.cs", UsesUtilities);
 
         (await project.BuildAsync(BuildArguments)).ShouldSucceed();
@@ -174,7 +208,7 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
     [Fact]
     public async Task OptOutSwitches_YieldToConsumerOwnPolyfills()
     {
-        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        await using var project = new ProjectBuilder(static message => TestContext.Current.TestOutputHelper?.WriteLine(message));
         AsGenerator(project, withPolyfills: true)
             .WithProperty(Prop.InjectIsExternalInitOnLegacy, Val.False)
             .WithProperty(Prop.InjectLinqPolyfill, Val.False)
@@ -238,7 +272,7 @@ public sealed class LocalPackageFeed : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         FullPath root = RepositoryRoot.Locate();
-        foreach (var package in (string[])["ANcpLua.Roslyn.Utilities.Sources", "ANcpLua.Roslyn.Utilities.Polyfills"])
+        foreach (var package in (string[])["ANcpLua.Roslyn.Utilities.Sources", "ANcpLua.Roslyn.Utilities.Polyfills", "ANcpLua.Roslyn.Utilities", "ANcpLua.Roslyn.Utilities.Testing"])
         {
             await using var packer = new ProjectBuilder();
             var result = await packer.WithDotnetSdkVersion(NetSdkVersion.Ambient).ExecuteDotnetCommandAsync("pack",

@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
-using System.Xml.Linq;
 using Meziantou.Framework;
-using Xunit;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
@@ -19,7 +17,7 @@ public partial class ProjectBuilder
     ///     <para>This method provides low-level access to the dotnet CLI for custom scenarios.</para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description>Automatically adds <c>/bl</c> flag for binary log generation.</description>
+    ///             <description>Adds a unique binary-log argument to commands that invoke MSBuild, before any application arguments.</description>
     ///         </item>
     ///         <item>
     ///             <description>
@@ -51,16 +49,16 @@ public partial class ProjectBuilder
     {
         BuildCount++;
 
-        if (TestOutputHelper is not null)
+        if (WriteOutput is not null)
         {
             foreach (var file in System.IO.Directory.GetFiles(Directory.FullPath, "*", SearchOption.AllDirectories))
             {
-                TestOutputHelper.WriteLine("File: " + file);
+                WriteOutput("File: " + file);
                 var content = await File.ReadAllTextAsync(file).ConfigureAwait(false);
-                TestOutputHelper.WriteLine(content);
+                WriteOutput(content);
             }
 
-            TestOutputHelper.WriteLine("-------- dotnet " + command);
+            WriteOutput("-------- dotnet " + command);
         }
 
         var psi = new ProcessStartInfo(await DotNetSdkHelpers.Get(SdkVersion).ConfigureAwait(false))
@@ -71,11 +69,13 @@ public partial class ProjectBuilder
             UseShellExecute = false
         };
         psi.ArgumentList.Add(command);
+        var generatesBinlog = command is "build" or "run" or "test" or "pack" or "publish" or "restore" or "msbuild";
+        var binlogPath = Directory.FullPath / $"msbuild-{Guid.NewGuid():N}.binlog";
+        if (generatesBinlog)
+            psi.ArgumentList.Add($"-bl:{binlogPath}");
         if (arguments is not null)
             foreach (var arg in arguments)
                 psi.ArgumentList.Add(arg);
-
-        psi.ArgumentList.Add("/bl");
 
         // Remove parent environment variables that can interfere
         psi.Environment.Remove("CI");
@@ -95,15 +95,17 @@ public partial class ProjectBuilder
             foreach (var env in environmentVariables)
                 psi.Environment[env.Name] = env.Value;
 
-        TestOutputHelper?.WriteLine("Executing: " + psi.FileName + " " + string.Join(' ', psi.ArgumentList));
+        WriteOutput?.Invoke("Executing: " + psi.FileName + " " + string.Join(' ', psi.ArgumentList));
 
         var result = await psi.RunAsTaskAsync().ConfigureAwait(false);
 
-        TestOutputHelper?.WriteLine("Process exit code: " + result.ExitCode);
-        TestOutputHelper?.WriteLine(result.Output.ToString());
+        WriteOutput?.Invoke("Process exit code: " + result.ExitCode);
+        WriteOutput?.Invoke(result.Output.ToString());
 
         var sarif = await LoadSarifAsync(Directory.FullPath).ConfigureAwait(false);
-        var binlogContent = await File.ReadAllBytesAsync(Directory.FullPath / "msbuild.binlog").ConfigureAwait(false);
+        var binlogContent = File.Exists(binlogPath)
+            ? await File.ReadAllBytesAsync(binlogPath).ConfigureAwait(false)
+            : [];
         var recordedProperties = LoadRecordedProperties(Directory.FullPath);
 
         return new BuildResult(result.ExitCode, result.Output, sarif, binlogContent)

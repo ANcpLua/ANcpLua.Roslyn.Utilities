@@ -16,6 +16,11 @@
         <Project Path="src/ANcpLua.AotReflection/ANcpLua.Analyzers.AotReflection.csproj"/>
         <Project Path="src/ANcpLua.AotReflection.Attributes/ANcpLua.Analyzers.AotReflection.Attributes.csproj"/>
         <Project Path="src/ANcpLua.ExtensibleEnumMirror/ANcpLua.Analyzers.ExtensibleEnumMirror.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.MSBuild/ANcpLua.Roslyn.Utilities.Testing.MSBuild.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Xunit/ANcpLua.Roslyn.Utilities.Testing.Xunit.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.NUnit/ANcpLua.Roslyn.Utilities.Testing.NUnit.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.TUnit/ANcpLua.Roslyn.Utilities.Testing.TUnit.csproj"/>
+        <Project Path="src/ANcpLua.Roslyn.Utilities.Testing.Bunit/ANcpLua.Roslyn.Utilities.Testing.Bunit.csproj"/>
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests/ANcpLua.Roslyn.Utilities.CrefRegression.Tests.csproj"/>

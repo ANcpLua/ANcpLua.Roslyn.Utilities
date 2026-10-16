@@ -1,4 +1,5 @@
 <Project>
+    <Import Project="Version.props" />
     <!-- SDK-owned properties - centralized here, NOT in individual csproj files -->
     <PropertyGroup>
         <!-- Centralize build output to artifacts/ -->
@@ -7,7 +8,7 @@
         <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
 
         <!-- Versioning: allow CI or callers to pass VersionPrefix/VersionSuffix via -p:VersionPrefix=1.2.3 -p:VersionSuffix=ci.123 -->
-        <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.0.1</VersionPrefix>
+        <VersionPrefix Condition="'$(VersionPrefix)' == ''">$(ReleaseVersion)</VersionPrefix>
         <VersionSuffix Condition="'$(VersionSuffix)' == ''">local</VersionSuffix>
         <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
         <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>

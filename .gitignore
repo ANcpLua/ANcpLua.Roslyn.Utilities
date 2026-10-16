@@ -37,3 +37,6 @@ docs/api/*.md
 .worktrees/
 
 package-lock.json
+
+# Python release validation cache
+__pycache__/

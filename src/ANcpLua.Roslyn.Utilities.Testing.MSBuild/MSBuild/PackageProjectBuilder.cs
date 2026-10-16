@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Xml.Linq;
 using Meziantou.Framework;
-using Xunit;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
@@ -89,7 +88,7 @@ public enum PackageImportStyle
 /// <example>
 ///     <code>
 /// await using var builder = new PackageProjectBuilder(
-///     testOutputHelper,
+///     writeOutput,
 ///     packageDirectory: "/path/to/packages",
 ///     packageName: "MyPackage",
 ///     packageVersion: "1.0.0");
@@ -104,7 +103,6 @@ public enum PackageImportStyle
 /// </code>
 /// </example>
 /// <seealso cref="ProjectBuilder" />
-/// <seealso cref="NuGetPackageFixture" />
 public sealed class PackageProjectBuilder : ProjectBuilder
 {
     private readonly List<XElement> _additionalProjectElements = [];
@@ -113,7 +111,7 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     /// <summary>
     ///     Creates a new <see cref="PackageProjectBuilder" /> with package configuration.
     /// </summary>
-    /// <param name="testOutputHelper">Optional xUnit test output helper for logging.</param>
+    /// <param name="writeOutput">Optional callback for build output.</param>
     /// <param name="packageDirectory">The directory containing NuGet packages.</param>
     /// <param name="packageName">The package name (e.g., "ANcpLua.NET.Sdk").</param>
     /// <param name="packageVersion">The package version (e.g., "1.0.0").</param>
@@ -137,12 +135,12 @@ public sealed class PackageProjectBuilder : ProjectBuilder
     ///     </list>
     /// </remarks>
     public PackageProjectBuilder(
-        ITestOutputHelper? testOutputHelper,
+        Action<string>? writeOutput,
         FullPath packageDirectory,
         string packageName,
         string packageVersion,
         PackageImportStyle defaultImportStyle = PackageImportStyle.SdkElement)
-        : base(testOutputHelper)
+        : base(writeOutput)
     {
         PackageDirectory = packageDirectory;
         PackageName = packageName;
@@ -313,8 +311,8 @@ public sealed class PackageProjectBuilder : ProjectBuilder
         var result = await psi.RunAsTaskAsync().ConfigureAwait(false);
 
         // Retry logic for SDK resolution failures
-        const int maxRetries = 5;
-        for (var retry = 0; retry < maxRetries && result.ExitCode is not 0; retry++)
+        const int MaxRetries = 5;
+        for (var retry = 0; retry < MaxRetries && result.ExitCode is not 0; retry++)
             if (result.Output.Any(static line =>
                     line.Text.Contains("error MSB4236", StringComparison.Ordinal) ||
                     line.Text.Contains("The project file may be invalid or missing targets required for restore",

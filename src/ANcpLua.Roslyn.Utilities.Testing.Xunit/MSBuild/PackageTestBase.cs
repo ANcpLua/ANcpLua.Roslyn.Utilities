@@ -119,7 +119,7 @@ public abstract class PackageTestBase<TFixture>
         string packageVersion,
         PackageImportStyle importStyle = PackageImportStyle.SdkElement)
     {
-        return new PackageProjectBuilder(testOutputHelper, packageDirectory, packageName, packageVersion, importStyle);
+        return new PackageProjectBuilder(testOutputHelper is null ? null : testOutputHelper.WriteLine, packageDirectory, packageName, packageVersion, importStyle);
     }
 
     /// <summary>

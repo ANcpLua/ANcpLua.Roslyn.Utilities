@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
+        <Description>Incremental source generator for strongly typed reflection metadata used by AOT applications.</Description>
         <RootNamespace>ANcpLua.Analyzers.AotReflection</RootNamespace>
 
         <!-- Analyzer package settings -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
+        <!-- Analyzer DLLs are bundled, so this package has no runtime dependency group. -->
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <DevelopmentDependency>true</DevelopmentDependency>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
@@ -75,4 +79,7 @@
             <TfmSpecificPackageFile Include="$(OutputPath)ANcpLua.Roslyn.Utilities.dll" PackagePath="analyzers/dotnet/cs"/>
         </ItemGroup>
     </Target>
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
 </Project>

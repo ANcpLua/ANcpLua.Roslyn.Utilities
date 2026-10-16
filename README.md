@@ -17,7 +17,7 @@ The library is the author's own. Use it, improve it (the upstream is this repo),
 | **`ANcpLua.Roslyn.Utilities`** | netstandard2.0 | Runtime + Roslyn utilities as a normal NuGet reference |
 | **`ANcpLua.Roslyn.Utilities.Sources`** | source-only | Embeds the utilities as `internal` source into source generators (generators can't load NuGet DLLs at runtime) |
 | **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
-| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Generator/analyzer/codefix test infrastructure, MSBuild/NuGet integration tests, cross-framework web testing (xUnit/NUnit/TUnit/Bunit), OTel instrumentation helpers |
+| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Framework-independent generator/analyzer/codefix test infrastructure and diagnostics helpers |
 | **`ANcpLua.Roslyn.Utilities.Testing.Aot`** | netstandard2.0 | AOT/trim test attributes (`[AotTest]`, `[TrimTest]`, `[AotSafe]`, `[TrimSafe]`), `TrimAssert`, `FeatureSwitches`, MSBuild orchestration for standalone AOT verification |
 
 ## Quickstart — writing a source generator
@@ -151,19 +151,27 @@ Without Roslyn: a project that does not reference `Microsoft.CodeAnalysis` sets 
 
 `.Sources` embeds the same polyfills, so referencing `.Sources` and `.Polyfills` together is supported: the `.Sources` copy steps aside. An opt-out removes only this package's files, never a consumer's own file of the same name.
 
-## Testing — what ships in `.Testing`
+## Testing packages
 
-Generator, analyzer, codefix, refactoring, MSBuild integration, and cross-framework web testing.
+`ANcpLua.Roslyn.Utilities.Testing` contains framework-independent Roslyn helpers:
+`Compile` / `CompileResult`, analyzer/code-fix/refactoring runners, generator cache validation,
+`DictionaryAnalyzerConfigOptionsProvider`, `SourceFixture`, and `RepositoryRoot`.
+It does not install xUnit, NUnit, TUnit, bUnit, ASP.NET test hosting, or AI provider clients.
 
-- **Generator tests**: `Test<TGenerator>` (fluent entry), `GeneratorTestHelper.RunGenerator<TGenerator>()` (assertion-oriented one-liners), `GeneratorCachingReport` (compares two runs, detects cache hits), `Compile` / `CompileResult` (dynamic compilation with Shouldly-style assertions)
-- **Analyzer / CodeFix / Refactoring tests**: `AnalyzerTest<TAnalyzer>`, `CodeFixTest<TAnalyzer,TCodeFix>`, `CodeFixTestWithEditorConfig<TAnalyzer,TCodeFix>`, `RefactoringTest<TRefactoring>`, `SolutionRefactoringTest<TRefactoring>`, `LogAssert`
-- **Analyzer test fixtures**: `DictionaryAnalyzerConfigOptionsProvider` (MSBuild properties and `.editorconfig` keys for `AnalyzerOptions` without a build), `SourceFixture.InMethod` (wraps the statements under test in a compilable method), `RepositoryRoot.LocateFrom(AppContext.BaseDirectory, "<marker>")` (repository root from the test assembly, independent of the working directory)
-- **MSBuild integration tests**: `ProjectBuilder`, `PackageProjectBuilder`, `PackageTestBase<TFixture>` / `NuGetPackageTestBase`, `NuGetPackageFixture`, `BuildResult` + `BuildResultAssertions`, `SarifFile` parsers, `DotNetSdkHelpers` / `NetSdkVersion`, `MSBuildConstants`
-- **Web testing** — one base per framework:
-  - xUnit (root): `IntegrationTestBase<TProgram>`, `KestrelTestBase<TProgram>`
-  - `WebTesting/NUnit/`, `WebTesting/TUnit/`, `WebTesting/Bunit/` — per-framework equivalents
-  - Plus `FakeLoggerExtensions` for structured log capture
-- **OTel instrumentation**: `ActivityInstrumentation`, `MetricsInstrumentation`, `LoggingConventions`, `LogEnricherInfrastructure`, `DataClassificationHelpers` (PII/Secret redaction)
+Choose additional packages for the APIs you use:
+
+| Package suffix | APIs and dependencies |
+| --- | --- |
+| `.Testing.MSBuild` | `ProjectBuilder`, `PackageProjectBuilder`, `BuildResult`, SDK/process helpers; no test framework. Output uses `Action<string>`. |
+| `.Testing.Xunit` | Compilation/build/log assertions, package fixtures, xUnit web lifecycle bases; references core and MSBuild. |
+| `.Testing.NUnit` | NUnit web lifecycle bases. |
+| `.Testing.TUnit` | TUnit web lifecycle bases. |
+| `.Testing.Bunit` | bUnit component-test base with fake logging. |
+
+The split changes assembly ownership; existing namespaces remain. Add the explicit integration
+package when migrating a test project. For neutral build output, pass `TestContext.WriteLine`
+or another `Action<string>` to `ProjectBuilder`; xUnit callers can pass their output helper's
+`WriteLine` method. `BuildOrThrow` throws `InvalidOperationException` with compiler diagnostics.
 
 ## AOT testing — what ships in `.Testing.Aot`
 

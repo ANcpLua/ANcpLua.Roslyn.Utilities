@@ -94,7 +94,7 @@ public sealed record BuildResult(
                     $"({string.Join(", ", RecordedProperties.Keys)}); pass targetFramework explicitly.");
 
             var only = RecordedProperties.Values.First();
-            return only.TryGetValue(name, out var v) ? v : null;
+            return only.GetValueOrDefault(name);
         }
 
         return RecordedProperties.TryGetValue(targetFramework, out var props)

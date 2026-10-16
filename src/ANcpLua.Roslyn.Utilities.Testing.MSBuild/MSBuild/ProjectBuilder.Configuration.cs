@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Text.Json;
-using System.Xml.Linq;
-using Meziantou.Framework;
-using Xunit;
+using System.Text;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
@@ -362,11 +358,11 @@ public partial class ProjectBuilder
         foreach (var file in System.IO.Directory.EnumerateFiles(objDir, "recorded.*.properties"))
         {
             var stem = Path.GetFileNameWithoutExtension(file);
-            const string prefix = "recorded.";
-            if (!stem.StartsWith(prefix, StringComparison.Ordinal))
+            const string Prefix = "recorded.";
+            if (!stem.StartsWith(Prefix, StringComparison.Ordinal))
                 continue;
 
-            var tfm = stem[prefix.Length..];
+            var tfm = stem[Prefix.Length..];
             var props = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var line in File.ReadLines(file))
             {

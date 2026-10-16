@@ -7,10 +7,6 @@ on:
   pull_request:
     branches: [main, 'release/**']
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version override (without v prefix). Leave empty to auto-bump from latest tag.'
-        required: false
 
 # Coalesce in-flight runs on the same ref so two main pushes don't race to publish the same version.
 concurrency:
@@ -27,10 +23,8 @@ env:
   CI: true
 
 jobs:
-  # main: read the latest stable v* tag and bump the patch; after a release/X.Y merge, X.Y.0.
-  # release/X.Y: X.Y.0-preview.N, N one above the highest vX.Y.0-preview.* tag in the branch history.
-  # If HEAD already carries the tag, reuse its version (re-run safe).
-  # workflow_dispatch with an explicit version overrides the auto-bump.
+  # Stable main validates the explicit ReleaseVersion; the preview line keeps its own policy.
+  # Re-running the exact tagged commit is supported.
   version:
     runs-on: ubuntu-latest
     outputs:
@@ -42,47 +36,19 @@ jobs:
           fetch-tags: true
       - id: ver
         run: |
+          python3 -m unittest discover -s scripts -p 'test_release_version.py'
           BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-            echo "Workflow dispatch override: $VERSION"
-          elif [[ "$BRANCH" =~ ^release/([0-9]+)\.([0-9]+)$ ]]; then
+          if [[ "$BRANCH" =~ ^release/([0-9]+)\.([0-9]+)$ ]]; then
             BASE="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.0"
             HEAD_TAG=$(git tag --points-at HEAD --list "v$BASE-preview.*" | sort -V | tail -n1)
             if [ -n "$HEAD_TAG" ]; then
               VERSION="${HEAD_TAG#v}"
-              echo "HEAD is tagged $HEAD_TAG — reusing version: $VERSION"
             else
               LAST=$(git tag --merged HEAD --list "v$BASE-preview.*" | sed -E 's/^.*-preview\.//' | sort -n | tail -n1)
               VERSION="$BASE-preview.$(( ${LAST:-0} + 1 ))"
-              echo "Prerelease line $BRANCH — next preview: $VERSION"
             fi
           else
-            # Stable tags only: preview tags merged in from a release/X.Y line never feed the patch bump.
-            LATEST_TAG=$(git describe --tags --abbrev=0 --exclude '*-*' 2>/dev/null || echo "")
-            # Once a release/X.Y line is merged in, its vX.Y.0-preview.* tags are in the history: ship X.Y.0
-            # if it is newer than the latest stable tag and not tagged yet (the .NET GA merge).
-            PREVIEW_BASE=$(git tag --merged HEAD --list 'v*-preview.*' | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+)-.*$/\1/' | sort -V | tail -n1)
-            if [ -n "$PREVIEW_BASE" ] && ! git rev-parse -q --verify "refs/tags/v$PREVIEW_BASE" >/dev/null \
-              && [ "$(printf '%s\n%s\n' "${LATEST_TAG#v}" "$PREVIEW_BASE" | sort -V | tail -n1)" = "$PREVIEW_BASE" ]; then
-              VERSION="$PREVIEW_BASE"
-              echo "Preview line v$PREVIEW_BASE-preview.* merged — releasing: $VERSION"
-            elif [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              MAJOR=${BASH_REMATCH[1]}
-              MINOR=${BASH_REMATCH[2]}
-              PATCH=${BASH_REMATCH[3]}
-              if git tag --points-at HEAD | grep -qFx "$LATEST_TAG"; then
-                VERSION="$MAJOR.$MINOR.$PATCH"
-                echo "HEAD is tagged $LATEST_TAG — reusing version: $VERSION"
-              else
-                PATCH=$((PATCH + 1))
-                VERSION="$MAJOR.$MINOR.$PATCH"
-                echo "Commits after $LATEST_TAG — bumped to: $VERSION"
-              fi
-            else
-              VERSION="0.0.1"
-              echo "No v* tag found — defaulting to: $VERSION"
-            fi
+            VERSION=$(python3 scripts/release_version.py --read-for-build)
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
@@ -118,11 +84,7 @@ jobs:
       - name: Pack (stable)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          dotnet pack src/ANcpLua.Roslyn.Utilities/ANcpLua.Roslyn.Utilities.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Polyfills/ANcpLua.Roslyn.Utilities.Polyfills.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Sources/ANcpLua.Roslyn.Utilities.Sources.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing.Aot/ANcpLua.Roslyn.Utilities.Testing.Aot.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
-          dotnet pack src/ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+          dotnet pack ANcpLua.Roslyn.Utilities.slnx -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
 
       # AgentTesting + Testing.Workflows moved to https://github.com/ANcpLua/ANcpLua.Agents
       # (2026-04-19) and publish from that repo's own workflow.
@@ -183,6 +145,10 @@ jobs:
               echo "has_changes=false" >> "$GITHUB_OUTPUT"
             fi
           fi
+
+      - name: Validate stable publication version
+        if: steps.has_changes.outputs.has_changes == 'true' && github.ref == 'refs/heads/main'
+        run: python3 scripts/release_version.py
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         if: steps.has_changes.outputs.has_changes == 'true'

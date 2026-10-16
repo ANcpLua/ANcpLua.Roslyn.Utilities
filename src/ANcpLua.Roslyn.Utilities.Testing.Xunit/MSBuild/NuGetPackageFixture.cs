@@ -69,7 +69,7 @@ public class NuGetPackageFixture : IAsyncLifetime
     /// <summary>
     ///     Default list of external packages to pre-warm in the NuGet cache.
     /// </summary>
-    private static readonly (string Name, string Version)[] DefaultPreWarmPackages =
+    private static readonly (string Name, string Version)[] s_defaultPreWarmPackages =
     [
         ("xunit", "2.9.3"),
         ("xunit.runner.visualstudio", "3.1.5"),
@@ -85,10 +85,10 @@ public class NuGetPackageFixture : IAsyncLifetime
     ///     Creates a new <see cref="NuGetPackageFixture" /> with default pre-warm packages.
     /// </summary>
     /// <remarks>
-    ///     Uses <see cref="DefaultPreWarmPackages" /> for NuGet cache pre-warming.
+    ///     Uses <see cref="s_defaultPreWarmPackages" /> for NuGet cache pre-warming.
     ///     For custom package lists, use the constructor that accepts an array of packages.
     /// </remarks>
-    public NuGetPackageFixture() : this(DefaultPreWarmPackages)
+    public NuGetPackageFixture() : this(s_defaultPreWarmPackages)
     {
     }
 

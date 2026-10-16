@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
-        <Description>Fluent testing framework for Roslyn analyzers, code fixes, and incremental generators with caching validation, forbidden type detection, and comprehensive assertion support.</Description>
+        <Description>Framework-independent testing utilities for Roslyn analyzers, code fixes, incremental generators, and compilation results.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>roslyn;analyzer;codefix;source-generator;testing;incremental-generator;unit-test;caching;assertions</PackageTags>
         <NoWarn>$(NoWarn);NU1903;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859;RS0030;CA1307;IDE1006;CA1002;CA1000;CS1574;CS1591</NoWarn>
@@ -19,9 +19,9 @@
     </ItemGroup>
 
     <ItemGroup Label="Roslyn Testing">
-        <PackageReference Include="Meziantou.Framework.FullPath"/>
-        <PackageReference Include="Meziantou.Framework.TemporaryDirectory"/>
-        <PackageReference Include="AwesomeAssertions"/>
+        <PackageReference Include="AwesomeAssertions" />
+        <PackageReference Include="System.Security.Cryptography.Pkcs" />
+        <PackageReference Include="Meziantou.Framework.FullPath" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing"/>
@@ -33,39 +33,9 @@
         <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
     </ItemGroup>
 
-    <ItemGroup Label="MSBuild Testing">
-        <PackageReference Include="Meziantou.Framework"/>
-        <PackageReference Include="Meziantou.Framework.Threading"/>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing"/>
-        <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions"/>
-        <PackageReference Include="MSBuild.StructuredLogger"/>
-        <PackageReference Include="Microsoft.Deployment.DotNet.Releases"/>
-        <PackageReference Include="xunit.v3.extensibility.core"/>
-        <PackageReference Include="xunit.v3.assert"/>
-    </ItemGroup>
-
-    <ItemGroup Label="Web Testing">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
-        <PackageReference Include="NUnit"/>
-        <!-- TUnit.Core ships TUnit.Analyzers.dll which fires TUXU0001 ("xUnit code can be converted to TUnit")
-             on every xUnit-using consumer. IncludeAssets="compile;runtime" keeps only the attribute types
-             usable at compile time; PrivateAssets="analyzers" prevents the analyzer DLL from flowing
-             transitively to downstream consumers. -->
-        <PackageReference Include="TUnit.Core" IncludeAssets="compile;runtime" PrivateAssets="analyzers"/>
-        <PackageReference Include="bunit"/>
-    </ItemGroup>
-
-    <!-- TUnit.Core is referenced for its attributes only, not as a test framework.
-         Remove its migration analyzers and source generator to avoid conflicts with xUnit/NUnit code. -->
-    <Target Name="_RemoveTUnitAnalyzers" BeforeTargets="CoreCompile">
-        <ItemGroup>
-            <Analyzer Remove="@(Analyzer)" Condition="$([System.String]::new('%(Filename)').StartsWith('TUnit.'))" />
-        </ItemGroup>
-    </Target>
-
-    <ItemGroup Label="Agent Testing">
-        <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>
-        <PackageReference Include="OpenAI"/>
+    <ItemGroup Label="Framework-independent instrumentation">
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+        <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>

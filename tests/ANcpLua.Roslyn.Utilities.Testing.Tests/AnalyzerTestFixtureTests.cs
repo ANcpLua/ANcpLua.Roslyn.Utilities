@@ -46,4 +46,35 @@ public sealed class AnalyzerTestFixtureTests
         File.Exists(root["ANcpLua.Roslyn.Utilities.slnx"]).Should().BeTrue();
         AppContext.BaseDirectory.Should().StartWith(root.FullPath.Value);
     }
+    [Fact]
+    public void BuildOrThrow_ReportsCompilerDiagnosticsWithoutAFrameworkException()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => Compile.Source("not valid C#").BuildOrThrow());
+        Assert.Contains("Compilation failed.", exception.Message);
+        Assert.Contains("CS", exception.Message);
+    }
+
+    [Fact]
+    public void CoreAssembly_DoesNotReferenceTestFrameworks()
+    {
+        var references = typeof(Compile).Assembly.GetReferencedAssemblies().Select(static assembly => assembly.Name).ToArray();
+        Assert.DoesNotContain(references, static name => name is not null &&
+            (name.StartsWith("xunit", StringComparison.OrdinalIgnoreCase) ||
+             name.StartsWith("NUnit", StringComparison.OrdinalIgnoreCase) ||
+             name.StartsWith("TUnit", StringComparison.OrdinalIgnoreCase)));
+        Assert.NotEqual(typeof(Compile).Assembly, typeof(CompileResultAssertions).Assembly);
+        Assert.NotEqual(typeof(Compile).Assembly, typeof(ProjectBuilder).Assembly);
+    }
+    [Theory]
+    [InlineData("--version", true)]
+    [InlineData("ancplua-command-that-does-not-exist", false)]
+    public async Task ProcessCommand_PreservesOutputAndExitWithoutABinaryLog(string command, bool succeeds)
+    {
+        await using var project = new ProjectBuilder();
+        project.WithDotnetSdkVersion(NetSdkVersion.Ambient);
+        var result = await project.ExecuteDotnetCommandAsync(command);
+        Assert.Equal(succeeds, result.ExitCode == 0);
+        Assert.NotEmpty(result.ProcessOutput);
+        Assert.Empty(result.BinaryLogContent);
+    }
 }

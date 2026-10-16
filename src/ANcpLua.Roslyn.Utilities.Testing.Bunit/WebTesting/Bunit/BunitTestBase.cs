@@ -10,14 +10,11 @@ namespace ANcpLua.Roslyn.Utilities.Testing.WebTesting.Bunit;
 /// </summary>
 public abstract class BunitTestBase : BunitContext
 {
-    private FakeLogCollector? _logs;
-
     /// <summary>
     ///     Fake log collector for asserting log output.
     ///     Available after the service provider is built (after the first render).
     /// </summary>
-    protected FakeLogCollector Logs =>
-        _logs ??= Services.GetRequiredService<FakeLogCollector>();
+    protected FakeLogCollector Logs => field ??= Services.GetRequiredService<FakeLogCollector>();
 
     /// <summary>
     ///     Creates a new bUnit test base with fake logging pre-configured.

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
+        <Description>Opt-in Bunit integrations for ANcpLua Roslyn testing utilities.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591;RS1036;RS1038;RS1041;CA1019;NU5104;CA1859;RS0030;CA1307;IDE1006;CA1002;CA1000;CS1574</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="bunit" />
+        <ProjectReference Include="../ANcpLua.Roslyn.Utilities.Testing/ANcpLua.Roslyn.Utilities.Testing.csproj" />
+        <None Include="../../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
+</Project>

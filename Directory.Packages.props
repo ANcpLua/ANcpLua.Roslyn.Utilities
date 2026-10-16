@@ -7,18 +7,16 @@
           Version.props is a COPY - sync manually with SDK.
           This file only declares WHICH packages are used, not their versions.
         -->
-  <!--to Import centralized versions from symlinked Version.props -->
-  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
+  <!-- Version.props is imported once by Directory.Build.props. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-  <ItemGroup Label="Microsoft.Extensions (used by Roslyn.Utilities.Testing surface)">
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
-    <PackageVersion Include="OpenAI" Version="$(OpenAIVersion)" />
+  <ItemGroup Label="Web testing integrations">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
   <ItemGroup Label="Roslyn">
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />

@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Text.Json;
-using System.Xml.Linq;
 using Meziantou.Framework;
-using Xunit;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
@@ -46,7 +42,7 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// </remarks>
 /// <example>
 ///     <code>
-/// await using var builder = new ProjectBuilder(testOutputHelper);
+/// await using var builder = new ProjectBuilder(writeOutput);
 /// 
 /// var result = await builder
 ///     .WithTargetFramework(Tfm.Net100)
@@ -59,7 +55,6 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// </code>
 /// </example>
 /// <seealso cref="BuildResult" />
-/// <seealso cref="BuildResultAssertions" />
 /// <seealso cref="NetSdkVersion" />
 public partial class ProjectBuilder : IAsyncDisposable
 {
@@ -71,8 +66,8 @@ public partial class ProjectBuilder : IAsyncDisposable
     /// <summary>
     ///     Creates a new <see cref="ProjectBuilder" /> with an isolated temporary directory.
     /// </summary>
-    /// <param name="testOutputHelper">
-    ///     Optional xUnit test output helper for logging build output and file contents during test execution.
+    /// <param name="writeOutput">
+    ///     Optional output callback for logging build output and file contents during test execution.
     ///     When provided, enables verbose logging of all files and build commands.
     /// </param>
     /// <remarks>
@@ -97,12 +92,12 @@ public partial class ProjectBuilder : IAsyncDisposable
     /// await using var builder = new ProjectBuilder();
     ///
     /// // With xUnit test output for debugging
-    /// await using var builder = new ProjectBuilder(testOutputHelper);
+    /// await using var builder = new ProjectBuilder(writeOutput);
     /// </code>
     /// </example>
-    public ProjectBuilder(ITestOutputHelper? testOutputHelper = null)
+    public ProjectBuilder(Action<string>? writeOutput = null)
     {
-        TestOutputHelper = testOutputHelper;
+        WriteOutput = writeOutput;
         Directory = TemporaryDirectory.Create();
         GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
 
@@ -165,7 +160,7 @@ public partial class ProjectBuilder : IAsyncDisposable
     /// <summary>
     ///     The test output helper for logging, if provided.
     /// </summary>
-    protected ITestOutputHelper? TestOutputHelper { get; }
+    protected Action<string>? WriteOutput { get; }
 
     /// <summary>
     ///     Counter for the number of build operations performed.

@@ -1,0 +1,9 @@
+# Changelog
+
+## 3.0.0
+
+- Separate framework-independent Roslyn helpers from opt-in xUnit, NUnit, TUnit, and bUnit packages. The core package no longer installs unrelated test frameworks or AI clients.
+- Move neutral project/process helpers to `ANcpLua.Roslyn.Utilities.Testing.MSBuild`; output callbacks use `Action<string>` instead of xUnit interfaces. Move xUnit assertions and fixtures to `.Testing.Xunit`. Existing namespaces remain; consumers must reference the package that owns each API.
+- Make `Compile.BuildOrThrow` throw its documented `InvalidOperationException` with compiler diagnostics.
+- Correct process execution so binary-log arguments do not reach application arguments, each invocation has its own log, and commands that produce no binary log preserve their output and exit code.
+- Update the transitive cryptography dependency used by NuGet tooling.

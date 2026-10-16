@@ -6,27 +6,15 @@ PRs, and tests, not in this document. Downstream chain: this repo → `ANcpLua.N
 `ANcpLua.Agents` → qyl agent runtime, so a broken restore or a signature change
 here propagates the whole way down.
 
-## Release lines
+## Release versions
 
-Until .NET 11 GA two lines ship from this repository:
-
-| Branch | Line | Toolchain | NuGet version | GitHub release |
-|---|---|---|---|---|
-| `main` | 2.2, stable | .NET SDK 10 (`global.json`), net10.0, no C# 15 unions | `2.2.N` | `v2.2.N`, marked latest |
-| `release/5.0` | 5.0, preview | .NET SDK 11 RC, net10.0 + net11.0, C# 15 union polyfills | `5.0.0-preview.N` | `v5.0.0-preview.N`, pre-release |
-
-- NuGet has no branches: the SemVer suffix makes a prerelease. nuget.org lists `5.0.0-preview.N` as
-  prerelease and never as the latest version; a consumer opts in by naming the exact version.
-- `nuget-publish.yml` derives both versions from tags: on `main` the latest stable `v*` tag plus one patch,
-  on `release/X.Y` the next `vX.Y.0-preview.N`, and on `main` after `release/X.Y` is merged in, `X.Y.0`.
-  Each publish creates its tag and GitHub release.
-- A fix both lines need lands on `main` by PR and is cherry-picked onto `release/5.0`. Never merge `main`
-  into `release/5.0`: that would carry the SDK 10 rollback across. SDK 11 and union work goes to
-  `release/5.0` only.
-- At .NET 11 GA: move `release/5.0` to the GA SDK, merge it into `main` with a merge commit, not a
-  squash, so its preview tags enter main's history (on conflicts keep the `release/5.0` side of
-  `global.json`, `Version.props`, the TFMs and the union files). The push publishes `5.0.0`; delete
-  `release/5.0` afterwards. main's patch bump then continues from `v5.0.0`.
+`Version.props` owns the explicit stable `ReleaseVersion` on `main`. Bump it for each
+release; `scripts/release_version.py` rejects stale versions and tags belonging to a
+different commit before publication. Builds read the same source version without authorizing a release,
+so a documentation-only change can still run checks without publishing. A rerun of the same tagged commit is supported. There is no implicit
+patch increment or version override. The separately maintained `release/5.0` branch
+keeps its preview toolchain and release policy; do not merge SDK 11 preview changes
+into stable as part of the testing-package split.
 
 ## Project index
 
@@ -137,13 +125,11 @@ change updates the analyzer-managed shipped/unshipped baselines in the same comm
 
 ## Publishing
 
-Publication is GitHub Actions OIDC trusted publishing (`nuget-publish.yml`) that runs
-on **push to `main` or `release/**`** — not on a manual tag. CI computes the version from
-the tags (see [Release lines](#release-lines)), builds and tests on Linux + Windows, and publishes only when the diff since
-that tag touches a shipped surface (the gate watches `src/**`, `tests/**`,
-`README.md`, `Version.props`, `Directory.Packages.props`, and the workflow file
-itself — root dep bumps change shipped nuspec floors and must publish); it then
-creates the matching `v*` tag and GitHub release. A doc-only or
-CI-only change builds but publishes nothing. Never add a long-lived NuGet API key or
-publish locally, and a build-broken `main` cannot publish — the version is CI-computed,
-so just push a fix and the next patch ships.
+Publication is GitHub Actions OIDC trusted publishing (`nuget-publish.yml`) on pushes
+to `main` or a manual run. It validates `ReleaseVersion`, builds and tests on Linux and
+Windows, and publishes only when the diff since the tag touches a shipped surface.
+It then creates the matching tag and GitHub release. A new package ID needs its own
+NuGet trusted-publisher policy. Keep release work local until the consuming release
+wave is ready, since a shipped-surface main push can publish. Never print credentials
+or bypass a failed native gate with a manual package push. A failed release corrected
+before publication keeps its intended version; an already published version must be bumped.

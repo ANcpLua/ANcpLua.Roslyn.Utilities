@@ -1,4 +1,7 @@
 <Project>
+    <PropertyGroup Label="Release">
+        <ReleaseVersion>3.0.0</ReleaseVersion>
+    </PropertyGroup>
     <PropertyGroup Label="SDK Version (Auto-generated)">
         <ANcpSdkPackageVersion>999.9.9</ANcpSdkPackageVersion>
     </PropertyGroup>
@@ -8,6 +11,7 @@
     </PropertyGroup>
 
     <PropertyGroup Label="Roslyn">
+        <SystemSecurityCryptographyPkcsVersion>10.0.13</SystemSecurityCryptographyPkcsVersion>
         <RoslynVersion>5.9.0</RoslynVersion>
         <RoslynAnalyzersVersion>5.9.0</RoslynAnalyzersVersion>
     </PropertyGroup>

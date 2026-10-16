@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Text.Json;
 using System.Xml.Linq;
-using Meziantou.Framework;
-using Xunit;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
@@ -107,8 +103,7 @@ public partial class ProjectBuilder
     ///     .WithPackage("xunit", "2.9.2")
     ///     .WithPackage("xunit.runner.visualstudio", "3.0.0")
     ///     .AddSource("Tests.cs", """
-    ///         using Xunit;
-    ///         public class Tests { [Fact] public void Test() => Assert.True(true); }
+    ///             ///         public class Tests { [Fact] public void Test() => Assert.True(true); }
     ///         """)
     ///     .TestAsync();
     ///
