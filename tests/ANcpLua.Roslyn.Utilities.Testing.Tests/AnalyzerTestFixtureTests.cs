@@ -50,8 +50,8 @@ public sealed class AnalyzerTestFixtureTests
     public void BuildOrThrow_ReportsCompilerDiagnosticsWithoutAFrameworkException()
     {
         var exception = Assert.Throws<InvalidOperationException>(() => Compile.Source("not valid C#").BuildOrThrow());
-        Assert.Contains("Compilation failed.", exception.Message);
-        Assert.Contains("CS", exception.Message);
+        Assert.Contains("Compilation failed.", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("CS", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
