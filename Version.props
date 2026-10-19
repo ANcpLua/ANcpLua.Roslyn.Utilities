@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup Label="Release">
-        <ReleaseVersion>3.0.1</ReleaseVersion>
+        <ReleaseVersion>3.0.2</ReleaseVersion>
     </PropertyGroup>
 
     <PropertyGroup Label="Roslyn">

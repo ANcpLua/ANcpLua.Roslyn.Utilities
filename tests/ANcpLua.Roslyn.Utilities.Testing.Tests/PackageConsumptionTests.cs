@@ -240,6 +240,9 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
 }
 
 // Packs .Sources and .Polyfills from this checkout into a throwaway feed, once for the test class.
+// The packs build into their own ArtifactsPath: building into the checkout's artifacts/ would replace
+// the assemblies CI packs with `dotnet pack --no-build` (3.0.0 and 3.0.1 shipped AssemblyVersion
+// 0.0.0.0 that way).
 public sealed class LocalPackageFeed : IAsyncLifetime
 {
     public const string Version = "0.0.0-regression";
@@ -278,6 +281,7 @@ public sealed class LocalPackageFeed : IAsyncLifetime
             var result = await packer.WithDotnetSdkVersion(NetSdkVersion.Ambient).ExecuteDotnetCommandAsync("pack",
             [
                 root / "src" / package / $"{package}.csproj", "-c", "Release", "-o", _directory.FullPath,
+                $"-p:ArtifactsPath={_directory.FullPath / "artifacts"}/",
                 "-p:VersionPrefix=0.0.0", "-p:VersionSuffix=regression", "-nodeReuse:false"
             ]);
             result.ShouldSucceed();

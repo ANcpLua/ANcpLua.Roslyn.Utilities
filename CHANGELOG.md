@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.2
+
+- Fix: the ANcpLua.Roslyn.Utilities and .Testing assemblies in 3.0.0 and 3.0.1 carried AssemblyVersion 0.0.0.0 (2.2.48 carried 2.2.48.0), so `.Testing.Xunit` 3.0.1, which references `.Testing` 3.0.1.0, failed at runtime with FileNotFoundException. A test packed the src projects with VersionPrefix 0.0.0 into the build output that the release then packed with `--no-build`. That test now builds into its own artifacts path, and CI packs before it runs tests.
+
 ## 3.0.1
 
 - XML documentation of `AotSafe`, `TrimSafe` and `AotUnsafe` names the current ANcpLua.Analyzers rule IDs (AL1402-AL1405); the README names AL1313.

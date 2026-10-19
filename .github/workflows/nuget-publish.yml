@@ -74,17 +74,18 @@ jobs:
       - name: Build
         run: dotnet build ANcpLua.Roslyn.Utilities.slnx -c Release --no-restore -p:Version=${{ needs.version.outputs.version }}
 
+      # Stable packages — packed once on Linux only, straight from the build output and before the
+      # tests run, so nothing a test builds can end up in a package.
+      - name: Pack (stable)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet pack ANcpLua.Roslyn.Utilities.slnx -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
+
       # Run the suites against the just-built output. publish `needs: build`, so a runtime
       # regression here fails the job and a broken package can never reach nuget.org — the
       # build alone only proves the tests compile, not that they pass.
       - name: Test
         run: dotnet test ANcpLua.Roslyn.Utilities.slnx -c Release --no-build
-
-      # Stable packages — packed once on Linux only.
-      - name: Pack (stable)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          dotnet pack ANcpLua.Roslyn.Utilities.slnx -c Release -o artifacts -p:Version=${{ needs.version.outputs.version }} --no-build
 
       # AgentTesting + Testing.Workflows moved to https://github.com/ANcpLua/ANcpLua.Agents
       # (2026-04-19) and publish from that repo's own workflow.
