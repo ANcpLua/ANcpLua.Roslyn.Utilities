@@ -14,8 +14,8 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Aot;
 ///         This attribute serves multiple purposes:
 ///         <list type="bullet">
 ///             <item>Documents the design decision that this code requires JIT compilation</item>
-///             <item>Prevents <c>[AotSafe]</c> code from calling this code (AL0052)</item>
-///             <item>Analyzer AL0053 warns if this attribute is applied unnecessarily</item>
+///             <item>Prevents <c>[AotSafe]</c> code from calling this code (AL1404)</item>
+///             <item>Analyzer AL1405 warns if this attribute is applied unnecessarily</item>
 ///         </list>
 ///     </para>
 ///     <para>

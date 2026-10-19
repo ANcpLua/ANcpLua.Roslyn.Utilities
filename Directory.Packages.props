@@ -3,11 +3,10 @@
           ═══════════════════════════════════════════════════════════════════════════
           ANcpLua.Roslyn.Utilities - Directory.Packages.props
           ═══════════════════════════════════════════════════════════════════════════
-    
-          Version.props is a COPY - sync manually with SDK.
+
           This file only declares WHICH packages are used, not their versions.
+          The versions live in this repo's own Version.props, imported once by Directory.Build.props.
         -->
-  <!-- Version.props is imported once by Directory.Build.props. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -28,7 +27,6 @@
     <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
   </ItemGroup>
   <ItemGroup Label="Analyzers">
-    <PackageVersion Include="JetBrains.Annotations" Version="$(JetBrainsAnnotationsVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(RoslynAnalyzersVersion)" />
   </ItemGroup>
   <ItemGroup Label="Testing">

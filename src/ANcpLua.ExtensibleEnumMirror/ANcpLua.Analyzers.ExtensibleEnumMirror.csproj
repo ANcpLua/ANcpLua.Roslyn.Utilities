@@ -2,8 +2,6 @@
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>ANcpLua.Analyzers.ExtensibleEnumMirror</RootNamespace>
         <Description>Roslyn incremental source generator that mirrors TypeSpec [CodeGenType] string-backed extensible-enum structs (OpenAI/Anthropic/Microsoft.Agents.AI public API) as real CLR enums for clean switch-expression matching, plus ToKind/ToStruct/KnownValues helpers. The marker attribute is emitted into the consumer compilation via post-init, so a single PackageReference is enough.</Description>

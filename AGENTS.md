@@ -64,7 +64,7 @@ keep the test green rather than trusting the prose.
 
 - `OperationExtensions.IsConstantZero` matches every built-in numeric zero (`0`,
   `0L`, `0u`, `0uL`, `0.0f`, `0.0`, `0m`). The `Value: 0` shortcut matches `int 0`
-  only and was the AL0014 regression — keep the full alternation, guarded by
+  only and was the AL1010 (then AL0014) regression — keep the full alternation, guarded by
   `OperationExtensionsConstantsTests`.
 - Symbol identity beats `ToDisplayString()` on hot paths. `IsTaskType` / `IsSpanType`
   / `IsMemoryType` / `IsCancellationTokenType` compare namespace + name via

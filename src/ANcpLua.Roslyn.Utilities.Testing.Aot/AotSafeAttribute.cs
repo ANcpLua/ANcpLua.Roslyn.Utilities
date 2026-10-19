@@ -4,7 +4,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing.Aot;
 
 /// <summary>
 ///     Marks code as verified AOT-compatible.
-///     The analyzer AL0033 verifies that this attribute is only applied to code with no
+///     The analyzer AL1403 verifies that this attribute is only applied to code with no
 ///     RequiresDynamicCodeAttribute violations.
 ///     Marked code must not use runtime code generation such as:
 ///     - Expression.Compile()

@@ -2,13 +2,6 @@
     <PropertyGroup Label="Release">
         <ReleaseVersion>3.0.0</ReleaseVersion>
     </PropertyGroup>
-    <PropertyGroup Label="SDK Version (Auto-generated)">
-        <ANcpSdkPackageVersion>999.9.9</ANcpSdkPackageVersion>
-    </PropertyGroup>
-    <PropertyGroup Label=".NET SDK">
-        <DotNetSdkVersion>10.0.401</DotNetSdkVersion>
-        <DotNetSdkRollForward>latestMinor</DotNetSdkRollForward>
-    </PropertyGroup>
 
     <PropertyGroup Label="Roslyn">
         <SystemSecurityCryptographyPkcsVersion>10.0.13</SystemSecurityCryptographyPkcsVersion>
@@ -34,7 +27,7 @@
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          MEZIANTOU PACKAGES
-         Used by: SDK, Roslyn.Utilities
+         Used by: Roslyn.Utilities.Testing, Roslyn.Utilities.Testing.MSBuild
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Meziantou">
         <!-- Held at 5.0.15 (verified 2026-07-16): 5.0.16+ marks ProcessStartInfo.RunAsTaskAsync /
@@ -47,7 +40,6 @@
         <MeziantouFullPathVersion>3.0.1</MeziantouFullPathVersion>
         <MeziantouTemporaryDirectoryVersion>3.0.1</MeziantouTemporaryDirectoryVersion>
         <MeziantouThreadingVersion>3.0.0</MeziantouThreadingVersion>
-        <MeziantouAnalyzerVersion>3.0.123</MeziantouAnalyzerVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -61,75 +53,26 @@
         <BunitVersion>2.9.0</BunitVersion>
         <AngleSharpVersion>1.7.2</AngleSharpVersion>
         <AwesomeAssertionsVersion>9.4.0</AwesomeAssertionsVersion>
-        <AwesomeAssertionsAnalyzersVersion>9.0.8</AwesomeAssertionsAnalyzersVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         MICROSOFT TESTING PLATFORM (MTP) EXTENSIONS
-         Used by: SDK (auto-injected for TUnit, NUnit MTP, MSTest MTP)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="MTP Extensions">
-        <MTPExtensionsVersion>2.3.2</MTPExtensionsVersion>
-        <CodeCoverageVersion>18.9.0</CodeCoverageVersion>
-        <TestSdkVersion>18.8.1</TestSdkVersion>
-        <DiagnosticsTestingVersion>10.8.0</DiagnosticsTestingVersion>
-        <GitHubActionsLoggerMTPVersion>3.0.4</GitHubActionsLoggerMTPVersion>
-        <GitHubActionsLoggerVSTestVersion>2.4.1</GitHubActionsLoggerVSTestVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         ANALYZERS (SDK-injected)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Analyzers">
-        <SbomTargetsVersion>4.1.5</SbomTargetsVersion>
-        <BannedApiAnalyzersVersion>5.6.0</BannedApiAnalyzersVersion>
-        <JonSkeetAnalyzersVersion>1.0.0-beta.7</JonSkeetAnalyzersVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         MICROSOFT.EXTENSIONS (BCL polyfills, diagnostics, AI abstractions)
+         MICROSOFT.EXTENSIONS (BCL polyfills, diagnostics, web testing)
          Used by: Roslyn.Utilities (BCL polyfills), Roslyn.Utilities.Testing
-         (AI.Abstractions, Diagnostics.Testing, Mvc.Testing, OpenAI)
+         (Diagnostics.Testing, Telemetry.Abstractions), Testing.Xunit/NUnit/TUnit (Mvc.Testing)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Extensions">
         <MicrosoftExtensionsVersion>10.8.0</MicrosoftExtensionsVersion>
-        <MicrosoftExtensionsAIAbstractionsVersion>10.8.0</MicrosoftExtensionsAIAbstractionsVersion>
         <AspNetCoreVersion>10.0.10</AspNetCoreVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
         <SystemThreadingChannelsVersion>10.0.10</SystemThreadingChannelsVersion>
-        <OpenAIVersion>2.12.0</OpenAIVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
-         OPENTELEMETRY
-         Used by: Web projects (qyl ServiceDefaults)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="OpenTelemetry">
-        <OpenTelemetryVersion>1.16.0</OpenTelemetryVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         NUGET / BUILD TOOLS
-         Used by: SDK
+         BUILD TOOLS
+         Used by: Roslyn.Utilities.Testing.MSBuild
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Build Tools">
-        <NuGetVersion>7.6.0</NuGetVersion>
         <MSBuildStructuredLoggerVersion>2.3.213</MSBuildStructuredLoggerVersion>
-        <MicrosoftSourceLinkVersion>10.0.301</MicrosoftSourceLinkVersion>
         <MicrosoftDeploymentDotNetReleasesVersion>1.0.2</MicrosoftDeploymentDotNetReleasesVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         MISCELLANEOUS
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Misc">
-        <JetBrainsAnnotationsVersion>2026.2.0</JetBrainsAnnotationsVersion>
-    </PropertyGroup>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         LEGACY ALIASES (backward compatibility)
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <PropertyGroup Label="Aliases">
-        <XunitMtpVersion>$(XunitV3Version)</XunitMtpVersion>
     </PropertyGroup>
 </Project>

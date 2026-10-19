@@ -2,8 +2,6 @@
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <Description>Incremental source generator for strongly typed reflection metadata used by AOT applications.</Description>
         <RootNamespace>ANcpLua.Analyzers.AotReflection</RootNamespace>
