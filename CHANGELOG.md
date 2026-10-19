@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.1
+
+- XML documentation of `AotSafe`, `TrimSafe` and `AotUnsafe` names the current ANcpLua.Analyzers rule IDs (AL1402-AL1405); the README names AL1313.
+- Repository: .NET SDK 10.0.402, no unused version properties or package versions, no csproj-level LangVersion/Nullable duplicating Directory.Build.props.
+
 ## 3.0.0
 
 - Separate framework-independent Roslyn helpers from opt-in xUnit, NUnit, TUnit, and bUnit packages. The core package no longer installs unrelated test frameworks or AI clients.
