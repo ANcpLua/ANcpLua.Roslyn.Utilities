@@ -93,6 +93,7 @@
         <AspNetCoreVersion>10.0.10</AspNetCoreVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
         <SystemThreadingChannelsVersion>10.0.10</SystemThreadingChannelsVersion>
+        <SystemSecurityCryptographyPkcsVersion>9.0.21</SystemSecurityCryptographyPkcsVersion>
         <OpenAIVersion>2.12.0</OpenAIVersion>
     </PropertyGroup>
 

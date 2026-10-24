@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 using Meziantou.Framework;
 using Microsoft.CodeAnalysis;
@@ -118,6 +119,123 @@ public sealed class PackageConsumptionTests(LocalPackageFeed feed) : IClassFixtu
         """;
 
     private static readonly string[] BuildArguments = ["-nodeReuse:false"];
+
+    private const string UsesUnion = """
+        using System;
+        using System.Globalization;
+        using System.Runtime.CompilerServices;
+
+        public sealed record Cat(string Name);
+        public sealed record Dog(int Age);
+        public union Pet(Cat, Dog);
+
+        internal static class Program
+        {
+            public static void Main()
+            {
+                Pet pet = new Cat("Milo");
+                IUnion contents = pet;
+                if (contents.Value is not Cat { Name: "Milo" } || Describe(pet) != "Milo")
+                    throw new InvalidOperationException("The union lost its case.");
+                if (default(Pet) is not null || Describe(default) != "empty")
+                    throw new InvalidOperationException("The default union must have null contents.");
+
+                var usage = (AttributeUsageAttribute)Attribute.GetCustomAttribute(
+                    typeof(UnionAttribute), typeof(AttributeUsageAttribute))!;
+                if (usage.ValidOn != (AttributeTargets.Class | AttributeTargets.Struct) ||
+                    usage.AllowMultiple || usage.Inherited)
+                    throw new InvalidOperationException("UnionAttribute differs from the runtime contract.");
+
+        #if NET11_0_OR_GREATER
+                if (typeof(IUnion).Assembly != typeof(object).Assembly ||
+                    typeof(UnionAttribute).Assembly != typeof(object).Assembly)
+                    throw new InvalidOperationException("The framework must own the .NET 11 union types.");
+        #else
+                if (typeof(IUnion).Assembly != typeof(Program).Assembly ||
+                    typeof(UnionAttribute).Assembly != typeof(Program).Assembly)
+                    throw new InvalidOperationException("The consumer must own the polyfilled union types.");
+        #endif
+                Console.WriteLine("union-contract-verified");
+            }
+
+            private static string Describe(Pet value) => value switch
+            {
+                Cat cat => cat.Name,
+                Dog dog => dog.Age.ToString(CultureInfo.InvariantCulture),
+                null => "empty"
+            };
+        }
+        """;
+
+    private const string OwnUnionTypes = """
+        namespace System.Runtime.CompilerServices
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct,
+                AllowMultiple = false, Inherited = false)]
+            internal sealed class UnionAttribute : System.Attribute { }
+
+            internal interface IUnion { object? Value { get; } }
+        }
+        """;
+
+    [Fact]
+    public async Task PolyfillsPackage_CompilesUnionOnNetStandardWithoutSources()
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        AsUnionConsumer(project, Tfm.NetStandard20).AddSource("Union.cs", UsesUnion);
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+    }
+
+    [Theory]
+    [InlineData("net10.0")]
+    [InlineData("net11.0")]
+    public async Task PolyfillsPackage_UsesCorrectUnionTypesAtRuntime(string framework)
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        AsUnionConsumer(project, framework)
+            .WithOutputType(Val.Exe)
+            .WithProperty("RollForward", "Major")
+            .AddSource("Union.cs", UsesUnion);
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+        var startInfo = new ProcessStartInfo(await DotNetSdkHelpers.Get(NetSdkVersion.Ambient))
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add(project.RootFolder / "bin" / "Debug" / framework / "TestProject.dll");
+        var result = await startInfo.RunAsTaskAsync(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(result.ExitCode == 0, result.Output.ToString());
+        Assert.Contains("union-contract-verified", result.Output.ToString());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UnionOptOut_PreservesConsumerDefinitions(bool withSources)
+    {
+        await using var project = new ProjectBuilder(TestContext.Current.TestOutputHelper);
+        AsUnionConsumer(project, Tfm.NetStandard20)
+            .WithProperty(Prop.InjectUnionOnLegacy, Val.False)
+            .AddSource("Own/UnionAttribute.cs", OwnUnionTypes)
+            .AddSource("Union.cs", UsesUnion);
+        if (withSources)
+            project.WithPackage("ANcpLua.Roslyn.Utilities.Sources", LocalPackageFeed.Version)
+                .WithPackage("Microsoft.CodeAnalysis.CSharp", typeof(SyntaxNode).Assembly.GetName().Version!.ToString(3));
+
+        (await project.BuildAsync(BuildArguments)).ShouldSucceed();
+    }
+
+    private ProjectBuilder AsUnionConsumer(ProjectBuilder project, string framework) => project
+        .WithDotnetSdkVersion(NetSdkVersion.Ambient)
+        .WithNuGetConfig(feed.NuGetConfig)
+        .WithTargetFramework(framework)
+        .WithLangVersion()
+        .WithProperty("Nullable", "enable")
+        .WithProperty(Prop.TreatWarningsAsErrors, Val.True)
+        .WithPackage("ANcpLua.Roslyn.Utilities.Polyfills", LocalPackageFeed.Version);
 
     // Documentation is generated too: the compiler then resolves every cref, so a Roslyn-free file must not point
     // at a type that ships under Roslyn/.

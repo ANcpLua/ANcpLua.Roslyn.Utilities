@@ -9,11 +9,16 @@
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
-///     Backport of <see cref="IUnion" /> for .NET 10 and earlier, required by C# 15 <c>union</c> declarations.
+///     Provides access to the contents of a union on targets before .NET 11.
 /// </summary>
+/// <remarks>
+///     The C# compiler implements this interface for union declarations. A custom type marked with
+///     <see cref="UnionAttribute" /> may implement it, but the interface is not required for custom
+///     union matching. On .NET 11 and later the framework supplies this interface instead.
+/// </remarks>
 internal interface IUnion
 {
-    /// <summary>The value of the case the union currently holds.</summary>
+    /// <summary>The contained case value, or <see langword="null" /> when the union has no value.</summary>
     object? Value { get; }
 }
 

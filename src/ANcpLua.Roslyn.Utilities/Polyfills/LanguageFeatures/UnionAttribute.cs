@@ -11,8 +11,12 @@ using System.Diagnostics.CodeAnalysis;
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
-///     Backport of <see cref="UnionAttribute" /> for .NET 10 and earlier, required by C# 15 <c>union</c> declarations.
+///     Identifies a class or struct as a union type for the C# compiler.
 /// </summary>
+/// <remarks>
+///     Supplies the compiler contract on targets before .NET 11. A C# 15 compiler is still required;
+///     this attribute does not backport runtime services such as union JSON serialization.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 [ExcludeFromCodeCoverage]
 internal sealed class UnionAttribute : Attribute

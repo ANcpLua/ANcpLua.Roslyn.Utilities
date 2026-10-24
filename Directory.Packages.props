@@ -22,6 +22,8 @@
     <!-- Core Roslyn packages -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="$(BclHashCodeVersion)" />
     <PackageVersion Include="System.Threading.Channels" Version="$(SystemThreadingChannelsVersion)" />
+    <!-- Patch the vulnerable version pulled in by NuGet.Packaging. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
     <!-- Microsoft.CodeAnalysis.Workspaces.Common is provided transitively (exact [x] range) by
