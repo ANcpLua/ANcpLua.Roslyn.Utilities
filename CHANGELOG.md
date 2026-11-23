@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.1
+
+- CI: actions/setup-dotnet digest 0f4a354.
+- Tests: the parallel-enumeration tests allow 30 seconds instead of 5; a loaded Windows runner missed the 5-second window.
+
 ## 5.0.0
 
 .NET 11 and C# 15. The `5.0.0-preview.1` line ends here; 4.x is skipped so this release sorts above that preview.

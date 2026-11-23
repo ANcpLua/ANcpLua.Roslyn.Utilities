@@ -110,12 +110,12 @@ public sealed class ParallelAsyncExtensionsTests
 
     private static async Task<T> WithTimeout<T>(Task<T> task)
     {
-        return await task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        return await task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
     }
 
     private static async Task WithTimeout(Task task)
     {
-        await task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        await task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
     }
 
     private static async IAsyncEnumerable<int> Range(
