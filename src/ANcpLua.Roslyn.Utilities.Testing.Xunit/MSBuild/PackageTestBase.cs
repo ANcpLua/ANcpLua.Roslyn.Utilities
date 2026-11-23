@@ -127,7 +127,7 @@ public abstract class PackageTestBase<TFixture>
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -150,7 +150,7 @@ public abstract class PackageTestBase<TFixture>
     /// </example>
     protected virtual Task<BuildResult> QuickBuild(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         throw new NotImplementedException();
@@ -161,7 +161,7 @@ public abstract class PackageTestBase<TFixture>
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -181,7 +181,7 @@ public abstract class PackageTestBase<TFixture>
     /// </example>
     protected virtual Task<BuildResult> BuildLibrary(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         throw new NotImplementedException();
@@ -192,7 +192,7 @@ public abstract class PackageTestBase<TFixture>
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -212,7 +212,7 @@ public abstract class PackageTestBase<TFixture>
     /// </example>
     protected virtual Task<BuildResult> BuildExe(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         throw new NotImplementedException();
@@ -278,7 +278,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -287,7 +287,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </returns>
     protected override async Task<BuildResult> QuickBuild(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         var project = CreateProjectBuilder(
@@ -310,7 +310,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -319,7 +319,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </returns>
     protected override Task<BuildResult> BuildLibrary(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         return QuickBuild(code, tfm, extraProps);
@@ -330,7 +330,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </summary>
     /// <param name="code">The C# source code to compile.</param>
     /// <param name="tfm">
-    ///     The target framework moniker. Defaults to <see cref="Tfm.Net100" />.
+    ///     The target framework moniker. Defaults to <see cref="Tfm.Net110" />.
     /// </param>
     /// <param name="extraProps">Optional additional MSBuild properties.</param>
     /// <returns>
@@ -339,7 +339,7 @@ public abstract class NuGetPackageTestBase : PackageTestBase<NuGetPackageFixture
     /// </returns>
     protected override async Task<BuildResult> BuildExe(
         string code,
-        string tfm = Tfm.Net100,
+        string tfm = Tfm.Net110,
         params (string Key, string Value)[] extraProps)
     {
         var project = CreateProjectBuilder(

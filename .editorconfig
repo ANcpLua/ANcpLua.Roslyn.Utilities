@@ -1,6 +1,6 @@
 root = true
 
-# Analyzer tuning for a Roslyn utility library (AnalysisLevel=latest-all baseline).
+# Analyzer tuning for a Roslyn utility library (AnalysisLevel=11.0-all baseline).
 # Every disabled rule below is a deliberate, categorical decision — new warning IDs
 # not listed here fail the CI build (warnings-as-errors when ContinuousIntegrationBuild=true).
 

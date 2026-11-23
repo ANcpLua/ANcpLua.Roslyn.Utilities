@@ -94,7 +94,7 @@ public enum PackageImportStyle
 ///     packageVersion: "1.0.0");
 ///
 /// var result = await builder
-///     .WithTargetFramework(Tfm.Net100)
+///     .WithTargetFramework(Tfm.Net110)
 ///     .WithOutputType(Val.Library)
 ///     .AddSource("Program.cs", "namespace Test; public class Foo { }")
 ///     .BuildAsync();

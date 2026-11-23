@@ -7,7 +7,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 
 /// <summary>
 ///     Provides a base class for unit testing Roslyn diagnostic analyzers with pre-configured
-///     reference assemblies for .NET 10 and .NET Standard 2.0 target frameworks.
+///     reference assemblies for .NET 11 and .NET Standard 2.0 target frameworks.
 /// </summary>
 /// <typeparam name="TAnalyzer">
 ///     The type of the <see cref="DiagnosticAnalyzer" /> to test.
@@ -62,8 +62,8 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     ///     The C# source code to analyze. Line endings are automatically normalized
     ///     for cross-platform compatibility.
     /// </param>
-    /// <param name="useNet10References">
-    ///     <see langword="true" /> to use .NET 10 reference assemblies (default);
+    /// <param name="useNet11References">
+    ///     <see langword="true" /> to use .NET 11 reference assemblies (default);
     ///     <see langword="false" /> to use .NET Standard 2.0 reference assemblies.
     ///     Use <see langword="false" /> when testing analyzers that target netstandard2.0,
     ///     such as source generator analyzers.
@@ -86,7 +86,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     ///         <item>
     ///             <description>
     ///                 Configures the appropriate reference assemblies based on the
-    ///                 <paramref name="useNet10References" /> parameter
+    ///                 <paramref name="useNet11References" /> parameter
     ///             </description>
     ///         </item>
     ///         <item>
@@ -108,7 +108,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     /// </remarks>
     /// <example>
     ///     <para>
-    ///         Test an analyzer with .NET 10 references (default):
+    ///         Test an analyzer with .NET 11 references (default):
     ///     </para>
     ///     <code>
     /// [Fact]
@@ -132,21 +132,21 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     /// public async Task Analyzer_WorksWithNetStandard20()
     /// {
     ///     var source = "class Test { }";
-    ///     await VerifyAsync(source, useNet10References: false);
+    ///     await VerifyAsync(source, useNet11References: false);
     /// }
     /// </code>
     /// </example>
     /// <seealso cref="CSharpAnalyzerTest{TAnalyzer, TVerifier}" />
-    protected static Task VerifyAsync(string source, bool useNet10References = true)
+    protected static Task VerifyAsync(string source, bool useNet11References = true)
     {
         var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
-            useNet10References ? Net100.References.All : NetStandard20.References.All);
+            useNet11References ? Net110.References.All : NetStandard20.References.All);
 
         return test.RunAsync();
     }
@@ -167,8 +167,8 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
     ///     Optional collection of expected diagnostics. If null, diagnostics are expected
     ///     to be marked in the source code using the standard markup format.
     /// </param>
-    /// <param name="useNet10References">
-    ///     <see langword="true" /> to use .NET 10 reference assemblies (default);
+    /// <param name="useNet11References">
+    ///     <see langword="true" /> to use .NET 11 reference assemblies (default);
     ///     <see langword="false" /> to use .NET Standard 2.0 reference assemblies.
     /// </param>
     /// <returns>
@@ -212,12 +212,12 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
         string source,
         IEnumerable<(string fileName, string content)> additionalFiles,
         IEnumerable<DiagnosticResult>? expectedDiagnostics = null,
-        bool useNet10References = true)
+        bool useNet11References = true)
     {
         var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         foreach (var (fileName, content) in additionalFiles)
@@ -227,7 +227,7 @@ public abstract class AnalyzerTest<TAnalyzer> where TAnalyzer : DiagnosticAnalyz
             test.ExpectedDiagnostics.AddRange(expectedDiagnostics);
 
         test.TestState.AdditionalReferences.AddRange(
-            useNet10References ? Net100.References.All : NetStandard20.References.All);
+            useNet11References ? Net110.References.All : NetStandard20.References.All);
 
         return test.RunAsync();
     }

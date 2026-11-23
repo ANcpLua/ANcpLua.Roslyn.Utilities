@@ -17,7 +17,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>Supports both .NET 10 and .NET Standard 2.0 reference assemblies</description>
+///             <description>Supports both .NET 11 and .NET Standard 2.0 reference assemblies</description>
 ///         </item>
 ///         <item>
 ///             <description>Automatically configures global and project-level EditorConfig files</description>
@@ -126,8 +126,8 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     ///     Optional array of additional source files specified as (filename, content) tuples.
     ///     These files are included in both the test state and fixed state.
     /// </param>
-    /// <param name="useNet10References">
-    ///     If <see langword="true" /> (the default), uses .NET 10 reference assemblies.
+    /// <param name="useNet11References">
+    ///     If <see langword="true" /> (the default), uses .NET 11 reference assemblies.
     ///     If <see langword="false" />, uses .NET Standard 2.0 reference assemblies.
     /// </param>
     /// <returns>A task that completes when the verification is finished.</returns>
@@ -160,7 +160,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     /// await VerifyAsync(
     ///     source: sourceCode,
     ///     fixedSource: fixedCode,
-    ///     useNet10References: false);
+    ///     useNet11References: false);
     /// </code>
     /// </example>
     protected static Task VerifyAsync(
@@ -168,12 +168,12 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         string fixedSource,
         Dictionary<string, string>? editorConfig = null,
         (string FileName, string Content)[]? additionalSources = null,
-        bool useNet10References = true)
+        bool useNet11References = true)
     {
         var test = new CustomCodeFixTest(
             editorConfig ?? [],
             additionalSources ?? [],
-            useNet10References)
+            useNet11References)
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = fixedSource.ReplaceLineEndings()
@@ -193,7 +193,7 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description>Configurable reference assemblies (NET 10 or .NET Standard 2.0)</description>
+    ///             <description>Configurable reference assemblies (.NET 11 or .NET Standard 2.0)</description>
     ///         </item>
     ///         <item>
     ///             <description>EditorConfig file generation from key-value pairs</description>
@@ -215,18 +215,18 @@ public abstract class CodeFixTestWithEditorConfig<TAnalyzer, TCodeFix>
         /// <param name="additionalSources">
         ///     Array of additional source files as (filename, content) tuples.
         /// </param>
-        /// <param name="useNet10References">
-        ///     Whether to use .NET 10 references (<see langword="true" />) or
+        /// <param name="useNet11References">
+        ///     Whether to use .NET 11 references (<see langword="true" />) or
         ///     .NET Standard 2.0 references (<see langword="false" />).
         /// </param>
         public CustomCodeFixTest(
             Dictionary<string, string> editorConfig,
             IEnumerable<(string FileName, string Content)> additionalSources,
-            bool useNet10References)
+            bool useNet11References)
         {
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm;
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm;
             TestState.AdditionalReferences.AddRange(
-                useNet10References ? Net100.References.All : NetStandard20.References.All);
+                useNet11References ? Net110.References.All : NetStandard20.References.All);
 
             ApplyEditorConfig(editorConfig);
             ApplyAdditionalSources(additionalSources);

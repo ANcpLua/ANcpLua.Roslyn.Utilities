@@ -11,7 +11,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 internal static class SolutionRefactoringTestReferences
 {
     internal static readonly ImmutableArray<MetadataReference> s_references =
-        Net100.References.All.CastArray<MetadataReference>();
+        Net110.References.All.CastArray<MetadataReference>();
 }
 
 /// <summary>

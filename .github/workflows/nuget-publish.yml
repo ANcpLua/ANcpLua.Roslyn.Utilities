@@ -1,11 +1,11 @@
 name: CI
 
-# main is the stable line (vX.Y.Z); release/X.Y branches are prerelease lines (vX.Y.0-preview.N).
+# main is the release line: every publication is the stable vX.Y.Z that Version.props names.
 on:
   push:
-    branches: [main, 'release/**']
+    branches: [main]
   pull_request:
-    branches: [main, 'release/**']
+    branches: [main]
   workflow_dispatch:
 
 # Coalesce in-flight runs on the same ref so two main pushes don't race to publish the same version.
@@ -23,7 +23,7 @@ env:
   CI: true
 
 jobs:
-  # Stable main validates the explicit ReleaseVersion; the preview line keeps its own policy.
+  # Builds read the explicit ReleaseVersion; publish validates it against the tags.
   # Re-running the exact tagged commit is supported.
   version:
     runs-on: ubuntu-latest
@@ -37,20 +37,7 @@ jobs:
       - id: ver
         run: |
           python3 -m unittest discover -s scripts -p 'test_release_version.py'
-          BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
-          if [[ "$BRANCH" =~ ^release/([0-9]+)\.([0-9]+)$ ]]; then
-            BASE="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.0"
-            HEAD_TAG=$(git tag --points-at HEAD --list "v$BASE-preview.*" | sort -V | tail -n1)
-            if [ -n "$HEAD_TAG" ]; then
-              VERSION="${HEAD_TAG#v}"
-            else
-              LAST=$(git tag --merged HEAD --list "v$BASE-preview.*" | sed -E 's/^.*-preview\.//' | sort -n | tail -n1)
-              VERSION="$BASE-preview.$(( ${LAST:-0} + 1 ))"
-            fi
-          else
-            VERSION=$(python3 scripts/release_version.py --read-for-build)
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$(python3 scripts/release_version.py --read-for-build)" >> "$GITHUB_OUTPUT"
 
   # Build on both Linux and Windows to catch path-case and platform-specific build issues
   # early. Pack/upload only from Linux to avoid duplicate artifacts (output is netstandard2.0,
@@ -98,8 +85,7 @@ jobs:
           path: artifacts/*.nupkg
           if-no-files-found: error
 
-  # Publish on push to main (auto-bump-on-merge), on push to release/** (the branch's next
-  # prerelease, listed on nuget.org as prerelease and never as latest), or workflow_dispatch.
+  # Publish on push to main or a workflow_dispatch of main.
   # The `Must Publish Packages` gate diffs against the latest tag. It counts changes under
   # `src/**`, `tests/**`, and the root `README.md` — the root README ships as
   # `PackageReadmeFile` in every shipped pack, so a README change is a real consumer-facing
@@ -114,7 +100,7 @@ jobs:
   #   3. No NUGET_API_KEY secret required — OIDC handles auth.
   publish:
     needs: [version, build]
-    if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))) || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
@@ -148,7 +134,7 @@ jobs:
           fi
 
       - name: Validate stable publication version
-        if: steps.has_changes.outputs.has_changes == 'true' && github.ref == 'refs/heads/main'
+        if: steps.has_changes.outputs.has_changes == 'true'
         run: python3 scripts/release_version.py
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -190,8 +176,6 @@ jobs:
           TAG="v${VERSION}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping"
-          elif [[ "$VERSION" == *-* ]]; then
-            gh release create "$TAG" --target "$GITHUB_SHA" --prerelease --generate-notes --title "$TAG"
           else
             gh release create "$TAG" --target "$GITHUB_SHA" --generate-notes --title "$TAG"
           fi

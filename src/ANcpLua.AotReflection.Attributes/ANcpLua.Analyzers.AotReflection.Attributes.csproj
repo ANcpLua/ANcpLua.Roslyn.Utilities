@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net11.0</TargetFrameworks>
         <ImplicitUsings>disable</ImplicitUsings>
         <RootNamespace>ANcpLua.Analyzers.AotReflection</RootNamespace>
         <Description>Runtime types for ANcpLua.Analyzers.AotReflection source generator (ClassMetadata, PropertyMetadata, etc.)</Description>

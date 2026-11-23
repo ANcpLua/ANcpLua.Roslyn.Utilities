@@ -24,7 +24,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>Pre-configuring reference assemblies for .NET 10 or .NET Standard 2.0</description>
+///             <description>Pre-configuring reference assemblies for .NET 11 or .NET Standard 2.0</description>
 ///         </item>
 ///         <item>
 ///             <description>Normalizing line endings to ensure cross-platform test consistency</description>
@@ -90,13 +90,13 @@ public abstract class CodeFixTest<TAnalyzer, TCodeFix>
     ///     The expected source code after the code fix has been applied.
     ///     This should contain the corrected code without diagnostic markers.
     /// </param>
-    /// <param name="useNet10References">
+    /// <param name="useNet11References">
     ///     <para>
     ///         Specifies which target framework's reference assemblies to use:
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description><c>true</c> (default): Uses .NET 10 reference assemblies with full modern API surface</description>
+    ///             <description><c>true</c> (default): Uses .NET 11 reference assemblies with full modern API surface</description>
     ///         </item>
     ///         <item>
     ///             <description>
@@ -164,22 +164,22 @@ public abstract class CodeFixTest<TAnalyzer, TCodeFix>
     /// [Fact]
     /// public async Task WorksOnNetStandard20()
     /// {
-    ///     await VerifyAsync(source, fixedSource, useNet10References: false);
+    ///     await VerifyAsync(source, fixedSource, useNet11References: false);
     /// }
     /// </code>
     /// </example>
     /// <seealso cref="CSharpCodeFixTest{TAnalyzer,TCodeFix,TVerifier}" />
-    protected static Task VerifyAsync(string source, string fixedSource, bool useNet10References = true)
+    protected static Task VerifyAsync(string source, string fixedSource, bool useNet11References = true)
     {
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = fixedSource.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
-            useNet10References ? Net100.References.All : NetStandard20.References.All);
+            useNet11References ? Net110.References.All : NetStandard20.References.All);
 
         return test.RunAsync();
     }

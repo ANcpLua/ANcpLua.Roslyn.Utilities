@@ -1,9 +1,15 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace ANcpLua.Roslyn.Utilities.Testing.MSBuild;
 
 public partial class ProjectBuilder
 {
+    private static readonly JsonSerializerOptions s_globalJsonOptions = new() { WriteIndented = true };
+
+    private bool _useMtpRunner;
+
     /// <summary>
     ///     Configures the NuGet.config file with custom content.
     /// </summary>
@@ -110,16 +116,15 @@ public partial class ProjectBuilder
     /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
     ///     The SDK is automatically downloaded and cached by <see cref="DotNetSdkHelpers" /> if not already present;
-    ///     <see cref="NetSdkVersion.Ambient" /> uses the installed SDK instead and drops the <c>global.json</c> pin.
-    ///     The default SDK version is <see cref="NetSdkVersion.Net100" />.
+    ///     <see cref="NetSdkVersion.Ambient" /> uses the installed SDK instead and drops the <c>global.json</c> SDK pin.
+    ///     The default SDK version is <see cref="NetSdkVersion.Net110" />.
     /// </remarks>
     /// <seealso cref="NetSdkVersion" />
     /// <seealso cref="DotNetSdkHelpers" />
     public ProjectBuilder WithDotnetSdkVersion(NetSdkVersion dotnetSdkVersion)
     {
         SdkVersion = dotnetSdkVersion;
-        if (dotnetSdkVersion is NetSdkVersion.Ambient)
-            File.Delete(Directory.FullPath / "global.json");
+        WriteGlobalJson();
         return this;
     }
 
@@ -142,31 +147,41 @@ public partial class ProjectBuilder
     /// </example>
     public ProjectBuilder WithMtpMode()
     {
-        Directory.CreateTextFile("global.json", """
-                                                {
-                                                  "sdk": {
-                                                    "rollForward": "latestMinor",
-                                                    "version": "10.0.100"
-                                                  },
-                                                  "test": {
-                                                    "runner": "Microsoft.Testing.Platform"
-                                                  }
-                                                }
-                                                """);
+        _useMtpRunner = true;
+        WriteGlobalJson();
         return this;
+    }
+
+    /// <summary>
+    ///     Writes the project's <c>global.json</c>: an SDK pin for the selected <see cref="SdkVersion" /> (none for
+    ///     <see cref="NetSdkVersion.Ambient" />) and the Microsoft Testing Platform runner once
+    ///     <see cref="WithMtpMode" /> was called. With neither, the project has no <c>global.json</c>.
+    /// </summary>
+    private void WriteGlobalJson()
+    {
+        var json = new JsonObject();
+        if (DotNetSdkHelpers.Channel(SdkVersion) is { } channel)
+            json["sdk"] = new JsonObject { ["rollForward"] = "latestMinor", ["version"] = channel + ".100" };
+        if (_useMtpRunner)
+            json["test"] = new JsonObject { ["runner"] = "Microsoft.Testing.Platform" };
+
+        if (json.Count == 0)
+            File.Delete(Directory.FullPath / "global.json");
+        else
+            Directory.CreateTextFile("global.json", json.ToJsonString(s_globalJsonOptions));
     }
 
     /// <summary>
     ///     Sets the target framework for the project.
     /// </summary>
-    /// <param name="tfm">The target framework moniker (e.g., "net10.0", "netstandard2.0").</param>
+    /// <param name="tfm">The target framework moniker (e.g., "net11.0", "netstandard2.0").</param>
     /// <returns>The current <see cref="ProjectBuilder" /> instance for method chaining.</returns>
     /// <remarks>
     ///     Use constants from <see cref="Tfm" /> for common target framework values.
     /// </remarks>
     /// <example>
     ///     <code>
-    /// builder.WithTargetFramework(Tfm.Net100);
+    /// builder.WithTargetFramework(Tfm.Net110);
     /// builder.WithTargetFramework("net8.0-windows");
     /// </code>
     /// </example>

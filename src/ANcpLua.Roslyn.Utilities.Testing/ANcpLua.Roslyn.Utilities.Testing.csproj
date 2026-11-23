@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>ANcpLua.Roslyn.Utilities.Testing</RootNamespace>
         <PackageId>ANcpLua.Roslyn.Utilities.Testing</PackageId>
@@ -27,7 +27,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing"/>
         <!-- Microsoft.CodeAnalysis.CSharp is provided transitively (exact [x] range) by CSharp.Workspaces below. -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
-        <PackageReference Include="Basic.Reference.Assemblies.Net100"/>
+        <PackageReference Include="Basic.Reference.Assemblies.Net110"/>
         <PackageReference Include="Basic.Reference.Assemblies.NetStandard20"/>
     </ItemGroup>
 

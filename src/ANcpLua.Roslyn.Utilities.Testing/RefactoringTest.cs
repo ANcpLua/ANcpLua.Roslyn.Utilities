@@ -19,7 +19,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <description>Pre-configuring reference assemblies for .NET 10 or .NET Standard 2.0</description>
+///             <description>Pre-configuring reference assemblies for .NET 11 or .NET Standard 2.0</description>
 ///         </item>
 ///         <item>
 ///             <description>Normalizing line endings to ensure cross-platform test consistency</description>
@@ -83,13 +83,13 @@ public abstract class RefactoringTest<TRefactoring>
     ///     The expected source code after the refactoring has been applied.
     ///     This should contain the transformed code without span markers.
     /// </param>
-    /// <param name="useNet10References">
+    /// <param name="useNet11References">
     ///     <para>
     ///         Specifies which target framework's reference assemblies to use:
     ///     </para>
     ///     <list type="bullet">
     ///         <item>
-    ///             <description><c>true</c> (default): Uses .NET 10 reference assemblies with full modern API surface</description>
+    ///             <description><c>true</c> (default): Uses .NET 11 reference assemblies with full modern API surface</description>
     ///         </item>
     ///         <item>
     ///             <description>
@@ -159,22 +159,22 @@ public abstract class RefactoringTest<TRefactoring>
     /// [Fact]
     /// public async Task WorksOnNetStandard20()
     /// {
-    ///     await VerifyAsync(source, fixedSource, useNet10References: false);
+    ///     await VerifyAsync(source, fixedSource, useNet11References: false);
     /// }
     /// </code>
     /// </example>
     /// <seealso cref="CSharpCodeRefactoringTest{TRefactoring,TVerifier}" />
-    protected static Task VerifyAsync(string source, string fixedSource, bool useNet10References = true)
+    protected static Task VerifyAsync(string source, string fixedSource, bool useNet11References = true)
     {
         var test = new CSharpCodeRefactoringTest<TRefactoring, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = fixedSource.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
-            useNet10References ? Net100.References.All : NetStandard20.References.All);
+            useNet11References ? Net110.References.All : NetStandard20.References.All);
 
         return test.RunAsync();
     }
@@ -186,8 +186,8 @@ public abstract class RefactoringTest<TRefactoring>
     ///     The source code containing refactoring span markers. Use the format <c>[|code|]</c>
     ///     to mark the span where no refactoring should be triggered.
     /// </param>
-    /// <param name="useNet10References">
-    ///     <see langword="true" /> to use .NET 10 reference assemblies (default);
+    /// <param name="useNet11References">
+    ///     <see langword="true" /> to use .NET 11 reference assemblies (default);
     ///     <see langword="false" /> to use .NET Standard 2.0 reference assemblies.
     /// </param>
     /// <returns>
@@ -213,17 +213,17 @@ public abstract class RefactoringTest<TRefactoring>
     /// }
     /// </code>
     /// </example>
-    protected static Task VerifyNoRefactoringAsync(string source, bool useNet10References = true)
+    protected static Task VerifyNoRefactoringAsync(string source, bool useNet11References = true)
     {
         var test = new CSharpCodeRefactoringTest<TRefactoring, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
             FixedCode = source.ReplaceLineEndings(),
-            ReferenceAssemblies = useNet10References ? TestConfiguration.Net100Tfm : TestConfiguration.NetStandard20Tfm
+            ReferenceAssemblies = useNet11References ? TestConfiguration.Net110Tfm : TestConfiguration.NetStandard20Tfm
         };
 
         test.TestState.AdditionalReferences.AddRange(
-            useNet10References ? Net100.References.All : NetStandard20.References.All);
+            useNet11References ? Net110.References.All : NetStandard20.References.All);
 
         return test.RunAsync();
     }

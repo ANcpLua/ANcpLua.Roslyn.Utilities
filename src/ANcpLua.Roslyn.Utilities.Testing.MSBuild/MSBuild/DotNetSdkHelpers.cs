@@ -26,6 +26,11 @@ public enum NetSdkVersion
     Net100,
 
     /// <summary>
+    ///     .NET 11.0 SDK.
+    /// </summary>
+    Net110,
+
+    /// <summary>
     ///     The SDK already installed where the tests run: the <c>dotnet</c> that launched them
     ///     (<c>DOTNET_HOST_PATH</c>), else the first <c>dotnet</c> on <c>PATH</c>. Nothing is downloaded and
     ///     the project carries no <c>global.json</c> pin, so the SDK resolves as for any project in that directory.
@@ -68,6 +73,18 @@ public static class DotNetSdkHelpers
     ///     Keyed async lock to prevent concurrent downloads of the same SDK version.
     /// </summary>
     private static readonly KeyedAsyncLock<NetSdkVersion> s_keyedAsyncLock = new();
+
+    /// <summary>
+    ///     Gets the release channel (<c>major.minor</c>) of a downloadable SDK version.
+    /// </summary>
+    /// <param name="version">The SDK version.</param>
+    /// <returns>The channel, such as <c>11.0</c>, or <see langword="null" /> for <see cref="NetSdkVersion.Ambient" />.</returns>
+    internal static string? Channel(NetSdkVersion version) => version switch
+    {
+        NetSdkVersion.Net100 => "10.0",
+        NetSdkVersion.Net110 => "11.0",
+        _ => null
+    };
 
     /// <summary>
     ///     Gets the path to the dotnet executable for the specified SDK version.
@@ -118,11 +135,8 @@ public static class DotNetSdkHelpers
             if (s_values.TryGetValue(version, out result))
                 return result;
 
-            var versionString = version switch
-            {
-                NetSdkVersion.Net100 => "10.0",
-                _ => throw new NotSupportedException($"SDK version {version} is not supported")
-            };
+            var versionString = Channel(version)
+                                ?? throw new NotSupportedException($"SDK version {version} is not supported");
 
             var products = await ProductCollection.GetAsync().ConfigureAwait(false);
             var product = products.Single(a => a.ProductName == ".NET" && a.ProductVersion == versionString);

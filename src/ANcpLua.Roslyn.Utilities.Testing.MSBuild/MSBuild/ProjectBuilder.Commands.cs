@@ -29,7 +29,7 @@ public partial class ProjectBuilder
     /// <example>
     ///     <code>
     /// var result = await builder
-    ///     .WithTargetFramework(Tfm.Net100)
+    ///     .WithTargetFramework(Tfm.Net110)
     ///     .AddSource("Program.cs", code)
     ///     .BuildAsync();
     ///
@@ -65,7 +65,7 @@ public partial class ProjectBuilder
     /// <example>
     ///     <code>
     /// var result = await builder
-    ///     .WithTargetFramework(Tfm.Net100)
+    ///     .WithTargetFramework(Tfm.Net110)
     ///     .WithOutputType(Val.Exe)
     ///     .AddSource("Program.cs", "Console.WriteLine(args[0]);")
     ///     .RunAsync(["Hello"]);
@@ -99,7 +99,7 @@ public partial class ProjectBuilder
     /// <example>
     ///     <code>
     /// var result = await builder
-    ///     .WithTargetFramework(Tfm.Net100)
+    ///     .WithTargetFramework(Tfm.Net110)
     ///     .WithPackage("xunit", "2.9.2")
     ///     .WithPackage("xunit.runner.visualstudio", "3.0.0")
     ///     .AddSource("Tests.cs", """

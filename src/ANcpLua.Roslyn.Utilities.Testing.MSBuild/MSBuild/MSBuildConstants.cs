@@ -69,6 +69,11 @@ public static class Tfm
     ///     The .NET 10 target framework moniker (current LTS release).
     /// </summary>
     public const string Net100 = "net10.0";
+
+    /// <summary>
+    ///     The .NET 11 target framework moniker (current release).
+    /// </summary>
+    public const string Net110 = "net11.0";
 }
 
 /// <summary>
@@ -343,6 +348,9 @@ public static class Prop
 
     /// <summary>Injects <c>ParamCollectionAttribute</c> polyfill.</summary>
     public const string InjectParamCollectionOnLegacy = "InjectParamCollectionOnLegacy";
+
+    /// <summary>Injects <c>UnionAttribute</c>/<c>IUnion</c> polyfills for C# 15 <c>union</c> declarations.</summary>
+    public const string InjectUnionOnLegacy = "InjectUnionOnLegacy";
 
     /// <summary>Injects <c>UnreachableException</c> polyfill.</summary>
     public const string InjectUnreachableExceptionOnLegacy = "InjectUnreachableExceptionOnLegacy";
@@ -737,7 +745,7 @@ public static class XmlSnippetBuilder
     ///     Generates a <c>&lt;TargetFramework&gt;</c> XML element.
     /// </summary>
     /// <param name="tfm">The target framework moniker value.</param>
-    /// <returns>An XML element string like <c>&lt;TargetFramework&gt;net10.0&lt;/TargetFramework&gt;</c>.</returns>
+    /// <returns>An XML element string like <c>&lt;TargetFramework&gt;net11.0&lt;/TargetFramework&gt;</c>.</returns>
     /// <seealso cref="Tfm" />
     public static string TargetFramework(string tfm)
     {
@@ -748,7 +756,7 @@ public static class XmlSnippetBuilder
     ///     Generates a <c>&lt;LangVersion&gt;</c> XML element.
     /// </summary>
     /// <param name="version">The C# language version value.</param>
-    /// <returns>An XML element string like <c>&lt;LangVersion&gt;14&lt;/LangVersion&gt;</c>.</returns>
+    /// <returns>An XML element string like <c>&lt;LangVersion&gt;15&lt;/LangVersion&gt;</c>.</returns>
     /// <seealso cref="Val.Latest" />
     /// <seealso cref="Val.Preview" />
     public static string LangVersion(string version)

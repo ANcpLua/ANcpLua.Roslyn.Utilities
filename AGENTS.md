@@ -12,9 +12,8 @@ here propagates the whole way down.
 release; `scripts/release_version.py` rejects stale versions and tags belonging to a
 different commit before publication. Builds read the same source version without authorizing a release,
 so a documentation-only change can still run checks without publishing. A rerun of the same tagged commit is supported. There is no implicit
-patch increment or version override. The separately maintained `release/5.0` branch
-keeps its preview toolchain and release policy; do not merge SDK 11 preview changes
-into stable as part of the testing-package split.
+patch increment or version override. `main` is the only release line; CI no longer
+publishes `release/**` branches.
 
 ## Project index
 
@@ -113,6 +112,10 @@ oversights — earlier review flagged them and they resolved to these choices):
   consumer.
 
 ## Build and test
+
+`global.json` pins the .NET 11 SDK and `Version.props` the Roslyn packages (C# 15).
+The `.Sources` package keeps compiling against Microsoft.CodeAnalysis 4.14 (guarded by
+`PackageConsumptionTests`), so its files name newer Roslyn enum members by value, not by name.
 
 ```bash
 dotnet build -c Release

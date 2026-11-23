@@ -16,9 +16,11 @@ The library is the author's own. Use it, improve it (the upstream is this repo),
 |---------|--------|---------------|
 | **`ANcpLua.Roslyn.Utilities`** | netstandard2.0 | Runtime + Roslyn utilities as a normal NuGet reference |
 | **`ANcpLua.Roslyn.Utilities.Sources`** | source-only | Embeds the utilities as `internal` source into source generators (generators can't load NuGet DLLs at runtime) |
-| **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
-| **`ANcpLua.Roslyn.Utilities.Testing`** | net10.0 | Framework-independent generator/analyzer/codefix test infrastructure and diagnostics helpers |
+| **`ANcpLua.Roslyn.Utilities.Polyfills`** | source-only | `init`, `required`, C# 15 `union`, `Index`/`Range`, nullable & trim attributes for netstandard2.0 |
+| **`ANcpLua.Roslyn.Utilities.Testing`** | net11.0 | Framework-independent generator/analyzer/codefix test infrastructure and diagnostics helpers |
 | **`ANcpLua.Roslyn.Utilities.Testing.Aot`** | netstandard2.0 | AOT/trim test attributes (`[AotTest]`, `[TrimTest]`, `[AotSafe]`, `[TrimSafe]`), `TrimAssert`, `FeatureSwitches`, MSBuild orchestration for standalone AOT verification |
+
+The packages are built with the .NET 11 SDK and compiled against Microsoft.CodeAnalysis 5.12 (C# 15). An analyzer or generator that references the `ANcpLua.Roslyn.Utilities` assembly therefore needs a Roslyn 5.12 host (.NET SDK 11.0.100 or later); the `.Sources` package still compiles against Microsoft.CodeAnalysis 4.14 and later.
 
 ## Quickstart — writing a source generator
 
@@ -138,6 +140,7 @@ Language and API backports for `netstandard2.0` consumers (via the separate `.Po
 |----------|---------|---------|
 | `Index` / `Range` | `array[^1]`, `array[1..3]` | `InjectIndexRangeOnLegacy=false` |
 | `IsExternalInit` | `record` types, `init` setters | `InjectIsExternalInitOnLegacy=false` |
+| `UnionAttribute` / `IUnion` | C# 15 `union` declarations before .NET 11 (needs the .NET 11 SDK compiler and `LangVersion` 15 or `latest`) | `InjectUnionOnLegacy=false` |
 | Nullable attributes | `[NotNull]`, `[MaybeNull]`, `[MemberNotNull]`, `[NotNullWhen]` | `InjectNullabilityAttributesOnLegacy=false` |
 | Trim/AOT attributes | `[RequiresUnreferencedCode]`, `[DynamicallyAccessedMembers]` | `InjectTrimAttributesOnLegacy=false` |
 | `TimeProvider` | Testable time abstraction | `InjectTimeProviderPolyfill=false` |
@@ -153,9 +156,10 @@ Without Roslyn: a project that does not reference `Microsoft.CodeAnalysis` sets 
 
 ## Testing packages
 
-`ANcpLua.Roslyn.Utilities.Testing` contains framework-independent Roslyn helpers:
+`ANcpLua.Roslyn.Utilities.Testing` (net11.0, like every `.Testing.*` package below) contains framework-independent Roslyn helpers:
 `Compile` / `CompileResult`, analyzer/code-fix/refactoring runners, generator cache validation,
-`DictionaryAnalyzerConfigOptionsProvider`, `SourceFixture`, and `RepositoryRoot`.
+`DictionaryAnalyzerConfigOptionsProvider`, `SourceFixture`, and `RepositoryRoot`. The analyzer, code-fix and refactoring
+runners compile test code against the .NET 11 reference assemblies unless `useNet11References: false` selects netstandard2.0.
 It does not install xUnit, NUnit, TUnit, bUnit, ASP.NET test hosting, or AI provider clients.
 
 Choose additional packages for the APIs you use:

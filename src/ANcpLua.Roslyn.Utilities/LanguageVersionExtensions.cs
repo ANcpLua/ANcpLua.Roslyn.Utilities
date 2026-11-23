@@ -116,11 +116,31 @@ internal
     ///     targeting that runtime.
     /// </remarks>
     /// <seealso cref="IsCSharp13OrAbove" />
+    /// <seealso cref="IsCSharp15OrAbove" />
     public static bool IsCSharp14OrAbove(this LanguageVersion languageVersion)
     {
         // The enum member LanguageVersion.CSharp14 exists from Microsoft.CodeAnalysis 5.0.0 on; the numeric value keeps
         // this file compiling against 4.14.0, the floor the .Sources package supports.
         return languageVersion.IsAtLeast((LanguageVersion)1400);
+    }
+
+    /// <summary>
+    ///     Determines whether the specified language version is C# 15.0 or above.
+    /// </summary>
+    /// <param name="languageVersion">The language version to check.</param>
+    /// <returns>
+    ///     <c>true</c> if <paramref name="languageVersion" /> is C# 15.0 or a later version; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    ///     C# 15.0 ships with .NET 11 and introduced features such as union types, closed class hierarchies,
+    ///     collection expression arguments, extension indexers, and labeled <c>break</c>/<c>continue</c>.
+    /// </remarks>
+    /// <seealso cref="IsCSharp14OrAbove" />
+    public static bool IsCSharp15OrAbove(this LanguageVersion languageVersion)
+    {
+        // The enum member LanguageVersion.CSharp15 exists from Microsoft.CodeAnalysis 5.12.0 on; the numeric value keeps
+        // this file compiling against 4.14.0, the floor the .Sources package supports.
+        return languageVersion.IsAtLeast((LanguageVersion)1500);
     }
 
     private static int ComparableValue(this LanguageVersion languageVersion)

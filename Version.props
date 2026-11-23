@@ -1,12 +1,12 @@
 <Project>
     <PropertyGroup Label="Release">
-        <ReleaseVersion>3.0.2</ReleaseVersion>
+        <ReleaseVersion>5.0.0</ReleaseVersion>
     </PropertyGroup>
 
     <PropertyGroup Label="Roslyn">
-        <SystemSecurityCryptographyPkcsVersion>10.0.13</SystemSecurityCryptographyPkcsVersion>
-        <RoslynVersion>5.9.0</RoslynVersion>
-        <RoslynAnalyzersVersion>5.9.0</RoslynAnalyzersVersion>
+        <SystemSecurityCryptographyPkcsVersion>11.0.0</SystemSecurityCryptographyPkcsVersion>
+        <RoslynVersion>5.12.0</RoslynVersion>
+        <RoslynAnalyzersVersion>5.12.0</RoslynAnalyzersVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -22,7 +22,7 @@
          Used by: Roslyn.Utilities.Testing, Analyzers.Tests
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Reference Assemblies">
-        <BasicReferenceAssembliesVersion>1.8.9</BasicReferenceAssembliesVersion>
+        <BasicReferenceAssembliesVersion>1.8.15</BasicReferenceAssembliesVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -61,10 +61,10 @@
          (Diagnostics.Testing, Telemetry.Abstractions), Testing.Xunit/NUnit/TUnit (Mvc.Testing)
          ═══════════════════════════════════════════════════════════════════════ -->
     <PropertyGroup Label="Microsoft.Extensions">
-        <MicrosoftExtensionsVersion>10.8.0</MicrosoftExtensionsVersion>
-        <AspNetCoreVersion>10.0.10</AspNetCoreVersion>
+        <MicrosoftExtensionsVersion>11.0.1</MicrosoftExtensionsVersion>
+        <AspNetCoreVersion>11.0.0</AspNetCoreVersion>
         <BclHashCodeVersion>6.0.0</BclHashCodeVersion>
-        <SystemThreadingChannelsVersion>10.0.10</SystemThreadingChannelsVersion>
+        <SystemThreadingChannelsVersion>11.0.0</SystemThreadingChannelsVersion>
     </PropertyGroup>
 
     <!-- ═══════════════════════════════════════════════════════════════════════

@@ -46,7 +46,7 @@ public readonly record struct NuGetReference(string Name, string Version);
 /// await using var builder = new ProjectBuilder(writeOutput);
 /// 
 /// var result = await builder
-///     .WithTargetFramework(Tfm.Net100)
+///     .WithTargetFramework(Tfm.Net110)
 ///     .WithOutputType(Val.Library)
 ///     .WithPackage("Microsoft.CodeAnalysis.CSharp", "4.12.0")
 ///     .AddSource("Program.cs", "namespace Test; public class Foo { }")
@@ -78,7 +78,7 @@ public partial class ProjectBuilder : IAsyncDisposable
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Generates a default global.json configured for .NET 10.0 SDK with latestMinor rollForward
+    ///                 Generates a default global.json configured for .NET 11.0 SDK with latestMinor rollForward
     ///                 policy.
     ///             </description>
     ///         </item>
@@ -102,15 +102,7 @@ public partial class ProjectBuilder : IAsyncDisposable
         Directory = TemporaryDirectory.Create();
         GithubStepSummaryFile = Directory.CreateEmptyFile("GITHUB_STEP_SUMMARY.txt");
 
-        // Create isolated global.json
-        Directory.CreateTextFile("global.json", """
-                                                {
-                                                  "sdk": {
-                                                    "rollForward": "latestMinor",
-                                                    "version": "10.0.100"
-                                                  }
-                                                }
-                                                """);
+        WriteGlobalJson();
     }
 
     /// <summary>
@@ -181,7 +173,7 @@ public partial class ProjectBuilder : IAsyncDisposable
     /// <summary>
     ///     The .NET SDK version to use for builds.
     /// </summary>
-    protected NetSdkVersion SdkVersion { get; set; } = NetSdkVersion.Net100;
+    protected NetSdkVersion SdkVersion { get; set; } = NetSdkVersion.Net110;
 
     /// <summary>
     ///     Gets the root folder path of the temporary project directory.

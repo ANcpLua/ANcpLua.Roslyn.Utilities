@@ -23,7 +23,7 @@ namespace ANcpLua.Roslyn.Utilities.Testing;
 ///         <item>
 ///             <description>
 ///                 <see cref="ReferenceAssemblies" /> - Specifies the reference assemblies for test compilations
-///                 (defaults to .NET 10.0).
+///                 (defaults to .NET 11.0).
 ///             </description>
 ///         </item>
 ///         <item>
@@ -69,13 +69,13 @@ public static class TestConfiguration
         new();
 
     /// <summary>
-    ///     Gets the shared .NET 10.0 reference assemblies instance.
+    ///     Gets the shared .NET 11.0 reference assemblies instance.
     ///     Use this instead of creating new instances in generic test classes.
     /// </summary>
-    internal static ReferenceAssemblies Net100Tfm { get; } = new(
-        "net10.0",
-        new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0"),
-        Path.Combine("ref", "net10.0"));
+    internal static ReferenceAssemblies Net110Tfm { get; } = new(
+        "net11.0",
+        new PackageIdentity("Microsoft.NETCore.App.Ref", "11.0.0"),
+        Path.Combine("ref", "net11.0"));
 
     /// <summary>
     ///     Gets the shared .NET Standard 2.0 reference assemblies instance.
@@ -111,7 +111,7 @@ public static class TestConfiguration
     /// </summary>
     /// <value>
     ///     The configured <see cref="Microsoft.CodeAnalysis.Testing.ReferenceAssemblies" />, or
-    ///     .NET 10.0 reference assemblies if not overridden.
+    ///     .NET 11.0 reference assemblies if not overridden.
     /// </value>
     /// <remarks>
     ///     <list type="bullet">
@@ -125,14 +125,14 @@ public static class TestConfiguration
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 The default .NET 10.0 assemblies use the <c>Microsoft.NETCore.App.Ref</c> package.
+    ///                 The default .NET 11.0 assemblies use the <c>Microsoft.NETCore.App.Ref</c> package.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </remarks>
     /// <seealso cref="WithReferenceAssemblies" />
     public static ReferenceAssemblies ReferenceAssemblies =>
-        s_referenceAssembliesOverride.Value ?? Net100Tfm;
+        s_referenceAssembliesOverride.Value ?? Net110Tfm;
 
     /// <summary>
     ///     Gets additional metadata references to include in test compilations.

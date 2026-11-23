@@ -16,6 +16,8 @@ public sealed class LanguageVersionExtensionsTests
         LanguageVersion.CSharp12.IsCSharp12OrAbove().Should().BeTrue();
         LanguageVersion.CSharp12.IsCSharp13OrAbove().Should().BeFalse();
         LanguageVersion.CSharp14.IsCSharp14OrAbove().Should().BeTrue();
+        LanguageVersion.CSharp14.IsCSharp15OrAbove().Should().BeFalse();
+        LanguageVersion.CSharp15.IsCSharp15OrAbove().Should().BeTrue();
     }
 
     [Fact]
@@ -23,5 +25,7 @@ public sealed class LanguageVersionExtensionsTests
     {
         LanguageVersion.Preview.IsCSharp14OrAbove().Should().BeTrue();
         LanguageVersion.Latest.IsCSharp14OrAbove().Should().BeTrue();
+        LanguageVersion.Preview.IsCSharp15OrAbove().Should().BeTrue();
+        LanguageVersion.Latest.IsCSharp15OrAbove().Should().BeTrue();
     }
 }
